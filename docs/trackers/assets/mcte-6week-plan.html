@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCTE Weekly Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* ── Hub Navigation ── */
+  .hub-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .hub-nav .nav-label {
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-right: 0.25rem;
+  }
+
+  .hub-nav a, .hub-nav .nav-current {
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .hub-nav a {
+    color: #888;
+    background: transparent;
+    border: 1px solid #333;
+  }
+
+  .hub-nav a:hover {
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.4);
+    background: rgba(96, 165, 250, 0.05);
+  }
+
+  .hub-nav .nav-current {
+    color: #a78bfa;
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+  }
+
+  .hub-nav .nav-separator {
+    color: #333;
+    font-size: 1rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+  }
+
+  .header .role-badge {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.35rem 1rem;
+    background: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.3);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #60a5fa;
+    font-weight: 500;
+  }
+
+  .progress-bar-container {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #2a2a2a;
+  }
+
+  .progress-bar-container .label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+
+  .progress-bar-container .label span:last-child {
+    color: #60a5fa;
+    font-weight: 600;
+  }
+
+  .progress-track {
+    width: 100%;
+    height: 10px;
+    background: #2a2a2a;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    border-radius: 5px;
+    transition: width 0.5s ease;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+  }
+
+  .stat-card .number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #60a5fa;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .strategy-context {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .strategy-context h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .strategy-context .chevron-small {
+    transition: transform 0.2s;
+    color: #555;
+    font-size: 1rem;
+  }
+
+  .strategy-context.collapsed .chevron-small {
+    transform: rotate(-90deg);
+  }
+
+  .strategy-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 500px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  .strategy-context.collapsed .strategy-timeline {
+    max-height: 0;
+  }
+
+  .strategy-week {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .strategy-week:last-child {
+    border-bottom: none;
+  }
+
+  .strategy-week.current {
+    background: rgba(96, 165, 250, 0.1);
+    padding: 0.5rem 0.75rem;
+    margin: 0 -0.75rem;
+    border-radius: 6px;
+  }
+
+  .strategy-week-num {
+    color: #60a5fa;
+    font-weight: 600;
+    min-width: 50px;
+  }
+
+  .strategy-week-title {
+    flex: 1;
+    color: #ccc;
+  }
+
+  .strategy-week-dates {
+    color: #666;
+    font-size: 0.75rem;
+  }
+
+  .stakeholder-section {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stakeholder-section h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .stakeholder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .stakeholder {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: #222;
+    border-radius: 8px;
+  }
+
+  .stakeholder .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .stakeholder .info .name { font-weight: 600; font-size: 0.85rem; }
+  .stakeholder .info .title { font-size: 0.7rem; color: #888; }
+
+  .days-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .day-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .day-card:hover { border-color: #3a3a3a; }
+
+  .day-card.today { border-color: rgba(96, 165, 250, 0.4); }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .day-header:hover { background: #1f1f1f; }
+
+  .day-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+  }
+
+  .day-name {
+    font-weight: 600;
+    font-size: 1rem;
+    min-width: 100px;
+  }
+
+  .day-date {
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  .day-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+
+  .status-today {
+    background: rgba(96, 165, 250, 0.15);
+    color: #60a5fa;
+  }
+
+  .status-done {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+  }
+
+  .status-upcoming {
+    background: rgba(255, 255, 255, 0.05);
+    color: #666;
+  }
+
+  .day-body {
+    padding: 0 1.5rem 1.25rem;
+    display: none;
+  }
+
+  .day-card.open .day-body { display: block; }
+
+  .checklist { list-style: none; }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #1f1f1f;
+    font-size: 0.9rem;
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .checklist input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #444;
+    border-radius: 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    position: relative;
+    transition: all 0.15s;
+  }
+
+  .checklist input[type="checkbox"]:checked {
+    background: #60a5fa;
+    border-color: #60a5fa;
+  }
+
+  .checklist input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .checklist input[type="checkbox"]:checked + .task-text {
+    text-decoration: line-through;
+    color: #555;
+  }
+
+  .task-text { line-height: 1.5; }
+
+  .task-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .tag-strategy { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+  .tag-content { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .tag-stakeholder { background: rgba(167, 139, 250, 0.15); color: #a78bfa; }
+  .tag-recruiting { background: rgba(251, 113, 133, 0.15); color: #fb7185; }
+  .tag-setup { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+  .tag-milestone { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+
+  .chevron {
+    transition: transform 0.2s;
+    color: #555;
+    font-size: 1.2rem;
+  }
+
+  .day-card.open .chevron { transform: rotate(90deg); }
+
+  .key-dates {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .key-dates h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+  }
+
+  .timeline-date {
+    color: #60a5fa;
+    font-weight: 600;
+    min-width: 100px;
+    font-size: 0.8rem;
+  }
+
+  .timeline-event { color: #ccc; }
+
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    color: #555;
+  }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .stakeholder-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Hub Navigation ── -->
+<div class="hub-nav">
+  <span class="nav-label">Trackers</span>
+  <span class="nav-current">MCTE Hub</span>
+  <span class="nav-separator">/</span>
+  <a href="../Michael Colab/Track1_Weekly_Tracker.html" title="Track 1 weekly progress">Track 1: Michael Colab</a>
+  <span class="nav-separator">/</span>
+  <a href="../Articulate POC/Track2_Weekly_Tracker.html" title="Track 2 weekly progress">Track 2: Articulate POC</a>
+</div>
+
+<div class="header">
+  <h1>MCTE Weekly Tracker</h1>
+  <div class="subtitle">Week of March 30 – April 5, 2026 — Week 2: Proof of Concept Build</div>
+  <div class="role-badge">Manager, Customer Training & Enablement — PrePass</div>
+</div>
+
+<div class="progress-bar-container">
+  <div class="label">
+    <span>Weekly Progress</span>
+    <span id="progressPercent">0%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="number" id="completedCount">0</div>
+    <div class="stat-label">Completed</div>
+  </div>
+  <div class="stat-card">
+    <div class="number" id="totalCount">0</div>
+    <div class="stat-label">Total Tasks</div>
+  </div>
+  <div class="stat-card">
+    <div class="number">2 of 6</div>
+    <div class="stat-label">Week</div>
+  </div>
+  <div class="stat-card">
+    <div class="number" id="daysLeft">4</div>
+    <div class="stat-label">Days Left</div>
+  </div>
+</div>
+
+<div class="strategy-context collapsed">
+  <h3>
+    6-Week Strategy Context
+    <span class="chevron-small">›</span>
+  </h3>
+  <div class="strategy-timeline">
+    <div class="strategy-week">
+      <span class="strategy-week-num">Week 1</span>
+      <span class="strategy-week-title">Foundation & Alignment</span>
+      <span class="strategy-week-dates">Mar 23–29</span>
+    </div>
+    <div class="strategy-week current">
+      <span class="strategy-week-num">Week 2</span>
+      <span class="strategy-week-title">Proof of Concept Build</span>
+      <span class="strategy-week-dates">Mar 30–Apr 5</span>
+    </div>
+    <div class="strategy-week">
+      <span class="strategy-week-num">Week 3</span>
+      <span class="strategy-week-title">POC Delivery & Executive Visibility</span>
+      <span class="strategy-week-dates">Apr 6–12</span>
+    </div>
+    <div class="strategy-week">
+      <span class="strategy-week-num">Week 4</span>
+      <span class="strategy-week-title">Scale & Cross-Functional Integration</span>
+      <span class="strategy-week-dates">Apr 14–18</span>
+    </div>
+    <div class="strategy-week">
+      <span class="strategy-week-num">Week 5</span>
+      <span class="strategy-week-title">Governance & Leadership Positioning</span>
+      <span class="strategy-week-dates">Apr 21–25</span>
+    </div>
+    <div class="strategy-week">
+      <span class="strategy-week-num">Week 6</span>
+      <span class="strategy-week-title">Close the Loop</span>
+      <span class="strategy-week-dates">Apr 28–May 2</span>
+    </div>
+  </div>
+</div>
+
+<div class="stakeholder-section">
+  <h3>Key Stakeholders</h3>
+  <div class="stakeholder-grid">
+    <div class="stakeholder">
+      <div class="avatar" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">SW</div>
+      <div class="info">
+        <div class="name">Stephanie Wilkinson</div>
+        <div class="title">SVP, Chief Customer Officer — Exec Sponsor</div>
+      </div>
+    </div>
+    <div class="stakeholder">
+      <div class="avatar" style="background: rgba(167, 139, 250, 0.2); color: #a78bfa;">MD</div>
+      <div class="info">
+        <div class="name">Michael Danielson</div>
+        <div class="title">Org Development — Collaborator</div>
+      </div>
+    </div>
+    <div class="stakeholder">
+      <div class="avatar" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">BC</div>
+      <div class="info">
+        <div class="name">Bill Causse</div>
+        <div class="title">Sr Dir Customer Care — Thought Leader</div>
+      </div>
+    </div>
+    <div class="stakeholder">
+      <div class="avatar" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">JB</div>
+      <div class="info">
+        <div class="name">Josh Brower</div>
+        <div class="title">Thought Leader — Conduit to Bill</div>
+      </div>
+    </div>
+    <div class="stakeholder">
+      <div class="avatar" style="background: rgba(251, 113, 133, 0.2); color: #fb7185;">IL</div>
+      <div class="info">
+        <div class="name">Isaiah Love</div>
+        <div class="title">Corporate Recruiter — MCTE Contact</div>
+      </div>
+    </div>
+    <div class="stakeholder">
+      <div class="avatar" style="background: rgba(96, 165, 250, 0.2); color: #60a5fa;">KB</div>
+      <div class="info">
+        <div class="name">Kelsey Butler</div>
+        <div class="title">HR / Internal Advocate</div>
+      </div>
+    </div>
+    <div class="stakeholder">
+      <div class="avatar" style="background: rgba(251, 191, 36, 0.2); color: #fbbf24;">PM</div>
+      <div class="info">
+        <div class="name">Patty Mazerolle</div>
+        <div class="title">VP of Human Resources — Meeting Apr 7</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="days-container">
+
+  <!-- MONDAY -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Monday, March 30</span>
+        <span class="day-date">Day 1</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-done">Done</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text"><strong>Show End of Call Documentation module to Bill — DONE</strong> <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Doctor appointment — CopperView Riverton, 1:20 PM — clean bill of health <span class="task-tag tag-setup">SETUP</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Week 2 planning session with Claude — priorities set, tracker updated — DONE <span class="task-tag tag-strategy">STRATEGY</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Set up Chrome work profile on Mac — direct access to D365, CRM, Five9, Cornerstone <span class="task-tag tag-setup">SETUP</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TUESDAY -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Tuesday, March 31</span>
+        <span class="day-date">Day 2</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-done">Done</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text">Prep for Michael meeting — review Intro to PrePass cross-reference, finalize Track 1 gap doc — DONE (completed Mon) <span class="task-tag tag-stakeholder">STAKEHOLDER</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Flag Track 1 content gaps — finalize handoff doc for Wednesday's meeting — DONE (completed Mon) <span class="task-tag tag-stakeholder">STAKEHOLDER</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Map existing screenshots + capture missing CRM screenshots — <em>moved to Wednesday</em> <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>End of Call Documentation module updated — DONE</strong> — renamed from AA mini module, updated with latest info, published to Reach360 <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>LMS publishing + stakeholder review setup — DONE</strong> — Built Verification course in Rise, published Verification + End of Call Documentation + PrePass Essentials: Introduction to Reach360. Invited Michael to Reach360 (will assign all three for review upon approval). Published PrePass Essentials: Introduction to Cornerstone, assigned to Michael and self. <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Bill Causse — inForm training request</strong> — Bill asked if we have training on inForm. Confirmed we have almost nothing (a couple videos on the website). Bill: "lets add it to the pipeline." Added to module pipeline. <span class="task-tag tag-stakeholder">STAKEHOLDER</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- WEDNESDAY -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Wednesday, April 1</span>
+        <span class="day-date">Day 3</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-done">Done</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text"><strong>Michael Danielson meeting — 9:00–10:30 AM MT, Teams</strong> — scope expanded to 90 min / 8 modules, added Departmental Training (M8), CEO welcome = two-parter, all content modular for reuse, weekly meetings through April <span class="task-tag tag-stakeholder">STAKEHOLDER</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Post-meeting: sent updated framework doc + content tracker to Michael, captured action items, updated Michael Colab PROJECT STATUS <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Created Track 1 Weekly Tracker (hub-spoke HTML) + wired hub navigation between MCTE tracker and Track 1 tracker <span class="task-tag tag-admin">ADMIN</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Set up Michael Colab project folder as single source of truth for Track 1 — migrated all Track 1 files from Articulate POC <span class="task-tag tag-admin">ADMIN</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Full project folder maintenance</strong> — renamed Michael Colab (typo fix), moved leadership report to MCTE Goals/Reference, created Trash folder, removed orphan Content Needs docx, deleted duplicate .md files from Mini Modules, updated all Folder Guides + FILE PLACEMENT GUIDE <span class="task-tag tag-admin">ADMIN</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Mapped 20/22 screenshots to Account Closure storyboard — created Rise AI prompt for course build <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Started prod session in Articulate POC — Account Closure Rise AI prompt ready for build (session prepped, build picks up Thu) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Started prod session in Michael Colab — began Intro to PrePass Rise 360 build <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Built AI Context infrastructure in Second Brain (04 Resources/AI Context/) — 5 context files + README, LLM-agnostic <span class="task-tag tag-admin">ADMIN</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- THURSDAY -->
+  <div class="day-card today open">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Thursday, April 2</span>
+        <span class="day-date">Day 4 — TODAY</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-today">Today</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text">Build Verification module outline — DONE (outline + storyboard guide sections 0–5 completed Mon) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Verification — Rise build completed Tuesday March 31</strong> (pulled forward from Thursday) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>M1 Mission/Vision/Values storyboard draft complete</strong> — all available content entered, ready for CEO videos, stories &amp; vision statement <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Account Closure module — Sections 0–2 complete</strong> (Welcome &amp; Objectives, Why Accounts Close, The Routing Decision) — left off at Section 3: Closing PrePass Account <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Set up scheduled task — weekly KB article check: reads Teams KB updates, validates changed articles in D365 via Chrome, updates second brain reference copies, logs to daily note <span class="task-tag tag-setup">SETUP</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Updated all project trackers — MCTE Hub, Track 1 Weekly, MVV storyboard status, Account Closure storyboard status <span class="task-tag tag-strategy">STRATEGY</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Continue Intro to PrePass Rise 360 build (started Wed) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text">CRM screenshot capture — truck deletion, sticker deactivation, bond indicator, consolidation (live session needed) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Fix Account Security KB Section 15 — Brian Cooley reference (if edit access granted) <span class="task-tag tag-content">CONTENT</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FRIDAY -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Friday, April 3</span>
+        <span class="day-date">Day 5</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-upcoming">Upcoming</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox"><span class="task-text">Account Closure — finalize Storyline step-by-step draft <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Verification — Rise build completed</strong> (done Tuesday March 31, ahead of schedule) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Review existing inForm videos on PrePass website — pull whatever usable content/structure exists for future inForm training module <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Week 2 goal check: Account Closure Storyline draft in progress, Verification outline done + build started, gap list delivered to Michael <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SATURDAY -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Saturday, April 4</span>
+        <span class="day-date">Day 6</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-upcoming">Upcoming</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox"><span class="task-text">Pop!_OS install on ASUS ROG Zephyrus M15 — <a href="../Personal stuff/popos_install_guide.html" style="color:#60a5fa;">install guide</a> ready <span class="task-tag tag-setup">SETUP</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Weekly review — update tracker, prep for Week 3 <span class="task-tag tag-strategy">STRATEGY</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SUNDAY -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Sunday, April 5</span>
+        <span class="day-date">Day 7 — Week Wrap</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-upcoming">Upcoming</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox"><span class="task-text">Rest / overflow — Patty meeting prep if needed (Apr 7) <span class="task-tag tag-strategy">STRATEGY</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- CARRIED FROM WEEK 1 -->
+  <div class="day-card" style="border-color: rgba(234, 179, 8, 0.3);">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Carried from Week 1</span>
+        <span class="day-date">Now scheduled above</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status" style="background:rgba(234,179,8,0.15);color:#eab308;">Resolved</span>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text"><strong>Show End of Call Documentation module to Bill</strong> — DONE Monday March 30 <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Build Verification module outline → DONE (completed Monday March 30, storyboard guide also built) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Account Closure storyboard → scheduled Wednesday–Friday (Apr 1–3) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Track 1 gap doc for Michael → DONE (completed Monday March 30) <span class="task-tag tag-stakeholder">STAKEHOLDER</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Account Security KB Section 15 fix → scheduled Thursday (if access) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Pop!_OS install → Saturday April 4 <span class="task-tag tag-setup">SETUP</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<div class="key-dates">
+  <h3>This Week's Milestones & Key Dates</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 30 (Mon)</span>
+      <span class="timeline-event"><strong>End of Call Documentation module presented to Bill — DONE</strong></span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 30 (Mon)</span>
+      <span class="timeline-event">Doctor appointment — CopperView Riverton — clean bill of health</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 30 (Mon)</span>
+      <span class="timeline-event">Week 2 planning session — priorities adjusted, tracker updated</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 30 (Mon)</span>
+      <span class="timeline-event"><strong>End of Call Documentation update from Bill:</strong> automated AA summary now in timeline — agents no longer need to copy to Description. Devs fixing display issues. Module still a valid success story for Michael.</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 30 (Mon)</span>
+      <span class="timeline-event"><strong>Track 1 gap doc + Michael meeting prep — DONE</strong> (pulled forward from Tuesday)</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 30 (Mon)</span>
+      <span class="timeline-event"><strong>Verification module outline + storyboard guide (sections 0–5) — DONE</strong> (pulled forward from Thursday)</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 31 (Tue)</span>
+      <span class="timeline-event"><strong>LMS publishing sprint — DONE:</strong> Verification + End of Call Documentation + PrePass Essentials: Introduction published to Reach360. Michael invited to Reach360 for review. PrePass Essentials: Introduction also published to Cornerstone (assigned to Michael + self).</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 31 (Tue)</span>
+      <span class="timeline-event"><strong>Bill Causse: inForm training requested</strong> — no existing training; added to module pipeline per Bill's direction</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Mar 31 (Tue)</span>
+      <span class="timeline-event">Begin screenshot collection for Account Closure Storyline build</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 1 (Wed)</span>
+      <span class="timeline-event"><strong>Michael Danielson meeting — DONE:</strong> scope expanded to 90 min / 8 modules, added Departmental Training (M8), CEO welcome = two-parter, modular design for reuse, weekly meetings through April. Michael dedicating 30 min/day to sourcing gap content.</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 1 (Wed)</span>
+      <span class="timeline-event"><strong>Project folder maintenance — DONE:</strong> renamed Michael Colab, moved leadership report to MCTE Goals/Reference, created Trash folder, cleaned orphan files + .md duplicates, updated all guides. Track 1 Weekly Tracker created with hub-spoke nav.</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 1 (Wed)</span>
+      <span class="timeline-event"><strong>Account Closure storyboard mapped:</strong> 20/22 screenshots matched, Rise AI prompt created for course build</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 2 (Thu)</span>
+      <span class="timeline-event"><strong>M1 Mission/Vision/Values storyboard draft complete</strong> — all available content entered, awaiting CEO videos, stories &amp; vision statement from Michael</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 2 (Thu)</span>
+      <span class="timeline-event"><strong>Account Closure module Sections 0–2 complete</strong> — Welcome &amp; Objectives, Why Accounts Close, The Routing Decision. Resuming at Section 3 (Closing PrePass Account)</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 2 (Thu)</span>
+      <span class="timeline-event"><strong>Scheduled task created:</strong> weekly KB article check — auto-reads Teams KB updates, validates in D365 via Chrome, syncs to second brain reference copies (runs Mondays)</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 1–3</span>
+      <span class="timeline-event">Storyline production sprint — Account Closure + Verification step-by-step builds</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 3 (Fri)</span>
+      <span class="timeline-event"><strong>Week 2 goal check</strong> — Account Closure Storyline draft in progress, Verification build started, gap list delivered</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 4 (Sat)</span>
+      <span class="timeline-event">Pop!_OS install on ASUS ROG Zephyrus M15 (personal project, if time)</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 7 (Next Mon)</span>
+      <span class="timeline-event">Patty Mazerolle "Catch Up" — 2:00–2:30 PM MT, Teams (Week 3)</span>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  MCTE Weekly Tracker — Week of March 30 – April 5, 2026 — Built with Claude — Last updated April 2, 2026 (Thursday — MVV draft complete, Account Closure Sec 0–2 done, KB scheduled task live)
+</div>
+
+<script>
+function toggleDay(header) {
+  header.closest('.day-card').classList.toggle('open');
+}
+
+function toggleStrategy() {
+  const section = document.querySelector('.strategy-context');
+  section.classList.toggle('collapsed');
+}
+
+function updateProgress() {
+  const checkboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+  const total = checkboxes.length;
+  const checked = [...checkboxes].filter(cb => cb.checked).length;
+  const pct = Math.round((checked / total) * 100);
+
+  document.getElementById('progressPercent').textContent = pct + '%';
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('completedCount').textContent = checked;
+  document.getElementById('totalCount').textContent = total;
+
+  // Calculate days left (today is Thursday Apr 2, so 3 days left in week)
+  const daysLeft = 3;
+  document.getElementById('daysLeft').textContent = daysLeft;
+}
+
+document.querySelectorAll('.checklist input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', updateProgress);
+});
+
+document.querySelector('.strategy-context h3').addEventListener('click', toggleStrategy);
+
+updateProgress();
+</script>
+
+</body>
+</html>

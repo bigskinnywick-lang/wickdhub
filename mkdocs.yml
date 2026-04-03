@@ -54,6 +54,10 @@ nav:
     - outlines/index.md
   - Trackers:
     - trackers/index.md
+    - Track 2 Weekly: trackers/track2-weekly.md
+    - Track 1 Weekly: trackers/track1-weekly.md
+    - MCTE 6-Week Plan: trackers/mcte-6week-plan.md
+    - PrePass Content: trackers/intro-prepass-content.md
   - Research:
     - research/index.md
   - Summaries:

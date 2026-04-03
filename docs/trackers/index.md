@@ -4,21 +4,9 @@ Project status, content gap tracking, and implementation progress.
 
 ---
 
-!!! info "Add a tracker"
-    Markdown tables work great for trackers. Save any `.md` file here and add it to `mkdocs.yml`.
+## Active Trackers
 
-## Example tracker format
-
-| Item | Status | Owner | Last Updated | Notes |
-|------|--------|-------|-------------|-------|
-| Module 1 | :white_check_mark: Complete | Adam | 2026-04-03 | Published |
-| Module 2 | :hourglass: In Progress | Adam | 2026-04-03 | Draft review |
-| Module 3 | :x: Not Started | — | — | Blocked on content |
-
-### Task lists also work
-
-- [x] Set up wickdhub.com
-- [x] Create project structure
-- [ ] Migrate outlines from Teams
-- [ ] Migrate trackers from Teams
-- [ ] Share with team
+- **[Track 2 Weekly — Articulate POC](track2-weekly.md)** — Module development progress for Account Closure, Verification, inForm Safety, and Mini Modules
+- **[Track 1 Weekly — Intro to PrePass](track1-weekly.md)** — Weekly progress on Track 1 collaboration with Michael
+- **[MCTE 6-Week Plan](mcte-6week-plan.md)** — Strategic roadmap and milestone tracker
+- **[Intro to PrePass — Content Tracker](intro-prepass-content.md)** — Shared deliverable status across Intro to PrePass modules

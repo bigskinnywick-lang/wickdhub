@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intro to PrePass — Content Tracker (Updated April 1, 2026)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f6f8; color: #1a1a2e; line-height: 1.6; }
+
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 48px 40px 40px; }
+  .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+  .header .subtitle { font-size: 15px; color: #94a3b8; margin-bottom: 8px; }
+  .header .update-tag { display: inline-block; padding: 4px 12px; background: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.3); border-radius: 20px; font-size: 12px; color: #4ade80; font-weight: 500; margin-bottom: 24px; }
+
+  .summary-bar { display: flex; gap: 16px; flex-wrap: wrap; }
+  .stat { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 16px 20px; min-width: 130px; }
+  .stat .number { font-size: 28px; font-weight: 700; }
+  .stat .label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat.ready .number { color: #4ade80; }
+  .stat.partial .number { color: #fbbf24; }
+  .stat.needed .number { color: #f87171; }
+  .stat.total .number { color: #60a5fa; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 60px; }
+
+  .context-box { background: white; border-radius: 12px; padding: 28px 32px; margin-bottom: 32px; border: 1px solid #e2e8f0; }
+  .context-box h2 { font-size: 18px; margin-bottom: 12px; color: #1a1a2e; }
+  .context-box p { font-size: 14px; color: #475569; margin-bottom: 8px; }
+  .context-box .highlight { background: #fef3c7; border-left: 3px solid #f59e0b; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-top: 16px; font-size: 13px; color: #92400e; }
+  .change-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 14px; color: #475569; }
+  .change-tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+  .tag-new { background: #fef3c7; color: #92400e; }
+  .tag-changed { background: #e0e7ff; color: #3730a3; }
+  .tag-priority { background: #fee2e2; color: #991b1b; }
+  .tag-idea { background: #f0fdf4; color: #166534; }
+
+  .section-card { background: white; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; overflow: hidden; }
+  .section-card.priority-card { border: 2px solid #f87171; }
+  .section-card.new-card { border: 2px solid #f59e0b; }
+  .section-header { display: flex; align-items: center; gap: 16px; padding: 20px 24px; cursor: default; }
+  .section-num { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; flex-shrink: 0; }
+  .section-header h3 { font-size: 16px; font-weight: 600; flex: 1; }
+  .badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; }
+  .badge.ready { background: #dcfce7; color: #166534; }
+  .badge.partial { background: #fef9c3; color: #854d0e; }
+  .badge.needed { background: #fee2e2; color: #991b1b; }
+  .badge.new-mod { background: #fef3c7; color: #92400e; }
+  .depth-badge { font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 20px; background: #e0e7ff; color: #3730a3; flex-shrink: 0; }
+
+  .section-body { padding: 0 24px 24px; }
+  .section-body .meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; color: #64748b; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+  .section-body .meta span { display: flex; align-items: center; gap: 5px; }
+  .section-body .meta .icon { font-size: 14px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .content-block { border-radius: 10px; padding: 18px 20px; }
+  .content-block h4 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .content-block ul { list-style: none; padding: 0; }
+  .content-block li { font-size: 13px; padding: 5px 0; padding-left: 18px; position: relative; color: #334155; }
+  .content-block li::before { content: ''; position: absolute; left: 0; top: 12px; width: 8px; height: 8px; border-radius: 50%; }
+
+  .have-block { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .have-block h4 { color: #166534; }
+  .have-block li::before { background: #4ade80; }
+
+  .need-block { background: #fef2f2; border: 1px solid #fecaca; }
+  .need-block h4 { color: #991b1b; }
+  .need-block li::before { background: #f87171; }
+
+  .interaction-note { margin-top: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #475569; }
+  .interaction-note strong { color: #1a1a2e; }
+
+  .suggestion-note { margin-top: 10px; background: #f5f3ff; border: 1px solid #e9e5ff; border-radius: 8px; padding: 14px 16px; font-size: 13px; color: #5b21b6; }
+  .suggestion-note strong { color: #3b0764; }
+
+  .num-ready { background: #16a34a; }
+  .num-partial { background: #d97706; }
+  .num-needed { background: #dc2626; }
+  .num-new { background: #d97706; }
+
+  .next-section { background: white; border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+  .next-section h2 { font-size: 18px; margin-bottom: 8px; }
+  .next-section .note { font-size: 13px; color: #64748b; font-style: italic; margin-bottom: 16px; }
+  .step-list { list-style: none; padding: 0; }
+  .step-list li { display: flex; align-items: center; gap: 12px; font-size: 14px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #334155; }
+  .step-list li:last-child { border-bottom: none; }
+  .step-date { font-size: 12px; font-weight: 600; color: #0f3460; min-width: 90px; }
+  .step-owner { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .owner-adam { background: #dcfce7; color: #166534; }
+  .owner-michael { background: #f5f3ff; color: #5b21b6; }
+  .owner-both { background: #e0e7ff; color: #3730a3; }
+
+  .future-section { background: white; border-radius: 12px; padding: 28px 32px; margin-bottom: 20px; border: 1px solid #e9e5ff; }
+  .future-section h2 { font-size: 18px; margin-bottom: 16px; color: #5b21b6; }
+  .future-item { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+  .future-item:last-child { border-bottom: none; }
+  .future-label { font-weight: 600; color: #5b21b6; min-width: 180px; }
+  .future-desc { color: #475569; }
+
+  .footer { text-align: center; padding: 20px; font-size: 12px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Intro to PrePass — Content Tracker</h1>
+  <div class="subtitle">Track 1 Module &middot; Company Onboarding Framework &middot; Adam Wick + Michael Danielson</div>
+  <div class="update-tag">Updated April 1, 2026 — Post-Meeting</div>
+  <div class="summary-bar">
+    <div class="stat total"><div class="number">8</div><div class="label">Modules</div></div>
+    <div class="stat total"><div class="number">~90m</div><div class="label">Target Duration</div></div>
+    <div class="stat ready"><div class="number">4</div><div class="label">Ready / Near-Ready</div></div>
+    <div class="stat partial"><div class="number">2</div><div class="label">Partially Ready</div></div>
+    <div class="stat needed"><div class="number">2</div><div class="label">Needs Input</div></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="context-box">
+    <h2>Key Takeaways — April 1 Meeting</h2>
+    <p>Below captures the updates from our discussion today. I've folded these into each module's green/red breakdown so you can see the current picture at a glance. Happy to adjust anything — these are suggestions based on our conversation.</p>
+    <div class="change-item"><span class="change-tag tag-changed">DISCUSSED</span> Duration expanded from 30 min to potentially ~90 min</div>
+    <div class="change-item"><span class="change-tag tag-new">NEW</span> 8th module proposed: Departmental Training</div>
+    <div class="change-item"><span class="change-tag tag-priority">PRIORITY</span> Module 5 (Customers/Market/Product) identified as area for deepest content + confirmation of learning</div>
+    <div class="change-item"><span class="change-tag tag-idea">IDEA</span> CEO welcome video as two-parter — intro + closing bookend</div>
+    <div class="change-item"><span class="change-tag tag-idea">IDEA</span> Modular design to support future audience variations (leadership, external, dept-specific)</div>
+  </div>
+
+  <!-- MODULE 1 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num num-partial">1</div>
+      <h3>Mission, Vision &amp; Values</h3>
+      <span class="depth-badge">Awareness</span>
+      <span class="badge partial">Partially Ready</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: People Team / Executive</span>
+        <span><span class="icon">🎯</span> Framework format: President/CEO video + stories</span>
+        <span><span class="icon">⏱️</span> Est. 10–12 min</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li><strong>Mission statement confirmed:</strong> "We exist to make highways safer and more efficient through innovative, data-driven solutions."</li>
+            <li><strong>Core Values confirmed</strong> (from official PrePass card): (1) Our mission drives us, (2) We invest in relationships, (3) We challenge ourselves to innovate and improve, (4) We win together</li>
+            <li>Photos of the physical PrePass card in project uploads</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>Vision statement</strong> — Michael mentioned getting this from Patty</li>
+            <li><strong>CEO video direction</strong> — we discussed a 2-part bookend approach: intro at the beginning + closing at the end of the full course. Open question: does Chris want to record on camera, use a scripted AI voice, or freelance the message? Michael coordinating with Patty.</li>
+            <li><strong>Founding stories / narrative anecdotes</strong> that bring the mission to life</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> Dedicated slide sequence — motion graphic or video opener with the mission statement, followed by Core Values with a reflection prompt. CEO video embed when available.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 2 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num num-needed">2</div>
+      <h3>Foundational Principles / "Drivers"</h3>
+      <span class="depth-badge">Awareness</span>
+      <span class="badge needed">Needs Input</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: Executive / Patty</span>
+        <span><span class="icon">🎯</span> Framework format: Scenario examples</span>
+        <span><span class="icon">⏱️</span> Est. 8–10 min</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li>Core Values from the PrePass card (same 4 values as Module 1)</li>
+            <li>From our discussion: the idea of "Drivers" — operating beliefs beyond values that senior leaders reference (growth mindset, expansion, people development)</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>Clarification:</strong> Michael mentioned possibly reframing as "Drivers" rather than "Foundational Principles" — are these the lexicon senior leaders are using?</li>
+            <li><strong>Specific driver language</strong> — "growth-oriented," "develop our people," "expansion" were all mentioned; capturing the full list would shape this module</li>
+            <li><strong>2–3 real-world scenarios</strong> that illustrate these principles/drivers in action</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> 2–3 scenario-based slides. Each scenario ties back to a principle/driver. Great fit for Articulate branching interactions.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 3 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num num-ready">3</div>
+      <h3>Company History</h3>
+      <span class="depth-badge">Awareness</span>
+      <span class="badge ready">Ready to Build</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: People Team / Nicole</span>
+        <span><span class="icon">🎯</span> Framework format: Visual timeline</span>
+        <span><span class="icon">⏱️</span> Est. 10–12 min</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li><strong>Full public timeline confirmed:</strong> Crescent Project (late 1980s) through AI Toll Insights (Feb 2026)</li>
+            <li>RFID selection (1991), HELP Inc. charter (1993), first CA sites (1995)</li>
+            <li>CVO spin-off (2018), rebrand to PrePass Safety Alliance (2019)</li>
+            <li>Alliance acquires CVO (2022), Chris Murray named President (2023)</li>
+            <li>FleetDrive 360 acquisition (Dec 2025)</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>Headcount growth milestones</strong> — Michael mentioned the story from ~150 to nearly 500. Nicole may have this timeline.</li>
+            <li><strong>Geographic expansion story</strong> — Phoenix → Utah → remote employees across 30+ states</li>
+            <li><strong>"Sexy numbers"</strong> per our discussion — 4M vehicles on the road, employees in 30 states, site count growth</li>
+            <li><strong>Verification</strong> that public-source history is OK for internal training use</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> Interactive click-to-reveal timeline. Michael mentioned wanting these as "milestone events, not just dates" with the living history feel — interactive clicks that reveal the growth story.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 4 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num num-ready">4</div>
+      <h3>PrePass Alliance Relationship</h3>
+      <span class="depth-badge">Awareness</span>
+      <span class="badge ready">Ready to Build</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: Executive / Legal</span>
+        <span><span class="icon">🎯</span> Framework format: Executive explainer</span>
+        <span><span class="icon">⏱️</span> Est. 5–8 min</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li><strong>Full 3-entity governance structure:</strong></li>
+            <li><strong>PrePass Safety Alliance</strong> — 501(c)(3) nonprofit parent, equal public/private board representation</li>
+            <li><strong>PrePass LLC</strong> — wholly-owned commercial subsidiary, Chris Murray reports to Alliance CEO Mark Doughty</li>
+            <li><strong>Auxilium, Inc.</strong> — Type I supporting org for state-compensated services</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>More safety focus</strong> — per our discussion, the safety mission could be emphasized more here</li>
+            <li><strong>Alliance history context</strong> — Michael mentioned potentially including more about what the Alliance's history looks like</li>
+            <li><strong>Verification:</strong> Confirm detail level is appropriate for new-hire audience</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> Org relationship diagram with click-to-reveal detail on each entity. This is close to buildable now — I'll go ahead and assemble a draft using available content so you have something to react to.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 5 — PRIORITY -->
+  <div class="section-card priority-card">
+    <div class="section-header">
+      <div class="section-num num-needed">5</div>
+      <h3>Customers, Market &amp; Product</h3>
+      <span class="depth-badge" style="background:#fee2e2; color:#991b1b;">Deep Dive</span>
+      <span class="badge needed">Needs Input — Priority</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: Vedrana / Product Team / Marketing</span>
+        <span><span class="icon">🎯</span> Framework format: Customer journey + product knowledge</span>
+        <span><span class="icon">⏱️</span> Est. 15–20 min (deepest module per our discussion)</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li><strong>Scale data:</strong> 100,000+ motor carriers, 800,000+ commercial vehicles, 584+ bypass locations across 46 jurisdictions</li>
+            <li><strong>Product basics from FG:</strong> Preclearance/bypass, INFORM Safety, 360 SmartView, Mobile App</li>
+            <li><strong>Competitive differentiators:</strong> Only provider with both RFID + mobile app bypass; only system combining bypass + electronic toll on one device</li>
+            <li>FG Day 1, Day 4, Day 11 content covers product foundations</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>Product team perspective</strong> — Michael mentioned scheduling meetings with Vedrana and all product people on "what they want everyone to know"</li>
+            <li><strong>Clearly differentiated product knowledge</strong> — we discussed going deeper than other modules here, with confirmation of learning built in</li>
+            <li><strong>Mobile app bypass emphasis</strong> — Michael specifically called out wanting people to articulate how amazing the bypass capability is</li>
+            <li><strong>Day-in-the-life journey</strong> — animated, friendly, "something people could show their kids and smile at"</li>
+            <li><strong>Customer personas:</strong> Owner-operator vs. small fleet vs. large fleet</li>
+          </ul>
+        </div>
+      </div>
+      <div class="suggestion-note">
+        <strong>Note:</strong> This is the longest lead-time item since it depends on product team conversations. The existing FG content gives us a foundation to start structuring the module, and we can layer in the deeper product content as it comes in.
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> Interactive customer journey + product deep-dives with knowledge checks. The animated day-in-the-life concept is a great fit for Articulate — friendly truck and trucker following the PrePass journey from weigh station approach through bypass and tolling.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 6 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num num-partial">6</div>
+      <h3>Revenue Model</h3>
+      <span class="depth-badge" style="background:#fef3c7; color:#92400e;">Working Knowledge</span>
+      <span class="badge partial">Partially Ready</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: Finance / Carol</span>
+        <span><span class="icon">🎯</span> Framework format: Flow diagram</span>
+        <span><span class="icon">⏱️</span> Est. 8–10 min</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li><strong>Self-funded model:</strong> $0 in charitable contributions — entirely revenue-driven</li>
+            <li><strong>Revenue streams:</strong> Monthly per-truck subscriptions (~$17.65/vehicle, tiered), toll processing fees, gov contracts, compliance services, data analytics</li>
+            <li><strong>FY2024 financials:</strong> $193.2M revenue, $162.2M expenses, $30.9M net income</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>EBITDA definition</strong> — Michael noted this is a term Carol references frequently; defining it here would help people understand the bonus connection</li>
+            <li><strong>Bonus / commission info</strong> — we discussed being specific about revenue terminology so employees understand how company performance connects to them</li>
+            <li><strong>Finance sign-off</strong> on what level of detail is appropriate for training</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> Animated flow diagram showing how revenue moves through the system. This is the only "Working Knowledge" section — deeper treatment with a sequencing activity. The EBITDA/bonus tie-in could make this feel personally relevant to every employee. I'll put together a draft using the available numbers so you can tell me what's appropriate to keep vs. adjust.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 7 -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-num num-ready">7</div>
+      <h3>Market Goals</h3>
+      <span class="depth-badge">Awareness</span>
+      <span class="badge ready">Ready to Build</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: Executive</span>
+        <span><span class="icon">🎯</span> Framework format: Strategy snapshot</span>
+        <span><span class="icon">⏱️</span> Est. 5–8 min</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li><strong>Platform expansion strategy:</strong> From single-product bypass to comprehensive fleet operations platform</li>
+            <li><strong>Key moves:</strong> FleetDrive 360 acquisition (Dec 2025), NECS partnership (May 2025), AI Toll Insights launch (Feb 2026)</li>
+            <li><strong>Geographic expansion:</strong> Maine (Nov 2025), Vermont (2026), Motive Marketplace integration</li>
+            <li><strong>Competitive context:</strong> Fleetworthy consolidation (Drivewyze + Bestpass, Aug 2024)</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>Verification:</strong> Which strategic details are appropriate for new-hire training?</li>
+            <li>Any internal priorities not in the public record?</li>
+            <li><strong>Content refresh cadence</strong> — we discussed quarterly or semi-annual reviews to keep this current</li>
+          </ul>
+        </div>
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> Strategy snapshot — 3–4 priorities with brief context, plus a matching activity. This section would benefit most from a regular refresh cycle since strategy evolves.
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 8 — NEW -->
+  <div class="section-card new-card">
+    <div class="section-header">
+      <div class="section-num num-new">8</div>
+      <h3>Departmental Training</h3>
+      <span class="depth-badge">Awareness</span>
+      <span class="badge new-mod">New — Apr 1</span>
+    </div>
+    <div class="section-body">
+      <div class="meta">
+        <span><span class="icon">👤</span> Likely source: Michael + Department Heads</span>
+        <span><span class="icon">🎯</span> Framework format: Dept intros / awareness</span>
+        <span><span class="icon">⏱️</span> Est. 15–20 min</span>
+      </div>
+      <div class="two-col">
+        <div class="content-block have-block">
+          <h4>✓ What We Have</h4>
+          <ul>
+            <li><strong>Framework structure:</strong> Michael's original Orgs tab defines 9 dept profiles with columns for: what they do, systems they own, how they interact, when to engage them, common misconceptions</li>
+            <li><strong>9 departments defined:</strong> Sales & Revenue, Marketing, Product, Engineering/Technology, Business Intelligence, Operations/Customer Success, Finance, People Team (HR), Legal & Compliance</li>
+            <li><strong>Org chart tools exist:</strong> ADP org chart, Teams org view, Outlook directory</li>
+          </ul>
+        </div>
+        <div class="content-block need-block">
+          <h4>✕ Still Needed</h4>
+          <ul>
+            <li><strong>Department intros from each team</strong> — what they own, how they collaborate, when to engage, misconceptions about what they do/don't own</li>
+            <li><strong>SLT / leadership video intros</strong> — Brennan and other leaders introducing their teams</li>
+            <li><strong>Org chart tool walkthrough</strong> — how to find people via ADP, Teams, Outlook</li>
+            <li>Michael's idea of starting with HR + Operations as a proof of concept could be a great way to develop the template before scaling to all 9</li>
+          </ul>
+        </div>
+      </div>
+      <div class="suggestion-note">
+        <strong>Note:</strong> This is a new module from our April 1 conversation. It has the broadest stakeholder footprint since it touches every department. Michael's POC approach (start with 2 depts, then expand) seems like a practical way to get moving.
+      </div>
+      <div class="interaction-note">
+        <strong>Articulate approach:</strong> Department cards with click-to-explore detail. Could include a "who do I contact for..." matching activity. The framework structure Michael already built gives us the content template — I'll put together an outline based on your original Orgs tab so you have a starting point to react to and share with dept heads.
+      </div>
+    </div>
+  </div>
+
+  <!-- NEXT STEPS -->
+  <div class="next-section">
+    <h2>Suggested Next Steps</h2>
+    <div class="note">Based on our April 1 discussion — happy to adjust priorities however makes sense for your schedule, Michael.</div>
+    <ul class="step-list">
+      <li>
+        <span class="step-date">Apr 1</span>
+        <span>Updated framework docs shared (this tracker + Excel)</span>
+        <span class="step-owner owner-adam">ADAM</span>
+      </li>
+      <li>
+        <span class="step-date">This Week</span>
+        <span>Michael mentioned targeting content sourcing on the red-box items — whatever cadence works best</span>
+        <span class="step-owner owner-michael">MICHAEL</span>
+      </li>
+      <li>
+        <span class="step-date">This Week</span>
+        <span>Share with Patty for early feedback when timing is right</span>
+        <span class="step-owner owner-michael">MICHAEL</span>
+      </li>
+      <li>
+        <span class="step-date">Coming Weeks</span>
+        <span>Product team conversations with Vedrana — this is the longest lead time item for Module 5</span>
+        <span class="step-owner owner-michael">MICHAEL</span>
+      </li>
+      <li>
+        <span class="step-date">Weekly</span>
+        <span>Wednesday check-ins through April</span>
+        <span class="step-owner owner-both">BOTH</span>
+      </li>
+      <li>
+        <span class="step-date">This Week</span>
+        <span>Adam to draft PrePass Alliance Relationship module (Module 4) using available content — ready for Michael's review</span>
+        <span class="step-owner owner-adam">ADAM</span>
+      </li>
+      <li>
+        <span class="step-date">This Week</span>
+        <span>Adam to draft Revenue Model module (Module 6) using available numbers — will adjust based on Michael's feedback on what's appropriate</span>
+        <span class="step-owner owner-adam">ADAM</span>
+      </li>
+      <li>
+        <span class="step-date">This Week</span>
+        <span>Adam to create Departmental Training outline (Module 8) and present to Michael for input</span>
+        <span class="step-owner owner-adam">ADAM</span>
+      </li>
+      <li>
+        <span class="step-date">Ongoing</span>
+        <span>Adam ready to build additional modules as content gets verified — happy to move on whatever is ready first</span>
+        <span class="step-owner owner-adam">ADAM</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- FUTURE STATE -->
+  <div class="future-section">
+    <h2>Future State — Ideas from April 1</h2>
+    <div class="future-item">
+      <span class="future-label">Leadership Version</span>
+      <span class="future-desc">Deeper systems + strategy content tailored for managers and above</span>
+    </div>
+    <div class="future-item">
+      <span class="future-label">External / Customer-Facing</span>
+      <span class="future-desc">Shorter version for partners, prospects, website — modular blocks reskinned for the audience</span>
+    </div>
+    <div class="future-item">
+      <span class="future-label">Department-Specific Skins</span>
+      <span class="future-desc">Same base content with audience-specific wrappers (HR, Finance, Call Center, etc.)</span>
+    </div>
+    <div class="future-item">
+      <span class="future-label">Copilot Integration</span>
+      <span class="future-desc">Content structured for Microsoft Copilot so employees can self-serve company info</span>
+    </div>
+    <div class="future-item">
+      <span class="future-label">Content Refresh Cadence</span>
+      <span class="future-desc">Quarterly or semi-annual review with SMEs to keep content current</span>
+    </div>
+  </div>
+
+  <div class="context-box">
+    <h2>What Happens Next</h2>
+    <p><strong>Modules 3, 4, and 7 are closest to buildable</strong> — they have strong content foundations and primarily need verification. Modules 1 and 6 can be started with placeholders for the remaining pieces. Modules 2, 5, and 8 are waiting on input that Michael is working to gather.</p>
+    <p>On my end, I'll get started this week on drafts for <strong>Module 4</strong> (Alliance Relationship), <strong>Module 6</strong> (Revenue Model), and an outline for <strong>Module 8</strong> (Departmental Training) so you have something concrete to react to. Happy to adjust the order based on what makes sense for your schedule.</p>
+  </div>
+
+</div>
+
+<div class="footer">
+  Intro to PrePass — Content Tracker &middot; Updated April 1, 2026 &middot; Adam Wick + Michael Danielson
+</div>
+
+</body>
+</html>
