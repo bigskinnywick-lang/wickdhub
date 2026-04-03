@@ -1,8 +1,15 @@
-/* ── Full-width content area ── */
+/* ── Full-width layout overrides ── */
+
+/* Remove the max-width on the main grid container */
+.md-grid {
+  max-width: 100%;
+}
+
+/* Stretch the content area */
 .md-content__inner {
   max-width: 100%;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 /* ── Iframe containers ── */
