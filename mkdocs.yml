@@ -4,6 +4,8 @@ site_description: Outlines, trackers, research docs & user summaries — all in 
 
 theme:
   name: material
+  logo: assets/images/helmet.png
+  favicon: assets/images/helmet.png
   palette:
     - scheme: slate
       primary: deep purple
@@ -51,7 +53,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Outlines:
-    - outlines/index.md
+    - Overview: outlines/index.md
   - Trackers:
     - Overview: trackers/index.md
     - Track 2 Weekly: trackers/track2-weekly.md
@@ -59,6 +61,8 @@ nav:
     - MCTE 6-Week Plan: trackers/mcte-6week-plan.md
     - PrePass Content: trackers/intro-prepass-content.md
   - Research:
-    - research/index.md
+    - Overview: research/index.md
+    - Domain & Hosting Research: research/domain-hosting-research.md
   - Summaries:
-    - summaries/index.md
+    - Overview: summaries/index.md
+    - inForm Safety Source Summary: summaries/inform-source-summary.md
