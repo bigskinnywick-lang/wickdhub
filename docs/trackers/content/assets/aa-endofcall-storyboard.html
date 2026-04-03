@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storyboard — Agent Assist End-of-Call Documentation</title>
+<style>
+:root{--purple:#5B2D8E;--purple-light:#7B4DB0;--purple-bg:#F3EDF9;--green:#16A34A;--green-bg:#DCFCE7;--amber:#D97706;--amber-bg:#FEF3C7;--red:#DC2626;--red-bg:#FEE2E2;--blue:#2563EB;--blue-bg:#DBEAFE;--g50:#F9FAFB;--g100:#F3F4F6;--g200:#E5E7EB;--g300:#D1D5DB;--g500:#6B7280;--g700:#374151;--g900:#111827;--mono:'Cascadia Code','Consolas','SF Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--g50);color:var(--g900);line-height:1.6}
+.banner{background:linear-gradient(135deg,var(--purple),var(--purple-light));color:#fff;padding:24px 40px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(91,45,142,.3)}
+.banner h1{font-size:22px;font-weight:700}
+.banner .sub{font-size:13px;opacity:.8;margin-top:3px}
+.banner .meta-pills{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.pill{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:3px 12px;font-size:11px;font-weight:600}
+.container{max-width:980px;margin:0 auto;padding:24px 40px 100px}
+.controls{display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px}
+.btn{padding:5px 14px;border:1px solid var(--g200);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;background:#fff;color:var(--g700);transition:.15s}
+.btn:hover{background:var(--g100);border-color:var(--g300)}
+
+/* Panels */
+.panel{background:#fff;border:1px solid var(--g200);border-radius:12px;padding:22px 26px;margin-bottom:22px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.panel h2{font-size:15px;font-weight:700;color:var(--purple);margin-bottom:12px}
+.meta-grid{display:grid;grid-template-columns:150px 1fr;gap:4px 16px;font-size:12.5px}
+.meta-grid dt{font-weight:600;color:var(--g700);padding:3px 0}
+.meta-grid dd{color:var(--g500);padding:3px 0}
+.meta-grid dd code{background:var(--g100);padding:1px 5px;border-radius:3px;font-size:11px;font-family:var(--mono)}
+.tips-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.tip-box{background:var(--g50);border:1px solid var(--g200);border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.5}
+.tip-box strong{color:var(--g900)}
+.tip-box p{color:var(--g500);margin:4px 0 0}
+
+/* Section dividers */
+.section-div{font-size:13px;font-weight:700;color:var(--purple);background:var(--purple-bg);padding:10px 20px;border-radius:8px;margin:28px 0 14px;letter-spacing:.3px}
+
+/* Slide cards */
+.slide{background:#fff;border:1px solid var(--g200);border-radius:12px;margin-bottom:14px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05);transition:box-shadow .2s}
+.slide:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.slide-head{display:flex;align-items:center;padding:14px 20px;gap:12px;cursor:pointer;user-select:none}
+.slide-head:hover{background:var(--g50)}
+.snum{background:var(--purple);color:#fff;min-width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+.slide.intro .snum{background:var(--g500)}
+.slide.case .snum{background:var(--blue)}
+.slide.wrap .snum{background:var(--green)}
+.stitle{flex:1;min-width:0}
+.stitle .name{font-size:13.5px;font-weight:700;color:var(--g900)}
+.stitle .ref{font-size:11px;color:var(--g500);margin-top:1px}
+.stitle .ref code{font-family:var(--mono);font-size:10.5px;color:var(--purple);background:var(--purple-bg);padding:1px 5px;border-radius:3px}
+.dur{font-size:11px;font-weight:600;color:var(--g500);background:var(--g100);padding:3px 10px;border-radius:20px;flex-shrink:0}
+.arr{color:var(--g300);font-size:18px;flex-shrink:0;transition:transform .2s}
+.slide.open .arr{transform:rotate(180deg)}
+.slide-body{display:none;padding:0 20px 20px;border-top:1px solid var(--g100)}
+.slide.open .slide-body{display:block}
+
+/* Body sections */
+.body-section{margin-bottom:14px}
+.body-section:last-child{margin-bottom:0}
+.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--purple);margin-bottom:5px}
+.lbl.blue{color:var(--blue)}
+.lbl.amber{color:var(--amber)}
+.lbl.green{color:var(--green)}
+.caption-box{background:var(--g50);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--g700);line-height:1.55;border-left:3px solid var(--purple)}
+.narration-box{background:#1a1a2e;border-radius:8px;padding:14px 18px;font-size:13px;color:#e0e0e0;line-height:1.6;font-style:italic}
+.narration-box .copy-btn{float:right;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#aaa;font-size:10px;padding:2px 8px;border-radius:4px;cursor:pointer;font-style:normal;font-weight:600}
+.narration-box .copy-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.anim-list{font-size:12.5px;line-height:1.6;color:var(--g700)}
+.anim-list li{padding:2px 0;list-style:none;display:flex;gap:8px}
+.anim-list li::before{content:'';display:none}
+.ts{font-family:var(--mono);font-size:11px;color:var(--purple);background:var(--purple-bg);padding:1px 6px;border-radius:3px;flex-shrink:0;min-width:38px;text-align:center}
+.callout{padding:10px 14px;border-radius:8px;font-size:12.5px;line-height:1.5}
+.callout.tip{background:var(--amber-bg);border-left:3px solid var(--amber);color:var(--g700)}
+.callout.info{background:var(--blue-bg);border-left:3px solid var(--blue);color:var(--g700)}
+.callout.critical{background:var(--red-bg);border-left:3px solid var(--red);color:var(--g700)}
+.callout.success{background:var(--green-bg);border-left:3px solid var(--green);color:var(--g700)}
+
+/* Mapping table */
+table.map{width:100%;border-collapse:collapse;font-size:12px}
+table.map th{background:var(--purple-bg);color:var(--purple);font-weight:700;text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+table.map td{padding:7px 10px;border-bottom:1px solid var(--g100);vertical-align:top}
+table.map tr:hover td{background:var(--g50)}
+table.map code{font-family:var(--mono);font-size:11px;color:var(--purple)}
+
+/* Checklist slide special */
+.checklist-display{background:var(--g50);border-radius:8px;padding:16px 20px;font-size:13px}
+.checklist-display ol{padding-left:20px}
+.checklist-display li{padding:3px 0}
+.checklist-display .sub{padding-left:20px;margin-top:6px;font-style:italic;color:var(--g500);font-size:12px}
+
+/* Voiceover combined */
+.vo-block{background:#1a1a2e;border-radius:8px;padding:18px 22px;font-size:13px;color:#e0e0e0;line-height:1.7;max-height:400px;overflow-y:auto}
+.vo-block .vo-label{color:var(--purple-light);font-weight:700;font-style:normal;display:block;margin-top:14px}
+.vo-block .vo-label:first-child{margin-top:0}
+
+/* Questions */
+.q-list{font-size:13px;line-height:1.6}
+.q-list li{padding:6px 0;border-bottom:1px solid var(--g100)}
+.q-list li:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>Agent Assist: End-of-Call Documentation</h1>
+  <div class="sub">Storyline 360 Storyboard &mdash; v3 &mdash; Production Blueprint</div>
+  <div class="meta-pills">
+    <span class="pill">19 Slides</span>
+    <span class="pill">7&ndash;9 min</span>
+    <span class="pill">Click-to-Advance</span>
+    <span class="pill">AI Voiceover + Captions</span>
+    <span class="pill">SCORM 1.2</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- Metadata -->
+<div class="panel">
+  <h2>Module Metadata</h2>
+  <dl class="meta-grid">
+    <dt>Authoring Tool</dt><dd>Articulate Storyline 360</dd>
+    <dt>Seat Time</dt><dd>7&ndash;9 minutes</dd>
+    <dt>Audience</dt><dd>Call center agents (new hires &amp; tenured)</dd>
+    <dt>LMS</dt><dd>Cornerstone &mdash; assigned by Bill to all agents</dd>
+    <dt>Objective</dt><dd>Complete end-of-call documentation using Five9 Agent Assist &mdash; wrap-up through case resolution</dd>
+    <dt>Screenshots</dt><dd><code>Mini Modules / AA_captures</code> &mdash; 1920&times;1080 PNG</dd>
+    <dt>Publish</dt><dd>SCORM 1.2 or 2004</dd>
+  </dl>
+</div>
+
+<!-- Project Setup -->
+<div class="panel">
+  <h2>Storyline Project Setup</h2>
+  <dl class="meta-grid">
+    <dt>Slide Size</dt><dd>16:9 (1920&times;1080)</dd>
+    <dt>Player</dt><dd>Modern, simplified (Prev/Next, progress bar, seekbar disabled)</dd>
+    <dt>Brand Colors</dt><dd>Purple <code>#5B2D8E</code> highlights &mdash; white text boxes &mdash; dark gray <code>#333</code> captions</dd>
+    <dt>Font</dt><dd>Segoe UI or Open Sans</dd>
+    <dt>Layers</dt><dd>Base layer (screenshot) + highlight layers per slide</dd>
+  </dl>
+  <div class="tips-row" style="margin-top:16px">
+    <div class="tip-box"><strong>Highlight box:</strong><p>Rounded rect, 2-3px purple border, 15-20% yellow fill <code>#FFF3CD</code>. Duplicate &amp; reposition per slide.</p></div>
+    <div class="tip-box"><strong>Zoom effect:</strong><p>Stack cropped zoom image over full screenshot. Grow entrance (0.5s) + dim overlay behind for focus.</p></div>
+    <div class="tip-box"><strong>Cross-fade:</strong><p>Stack both screenshots on same slide. Fade-out exit (0.3s) on top image at cue point reveals second.</p></div>
+    <div class="tip-box"><strong>Captions:</strong><p>Lower-third box: <code>#333</code> at 85% opacity, white text 18-20pt, Y:850px.</p></div>
+  </div>
+</div>
+
+<!-- AI Voiceover -->
+<div class="panel">
+  <h2>AI Voiceover Production</h2>
+  <dl class="meta-grid">
+    <dt>Recommended</dt><dd><strong>ElevenLabs</strong> (best quality) &bull; Murf.ai &bull; Azure TTS ("Jenny Neural")</dd>
+    <dt>Export</dt><dd>MP3 128kbps, one file per slide: <code>slide_01_intro.mp3</code></dd>
+    <dt>Pacing</dt><dd>~130 wpm. Add <code>...</code> between sentences for natural pauses</dd>
+    <dt>Import</dt><dd>Insert &rarr; Audio &rarr; Audio from File &rarr; "When timeline starts"</dd>
+  </dl>
+</div>
+
+<div class="controls">
+  <button class="btn" onclick="toggleAll(true)">Expand All</button>
+  <button class="btn" onclick="toggleAll(false)">Collapse All</button>
+  <button class="btn" onclick="copyAllNarration()">Copy All Narration</button>
+</div>
+
+<!-- ============ SLIDES ============ -->
+
+<div class="section-div">INTRO &mdash; Slides 1&ndash;2</div>
+
+<!-- Slide 1 -->
+<div class="slide intro open"><div class="slide-head" onclick="tog(this)"><div class="snum">1</div><div class="stitle"><div class="name">Title Slide</div><div class="ref">No screenshot &mdash; branded background</div></div><div class="dur">~5s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl">On-Screen Text</div><div class="caption-box"><strong>Agent Assist: End-of-Call Documentation</strong><br>How to use Five9 Agent Assist to document your outbound calls</div></div>
+<div class="body-section"><div class="lbl">Animation</div><div class="caption-box">Title fades in (0.5s), subtitle fades in (0.5s delay)</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Agent Assist &mdash; End of Call Documentation. In this module, you'll learn how to use Five9 Agent Assist to efficiently document your outbound calls.</div></div>
+</div></div>
+
+<!-- Slide 2 -->
+<div class="slide intro"><div class="slide-head" onclick="tog(this)"><div class="snum">2</div><div class="stitle"><div class="name">What Is Agent Assist?</div><div class="ref">No screenshot &mdash; text + optional icon</div></div><div class="dur">~20s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl">On-Screen Text</div><div class="caption-box">Five9 Agent Assist is an AI tool built into your Five9 adapter. It listens to your calls in real time and automatically generates a summary when the call ends.<br><br>Your job: accept the summary, copy it into the phone call record, and complete the remaining fields. Agent Assist handles the notes &mdash; you focus on wrapping up efficiently.</div></div>
+<div class="body-section"><div class="lbl blue">Key Points (appear sequentially)</div><div class="caption-box">1. AA = Five9 Agent Assist (not Microsoft Copilot)<br>2. Summary lands in the Timeline tab (you'll copy it to Description)<br>3. All calls are recorded (safety net if a summary ever has an error)</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Five9 Agent Assist... is an AI tool built into your Five9 adapter. It listens to your calls in real time... and automatically generates a summary when the call ends. Your job is simple &mdash; accept the summary, copy it into the phone call record, and complete the remaining fields. Agent Assist handles the notes. You focus on wrapping up efficiently.</div></div>
+</div></div>
+
+<div class="section-div">LESSON 2 &mdash; End-of-Call Flow &mdash; Slides 3&ndash;10</div>
+
+<!-- Slide 3 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">3</div><div class="stitle"><div class="name">Step 1 &mdash; Call Ends, Enter Wrap-Up</div><div class="ref"><code>AA_01_caller_disconnected.png</code> &rarr; <code>AA_02_wrapup_mode.png</code></div></div><div class="dur">~25s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot (AA_01): "Caller Disconnected" state</li>
+<li><span class="ts">1s</span>Highlight zooms onto <strong>"Caller Disconnected" banner</strong></li>
+<li><span class="ts">4s</span>Highlight shifts to <strong>"Set Disposition..." button</strong></li>
+<li><span class="ts">7s</span>Cross-fade to AA_02 (wrap-up state)</li>
+<li><span class="ts">8s</span>Highlight onto <strong>"Agent Call: Wrap Up"</strong> + timer</li>
+<li><span class="ts">12s</span>Tip callout: "Wrap-up time is limited &mdash; start your disposition immediately."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">When the caller hangs up, the adapter shows "Caller Disconnected," then transitions to Wrap-Up mode. The timer is running &mdash; this is your documentation window.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>When the caller hangs up... or you end the call... the Five9 adapter shows a Caller Disconnected banner. It then transitions to Wrap-Up mode. Notice the adapter now reads Agent Call &mdash; Wrap Up... with a running timer. This is your documentation window. The clock is ticking... so start your disposition right away.</div></div>
+</div></div>
+
+<!-- Slide 4 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">4</div><div class="stitle"><div class="name">Step 2 &mdash; Set Disposition</div><div class="ref"><code>AA_03_disposition_panel_open.png</code> &rarr; <code>AA_04_disposition_selected.png</code></div></div><div class="dur">~30s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot (AA_03): disposition panel open, nothing selected</li>
+<li><span class="ts">1s</span>Highlight onto <strong>"Select Disposition" dropdown + search bar</strong></li>
+<li><span class="ts">4s</span>Highlight shifts to <strong>disposition list</strong></li>
+<li><span class="ts">7s</span>Highlight shifts to <strong>"Quick lookup"</strong> &mdash; Recent/Frequent tabs</li>
+<li><span class="ts">10s</span>Cross-fade to AA_04: disposition selected</li>
+<li><span class="ts">11s</span>Highlight onto <strong>selected disposition row</strong></li>
+<li><span class="ts">14s</span>Highlight onto <strong>"End Interaction" button</strong> (now active/blue)</li>
+<li><span class="ts">17s</span>Tip: "Choose the disposition that matches the primary reason for the call."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Click "Set Disposition" to open the dropdown. Search or scroll to find the right code. Use Quick Lookup for your most-used dispositions. Once selected, the End Interaction button turns blue.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Click Set Disposition at the bottom of the adapter panel. A searchable dropdown appears with all your available disposition codes. You can type in the search bar... scroll through the list... or use the Quick Lookup tabs for your most recent or frequently used codes. Select the disposition that best matches the primary reason for the call. Once you've made your selection... notice the End Interaction button is now active and ready to click.</div></div>
+</div></div>
+
+<!-- Slide 5 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">5</div><div class="stitle"><div class="name">Step 3 &mdash; End Interaction</div><div class="ref"><code>AA_05_end_interaction_ready_state.png</code></div></div><div class="dur">~20s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: adapter in ready state</li>
+<li><span class="ts">1s</span>Highlight onto <strong>adapter home state</strong> (name, extension, status)</li>
+<li><span class="ts">4s</span>Highlight shifts to <strong>call list</strong> &mdash; new entry visible</li>
+<li><span class="ts">7s</span>Highlight shifts to <strong>agent stats</strong> (Calls, AHT)</li>
+<li><span class="ts">10s</span>Pulse animation on call entry &mdash; "click this next"</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Click "End Interaction." The adapter returns to ready state. Your call stats update, and the new call entry appears in your My Calls Today list.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Once your disposition is selected... click End Interaction. The Five9 adapter returns to its ready state. You'll see your call stats update... and the new call entry now appears in your My Calls Today list. This entry is what you'll click to open the phone call record and finish documenting.</div></div>
+</div></div>
+
+<!-- Slide 6 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">6</div><div class="stitle"><div class="name">Step 4 &mdash; Open the Phone Call Record</div><div class="ref"><code>AA_06_phone_call_record_open.png</code></div></div><div class="dur">~25s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: Phone Call tab active</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Phone Call tab</strong></li>
+<li><span class="ts">3s</span>Flash highlight on <strong>Timeline tab</strong> &mdash; "AA summary lives here"</li>
+<li><span class="ts">6s</span>Highlight shifts to <strong>call metadata fields</strong></li>
+<li><span class="ts">9s</span>Highlight onto <strong>empty Description field</strong> &mdash; "This is where the summary goes"</li>
+<li><span class="ts">13s</span>Callout pointing to <strong>"Form assist" button</strong></li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Click the call entry to open the phone call record. You'll see the Phone Call tab with call details and an empty Description field. The Timeline tab &mdash; where the AA summary lives &mdash; is right next to it.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Click on the call entry from My Calls Today to open the phone call activity record. It opens on the Phone Call tab... showing your call metadata &mdash; who called, the phone number, and the direction. Notice the Description field is empty right now. That's where the Agent Assist summary will go. And see the Timeline tab right next to Phone Call?... That's where we're headed next.</div></div>
+</div></div>
+
+<!-- Slide 7 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">7</div><div class="stitle"><div class="name">Step 5 &mdash; Copy the AA Summary from Timeline</div><div class="ref"><code>AA_07_timeline_aa_summary.png</code> + <code>AA_08_timeline_summary_expanded.png</code></div></div><div class="dur">~30s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot (AA_07): Timeline tab active</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Timeline tab</strong></li>
+<li><span class="ts">3s</span>Highlight onto <strong>"Note modified by Five9-Agent-Assist-PRD"</strong></li>
+<li><span class="ts">6s</span>Highlight expands to <strong>full summary block</strong></li>
+<li><span class="ts">9s</span>Zoom to AA_08 (expanded summary text)</li>
+<li><span class="ts">13s</span>"Select all" effect &mdash; blue selection sweeps across text</li>
+<li><span class="ts">15s</span>"Copied!" badge appears</li>
+<li><span class="ts">17s</span>Callout: "Auto-populate coming soon &mdash; for now, copy and paste."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Click the Timeline tab. Find the entry from Five9-Agent-Assist-PRD &mdash; this is your Agent Assist summary. Select and copy the full summary text.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Click the Timeline tab. This is where Agent Assist posts its AI-generated call summary. Look for the entry from Five-Nine Agent Assist P-R-D. It contains the full summary... including the call ID, timestamps, and the AI-written notes. Select and copy this entire summary text. A heads-up &mdash; an update is coming that will auto-populate this summary directly into the Description field... which will eliminate this copy-paste step. But for now... select it, copy it, and we'll paste it in the next step.</div></div>
+</div></div>
+
+<!-- Slide 8 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">8</div><div class="stitle"><div class="name">Step 6 &mdash; Paste Summary into Description</div><div class="ref"><code>AA_09_description_pasted.png</code></div></div><div class="dur">~25s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: Description now populated</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Phone Call tab</strong></li>
+<li><span class="ts">3s</span>Highlight onto <strong>Description field</strong> (filled)</li>
+<li><span class="ts">5s</span>Zoom into Description to read summary text</li>
+<li><span class="ts">10s</span>Zoom back out</li>
+<li><span class="ts">12s</span>Highlight onto <strong>Category + Call To</strong> fields</li>
+<li><span class="ts">15s</span>Callout: "No need to review &mdash; all calls are recorded as a safety net."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Switch back to the Phone Call tab and paste the summary into the Description field. No need to review or edit &mdash; all calls are recorded if anything ever needs a second look.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Switch back to the Phone Call tab. Click into the Description field... and paste the Agent Assist summary you just copied. You do not need to review or edit the summary. Agent Assist captures the key details for you. All calls are recorded... so in the rare case a summary ever contains an error... the original call recording can be pulled for reference.</div></div>
+</div></div>
+
+<!-- Slide 9 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">9</div><div class="stitle"><div class="name">Step 7 &mdash; Fill in Regarding &amp; Remaining Fields</div><div class="ref"><code>AA_10_regarding_and_custom_fields.png</code></div></div><div class="dur">~25s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: scrolled to Regarding + Custom Fields</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Regarding field</strong> (populated)</li>
+<li><span class="ts">5s</span>Highlight shifts to <strong>Category field</strong></li>
+<li><span class="ts">8s</span>Highlight onto <strong>Five9 Custom Fields</strong> section</li>
+<li><span class="ts">10s</span>"Auto-populated &mdash; do not edit" overlay</li>
+<li><span class="ts">13s</span>Highlight fades</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Complete the remaining fields: link the Regarding field to the correct account, set the Category, and confirm the Duration. The Five9 Custom Fields auto-populate &mdash; don't edit those.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Now complete the remaining fields on the phone call record. The Regarding field links this call to the correct account &mdash; search by account name or number. Set the Category... and confirm or adjust the Duration. You'll notice the Five-Nine Custom Fields section at the bottom. These auto-populate with call metadata like Call ID, Session ID, and Campaign. You don't need to edit these &mdash; they're filled in automatically.</div></div>
+</div></div>
+
+<!-- Slide 10 -->
+<div class="slide"><div class="slide-head" onclick="tog(this)"><div class="snum">10</div><div class="stitle"><div class="name">Step 8 &mdash; Save, Then Convert to Case</div><div class="ref"><code>AA_11_convert_to.png</code> &rarr; <code>AA_12_convert_to_case_popup.png</code></div></div><div class="dur">~35s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="callout critical"><strong>Key callout:</strong> Save the phone call record FIRST. If you convert without saving, you may get an error.</div></div>
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot (AA_11): Process dropdown visible</li>
+<li><span class="ts">1s</span>Highlight onto <strong>"Save" button</strong> &mdash; callout: "Save first!"</li>
+<li><span class="ts">4s</span>Highlight shifts to <strong>Process</strong> button</li>
+<li><span class="ts">6s</span>Highlight onto <strong>"Convert To"</strong></li>
+<li><span class="ts">8s</span>Highlight onto <strong>"To Case"</strong></li>
+<li><span class="ts">11s</span>Cross-fade to AA_12: confirmation popup</li>
+<li><span class="ts">12s</span>Highlight onto popup text</li>
+<li><span class="ts">15s</span>Highlight onto <strong>"OK" button</strong></li>
+<li><span class="ts">18s</span>Callout: "Not every call needs a case. If resolved, just Save &amp; Close."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Important: Save the phone call record first, then convert. Click Process &rarr; Convert To &rarr; Case &rarr; OK. If the issue was fully resolved, simply Save &amp; Close instead.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>If the call requires follow-up &mdash; like a case creation, task assignment, or escalation &mdash; you'll convert the phone call to a case. But first... make sure you save the phone call record. If you try to convert without saving, you may get an error. Click Save in the toolbar... then click Process... then Convert To... then select To Case. A confirmation popup appears asking if you want to close this phone call and convert it to a case. Click OK. But keep in mind &mdash; not every call requires a case. If the issue was fully resolved on the call... you can simply Save and Close the phone call record instead.</div></div>
+</div></div>
+
+<div class="section-div">LESSON 3 &mdash; Case &amp; Task Lifecycle &mdash; Slides 11&ndash;17</div>
+
+<!-- Slide 11 -->
+<div class="slide case"><div class="slide-head" onclick="tog(this)"><div class="snum">11</div><div class="stitle"><div class="name">The New Case Record</div><div class="ref"><code>AA_13_new_case_record.png</code></div></div><div class="dur">~20s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: new case record</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Case Details</strong> (title, number, customer)</li>
+<li><span class="ts">4s</span>Highlight onto <strong>Timeline</strong> &mdash; phone call entry carried over</li>
+<li><span class="ts">7s</span>Highlight onto <strong>Assistant panel</strong></li>
+<li><span class="ts">10s</span>"+" icon pulses on Timeline</li>
+<li><span class="ts">13s</span>Callout: "Phone call data + AA summary carries over automatically."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">After conversion, the case record opens with your call data carried over. The Timeline shows the original phone call. From here, you'll add a task if follow-up is needed.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>After conversion... D365 opens the new case record. Your phone call data &mdash; including the Agent Assist summary &mdash; carries over automatically into the Timeline. You can see the case title, case number, and customer details at the top. Now let's add a task to track the follow-up work.</div></div>
+</div></div>
+
+<!-- Slide 12 -->
+<div class="slide case"><div class="slide-head" onclick="tog(this)"><div class="snum">12</div><div class="stitle"><div class="name">Add a Task &mdash; Open the Menu</div><div class="ref"><code>AA_14a_task_menu.png</code></div></div><div class="dur">~15s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: "+" menu open on Timeline</li>
+<li><span class="ts">1s</span>Highlight onto <strong>"+" button</strong></li>
+<li><span class="ts">3s</span>Highlight onto <strong>Activity dropdown</strong> (Appointment, Phone Call, Task...)</li>
+<li><span class="ts">5s</span>Highlight onto <strong>"Task"</strong> specifically</li>
+<li><span class="ts">8s</span>Callout: "Task is the most common for follow-up work."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Click the "+" on the Timeline to open the activity menu, then select Task.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>To add a follow-up task... click the plus icon on the Timeline toolbar. A dropdown appears with activity options &mdash; Appointment, Phone Call, Task, and more. Select Task.</div></div>
+</div></div>
+
+<!-- Slide 13 -->
+<div class="slide case"><div class="slide-head" onclick="tog(this)"><div class="snum">13</div><div class="stitle"><div class="name">Task Category &mdash; Search, Select, Mark Complete</div><div class="ref"><code>AA_14b_task_category_menu.png</code> &rarr; <code>AA_15_mark_complete.png</code></div></div><div class="dur">~25s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="callout tip"><strong>Mark Complete &times;2:</strong> 1st click saves the task (no visible change &mdash; that's normal). 2nd click closes the task and returns to the case.</div></div>
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot (AA_14b): Task form, Category dropdown open</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Subject field</strong></li>
+<li><span class="ts">3s</span>Highlight onto <strong>Category field</strong> with search dropdown</li>
+<li><span class="ts">5s</span>Zoom into dropdown &mdash; Truck Addition, Truck Closure, Truck Transfer, Truck Vysor</li>
+<li><span class="ts">8s</span>Callout: "Start typing to search &mdash; list filters as you type."</li>
+<li><span class="ts">11s</span>Cross-fade to AA_15: category selected</li>
+<li><span class="ts">12s</span>Highlight onto <strong>selected category</strong></li>
+<li><span class="ts">14s</span>Highlight onto <strong>"Mark Complete" button</strong></li>
+<li><span class="ts">16s</span>Two-step callout: "1st click: saves &mdash; 2nd click: closes task"</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Type in the Category field to search for the right task type. Select it, then click Mark Complete twice &mdash; the first click saves, the second closes the task.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>The New Task form opens with a Subject field and a Category field. Start typing in the Category field to search... the list filters as you type. Select the category that matches the follow-up action needed. In this example, we're selecting Truck Addition. Once you've set the category and filled in any details... click Mark Complete in the toolbar. Here's something important &mdash; click it twice. The first click saves the task, but you won't see any visible change on screen. That's normal. Click Mark Complete again, and the task closes and takes you back to the case.</div></div>
+</div></div>
+
+<!-- Slide 14 -->
+<div class="slide case"><div class="slide-head" onclick="tog(this)"><div class="snum">14</div><div class="stitle"><div class="name">Case with Completed Task</div><div class="ref"><code>AA_16_case_and_task.png</code></div></div><div class="dur">~20s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: case with updated Timeline</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Timeline</strong></li>
+<li><span class="ts">3s</span>Highlight onto <strong>completed task entry</strong> &mdash; "Task completed by Adam Wick"</li>
+<li><span class="ts">6s</span>Highlight onto <strong>original phone call entry</strong> below</li>
+<li><span class="ts">9s</span>Callout: "Timeline shows both the completed task and original phone call."</li>
+<li><span class="ts">12s</span>Highlight onto <strong>Assigned Group field</strong> (empty &mdash; next step)</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">The Timeline now shows your completed task above the original phone call. Both are part of the case record. Next, assign the case to the right group.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Back on the case record... the Timeline now shows both your completed task and the original phone call entry. The task shows as completed by you with the category and timestamp. Now we need to assign this case to the right group for routing.</div></div>
+</div></div>
+
+<!-- Slide 15 -->
+<div class="slide case"><div class="slide-head" onclick="tog(this)"><div class="snum">15</div><div class="stitle"><div class="name">Assign the Case Group</div><div class="ref"><code>AA_17_assigned_group.png</code></div></div><div class="dur">~20s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: Assigned Group dropdown open</li>
+<li><span class="ts">1s</span>Highlight onto <strong>Assigned Group field</strong> &mdash; "utah" typed</li>
+<li><span class="ts">3s</span>Zoom into dropdown: Utah CS, Email Team, Fulfillment, Maintenance, Magtool</li>
+<li><span class="ts">6s</span>Highlight onto <strong>"Utah Customer Service"</strong></li>
+<li><span class="ts">9s</span>Callout: "Type to search. Select your team's routing group."</li>
+<li><span class="ts">12s</span>Highlight onto <strong>"Required fields" banner</strong> at top</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Type in the Assigned Group field to search. Select the appropriate group &mdash; in this case, Utah Customer Service. This field is required for case routing.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Click into the Assigned Group field and start typing to search. You'll see matching groups appear &mdash; in this example, typing utah shows Utah Customer Service, Utah Email Team, Utah Fulfillment, and more. Select the group that matches your team's routing rules. For most customer service calls... you'll select Utah Customer Service. Note the banner at the top &mdash; Assigned Group is a required field, so make sure it's filled in before resolving.</div></div>
+</div></div>
+
+<!-- Slide 16 -->
+<div class="slide case"><div class="slide-head" onclick="tog(this)"><div class="snum">16</div><div class="stitle"><div class="name">Resolve the Case</div><div class="ref"><code>AA_18_resolve_popup.png</code></div></div><div class="dur">~25s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: "New Case Resolution" popup</li>
+<li><span class="ts">1s</span>Highlight onto <strong>popup title</strong></li>
+<li><span class="ts">3s</span>Highlight onto <strong>Resolution Type</strong> &mdash; "Problem Solved"</li>
+<li><span class="ts">5s</span>Zoom into <strong>Resolution field</strong></li>
+<li><span class="ts">8s</span>Highlight onto <strong>Billable Time / Total Time</strong></li>
+<li><span class="ts">10s</span>Highlight onto <strong>"Save &amp; Close"</strong> button</li>
+<li><span class="ts">13s</span>Callout: "'Problem Solved' is the most common Resolution Type."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">Click Resolve Case in the toolbar. Set the Resolution Type (usually "Problem Solved"), confirm the resolution details, then click Save &amp; Close.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>When the case is fully documented and ready to close... click Resolve Case in the toolbar. The New Case Resolution popup appears. Set the Resolution Type &mdash; Problem Solved is the most common option. The Resolution field may auto-populate or you can type a brief description. Confirm the billable time if applicable... then click Save and Close to resolve the case.</div></div>
+</div></div>
+
+<!-- Slide 17 -->
+<div class="slide case"><div class="slide-head" onclick="tog(this)"><div class="snum">17</div><div class="stitle"><div class="name">Case Resolved &mdash; Confirmation</div><div class="ref"><code>AA_19_case_closed.png</code></div></div><div class="dur">~20s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl blue">Animation Sequence</div><ul class="anim-list">
+<li><span class="ts">0s</span>Full screenshot: resolved case</li>
+<li><span class="ts">1s</span>Highlight onto <strong>"Read only: Resolved" banner</strong></li>
+<li><span class="ts">4s</span>Highlight onto <strong>case status: Resolved</strong></li>
+<li><span class="ts">7s</span>Highlight onto <strong>Assigned Group: Utah Customer Service</strong></li>
+<li><span class="ts">9s</span>Highlight onto <strong>Timeline</strong> &mdash; full history</li>
+<li><span class="ts">13s</span>Success callout: "Case resolved. Full trail preserved in Timeline."</li>
+</ul></div>
+<div class="body-section"><div class="lbl">Caption</div><div class="caption-box">The case is now resolved. The record is read-only and the full history &mdash; phone call, task, and resolution &mdash; is preserved in the Timeline.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>The case is now resolved. Notice the banner at the top &mdash; the record is now read-only. The status shows Resolved, the Assigned Group confirms Utah Customer Service, and the Timeline preserves the complete history &mdash; your case resolution, the completed task, and the original phone call with the Agent Assist summary. Everything is documented and accounted for.</div></div>
+</div></div>
+
+<div class="section-div">WRAP-UP &mdash; Slides 18&ndash;19</div>
+
+<!-- Slide 18 -->
+<div class="slide wrap"><div class="slide-head" onclick="tog(this)"><div class="snum">18</div><div class="stitle"><div class="name">Quick Reference Checklist</div><div class="ref">No screenshot &mdash; text slide with checkmarks</div></div><div class="dur">~25s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl">On-Screen Checklist</div><div class="checklist-display"><ol>
+<li>Call ends &rarr; enter <strong>Wrap-Up</strong></li>
+<li><strong>Set Disposition</strong> &rarr; select the correct code &rarr; <strong>End Interaction</strong></li>
+<li>Open the <strong>Phone Call</strong> record from My Calls Today</li>
+<li><strong>Timeline</strong> tab &rarr; copy the <strong>AA summary</strong></li>
+<li><strong>Phone Call</strong> tab &rarr; paste into <strong>Description</strong></li>
+<li>Fill in <strong>Regarding</strong>, <strong>Category</strong>, and remaining fields</li>
+<li><strong>Save &amp; Close</strong> &mdash; or if follow-up needed: <strong>Save</strong> first, then <strong>Convert to Case</strong></li>
+</ol><div class="sub">If converting to a case:</div><ol start="8">
+<li>Add a <strong>Task</strong> &rarr; select the right <strong>Category</strong> &rarr; <strong>Mark Complete</strong></li>
+<li>Set the <strong>Assigned Group</strong> (e.g., Utah Customer Service)</li>
+<li><strong>Resolve Case</strong> &rarr; Save &amp; Close</li>
+</ol><div class="sub">Coming soon: Steps 4&ndash;5 go away once AA auto-populates Description.</div></div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Here's your quick reference checklist. Step one &mdash; call ends, enter wrap-up. Step two &mdash; set disposition, select the correct code, and end interaction. Step three &mdash; open the phone call record. Step four &mdash; go to the Timeline tab and copy the Agent Assist summary. Step five &mdash; switch to Phone Call tab and paste into Description. Step six &mdash; fill in Regarding, Category, and remaining fields. Step seven &mdash; Save and Close... or if follow-up is needed, save first, then Convert to Case. If you convert to a case... step eight, add a task with the right category and mark it complete. Step nine, set the Assigned Group. And step ten, Resolve the Case. Remember &mdash; steps four and five will go away once the auto-populate update goes live.</div></div>
+</div></div>
+
+<!-- Slide 19 -->
+<div class="slide wrap"><div class="slide-head" onclick="tog(this)"><div class="snum">19</div><div class="stitle"><div class="name">Summary &amp; Close</div><div class="ref">No screenshot &mdash; branded close</div></div><div class="dur">~10s</div><span class="arr">&#9660;</span></div><div class="slide-body">
+<div class="body-section"><div class="lbl">On-Screen Text</div><div class="caption-box">Agent Assist handles your call summaries so you can wrap up faster. Accept it, complete your fields, and move on to the next call.<br><br>All calls are recorded &mdash; you're covered if anything ever needs a second look.<br><br>Questions? Reach out to your Team Lead.</div></div>
+<div class="body-section"><div class="callout success"><strong>SCORM trigger:</strong> Timeline ends &rarr; set <code>cmi.completion_status</code> to "Complete." Publish as SCORM 1.2 for Cornerstone.</div></div>
+<div class="body-section"><div class="lbl amber">Narration</div><div class="narration-box"><button class="copy-btn" onclick="copyNarr(this)">Copy</button>Agent Assist handles your call summaries so you can wrap up faster. Accept the summary... complete your fields... and move on to the next call. All calls are recorded, so you're covered if anything ever needs a second look. If you have questions, reach out to your Team Lead. Thanks for completing this module.</div></div>
+</div></div>
+
+<!-- Mapping Table -->
+<div class="panel" style="margin-top:28px">
+  <h2>Screenshot &rarr; Slide Mapping</h2>
+  <table class="map">
+    <thead><tr><th>Slide</th><th>Screenshot(s)</th><th>Primary Zoom Target</th></tr></thead>
+    <tbody>
+      <tr><td>3</td><td><code>AA_01</code>, <code>AA_02</code></td><td>Caller Disconnected &rarr; Wrap Up timer</td></tr>
+      <tr><td>4</td><td><code>AA_03</code>, <code>AA_04</code></td><td>Disposition dropdown &rarr; End Interaction</td></tr>
+      <tr><td>5</td><td><code>AA_05</code></td><td>Ready state &rarr; call list &rarr; stats</td></tr>
+      <tr><td>6</td><td><code>AA_06</code></td><td>Phone Call tab &rarr; empty Description</td></tr>
+      <tr><td>7</td><td><code>AA_07</code>, <code>AA_08</code></td><td>Timeline &rarr; AA summary text</td></tr>
+      <tr><td>8</td><td><code>AA_09</code></td><td>Description (zoom to read)</td></tr>
+      <tr><td>9</td><td><code>AA_10</code></td><td>Regarding &rarr; Five9 Custom Fields</td></tr>
+      <tr><td>10</td><td><code>AA_11</code>, <code>AA_12</code></td><td>Save &rarr; Process &rarr; Convert popup</td></tr>
+      <tr><td>11</td><td><code>AA_13</code></td><td>Case details &rarr; Timeline</td></tr>
+      <tr><td>12</td><td><code>AA_14a</code></td><td>"+" menu &rarr; Task</td></tr>
+      <tr><td>13</td><td><code>AA_14b</code>, <code>AA_15</code></td><td>Category search &rarr; Mark Complete</td></tr>
+      <tr><td>14</td><td><code>AA_16</code></td><td>Completed task + phone call</td></tr>
+      <tr><td>15</td><td><code>AA_17</code></td><td>Assigned Group &rarr; Utah CS</td></tr>
+      <tr><td>16</td><td><code>AA_18</code></td><td>Resolve popup &rarr; Save &amp; Close</td></tr>
+      <tr><td>17</td><td><code>AA_19</code></td><td>Resolved banner &rarr; Timeline history</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Open Items -->
+<div class="panel">
+  <h2>Open Items / Questions for Bill</h2>
+  <ol class="q-list">
+    <li><strong>Auto-populate timeline:</strong> Steps 4&ndash;5 are current process. Once auto-populate goes live, we revise. Target date?</li>
+    <li><strong>Disposition code list:</strong> Link a reference within the module, or covered elsewhere?</li>
+    <li><strong>Wrap-up timer duration:</strong> State it explicitly so agents know their window?</li>
+    <li><strong>Knowledge check:</strong> 2&ndash;3 quiz questions for Cornerstone tracking, or seat-time sufficient?</li>
+    <li><strong>AA downtime:</strong> Include a "what to do when AA fails" slide, or separate resource?</li>
+    <li><strong>Voiceover voice:</strong> Preference on gender/tone? Recommend neutral professional American English.</li>
+    <li><strong>Screenshots:</strong> If Bill wants different data in any grabs, we can retake or edit.</li>
+  </ol>
+</div>
+
+</div>
+
+<script>
+function tog(h){h.closest('.slide').classList.toggle('open')}
+function toggleAll(o){document.querySelectorAll('.slide').forEach(s=>{if(o)s.classList.add('open');else s.classList.remove('open')})}
+function copyNarr(btn){const box=btn.closest('.narration-box');const txt=box.textContent.replace('Copy','').trim();navigator.clipboard.writeText(txt).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+function copyAllNarration(){const boxes=document.querySelectorAll('.narration-box');let all=[];boxes.forEach((b,i)=>{const txt=b.textContent.replace('Copy','').replace('Copied!','').trim();all.push('[Slide '+(i+1)+']\n'+txt)});navigator.clipboard.writeText(all.join('\n\n')).then(()=>{const btn=document.querySelector('.controls .btn:last-child');btn.textContent='All Narration Copied!';setTimeout(()=>btn.textContent='Copy All Narration',2000)})}
+</script>
+</body>
+</html>

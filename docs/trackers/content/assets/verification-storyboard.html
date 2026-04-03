@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verification Module — Storyboard Guide (Sections 0–5)</title>
+<style>
+  :root {
+    --teal: #0D6E6E;
+    --teal-light: #0F8F8F;
+    --teal-bg: #E6F7F7;
+    --purple: #5B2D8E;
+    --purple-bg: #F3EDF9;
+    --green: #16A34A;
+    --green-bg: #DCFCE7;
+    --amber: #D97706;
+    --amber-bg: #FEF3C7;
+    --red: #DC2626;
+    --red-bg: #FEE2E2;
+    --blue: #2563EB;
+    --blue-bg: #DBEAFE;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-500: #6B7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.6; }
+
+  .banner { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%); color: white; padding: 28px 40px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(13,110,110,0.3); }
+  .banner h1 { font-size: 22px; font-weight: 700; }
+  .banner .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .banner .counts { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); display: flex; gap: 10px; }
+  .banner .count-box { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; text-align: center; }
+  .banner .count-box .num { font-size: 20px; display: block; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 24px 40px 80px; }
+
+  .overview-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .overview-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 12px; }
+  .overview-panel p { font-size: 14px; color: var(--gray-500); margin-bottom: 8px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.vo { background: var(--teal); }
+  .legend-dot.ss { background: var(--purple); }
+  .legend-dot.have { background: var(--green); }
+  .legend-dot.need { background: var(--amber); }
+  .legend-dot.build { background: var(--blue); }
+
+  /* Section dividers */
+  .section-divider { display: flex; align-items: center; gap: 14px; margin: 32px 0 16px; }
+  .section-badge { background: var(--teal); color: white; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .section-divider h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+  .section-divider .meta { font-size: 12px; color: var(--gray-500); margin-left: auto; }
+
+  /* Slide cards */
+  .slide-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .slide-header { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--gray-100); gap: 12px; cursor: pointer; user-select: none; }
+  .slide-header:hover { background: var(--gray-50); }
+  .slide-num { background: var(--teal); color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .slide-title { flex: 1; font-size: 14px; font-weight: 600; }
+  .slide-tags { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+  .tag { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .tag.vo { background: var(--teal-bg); color: var(--teal); }
+  .tag.ss { background: var(--purple-bg); color: var(--purple); }
+  .tag.have { background: var(--green-bg); color: var(--green); }
+  .tag.need { background: var(--amber-bg); color: var(--amber); }
+  .tag.build { background: var(--blue-bg); color: var(--blue); }
+  .expand-icon { color: var(--gray-300); font-size: 18px; flex-shrink: 0; transition: transform 0.2s; }
+  .slide-card.open .expand-icon { transform: rotate(180deg); }
+
+  .slide-body { padding: 0 20px 20px; display: none; }
+  .slide-card.open .slide-body { display: block; }
+
+  /* Voiceover block */
+  .vo-block { background: var(--teal-bg); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+  .vo-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--teal); margin-bottom: 6px; }
+  .vo-block .script { font-size: 13px; color: var(--gray-700); line-height: 1.7; }
+  .vo-block .script em { color: var(--gray-500); font-style: italic; }
+
+  /* Screenshot block */
+  .ss-block { background: var(--purple-bg); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+  .ss-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--purple); margin-bottom: 6px; }
+  .ss-block .details { font-size: 13px; color: var(--gray-700); line-height: 1.6; }
+  .ss-block .filename { font-family: 'Cascadia Code','Consolas',monospace; font-size: 11.5px; color: var(--purple); font-weight: 600; }
+  .ss-block .status { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+  .ss-block .status.captured { background: var(--green-bg); color: var(--green); }
+  .ss-block .status.needed { background: var(--amber-bg); color: var(--amber); }
+  .ss-block .status.design { background: var(--blue-bg); color: var(--blue); }
+
+  /* Notes */
+  .note-box { padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; margin-bottom: 8px; }
+  .note-box.tip { background: var(--amber-bg); border-left: 3px solid var(--amber); color: var(--gray-700); }
+  .note-box.interaction { background: var(--blue-bg); border-left: 3px solid var(--blue); color: var(--gray-700); }
+  .note-box.critical { background: var(--red-bg); border-left: 3px solid var(--red); color: var(--gray-700); }
+  .note-label { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; display: block; }
+  .note-box.tip .note-label { color: var(--amber); }
+  .note-box.interaction .note-label { color: var(--blue); }
+  .note-box.critical .note-label { color: var(--red); }
+
+  /* Summary table */
+  .summary-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-top: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .summary-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 16px; }
+  table.summary { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.summary th { background: var(--teal-bg); color: var(--teal); font-weight: 700; text-align: left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.summary td { padding: 8px 10px; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+  table.summary tr:hover td { background: var(--gray-50); }
+  table.summary code { font-family: 'Cascadia Code','Consolas',monospace; font-size: 11px; color: var(--purple); }
+
+  .folder-link { display: inline-block; margin-left: 8px; text-decoration: none; font-size: 14px; vertical-align: middle; opacity: 0.7; transition: opacity 0.15s; }
+  .folder-link:hover { opacity: 1; }
+  .folder-link:hover::after { content: attr(title); position: absolute; margin-top: 22px; margin-left: -60px; background: var(--gray-900); color: white; font-size: 10px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; font-family: 'Cascadia Code','Consolas',monospace; z-index: 10; }
+
+  .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--gray-500); margin-top: 20px; }
+
+  /* Expand all button */
+  .controls { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 8px; }
+  .btn-sm { padding: 5px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; background: white; color: var(--gray-700); transition: all 0.15s; }
+  .btn-sm:hover { background: var(--gray-100); border-color: var(--gray-300); }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <h1>Verification Module — Storyboard Guide</h1>
+  <div class="subtitle">Sections 0–5 &nbsp;|&nbsp; Screenshots + AI Voiceover Scripts &nbsp;|&nbsp; March 30, 2026</div>
+  <div class="counts">
+    <div class="count-box"><span class="num">22</span>slides</div>
+    <div class="count-box"><span class="num">14</span>screenshots</div>
+    <div class="count-box"><span class="num">22</span>VO scripts</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="overview-panel">
+    <h2>How to Use This Document</h2>
+    <p>Each slide card below contains the <strong>AI voiceover script</strong> (what the learner hears) and <strong>screenshot/visual requirements</strong> (what the learner sees). Expand a card to see both. Use the status badges to track what's captured vs. what still needs to be created.</p>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot vo"></div>Voiceover script</div>
+      <div class="legend-item"><div class="legend-dot ss"></div>Screenshot needed</div>
+      <div class="legend-item"><div class="legend-dot have"></div>Already captured (Mar 26)</div>
+      <div class="legend-item"><div class="legend-dot need"></div>Needs capture</div>
+      <div class="legend-item"><div class="legend-dot build"></div>Design/build in Articulate</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.add('open'))">Expand All</button>
+    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.remove('open'))">Collapse All</button>
+  </div>
+
+  <!-- ========== SECTION 0 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">0</div>
+    <h2>Welcome &amp; Objectives</h2>
+    <span class="meta">2 min &middot; 2 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">0.1</div>
+      <div class="slide-title">Title Slide</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Every call starts the same way &mdash; before you pull up an account, before you troubleshoot, before you place an order &mdash; you verify. Verification protects our customers from fraud, and it protects you from making a costly mistake. In this module, you'll learn exactly what to verify, how to handle callers who can't verify, and when exceptions apply.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Title graphic</span> <span class="status design">Design in Articulate</span><br>
+          Module title: "Account Security, Caller Verification &amp; Device Order Handling"<br>
+          Subtitle: "Protecting our customers on every call"<br>
+          PrePass branding / shield or lock icon
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">0.2</div>
+      <div class="slide-title">Learning Objectives</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">By the end of this module, you'll be able to: verify callers correctly on every call. Handle unverified callers and non-contacts with the right disclosure limits. Apply six exception scenarios for non-contact callers. Guide customers through adding a non-contact to their account. Follow device order shipping and confirmation rules. And recognize fraud indicators and execute the mandatory escalation process.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Objectives list graphic</span> <span class="status design">Design in Articulate</span><br>
+          Numbered list with icons for each objective. Appear sequentially with VO timing.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 1 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">1</div>
+    <h2>Verification Basics</h2>
+    <span class="meta">3 min &middot; 4 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.1</div>
+      <div class="slide-title">Standard Verification — Every Call</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">On every single call, before you do anything else, you verify the caller. You need two things: their first and last name, and either their phone number or email address on the account. That's it for a standard call &mdash; name plus one contact method. But here's the critical part &mdash; you ask <em>them</em> to provide this information. You never read it off to them. That's the number one rookie mistake, and it's a security risk.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirement</div>
+        <div class="details">
+          <span class="filename">CRM_BillToContact_MainView.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM bill-to-contact folder, screenshot showing contact name and phone/email fields highlighted.<br>
+          Show: The fields an agent would check during standard verification.
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Key Rule</span>
+        ASK the customer to confirm. Do NOT read info off to them. This should appear as a persistent callout on this slide.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.2</div>
+      <div class="slide-title">Enhanced Verification — Device Orders &amp; Emails</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">When the call involves ordering a device or sending an email, you need one more piece: the email address or mailing address on the account. So it's name, phone or email, <em>plus</em> address or email. Think of it as standard verification with an extra lock. Devices are high-value items, and emails can contain sensitive account details &mdash; the extra step protects the customer.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirement</div>
+        <div class="details">
+          <span class="filename">CRM_BillToContact_AddressFields.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM bill-to-contact folder, screenshot showing address and email fields.<br>
+          Show: The additional fields verified for device orders. Use annotation or highlight overlay in Articulate to draw attention to the address/email fields.
+        </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Interaction Idea</span>
+        Two-panel graphic: left = "Standard Call" (name + phone/email), right = "Device Order or Email" (name + phone/email + address/email). Learner clicks each to reveal the checklist.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.3</div>
+      <div class="slide-title">Where to Find It in CRM</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Here's where you find verification info in CRM. When a call comes in, you'll look up the account and navigate to the Bill-To contact. This view shows you the contact's name, phone numbers, and email &mdash; everything you need for verification. You're looking at this screen while the caller provides their info. If what they say matches, you're verified. If it doesn't, we'll cover what to do next.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirement</div>
+        <div class="details">
+          <span class="filename">CRM_ContactLookup.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM bill-to-contact folder, contact lookup view.<br>
+          <span class="filename">CRM_BillToContact_FullView.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM bill-to-contact folder, full contact detail view with all fields visible.<br>
+          Show: The navigation path and the verification fields. Consider a numbered annotation overlay (1. Search account → 2. Open Bill-To contact → 3. Check fields).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.4</div>
+      <div class="slide-title">Verification Script</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Here's what it sounds like. You might say: <em>"To protect your account, I'll verify your name and either your phone or email. For orders or emails, I'll also verify the address or email on file."</em> Simple, professional, and it tells the customer exactly what's happening and why. Practice this until it's natural &mdash; it should feel like a normal part of the conversation, not an interrogation.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Script callout card</span> <span class="status design">Design in Articulate</span><br>
+          Display the script text in a styled callout box. Consider a "copy to clipboard" or "save for reference" visual cue so learners know this is a script they can use verbatim.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 2 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">2</div>
+    <h2>When a Caller Can't Verify</h2>
+    <span class="meta">2 min &middot; 3 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.1</div>
+      <div class="slide-title">Decision Flow — Exception or Stop</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">So what happens when a caller can't verify? You don't panic, and you don't just let it go. You follow a simple decision: does one of our six exception scenarios apply? If yes, you follow that exception's rules &mdash; and we'll cover all six in the next section. If no exception fits, you inform the caller that you're unable to assist with this account, and you provide instructions for how to get added as a contact.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Decision flow diagram</span> <span class="status design">Design in Articulate</span><br>
+          Flowchart: "Caller can't verify" → fork → "Exception applies? YES → Section 3" / "No exception → Inform caller + provide Non-Contact instructions"<br>
+          Build as an interactive click-through flowchart in Storyline or a process block in Rise.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.2</div>
+      <div class="slide-title">What You CAN and CANNOT Do</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Even when a caller can't verify, there are a few things you <em>can</em> still do. You can share driver-allowed bypass information. You can provide basic troubleshooting. And you can take a payment &mdash; we'll cover that in Exception 6. But here's the hard line. You cannot provide device numbers, tracking numbers, dates, or addresses. You cannot share credentials or account information. And you cannot place orders or make account changes. Never guess, never assume, never let it slide. If they can't verify and no exception fits, you stop.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Two-column CAN/CANNOT graphic</span> <span class="status design">Design in Articulate</span><br>
+          Green column: what you CAN do (3 items). Red column: what you CANNOT do (3 items).<br>
+          Use color coding: green checkmarks vs. red X marks. Keep it visually simple and scannable.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.3</div>
+      <div class="slide-title">The Stop Script</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">When you need to stop, here's how to say it professionally: <em>"I understand, and I want to help. However, for the security of this account, I'm unable to assist without verification. I can provide instructions for getting added as a contact on the account — would that be helpful?"</em> You're not slamming the door. You're redirecting them to the solution. Most callers understand once you frame it as account security, not a personal refusal.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Script callout card</span> <span class="status design">Design in Articulate</span><br>
+          Same styling as slide 1.4 script card. Display the stop script prominently. Include a transition arrow pointing to "Section 4: Adding a Non-Contact" to show the learner where the redirect leads.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 3 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">3</div>
+    <h2>The 6 Exception Scenarios</h2>
+    <span class="meta">6 min &middot; 7 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.0</div>
+      <div class="slide-title">Exceptions Overview — 6 Cards</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Not every caller is a listed contact. But that doesn't always mean you can't help. There are six specific exception scenarios where you can assist a non-contact &mdash; each with its own rules. Let's walk through them one by one. Click on each card to learn the scenario.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">6-card overview layout</span> <span class="status design">Design in Articulate</span><br>
+          Six clickable cards numbered 1–6, each with a short title:<br>
+          1. Company Name Match &middot; 2. Replacing Only Contact &middot; 3. Calling "For" a Contact &middot; 4. Verified Non-Contact/Driver &middot; 5. Non-Contact Who Can Verify &middot; 6. Payment from Non-Contact<br>
+          Cards remain dimmed until clicked, then reveal the scenario details.
+        </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Interaction Design</span>
+        This is the centerpiece of the module. In Storyline, build as branching slides — each card opens a mini-scenario. In Rise, use scenario blocks. Learner must visit all 6 before proceeding.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.1</div>
+      <div class="slide-title">Exception 1: Caller Name Matches Company Name</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Exception one: the caller's name matches the company name. Imagine John Doe calls about the John Doe Trucking account. He's not listed as a contact, but there's an obvious connection. Here's what you do. Have the caller verify the address, email, and phone on the account &mdash; all three. If they can verify, add them as an Other Contact and assist them. If they cannot verify, you stop &mdash; a listed contact must call to add them. The name match alone isn't enough. They still have to prove they know the account.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Branching scenario graphic</span> <span class="status design">Design in Articulate</span><br>
+          Scenario setup: "John Doe calls about John Doe Trucking"<br>
+          Branch point: "Can caller verify address, email, and phone?"<br>
+          YES path → "Add as Other Contact, assist" &middot; NO path → "Listed contact must call to add them"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.2</div>
+      <div class="slide-title">Exception 2: Replacing the ONLY Contact</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Exception two: replacing the only contact on the account. A caller says they're the new dispatcher and the previous contact left the company. This one has three paths, so pay attention. First, have the caller verify address, phone, and DOT on the account. Then ask for the name of the contact they're replacing. Here's where it branches. If the account has multiple contacts, stop &mdash; a listed contact must call. If the name they give is not on the account at all, stop &mdash; you cannot assist. But if the name they give is the <em>only</em> contact on the account &mdash; that's when this exception kicks in. Add the caller as the new Bill-To contact and assist them.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirement</div>
+        <div class="details">
+          <span class="filename">CRM_ContactList_MultipleContacts.png</span> <span class="status needed">Needs Capture</span><br>
+          Need: CRM view showing an account with multiple contacts listed (to illustrate the "multiple contacts = stop" path).<br><br>
+          <span class="filename">CRM_ContactList_SingleContact.png</span> <span class="status needed">Needs Capture</span><br>
+          Need: CRM view showing an account with only one contact (to illustrate when this exception applies).
+        </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Interaction Design</span>
+        Three-path branching: learner checks contact count → checks name match → arrives at correct outcome. The "multiple contacts" trap is a common wrong-answer path on real calls.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.3</div>
+      <div class="slide-title">Exception 3: Calling "For" a Listed Contact</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Exception three: the caller says they're calling on behalf of a listed contact. Maybe it's an office assistant, or the account owner is standing right there but asked someone else to make the call. Here's the rule: you need to speak with the listed contact directly. They can be in the room, or you can do a three-way transfer. Once you've verified the listed contact, get their verbal approval to add the caller as a new contact. Then add them and assist. The key phrase to remember: the listed contact must be <em>present or reachable</em>. "They're not here right now" does not qualify for this exception.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Scenario illustration</span> <span class="status design">Design in Articulate</span><br>
+          Visual conversation flow: Caller → "I'm calling for the owner" → Agent asks to speak with owner → Owner verifies → Owner approves adding caller → Caller assisted.<br>
+          Include a red-flag callout for "They're not here right now" = does NOT qualify.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.4</div>
+      <div class="slide-title">Exception 4: Verified Non-Contacts &amp; Drivers</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Exception four: drivers and verified non-contacts. A driver calls and gives you their VIN or Device ID. They're not a listed contact, but they've shown they're connected to the account. Here's the important part &mdash; you can only give Yes or No answers. You may confirm whether we received an email or fax. Whether a device has shipped. Whether a returned device was received. And whether a device is assigned or unassigned to the VIN they provide. That's it. You may <em>not</em> provide device numbers, tracking numbers, dates, or addresses. You may <em>not</em> share credentials or account information. You <em>can</em> share driver-allowed bypass info and basic troubleshooting. Think of it as a keyhole &mdash; they can peek through, but the door stays locked.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Yes-No disclosure grid</span> <span class="status design">Design in Articulate</span><br>
+          Two-column layout: Green "Yes/No OK" column (4 items) vs. Red "Cannot Disclose" column (3 items).<br>
+          Build as an interactive scenario: present 4–5 questions the driver asks, learner selects "Yes/No OK" or "Cannot Disclose" for each.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.5</div>
+      <div class="slide-title">Exception 5: Non-Contact Who Can Verify</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Exception five is closely related to four. A caller isn't listed as a contact, but they can verify account details &mdash; they know the address, the phone number, the email. You might think that means they get full access. They don't. The same Yes-or-No limits apply. Just because someone can verify the account doesn't mean they're authorized to act on it. Verification without being a listed contact only unlocks Yes-or-No confirmations. Nothing more.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Comparison callout</span> <span class="status design">Design in Articulate</span><br>
+          Visual reinforcement: "Verified + Listed Contact = Full Access" vs. "Verified + NOT Listed = Yes/No Only"<br>
+          Keep this slide lean — the interaction from 3.4 already covered the disclosure rules. This is about the distinction.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.6</div>
+      <div class="slide-title">Exception 6: Payment from a Non-Contact</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Exception six: someone who's not a listed contact wants to make a payment. Good news &mdash; we can take payments from anyone. They can use any payment method, even one that's not already on the account. If they want to use a card that <em>is</em> on file, they must verify the last four digits of that card. But here's the catch. Taking a payment is all you can do. You cannot release account information. You cannot place orders. And critically, you cannot reactivate the account &mdash; only a listed contact can do that. So if someone pays to bring the account current and then says "Great, now reactivate it" &mdash; you advise them to have a listed contact call back.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Scenario interaction</span> <span class="status design">Design in Articulate</span><br>
+          Mini-scenario: Non-contact wants to pay AND reactivate. Learner identifies which they can help with (payment = yes) and which requires a listed contact (reactivation = no).<br>
+          Include the common wrong answer: "Take payment and reactivate."
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Takeaway Callout</span>
+        "Six exceptions, but one common thread: protect the account. When in doubt, ask a listed contact to call." — Display as a transition callout before moving to Section 4.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 4 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">4</div>
+    <h2>Adding a Non-Contact</h2>
+    <span class="meta">3 min &middot; 4 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.1</div>
+      <div class="slide-title">Three Ways to Add a Contact — Overview</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">When a caller needs to be added to the account, you should know the three paths and be able to explain them clearly. The account owner &mdash; or a verified contact &mdash; can add someone by emailing prepassupdates at prepass dot com, by calling 1-800-PREPASS and choosing Option 6 then Option 2, or by logging into PrePass dot com and adding the person through the account portal. Let's look at each one.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Three-tab overview</span> <span class="status design">Design in Articulate</span><br>
+          Tabbed interaction with three tabs: Email | Phone | PrePass.com<br>
+          Overview slide shows all three with icons. Tabs reveal detail.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.2</div>
+      <div class="slide-title">Tab 1: Email to prepassupdates@prepass.com</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Option one: email. The customer emails prepassupdates at prepass dot com. The email <em>must</em> come from the address currently on file &mdash; that's how we verify the request is legitimate. They need to include their full name, account number, and the new contact's details. This same email address handles other updates too &mdash; email changes and address changes go through here. Now, what if the customer no longer has access to the bill-to email? In that case, they need to verify at least two additional pieces of information: the DOT &mdash; which is always required &mdash; plus things like the last payment amount, the last payment date, the number of devices, or the number of trucks on the account.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Email requirements card</span> <span class="status design">Design in Articulate</span><br>
+          Checklist: (1) Email from address on file, (2) Include: full name, account #, new contact info.<br>
+          Fallback verification list for lost email access: DOT (always) + 2 of: payment amount, payment date, device count, truck count.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.3</div>
+      <div class="slide-title">Tabs 2 &amp; 3: Phone and PrePass.com</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Option two: phone. The listed contact calls 1-800-PREPASS &mdash; that's 1-800-773-7277 &mdash; and selects Option 6 for Account Management, then Option 2. They request the addition over the phone. Option three: online. The listed contact logs into My PrePass at PrePass dot com and adds the person through the account management portal. Both of these require the <em>listed contact</em> to take the action &mdash; the caller who needs to be added can't do it themselves.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Phone path card</span> <span class="status design">Design in Articulate</span><br>
+          Phone tree visual: 1-800-PREPASS → Option 6 → Option 2<br><br>
+          <span class="filename">PrePass.com portal screenshot</span> <span class="status needed">Nice-to-Have</span><br>
+          Source: Content Needs List nice-to-have #8 — customer-facing PrePass.com contact management view. Not blocking, but would strengthen this tab.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.4</div>
+      <div class="slide-title">CRM Walkthrough: Adding a Contact in D365</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Once you're authorized to add a contact &mdash; either through an exception or because a listed contact is on the line &mdash; here's how you do it in D365. Open the account, navigate to Contacts, and click New Contact. Fill in the contact's first name, last name, and relevant details. Then set the contact role &mdash; typically "Other Contact" unless you're replacing the Bill-To. Save, and the new contact is live on the account. Let's walk through the screens.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirements</div>
+        <div class="details">
+          <span class="filename">D365_NewContact_Form.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 add contact folder — New Contact form<br><br>
+          <span class="filename">D365_AddContact_AccountVerify.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 add contact folder — account info verification step<br><br>
+          <span class="filename">D365_AddContact_Role.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 add contact folder — add contact role flow<br><br>
+          <span class="filename">D365_AddContact_Confirm.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 add contact folder — confirmation/saved view<br><br>
+          Show as a step-through: numbered annotations 1 → 2 → 3 → 4 over each screenshot.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 5 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">5</div>
+    <h2>Device Orders — Address &amp; Email Rules</h2>
+    <span class="meta">3 min &middot; 3 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.1</div>
+      <div class="slide-title">Shipping Address Rules</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Devices are high-value targets for fraud, and these shipping rules exist because of real incidents. Here's the rule: a listed contact can request shipment to a different address <em>only</em> if every device in the order is assigned to a truck. If even one device is unassigned, that device &mdash; or the entire order &mdash; must ship to the address on file. No exceptions. The script for this is straightforward: <em>"We can ship to a different address when all devices are assigned to trucks. Unassigned devices must ship to the address on file to protect your account."</em></div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Shipping rule diagram</span> <span class="status design">Design in Articulate</span><br>
+          Two-path visual: "All devices assigned → Alternate address OK" vs. "Any unassigned → Address on file only"<br>
+          Include the script as a callout card below the diagram.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.2</div>
+      <div class="slide-title">Order Confirmation &amp; Tracking Email Rules</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Confirmations and tracking go to the email address on the account by default. If a listed contact requests it be sent to another listed contact's email, you can do that &mdash; but you must cc the Bill-To contact. That keeps the primary contact in the loop. If a customer asks for tracking via text or chat, let them know tracking is sent to the email on file only. The script: <em>"I'll send the confirmation to the email on your account. If you want it sent to another listed contact, I can include them and will cc the Bill-To contact to keep them in the loop."</em></div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Email rules diagram</span> <span class="status design">Design in Articulate</span><br>
+          Three scenarios: (1) Default → account email, (2) Another listed contact's email → OK + cc Bill-To, (3) SMS/chat → not available.<br>
+          Script callout card below.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.3</div>
+      <div class="slide-title">Quick Scenario Check — Shipping &amp; Email</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Let's check your understanding with three quick scenarios. For each one, decide whether the request is OK or whether you need to use the default. <em>[Pause for interaction.]</em> Scenario one: a listed contact wants 3 devices shipped to their warehouse. All 3 are assigned to trucks. <em>[Pause.]</em> That's OK &mdash; all assigned, alternate address is fine. Scenario two: same contact, but 1 of the 3 devices is unassigned. <em>[Pause.]</em> The unassigned device must ship to the address on file. Scenario three: a listed contact asks you to send tracking to their dispatcher's email. The dispatcher is not a contact on the account. <em>[Pause.]</em> You cannot send to a non-listed contact's email. Tracking goes to the account email only.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">3-scenario interaction</span> <span class="status design">Design in Articulate</span><br>
+          Three scenario cards. Each presents the situation, learner selects "OK" or "Default Required." Reveal correct answer with brief feedback after each.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SUMMARY ========== -->
+  <div class="summary-panel">
+    <h2>Screenshot Inventory — Sections 0–5</h2>
+    <table class="summary">
+      <thead>
+        <tr><th>#</th><th>Filename</th><th>Section</th><th>Source</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><code>CRM_BillToContact_MainView.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM bill to contact/CRM bill to contact1.png" title="CRM bill to contact1.png">&#128194;</a></td><td>1.1</td><td>CRM bill-to-contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>2</td><td><code>CRM_BillToContact_AddressFields.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM bill to contact/CRM bill to contact 2 full.png" title="CRM bill to contact 2 full.png">&#128194;</a></td><td>1.2</td><td>CRM bill-to-contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>3</td><td><code>CRM_ContactLookup.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM bill to contact/CRM main w contact.png" title="CRM main w contact.png">&#128194;</a></td><td>1.3</td><td>CRM bill-to-contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>4</td><td><code>CRM_BillToContact_FullView.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM bill to contact/CRM bill to contact 2 full.png" title="CRM bill to contact 2 full.png">&#128194;</a></td><td>1.3</td><td>CRM bill-to-contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>5</td><td><code>CRM_ContactList_MultipleContacts.png</code></td><td>3.2</td><td>CRM — need account w/ multiple contacts</td><td><span class="tag need" style="font-size:10px;">Needs Capture</span></td></tr>
+        <tr><td>6</td><td><code>CRM_ContactList_SingleContact.png</code></td><td>3.2</td><td>CRM — need account w/ single contact</td><td><span class="tag need" style="font-size:10px;">Needs Capture</span></td></tr>
+        <tr><td>7</td><td><code>D365_NewContact_Form.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 add contact/D365 outcall add contact 1.png" title="D365 outcall add contact 1.png">&#128194;</a></td><td>4.4</td><td>D365 add contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>8</td><td><code>D365_AddContact_AccountVerify.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 add contact/D365 outcall acct nfo verrification.png" title="D365 outcall acct nfo verrification.png">&#128194;</a></td><td>4.4</td><td>D365 add contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>9</td><td><code>D365_AddContact_Role.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 add contact/D365 outcall add contact role 3.png" title="D365 outcall add contact role 3.png">&#128194;</a></td><td>4.4</td><td>D365 add contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>10</td><td><code>D365_AddContact_Confirm.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 add contact/D365 outcall add contact 2.png" title="D365 outcall add contact 2.png">&#128194;</a></td><td>4.4</td><td>D365 add contact folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px; font-size:13px; color:var(--gray-500);">
+      <strong>8 of 10</strong> screenshots already captured (March 26). <strong>2</strong> need capture at the office (CRM contact list views for Exception 2). Remaining slides use designed graphics built directly in Articulate.
+    </div>
+  </div>
+
+  <div class="summary-panel">
+    <h2>Voiceover Summary — Sections 0–5</h2>
+    <table class="summary">
+      <thead>
+        <tr><th>Slide</th><th>Title</th><th>Approx Words</th><th>Est. Duration</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0.1</td><td>Title Slide</td><td>~55</td><td>20s</td></tr>
+        <tr><td>0.2</td><td>Learning Objectives</td><td>~65</td><td>25s</td></tr>
+        <tr><td>1.1</td><td>Standard Verification</td><td>~85</td><td>30s</td></tr>
+        <tr><td>1.2</td><td>Enhanced Verification</td><td>~70</td><td>25s</td></tr>
+        <tr><td>1.3</td><td>Where to Find It in CRM</td><td>~75</td><td>30s</td></tr>
+        <tr><td>1.4</td><td>Verification Script</td><td>~65</td><td>25s</td></tr>
+        <tr><td>2.1</td><td>Decision Flow</td><td>~75</td><td>30s</td></tr>
+        <tr><td>2.2</td><td>CAN / CANNOT</td><td>~100</td><td>35s</td></tr>
+        <tr><td>2.3</td><td>Stop Script</td><td>~80</td><td>30s</td></tr>
+        <tr><td>3.0</td><td>Exceptions Overview</td><td>~45</td><td>15s</td></tr>
+        <tr><td>3.1</td><td>Exception 1: Company Name</td><td>~95</td><td>35s</td></tr>
+        <tr><td>3.2</td><td>Exception 2: Only Contact</td><td>~120</td><td>45s</td></tr>
+        <tr><td>3.3</td><td>Exception 3: Calling "For"</td><td>~100</td><td>35s</td></tr>
+        <tr><td>3.4</td><td>Exception 4: Drivers/Non-Contacts</td><td>~130</td><td>50s</td></tr>
+        <tr><td>3.5</td><td>Exception 5: Can Verify</td><td>~70</td><td>25s</td></tr>
+        <tr><td>3.6</td><td>Exception 6: Payment</td><td>~120</td><td>45s</td></tr>
+        <tr><td>4.1</td><td>Three Ways Overview</td><td>~65</td><td>25s</td></tr>
+        <tr><td>4.2</td><td>Email Method</td><td>~110</td><td>40s</td></tr>
+        <tr><td>4.3</td><td>Phone &amp; PrePass.com</td><td>~80</td><td>30s</td></tr>
+        <tr><td>4.4</td><td>CRM Walkthrough</td><td>~75</td><td>30s</td></tr>
+        <tr><td>5.1</td><td>Shipping Rules</td><td>~95</td><td>35s</td></tr>
+        <tr><td>5.2</td><td>Email Rules</td><td>~90</td><td>35s</td></tr>
+        <tr><td>5.3</td><td>Scenario Check</td><td>~110</td><td>40s</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px; font-size:13px; color:var(--gray-500);">
+      <strong>23 voiceover scripts</strong> across sections 0–5. Total estimated voiceover: ~11 minutes 45 seconds. All scripts written and ready for AI voice generation.
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Verification Module — Storyboard Guide (Sections 0–5) &middot; March 30, 2026 &middot; PrePass Training &middot; Track 2 POC
+</div>
+
+<script>
+document.querySelectorAll('.slide-header').forEach(h => {
+  h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+});
+</script>
+</body>
+</html>

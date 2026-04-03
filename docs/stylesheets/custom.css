@@ -1,0 +1,27 @@
+/* ── Full-width content area ── */
+.md-content__inner {
+  max-width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* ── Iframe containers ── */
+.md-typeset iframe {
+  width: 100%;
+  min-height: 85vh;
+  border: none;
+  border-radius: 8px;
+}
+
+.iframe-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.iframe-wrap iframe {
+  width: 100%;
+  min-height: 85vh;
+  border: none;
+}

@@ -33,6 +33,9 @@ theme:
     - content.code.copy
     - toc.follow
 
+extra_css:
+  - stylesheets/custom.css
+
 plugins:
   - search
 
@@ -60,6 +63,14 @@ nav:
     - Track 1 Weekly: trackers/track1-weekly.md
     - MCTE 6-Week Plan: trackers/mcte-6week-plan.md
     - PrePass Content: trackers/intro-prepass-content.md
+    - Content:
+      - Overview: trackers/content/index.md
+      - Account Closure Storyboard: trackers/content/account-closure-storyboard.md
+      - Verification Storyboard: trackers/content/verification-storyboard.md
+      - inForm Safety Storyboard: trackers/content/inform-safety-storyboard.md
+      - AA End-of-Call Storyboard: trackers/content/aa-endofcall-storyboard.md
+      - AA End-of-Call Capture Guide: trackers/content/aa-endofcall-capture-guide.md
+      - inForm Safety Capture Guide: trackers/content/inform-safety-capture-guide.md
   - Research:
     - Overview: research/index.md
     - Domain & Hosting Research: research/domain-hosting-research.md
