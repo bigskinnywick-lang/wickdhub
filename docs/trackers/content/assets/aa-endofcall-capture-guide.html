@@ -27,11 +27,11 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.6; }
-  .banner { background: linear-gradient(135deg, var(--purple) 0%, var(--purple-light) 100%); color: white; padding: 28px 40px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(91,45,142,0.3); }
+  .banner { background: linear-gradient(135deg, var(--purple) 0%, var(--purple-light) 100%); color: white; padding: 20px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(91,45,142,0.3); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
   .banner-text { flex: 1; min-width: 200px; }
   .banner h1 { font-size: 22px; font-weight: 700; }
   .banner .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
-  .banner .shot-count { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; }
+  .banner .shot-count { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; }
   .progress-bar-wrap { margin-top: 8px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; overflow: hidden; }
   .progress-bar-fill { height: 100%; background: white; border-radius: 2px; transition: width 0.3s; width: 0%; }
   .progress-text { font-size: 12px; opacity: 0.8; margin-top: 4px; }
