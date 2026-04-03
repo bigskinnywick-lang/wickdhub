@@ -62,9 +62,9 @@ nav:
     - Track 2 Weekly: trackers/track2-weekly.md
     - Track 1 Weekly: trackers/track1-weekly.md
     - MCTE 6-Week Plan: trackers/mcte-6week-plan.md
-    - PrePass Content: trackers/intro-prepass-content.md
     - Content:
       - Overview: trackers/content/index.md
+      - Track 1 Content - Intro to PrePass: trackers/content/track1-content-intro-prepass.md
       - Account Closure Storyboard: trackers/content/account-closure-storyboard.md
       - Verification Storyboard: trackers/content/verification-storyboard.md
       - inForm Safety Storyboard: trackers/content/inform-safety-storyboard.md
