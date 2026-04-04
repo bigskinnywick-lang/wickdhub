@@ -1059,6 +1059,60 @@
         <div class="step-head" onclick="toggleStep('step-14')">
           <input type="checkbox" onclick="event.stopPropagation(); markDone('step-14', this)">
           <span class="step-idx">14</span>
+          <span class="step-title">Access Open WebUI from other devices on your network</span>
+          <span class="step-arrow">›</span>
+        </div>
+        <div class="step-body">
+          <p>You can chat with your local models from any device on the same Wi-Fi network — your Mac, phone, tablet, whatever. First, the default Docker setup only listens on localhost. You need to recreate the container with the port exposed to all interfaces:</p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="comment"># Stop and remove the existing container</span>
+<span class="cmd">docker stop open-webui</span> <span class="flag">&&</span> <span class="cmd">docker rm open-webui</span>
+
+<span class="comment"># Re-run with port mapped to all interfaces</span>
+<span class="cmd">docker run</span> <span class="flag">-d</span> \
+  <span class="flag">-p</span> <span class="str">0.0.0.0:8080:8080</span> \
+  <span class="flag">-v</span> open-webui:/app/backend/data \
+  <span class="flag">-e</span> <span class="str">OLLAMA_BASE_URL=http://127.0.0.1:11434</span> \
+  <span class="flag">--name</span> open-webui \
+  <span class="flag">--restart</span> always \
+  ghcr.io/open-webui/open-webui:main</pre>
+          </div>
+          <p>Then open port 8080 through the firewall:</p>
+          <div class="code-block teal">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="cmd">sudo ufw allow</span> <span class="str">8080</span></pre>
+          </div>
+          <p>Now find the laptop's local IP address:</p>
+          <div class="code-block teal">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="cmd">hostname</span> <span class="flag">-I</span>
+
+<span class="comment"># Grab the first IP — something like 192.168.1.XXX</span></pre>
+          </div>
+          <p>On any other device on the same network, open a browser and go to:</p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="str">http://192.168.1.XXX:8080</span></pre>
+          </div>
+          <div class="callout tip">
+            <span class="callout-icon">✦</span>
+            <div class="callout-body">
+              <strong>Bookmark it</strong>
+              The IP may change if the laptop reconnects to Wi-Fi. If you want a stable address, assign a static IP or a DHCP reservation in your router settings.
+            </div>
+          </div>
+          <div class="verify-block">
+            <span class="verify-icon">✓</span>
+            <div>If you see the Open WebUI login screen from your other device, you're in. Same credentials, same models, same conversation history — just running on the laptop's GPU.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step" id="step-15">
+        <div class="step-head" onclick="toggleStep('step-15')">
+          <input type="checkbox" onclick="event.stopPropagation(); markDone('step-15', this)">
+          <span class="step-idx">15</span>
           <span class="step-title">Install Obsidian via Flatpak</span>
           <span class="step-arrow">›</span>
         </div>
@@ -1075,10 +1129,10 @@
         </div>
       </div>
 
-      <div class="step" id="step-15">
-        <div class="step-head" onclick="toggleStep('step-15')">
-          <input type="checkbox" onclick="event.stopPropagation(); markDone('step-15', this)">
-          <span class="step-idx">15</span>
+      <div class="step" id="step-16">
+        <div class="step-head" onclick="toggleStep('step-16')">
+          <input type="checkbox" onclick="event.stopPropagation(); markDone('step-16', this)">
+          <span class="step-idx">16</span>
           <span class="step-title">Install Claude Desktop on Linux</span>
           <span class="step-arrow">›</span>
         </div>
