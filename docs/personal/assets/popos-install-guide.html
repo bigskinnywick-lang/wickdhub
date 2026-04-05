@@ -1083,6 +1083,31 @@
             <button class="copy-btn" onclick="copyCode(this)">copy</button>
             <pre><span class="cmd">sudo ufw allow</span> <span class="str">8080</span></pre>
           </div>
+          <p>Ollama also needs to listen on all interfaces — by default it only accepts connections from localhost, which means the Docker container can't reach it. Fix this by editing the Ollama service config:</p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="cmd">sudo systemctl edit ollama</span></pre>
+          </div>
+          <p>This opens an editor. Add these two lines, then save and exit:</p>
+          <div class="code-block teal">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="str">[Service]</span>
+<span class="str">Environment="OLLAMA_HOST=0.0.0.0"</span></pre>
+          </div>
+          <p>Then reload and restart:</p>
+          <div class="code-block">
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+            <pre><span class="cmd">sudo systemctl daemon-reload</span>
+<span class="cmd">sudo systemctl restart ollama</span>
+<span class="cmd">docker restart open-webui</span></pre>
+          </div>
+          <div class="callout warn">
+            <span class="callout-icon">⚠</span>
+            <div class="callout-body">
+              <strong>Without this step, models won't appear</strong>
+              If you skip the OLLAMA_HOST fix, Open WebUI will connect but show no models in the dropdown. This is the fix.
+            </div>
+          </div>
           <p>Now find the laptop's local IP address:</p>
           <div class="code-block teal">
             <button class="copy-btn" onclick="copyCode(this)">copy</button>
