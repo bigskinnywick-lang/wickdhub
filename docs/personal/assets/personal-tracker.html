@@ -333,14 +333,34 @@
     <span class="task-badge badge-done">Done</span>
   </div>
 
-  <div class="task" data-status="active">
+  <div class="task done" data-status="done">
     <div class="task-check" onclick="toggleTask(this)"></div>
     <div class="priority-marker priority-med"></div>
     <div class="task-content">
-      <div class="task-title">POP!_OS install — tomorrow</div>
-      <div class="task-note">Follow install guide — boot from USB, NVIDIA ISO, dual-boot setup</div>
+      <div class="task-title">POP!_OS installed — clean install complete</div>
+      <div class="task-note">AHCI mode fix, NVIDIA drivers working, full system updated</div>
     </div>
-    <span class="task-badge badge-active">In Progress</span>
+    <span class="task-badge badge-done">Done</span>
+  </div>
+
+  <div class="task done" data-status="done">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-low"></div>
+    <div class="task-content">
+      <div class="task-title">Ollama + Open WebUI deployed</div>
+      <div class="task-note">3 models pulled (llama3.2:3b, mistral:7b, qwen2.5-coder:7b), GPU offloading confirmed</div>
+    </div>
+    <span class="task-badge badge-done">Done</span>
+  </div>
+
+  <div class="task done" data-status="done">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-low"></div>
+    <div class="task-content">
+      <div class="task-title">Network access — Open WebUI from any device</div>
+      <div class="task-note">Docker port mapping, Ollama host fix, accessible at 192.168.1.254:8080</div>
+    </div>
+    <span class="task-badge badge-done">Done</span>
   </div>
 </div>
 
