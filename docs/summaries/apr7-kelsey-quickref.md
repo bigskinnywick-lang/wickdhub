@@ -6,4 +6,6 @@ Designed to be open during the meeting as a glanceable guide.
 
 ---
 
-<iframe src="assets/apr7-kelsey-quickref.html" width="100%" height="800" style="border:1px solid #333; border-radius:8px;"></iframe>
+<div class="iframe-wrap">
+  <iframe src="../assets/apr7-kelsey-quickref.html" loading="lazy"></iframe>
+</div>
