@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Closure/Shutdown — Storyboard Guide (Sections 0–8)</title>
+<style>
+  :root {
+    --teal: #0D6E6E;
+    --teal-light: #0F8F8F;
+    --teal-bg: #E6F7F7;
+    --purple: #5B2D8E;
+    --purple-bg: #F3EDF9;
+    --green: #16A34A;
+    --green-bg: #DCFCE7;
+    --amber: #D97706;
+    --amber-bg: #FEF3C7;
+    --red: #DC2626;
+    --red-bg: #FEE2E2;
+    --blue: #2563EB;
+    --blue-bg: #DBEAFE;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-500: #6B7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.6; }
+
+  .banner { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%); color: white; padding: 20px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(13,110,110,0.3); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+  .banner-text { flex: 1; min-width: 200px; }
+  .banner h1 { font-size: 22px; font-weight: 700; }
+  .banner .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .banner .counts { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .banner .count-box { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; text-align: center; }
+  .banner .count-box .num { font-size: 20px; display: block; }
+
+  .container { max-width: 100%; margin: 0 auto; padding: 20px 24px 60px; }
+
+  .overview-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .overview-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 12px; }
+  .overview-panel p { font-size: 14px; color: var(--gray-500); margin-bottom: 8px; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.vo { background: var(--teal); }
+  .legend-dot.ss { background: var(--purple); }
+  .legend-dot.have { background: var(--green); }
+  .legend-dot.need { background: var(--amber); }
+  .legend-dot.build { background: var(--blue); }
+
+  /* Section dividers */
+  .section-divider { display: flex; align-items: center; gap: 14px; margin: 32px 0 16px; }
+  .section-badge { background: var(--teal); color: white; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .section-divider h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+  .section-divider .meta { font-size: 12px; color: var(--gray-500); margin-left: auto; }
+
+  /* Slide cards */
+  .slide-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .slide-header { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--gray-100); gap: 12px; cursor: pointer; user-select: none; }
+  .slide-header:hover { background: var(--gray-50); }
+  .slide-num { background: var(--teal); color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .slide-title { flex: 1; font-size: 14px; font-weight: 600; }
+  .slide-tags { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+  .tag { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .tag.vo { background: var(--teal-bg); color: var(--teal); }
+  .tag.ss { background: var(--purple-bg); color: var(--purple); }
+  .tag.have { background: var(--green-bg); color: var(--green); }
+  .tag.need { background: var(--amber-bg); color: var(--amber); }
+  .tag.build { background: var(--blue-bg); color: var(--blue); }
+  .expand-icon { color: var(--gray-300); font-size: 18px; flex-shrink: 0; transition: transform 0.2s; }
+  .slide-card.open .expand-icon { transform: rotate(180deg); }
+
+  .slide-body { padding: 0 20px 20px; display: none; }
+  .slide-card.open .slide-body { display: block; }
+
+  /* Voiceover block */
+  .vo-block { background: var(--teal-bg); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+  .vo-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--teal); margin-bottom: 6px; }
+  .vo-block .script { font-size: 13px; color: var(--gray-700); line-height: 1.7; }
+  .vo-block .script em { color: var(--gray-500); font-style: italic; }
+
+  /* Screenshot block */
+  .ss-block { background: var(--purple-bg); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+  .ss-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--purple); margin-bottom: 6px; }
+  .ss-block .details { font-size: 13px; color: var(--gray-700); line-height: 1.6; }
+  .ss-block .filename { font-family: 'Cascadia Code','Consolas',monospace; font-size: 11.5px; color: var(--purple); font-weight: 600; }
+  .ss-block .status { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+  .ss-block .status.captured { background: var(--green-bg); color: var(--green); }
+  .ss-block .status.needed { background: var(--amber-bg); color: var(--amber); }
+  .ss-block .status.design { background: var(--blue-bg); color: var(--blue); }
+
+  /* Notes */
+  .note-box { padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; margin-bottom: 8px; }
+  .note-box.tip { background: var(--amber-bg); border-left: 3px solid var(--amber); color: var(--gray-700); }
+  .note-box.interaction { background: var(--blue-bg); border-left: 3px solid var(--blue); color: var(--gray-700); }
+  .note-box.critical { background: var(--red-bg); border-left: 3px solid var(--red); color: var(--gray-700); }
+  .note-label { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; display: block; }
+  .note-box.tip .note-label { color: var(--amber); }
+  .note-box.interaction .note-label { color: var(--blue); }
+  .note-box.critical .note-label { color: var(--red); }
+
+  /* Summary table */
+  .summary-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-top: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .summary-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 16px; }
+  table.summary { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.summary th { background: var(--teal-bg); color: var(--teal); font-weight: 700; text-align: left; padding: 8px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table.summary td { padding: 8px 10px; border-bottom: 1px solid var(--gray-100); vertical-align: top; }
+  table.summary tr:hover td { background: var(--gray-50); }
+  table.summary code { font-family: 'Cascadia Code','Consolas',monospace; font-size: 11px; color: var(--purple); }
+
+  .folder-link { display: inline-block; margin-left: 8px; text-decoration: none; font-size: 14px; vertical-align: middle; opacity: 0.7; transition: opacity 0.15s; }
+  .folder-link:hover { opacity: 1; }
+  .folder-link:hover::after { content: attr(title); position: absolute; margin-top: 22px; margin-left: -60px; background: var(--gray-900); color: white; font-size: 10px; padding: 3px 8px; border-radius: 4px; white-space: nowrap; font-family: 'Cascadia Code','Consolas',monospace; z-index: 10; }
+
+  .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--gray-500); margin-top: 20px; }
+
+  /* Expand all button */
+  .controls { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 8px; }
+  .btn-sm { padding: 5px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; background: white; color: var(--gray-700); transition: all 0.15s; }
+  .btn-sm:hover { background: var(--gray-100); border-color: var(--gray-300); }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div class="banner-text"><h1>Account Closure/Shutdown &mdash; Storyboard Guide</h1>
+  <div class="subtitle">Sections 0&ndash;8 &nbsp;|&nbsp; Screenshots + AI Voiceover Scripts &nbsp;|&nbsp; Updated April 2, 2026 &nbsp;|&nbsp; Sections 0&ndash;2 Complete &mdash; Resuming at Section 3</div></div>
+  <div class="counts">
+    <div class="count-box"><span class="num">34</span>slides</div>
+    <div class="count-box"><span class="num">22</span>screenshots</div>
+    <div class="count-box"><span class="num">34</span>VO scripts</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="overview-panel">
+    <h2>How to Use This Document</h2>
+    <p>Each slide card below contains the <strong>AI voiceover script</strong> (what the learner hears) and <strong>screenshot/visual requirements</strong> (what the learner sees). Expand a card to see both. Use the status badges to track what&rsquo;s captured vs. what still needs to be created.</p>
+    <p><strong>Module Duration:</strong> ~33 minutes (self-paced) &nbsp;|&nbsp; <strong>Tool:</strong> Articulate 360 (Rise or Storyline) &nbsp;|&nbsp; <strong>Track:</strong> Track 2 &mdash; Specialized Deep-Dive</p>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot vo"></div>Voiceover script</div>
+      <div class="legend-item"><div class="legend-dot ss"></div>Screenshot needed</div>
+      <div class="legend-item"><div class="legend-dot have"></div>Already captured (Mar 26)</div>
+      <div class="legend-item"><div class="legend-dot need"></div>Needs capture</div>
+      <div class="legend-item"><div class="legend-dot build"></div>Design/build in Articulate</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.add('open'))">Expand All</button>
+    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.remove('open'))">Collapse All</button>
+  </div>
+
+  <!-- ========== SECTION 0 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">0</div>
+    <h2>Welcome &amp; Objectives</h2>
+    <span class="meta">2 min &middot; 2 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">0.1</div>
+      <div class="slide-title">Title Slide</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Every account has a lifecycle. When a customer needs to close their account &mdash; whether by choice or circumstance &mdash; how you handle it determines whether they leave as a detractor or a future return customer. In this module, you&rsquo;ll learn the complete closure process: from routing the request, to executing the checklist, to handling the sensitive scenarios that trip up even experienced agents.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Title graphic</span> <span class="status design">Design in Articulate</span><br>
+          Module title: &ldquo;Account Closure/Shutdown&rdquo;<br>
+          Subtitle: &ldquo;Closing with confidence and care&rdquo;<br>
+          PrePass branding / account lifecycle icon
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">0.2</div>
+      <div class="slide-title">Learning Objectives</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">By the end of this module, you&rsquo;ll be able to: identify the six reasons accounts get closed or shut down. Route closure requests correctly based on fleet size and CSM status. Execute the closure checklist for PrePass and PrePass Plus/Tolls accounts. Handle sensitive scenarios &mdash; including deceased customers, bond accounts, and consolidations. And create proper documentation and refund cases in D365.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Objectives list graphic</span> <span class="status design">Design in Articulate</span><br>
+          Numbered list with icons for each objective. Appear sequentially with VO timing. Five objectives total.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 1 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">1</div>
+    <h2>Why Accounts Close</h2>
+    <span class="meta">3 min &middot; 3 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.1</div>
+      <div class="slide-title">The 6 Closure Types &mdash; Overview</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">There are six reasons an account gets closed or shut down. Not every closure looks the same, and your role is different depending on the type. Let&rsquo;s walk through all six. Click on each card to learn what triggers it and what it means for you as an agent.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">6-card interactive graphic</span> <span class="status design">Design in Articulate</span><br>
+          Six clickable cards or wheel segments, each revealing detail on click:<br>
+          1. Billing Related &mdash; Past Due &middot; 2. Collection Related &middot; 3. Customer Request &middot; 4. Credential Related &middot; 5. Consolidation &middot; 6. Safety Related (ISS Score)<br>
+          Cards remain dimmed until clicked.
+        </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Interaction Design</span>
+        Build as clickable hotspot cards (Storyline) or image-and-text block with tabs (Rise). Learner must visit all 6 before proceeding.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.2</div>
+      <div class="slide-title">Card Details &mdash; Each Closure Type</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Billing Related &mdash; Past Due: the account goes inactive because of non-payment. The customer has to resolve the balance before closure can be processed. Collection Related: the account has been escalated to collections. Special rule here &mdash; no credits for returned devices. No exceptions. Customer Request: this is the most common type you&rsquo;ll handle. The customer voluntarily wants to close. We split these into controllable and uncontrollable reasons &mdash; we&rsquo;ll cover that next. Credential Related: a change of credential triggers inactive status. Consolidation: the customer is moving trucks to another account. This isn&rsquo;t a lost customer &mdash; the truck count stays the same. And Safety Related: a failed ISS safety check triggers closure.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Card reveal content</span> <span class="status design">Design in Articulate</span><br>
+          Each card from slide 1.1 reveals a brief description and key callout when clicked. This VO plays as learner explores the cards &mdash; or use per-card audio snippets.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.3</div>
+      <div class="slide-title">Takeaway &mdash; Customer Request Is Your Focus</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Customer Request is the one you&rsquo;ll handle most often &mdash; and it&rsquo;s the one where your process matters most. The other types are triggered by system events or other departments. But when a customer picks up the phone and says &ldquo;I want to close my account,&rdquo; that&rsquo;s your call to own. Let&rsquo;s dig into how to route those calls.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Transition callout</span> <span class="status design">Design in Articulate</span><br>
+          Callout box highlighting &ldquo;Customer Request&rdquo; card. Transition arrow pointing to Section 2.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 2 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">2</div>
+    <h2>The Routing Decision</h2>
+    <span class="meta">4 min &middot; 4 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.1</div>
+      <div class="slide-title">Gather Three Things First</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">A customer calls and says they want to close their account. Before you touch anything in CRM, you need three pieces of information. Click to reveal each one. First: what&rsquo;s the cancellation reason? Second: does the account have a Customer Success Manager? And third: how many enrolled vehicles? These three data points determine everything that happens next &mdash; who handles the closure, what steps to follow, and where the case goes.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">3-reveal interaction</span> <span class="status design">Design in Articulate</span><br>
+          Three clickable panels that reveal on click: (1) Cancellation Reason, (2) CSM Status, (3) Fleet Size. Each reveals with a brief explanation. Learner must click all three before proceeding.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.2</div>
+      <div class="slide-title">Decision Tree &mdash; Route by Fleet Size &amp; CSM</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Here&rsquo;s the routing decision tree. Follow the path from the top. If the account has a CSM &mdash; any fleet size &mdash; you assign the case to that CSM. If there&rsquo;s no CSM, fleet size determines everything. Fleet one to twenty-four: you handle it. That&rsquo;s your lane. Fleet twenty-five to ninety-nine: convert to a case and assign to Beverly Evans in the Retention group. Fleet one hundred to four ninety-nine: email Jennifer Millard. Fleet five hundred plus: email Brett Jackson. This decision tree is one of the most important things you&rsquo;ll memorize. Let&rsquo;s make sure you know it.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Interactive decision tree flowchart</span> <span class="status design">Design in Articulate</span><br>
+          Branching flowchart: &ldquo;Customer wants to close&rdquo; &rarr; &ldquo;Has CSM?&rdquo; &rarr; YES = assign to CSM / NO &rarr; fleet size branches.<br>
+          Build as interactive click-through flowchart in Storyline or process block in Rise. Learner follows their path.
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Key Rule</span>
+        Customer Care does NOT handle Handling Fee closures. If the account is inactive due to billing or collections, the customer must resolve the issue first &mdash; payment, transfer, or Collections case &mdash; before you can close.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.3</div>
+      <div class="slide-title">Controllable vs. Uncontrollable Reasons</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Closure reasons are split into two categories: controllable and uncontrollable. Controllable reasons are things we could potentially address &mdash; competitor, billing or invoice issues, customer service dissatisfaction, minimal bypass, and price. Uncontrollable reasons are outside our control &mdash; deceased, impacted by Hurricane Helene, medical ailment, out of business, retired, safety, selling business, truck repair, route change, consolidation, moving to company account, and switching companies. Here&rsquo;s the important nuance: &ldquo;uncontrollable&rdquo; does <em>not</em> mean irreversible. A customer who went out of business might come back. A deceased closure could have been initiated by a malicious actor. The closure status matters: accounts in &ldquo;Initiated&rdquo; status can be reactivated by agents. &ldquo;Pending Archive&rdquo; requires a Team Lead. And &ldquo;Archived&rdquo; is permanent &mdash; gone for good.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Two-column tabbed layout</span> <span class="status design">Design in Articulate</span><br>
+          Tab or accordion: Controllable (5 items) vs. Uncontrollable (12 items).<br>
+          Below: three-tier status graphic: Initiated (agent) &rarr; Pending Archive (TL) &rarr; Archived (permanent). Color-coded green &rarr; amber &rarr; red.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.4</div>
+      <div class="slide-title">Quick Check &mdash; Routing Scenarios</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Let&rsquo;s test your routing instincts with two quick scenarios. <em>[Pause for interaction.]</em> Scenario one: a customer with 15 trucks, no CSM, calls to close due to price. What do you do? <em>[Pause.]</em> You handle it &mdash; fleet one to twenty-four with no CSM is your lane, regardless of whether the reason is controllable or uncontrollable. Scenario two: a customer with 45 trucks, no CSM, calls to close due to dissatisfaction. <em>[Pause.]</em> Convert to a case and assign to Beverly Evans in the Retention group. Fleet twenty-five to ninety-nine with no CSM goes to Retention &mdash; every time.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">2-scenario interaction</span> <span class="status design">Design in Articulate</span><br>
+          Two scenario cards. Each presents fleet size + CSM status + reason. Learner selects the correct routing. Reveal correct answer with feedback.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 3 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">3</div>
+    <h2>Closing a PrePass Account</h2>
+    <span class="meta">5 min &middot; 4 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.1</div>
+      <div class="slide-title">Step 1: Initiate Closure in CRM</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">You&rsquo;ve determined this is a PrePass-only account, fleet one to twenty-four, no CSM. Here&rsquo;s your checklist. Step one: initiate the closure in CRM. From the main account page, click Status Details. Change the Account Status Indicator to &ldquo;Initiated.&rdquo; Select the closure reason in the Account Closure Reason dropdown. Then change Operation Status Reason to &ldquo;Customer Requests Closure.&rdquo; Click Save. One important check before you do this &mdash; look at the Billing status. If it&rsquo;s inactive, the customer must pay their balance first. You cannot close an account with an outstanding balance.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirements</div>
+        <div class="details">
+          <span class="filename">CRM_StatusDetails_View.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM status details folder &mdash; Status Detail view<br><br>
+          <span class="filename">CRM_AccountCloseIndicator.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM status details folder &mdash; Account Close Indicator field<br><br>
+          <span class="filename">CRM_AccountClosureReason.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM status details folder &mdash; Account Closure Reason dropdown<br><br>
+          <span class="filename">CRM_OpStatusReason.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: CRM status details folder &mdash; Operation Status Reason field<br><br>
+          Show as a step-through: numbered annotations 1 &rarr; 2 &rarr; 3 &rarr; 4 over each screenshot.
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Billing Check</span>
+        If Billing status is inactive (Non Payment/Balance Due), the customer must resolve the balance before closure. This should appear as a persistent warning callout.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.2</div>
+      <div class="slide-title">Steps 2&ndash;4: Delete Trucks, Explain Billing, Send Return Instructions</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Step two: delete all trucks from the account. Step three: explain billing. Tell the customer we bill one month behind &mdash; they&rsquo;ll receive a final bill after the account is closed. Make sure they understand this so they&rsquo;re not surprised. Step four: send device return instructions. For PrePass-only accounts, use email template CCC 13.2. Devices must be returned within 30 days.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirement</div>
+        <div class="details">
+          <span class="filename">D365_EmailTemplate_CCC132.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 email folder &mdash; CCC 13.2 template selection UI<br><br>
+          Show the template selection screen with CCC 13.2 highlighted.
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Template Reminder</span>
+        PrePass-only = CCC 13.2. PrePass Plus/Tolls = CCC 13.1. The numbers are close &mdash; double-check before sending.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.3</div>
+      <div class="slide-title">Steps 5&ndash;6: Collections Rule &amp; Call Documentation</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Step five: check for collections. If the account is or was in collections and the customer is returning a Mark IV, Fusion MD, ElitePass MD or NY, or SelectPass &mdash; no credits for returned devices. No exception. This is a hard rule, so don&rsquo;t let a customer talk you into making an exception. Step six: create your phone call activity in D365. Five9 Agent Assist auto-generates the call summary &mdash; it appears in the phone call Timeline tab. You review and verify it, then copy it and paste it into the Description field on the Phone Call tab.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirements</div>
+        <div class="details">
+          <span class="filename">D365_PhoneCall_Timeline.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 call documentation folder, screenshots 11&ndash;13 &mdash; AA summary in Timeline tab<br><br>
+          <span class="filename">D365_PhoneCall_Description.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 call documentation folder &mdash; Description field where summary is pasted<br><br>
+          Show as step-through: (1) AA generates summary in Timeline, (2) Agent copies, (3) Pastes into Description.
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Collections &mdash; No Exception</span>
+        NO credits for returned devices on collections accounts. Mark IV, Fusion MD, ElitePass MD/NY, SelectPass. This is absolute.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.4</div>
+      <div class="slide-title">Step 7: Close with Care</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Step seven: close with care. End the call professionally: <em>&ldquo;It was a pleasure doing business with you. If you decide to return, we will be happy to help you.&rdquo;</em> That last impression matters. You also have optional steps depending on the situation: report devices as lost or stolen if needed. Create a refund case if there&rsquo;s a balance to refund. Create a trailer plate removal case if applicable. We&rsquo;ll cover refund cases in detail in Section 6.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Script callout card + checklist summary</span> <span class="status design">Design in Articulate</span><br>
+          Display the closing script in a styled callout box. Below: a recap checklist of all 7 steps with checkmarks, plus the 3 optional/conditional steps indicated with a different icon.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 4 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">4</div>
+    <h2>Closing a PrePass Plus / Tolls Account</h2>
+    <span class="meta">5 min &middot; 5 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.1</div>
+      <div class="slide-title">What&rsquo;s Different About Plus/Tolls?</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">PrePass Plus and Tolls accounts follow the same basic flow as PrePass-only closures, but with additional steps. The key differences are sticker deactivation, the trailer plate report, and a critical toll service warning. Let&rsquo;s walk through the full checklist. Pay attention to the steps marked with a star &mdash; those are unique to Plus and Tolls accounts.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Side-by-side comparison</span> <span class="status design">Design in Articulate</span><br>
+          Two-column layout: PrePass (7 steps) vs. PrePass Plus/Tolls (12 steps). Differences highlighted with star icons. Consider an animated reveal where matching steps are grey and unique steps glow.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.2</div>
+      <div class="slide-title">Steps 1&ndash;3: Initiate, Inform, Delete Trucks</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Steps one through three are the same as PrePass. Initiate the closure in CRM &mdash; Status Details, set to Initiated, select closure reason, operation status to Customer Requests Closure, save. Step two: inform the customer. Use this language: <em>&ldquo;I initiated your account closure. The account will not be fully closed until we receive the device or devices and you pay the final bill.&rdquo;</em> This sets expectations early. Step three: delete the trucks on the account.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirement</div>
+        <div class="details">
+          <span class="filename">CRM_StatusDetails_View.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: Same CRM status details screenshots from Section 3. Reuse with brief reference.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.3</div>
+      <div class="slide-title">Steps 4&ndash;5: Deactivate Stickers &amp; Trailer Plate Report</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Here&rsquo;s where Plus and Tolls diverge. Step four: deactivate any stickers on the account. This is a Plus/Tolls-only step &mdash; PrePass accounts don&rsquo;t have stickers. Step five: check the Trailer Plate Report and create a case. Assign the case to the Utah Supervisor group, owner Leidy Canas, category Trailer Plate Update. In the notes, write: &ldquo;Please delete any trailer plates associated to account number&rdquo; and include the account number and note that the customer closed the account. Leidy handles all trailer plate add, edit, and remove cases.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirements</div>
+        <div class="details">
+          <span class="filename">TrailerPlateReport_FullHistory.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: Trailer plate subfolder &mdash; Full Trailer Plate History report<br><br>
+          <span class="filename">TrailerPlateReport_URL.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: Trailer plate subfolder &mdash; SQL Server Reporting Services URL<br><br>
+          Show the report and the case creation fields with sample notes template.
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Case Template</span>
+        Group: Utah Supervisor &middot; Owner: Leidy Canas &middot; Category: Trailer Plate Update &middot; Notes: &ldquo;PLEASE DELETE ANY TRAILER PLATES ASSOCIATED TO ACCT # _____. CUSTOMER CLOSED THE ACCOUNT.&rdquo;
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.4</div>
+      <div class="slide-title">Steps 6&ndash;8: Billing, Toll Warning &amp; Device Return</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Step six: explain the billing cycle &mdash; same as PrePass, we bill one month behind. Step seven is critical and unique to Plus and Tolls. You must warn the customer: toll service is still active. The customer is responsible for any toll charges until the device is deactivated. If they want tolls to stop immediately, the device must be reported &ldquo;not returned&rdquo; the same day. They can return the device later for a partial fee credit &mdash; but only for ElitePass and Fusion MD. This is the step that catches new agents off guard. Don&rsquo;t skip it. Step eight: send device return instructions using template CCC 13.1 &mdash; note that&rsquo;s a different template than PrePass-only.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirement</div>
+        <div class="details">
+          <span class="filename">D365_EmailTemplate_CCC131.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 email folder &mdash; CCC 13.1 template (includes toll fees and deposit refund timeline).
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Toll Warning &mdash; Do Not Skip</span>
+        Toll service is STILL ACTIVE after closure is initiated. Customer is responsible for charges. Devices must be reported &ldquo;Not Returned&rdquo; same day to stop tolls. This must be a persistent, prominent callout.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.5</div>
+      <div class="slide-title">Steps 9&ndash;12: Collections, Refund, Expectations &amp; Close</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Step nine: the collections rule applies here too &mdash; no credits for returned devices on collections accounts. No exception. Step ten: create a refund case. We&rsquo;ll cover the full refund case process in Section 6, but know that PrePass Plus and Tolls accounts always need a refund case at closure. Step eleven: set refund expectations. Use this language: <em>&ldquo;Once your device is returned, and your final bill is paid, the refund process will begin, which can take up to 45 to 60 days to credit to your payment method.&rdquo;</em> Step twelve: thank the customer and close the call professionally.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Full checklist recap</span> <span class="status design">Design in Articulate</span><br>
+          Complete 12-step checklist with checkmarks. Star-marked steps (4, 5, 7) highlighted as Plus/Tolls-only. Include the refund expectation script as a callout card.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 5 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">5</div>
+    <h2>Special Scenarios</h2>
+    <span class="meta">5 min &middot; 4 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.0</div>
+      <div class="slide-title">Special Scenarios Overview &mdash; 3 Tabs</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Not every closure is routine. Some require extra care, different rules, or a completely different approach. We&rsquo;re going to cover three special scenarios: deceased customer closures, bond account closures, and account consolidations. Click on each tab to learn the scenario.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">3-tab interaction</span> <span class="status design">Design in Articulate</span><br>
+          Three tabs: Deceased Customer | Bond Account | Consolidation<br>
+          Tabs remain dimmed until clicked. Learner must visit all three before proceeding.
+        </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Interaction Design</span>
+        Build as tabbed interaction (Rise: tabs block; Storyline: tab interaction). Each tab opens to a mini-scenario with key steps and callouts.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.1</div>
+      <div class="slide-title">Tab 1: Deceased Customer</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">A caller says they&rsquo;re calling about their father&rsquo;s account. He passed away last week. First, lead with empathy: <em>&ldquo;I&rsquo;m so sorry to hear about your loss. Please accept our condolences.&rdquo;</em> Then follow the process. Set the CRM Closure Reason to &ldquo;Deceased.&rdquo; Communicate billing gently: <em>&ldquo;You may receive a final invoice, but if settling it isn&rsquo;t possible, you can disregard it. We won&rsquo;t take any further action.&rdquo;</em> Do not create a device adjustment to write off the device. Remove Autopay to prevent automatic charges. For toll accounts, inform the caller that pending charges will be deducted from the toll deposit. Then close the account using standard notes. The key principle: we do not pursue payment from deceased customers. No collections. No further billing. Mark as Deceased and let billing processors handle the rest.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Empathy-styled scenario card</span> <span class="status design">Design in Articulate</span><br>
+          Different visual treatment for this tab &mdash; softer color palette, empathy icon.<br>
+          Step list with compassion tips alongside each step.<br>
+          Prominent callout: &ldquo;Do NOT create device adjustment. Do NOT pursue collections.&rdquo;
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Common Mistake</span>
+        Do NOT create a device adjustment to write off. Do NOT pursue payment or send to collections. These are the two most common errors on deceased closures.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.2</div>
+      <div class="slide-title">Tab 2: Bond Account Closure</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">A customer wants to close their account. You check CRM and see they have a Surety Bond. This changes things. First, check the Surety Program field in CRM. If it&rsquo;s a bond account, do not create a Billing Refund case. There is nothing to refund &mdash; the customer never paid a deposit to PrePass. The bond replaced it. Advise the customer: once their devices are returned and the final bill is paid, they need to contact their bond agency to cancel the bond. That&rsquo;s their responsibility, not ours. Once they cancel, we receive a notice and mark the bond inactive. The biggest mistake agents make here is telling a bond customer to call back for a deposit refund. They didn&rsquo;t pay us a deposit. There&rsquo;s nothing for us to refund.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Bond scenario card + trigger table</span> <span class="status design">Design in Articulate</span><br>
+          Step list with prominent &ldquo;NO Billing Refund case&rdquo; callout.<br>
+          Include trigger reference table: Balance past due (&gt;39/&gt;18 days), 90% Surety reached (2 biz days), AutoPay removed/declined (5 biz days).
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Key Rule</span>
+        Bond = NO refund case. The customer never paid a deposit to PrePass. Redirect them to their bond agency.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.3</div>
+      <div class="slide-title">Tab 3: Consolidation</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">A customer is switching companies but will still drive with PrePass under the new company&rsquo;s account. This is a consolidation &mdash; not a lost customer. The truck count stays the same. Here are the steps: verify service on both accounts and check device compatibility. If transferring between different services &mdash; say, Plus to PrePass &mdash; both accounts must be active. Initiate closure with the reason set to &ldquo;Consolidation of the Account.&rdquo; Transfer the trucks to the new account. If going from PrePass Plus to PrePass, check for stickers and deactivate them. Explain the billing cycle, provide device return instructions if they&rsquo;re not transferring devices, and remember &mdash; the collections rule still applies. One important handoff: if the customer wants PrePass and PrePass Plus under the same DOT, transfer them to the Account Team.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Consolidation flow diagram</span> <span class="status design">Design in Articulate</span><br>
+          Step-through process with decision point: &ldquo;Same DOT, both services?&rdquo; &rarr; YES = transfer to Account Team / NO = proceed with consolidation steps.<br>
+          Include sticker deactivation reminder for Plus &rarr; PrePass transitions.
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Handoff Reminder</span>
+        PrePass + PrePass Plus under the same DOT &rarr; transfer to Account Team. Don&rsquo;t try to handle this yourself.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 6 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">6</div>
+    <h2>Refund Case Process &amp; Handoffs</h2>
+    <span class="meta">5 min &middot; 6 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">6.1</div>
+      <div class="slide-title">When Is a Refund Case Needed?</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">This is where new agents make the most mistakes &mdash; getting the refund case right is critical. So let&rsquo;s start with the decision: does this closure need a refund case? PrePass Plus and Tolls accounts: yes, always create a refund case at closure. PrePass-only accounts: only if there&rsquo;s a balance to refund. Bond accounts: no. There&rsquo;s nothing to refund &mdash; redirect the customer to their bond agency. One more thing: if a customer calls asking about a refund and a case already exists, place your phone call activity in the same existing case. Don&rsquo;t create a duplicate.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">3-path decision graphic</span> <span class="status design">Design in Articulate</span><br>
+          Three paths: Plus/Tolls &rarr; Always &middot; PrePass-only &rarr; If balance to refund &middot; Bond &rarr; Never.<br>
+          Build as an interactive decision: learner selects account type and sees the correct answer.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">6.2</div>
+      <div class="slide-title">Create the Case from the Phone Call (D365)</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">The refund case starts life as a standard phone call conversion in D365. Here&rsquo;s the step-by-step. First, fill the Regarding field at the bottom of the phone call screen with the account info. This field is sometimes blank &mdash; it must be filled before you save. Save the phone call. Then click the dropdown &ldquo;Convert To&rdquo; and select &ldquo;To Case.&rdquo; A popup appears: &ldquo;This will close this phone call and convert it to a case.&rdquo; Click OK. Your new case is now created with the phone call visible in the Timeline.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirements</div>
+        <div class="details">
+          <span class="filename">D365_PhoneCall_RegardingField.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 call documentation folder, screenshot 14 &mdash; Regarding field<br><br>
+          <span class="filename">D365_ConvertTo_Dropdown.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 call documentation folder, screenshot 15&ndash;16 &mdash; Convert To &rarr; To Case<br><br>
+          <span class="filename">D365_ConvertToCase_Popup.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 call documentation folder, screenshot 17 &mdash; confirmation popup<br><br>
+          <span class="filename">D365_NewCase_Created.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 call documentation folder, screenshot 18 &mdash; new case with timeline<br><br>
+          Show as numbered step-through: 1 &rarr; 2 &rarr; 3 &rarr; 4 &rarr; 5.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">6.3</div>
+      <div class="slide-title">Configure the Case for Billing Refunds</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">Screenshot</span><span class="tag have">Captured</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Now you need to configure the case for the Billing Refunds team. Edit the title to match the naming convention: &ldquo;Refund&rdquo; followed by the method &mdash; CC for credit card, CK for check &mdash; then a dash, then &ldquo;CSLR&rdquo; and the date. For example: Refund CC dash CSLR 03/26/26. Change the Assigned Group to Billing Refunds. Set the Owner to Unassigned. Then add a task: click the plus sign at the top right of the Timeline and select Task. In the description, use the template: the account name, &ldquo;Would like Requested program amount refund sent to,&rdquo; the payment method and number, &ldquo;Account closed&rdquo; and the closure date. Select a Category from the dropdown &mdash; this is required before you can save. Click Save and Close on the task.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Screenshot Requirements</div>
+        <div class="details">
+          <span class="filename">D365_RefundCase_Title.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 refund request folder &mdash; case title convention<br><br>
+          <span class="filename">D365_RefundCase_AssignedGroup.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 refund request folder &mdash; Billing Refunds group assignment<br><br>
+          <span class="filename">D365_RefundCase_Task.png</span> <span class="status captured">Captured Mar 26</span><br>
+          Source: D365 refund request folder &mdash; task creation with template<br><br>
+          Show as step-through with title convention prominently displayed.
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Title Convention</span>
+        Refund [Method] &ndash; CSLR [MM/DD/YY] &nbsp;&nbsp; Example: <code>Refund CC &ndash; CSLR 03/26/26</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">6.4</div>
+      <div class="slide-title">Do NOT Resolve the Refund Case</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">This is the number one rookie mistake on account closures, and we&rsquo;re going to make sure you don&rsquo;t make it. After adding the task, leave the case open. Do not resolve it. New agents frequently resolve the refund case out of habit because that&rsquo;s what you do with standard cases &mdash; add task, mark complete, resolve, save and close. But the refund case is the exception. If the case is resolved, the Billing Refunds team will not work it. The case must stay open and active for the refund to be processed. Let me say it one more time: do not resolve the refund case.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Warning callout + comparison</span> <span class="status design">Design in Articulate</span><br>
+          Large, prominent warning graphic: &ldquo;DO NOT RESOLVE THE REFUND CASE&rdquo;<br>
+          Below: two-column comparison &mdash; Standard Case flow (add task &rarr; mark complete &rarr; resolve &rarr; save) vs. Refund Case flow (add task &rarr; save &amp; close task &rarr; STOP &mdash; leave case open).<br>
+          This is a key wrong-answer path in the knowledge check.
+        </div>
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Rookie Mistake Alert</span>
+        If the refund case is resolved, Billing Refunds will NOT work it. The refund will not be processed. Leave the case OPEN. This is the #1 error on closures.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">6.5</div>
+      <div class="slide-title">Refund Timeline &amp; Customer Expectations</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">The refund timeline is the number one source of customer callbacks, so teach it clearly. The 45 to 60 day clock does not start when the account is closed. It starts after the final bill is generated. And the final bill is generated the month following device return or deactivation. Here&rsquo;s what that looks like. If an account is closed in May and devices are returned in June, the final invoice comes July first. The 45 to 60 day window starts July first. That means the earliest refund is mid-August. After the 60-day window, there&rsquo;s additional processing time. Credit card and checking account refunds take 7 to 10 business days. Check refunds take 6 to 8 weeks. Reissued checks take 4 weeks. Two more rules: the refund goes to the most recently billed payment method. You cannot add a new card or account. If the billed method is invalid, the Billing Refunds Team issues a check to the account name. And do not request an expedited case unless it&rsquo;s a billing error or it has exceeded the 60-day timeframe.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Timeline animation + processing table</span> <span class="status design">Design in Articulate</span><br>
+          Animated or interactive timeline: Account Closed (May) &rarr; Devices Returned (June) &rarr; Final Invoice (July 1) &rarr; 45&ndash;60 Day Window &rarr; Refund Processed.<br>
+          Below: processing time table (CC: 7&ndash;10 biz days, Checking: 7&ndash;10 biz days, Check: 6&ndash;8 weeks, Reissued: 4 weeks).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">6.6</div>
+      <div class="slide-title">Handoffs &mdash; CSM, Retention &amp; Escalation</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">When handing off to a CSM or Retention, convert the phone call to a case in D365 and include detailed notes: customer name, account number, phone number, the person they spoke with, and the reason for wanting to close. For escalations &mdash; if a customer calls back saying their case hasn&rsquo;t been processed &mdash; email the supervisor who owns your Team Lead. Adriana Rodriguez is the supervisor over TLs Brian Cooley and Stefani Torres. Eddy Encinas is the supervisor over TLs Galya Goodrich and Marangelie Boyer. CC the Enrollment Support Supervisor, Shawna Velasquez, or the CSM Manager &mdash; Jennifer Millard or Brett Jackson. Include the account name, account number, case number, assigned CSM, and escalation details.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Handoff reference card</span> <span class="status design">Design in Articulate</span><br>
+          Two-panel layout: Left = Case handoff template (5 required fields). Right = Escalation path with supervisor names and TL assignments.<br>
+          Build as a reference card the learner can revisit.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 7 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">7</div>
+    <h2>Knowledge Check</h2>
+    <span class="meta">3 min &middot; 5 slides</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">7.1</div>
+      <div class="slide-title">Q1: Routing &mdash; Fleet 45, No CSM</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Question one. A customer with 45 trucks, no CSM, calls to close their account due to price. What do you do?</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Multiple choice interaction</span> <span class="status design">Design in Articulate</span><br>
+          A) Close the account yourself &mdash; it&rsquo;s a controllable reason<br>
+          B) Convert to case, assign to &ldquo;Retention&rdquo; group and Beverly Evans &check;<br>
+          C) Email Jennifer Millard<br>
+          D) Transfer the call to Customer Success<br><br>
+          <strong>Feedback:</strong> Fleet size 25&ndash;99 with no CSM goes to Beverly Evans in the Retention group, regardless of the closure reason.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">7.2</div>
+      <div class="slide-title">Q2: Deceased Customer &mdash; What NOT to Do</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Question two. A family member calls about a deceased customer&rsquo;s account. Which of these should you not do?</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Multiple choice interaction</span> <span class="status design">Design in Articulate</span><br>
+          A) Remove Autopay<br>
+          B) Create a device adjustment to write off the device &check;<br>
+          C) Set CRM Closure Reason to &ldquo;Deceased&rdquo;<br>
+          D) Inform them a final invoice may arrive but they can disregard it<br><br>
+          <strong>Feedback:</strong> Never create a device adjustment for deceased accounts. Simply mark as Deceased, remove Autopay, and let billing processors handle the rest.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">7.3</div>
+      <div class="slide-title">Q3: Bond Account &mdash; Refund Request</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Question three. A customer with a closed bond account calls asking for their toll deposit refund. What&rsquo;s the correct response?</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Multiple choice interaction</span> <span class="status design">Design in Articulate</span><br>
+          A) Create a Billing Refund case<br>
+          B) Transfer to Financial Department<br>
+          C) Advise them to contact their bond agency to cancel the bond &check;<br>
+          D) Process the refund using their credit card on file<br><br>
+          <strong>Feedback:</strong> Bond customers never paid a deposit to PrePass &mdash; the bond replaced it. There&rsquo;s nothing for us to refund. They need to cancel through their bond agency.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">7.4</div>
+      <div class="slide-title">Q4: PrePass Plus Closure &mdash; Step Ordering</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Question four. Put these PrePass Plus closure steps in the correct order.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Ordering/drag-drop interaction</span> <span class="status design">Design in Articulate</span><br>
+          Drag-drop or ordering interaction. Correct order:<br>
+          1. Initiate closure in CRM &rarr; 2. Inform customer &rarr; 3. Delete trucks &rarr; 4. Deactivate stickers &rarr; 5. Check Trailer Plate Report &rarr; 6. Explain billing cycle &rarr; 7. Warn toll service still active &rarr; 8. Email device return instructions (CCC 13.1) &rarr; 9. Create Refund Case<br><br>
+          <strong>Feedback:</strong> The order matters &mdash; sticker deactivation and trailer plate check happen before billing and toll discussions.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">7.5</div>
+      <div class="slide-title">Q5: Billing Inactive &mdash; What Comes First?</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Question five. A customer calls to close their fleet-12, no-CSM, PrePass-only account. Their billing status shows Inactive due to Non Payment. What must happen first?</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Multiple choice interaction</span> <span class="status design">Design in Articulate</span><br>
+          A) Proceed with closure &mdash; billing status doesn&rsquo;t matter<br>
+          B) Customer must resolve the balance (payment, transfer, or Collections case) before closure &check;<br>
+          C) Transfer to Collections department<br>
+          D) Email the supervisor for approval<br><br>
+          <strong>Feedback:</strong> If the account is inactive due to billing or collections, the customer must resolve the issue before closure can be processed.<br><br>
+          <strong>Passing score:</strong> 80% (4 of 5)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 8 ========== -->
+  <div class="section-divider">
+    <div class="section-badge">8</div>
+    <h2>Summary &amp; Resources</h2>
+    <span class="meta">1 min &middot; 1 slide</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">8.1</div>
+      <div class="slide-title">Key Takeaways &amp; Resource Links</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Voiceover Script</div>
+        <div class="script">Let&rsquo;s recap. Always gather three things first: the closure reason, CSM status, and fleet size. Route by fleet size &mdash; you handle one to twenty-four with no CSM. PrePass Plus and Tolls have extra steps: stickers, trailer plates, and the toll warning. For deceased accounts: empathy first, no device adjustments, no collections. Bond accounts: nothing to refund &mdash; redirect to the bond agency. Document everything &mdash; use Agent Assist and the note template. And remember: the refund clock starts after the final bill, not when the account is closed. You now have the tools to handle any closure scenario with confidence and care. The way you close an account is the last impression a customer has of PrePass. Make it count.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Recap graphic + resource links</span> <span class="status design">Design in Articulate</span><br>
+          7 key takeaways as a visual summary (icons + brief text).<br>
+          Resource links section:<br>
+          &bull; Process for Closing an Account (KB)<br>
+          &bull; Account Status Indicators (KB)<br>
+          &bull; Deceased Customer Process (KB)<br>
+          &bull; Bond Request Handling Guidelines (KB)<br>
+          &bull; Refund Requests (KB)<br>
+          &bull; Device Return Instructions &mdash; CCC 13.1 (Plus/Tolls) / CCC 13.2 (PrePass)
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SUMMARY PANELS ========== -->
+  <div class="summary-panel">
+    <h2>Screenshot Inventory &mdash; Sections 0&ndash;8</h2>
+    <table class="summary">
+      <thead>
+        <tr><th>#</th><th>Filename</th><th>Section</th><th>Source</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td><code>CRM_StatusDetails_View.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM status details/CRM status details.png" title="CRM status details.png">&#128194;</a></td><td>3.1</td><td>CRM status details folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>2</td><td><code>CRM_AccountCloseIndicator.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM status details/CRM status details acct close ind.png" title="CRM status details acct close ind.png">&#128194;</a></td><td>3.1</td><td>CRM status details folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>3</td><td><code>CRM_AccountClosureReason.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM status details/CRM status details acct close reason.png" title="CRM status details acct close reason.png">&#128194;</a></td><td>3.1</td><td>CRM status details folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>4</td><td><code>CRM_OpStatusReason.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM status details/CRM status details op stat reason.png" title="CRM status details op stat reason.png">&#128194;</a></td><td>3.1</td><td>CRM status details folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>5</td><td><code>CRM_BillingStatus.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM status details/CRM status details bill stat reason.png" title="CRM status details bill stat reason.png">&#128194;</a></td><td>3.1</td><td>CRM status details folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>6</td><td><code>CRM_OpStatus.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/CRM status details/CRM status details op stat.png" title="CRM status details op stat.png">&#128194;</a></td><td>3.1</td><td>CRM status details folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>7</td><td><code>D365_EmailTemplate_CCC132.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 email/D365 email template 1.png" title="D365 email template 1.png">&#128194;</a></td><td>3.2</td><td>D365 email folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>8</td><td><code>D365_PhoneCall_Timeline.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 call documentation/D365 outcall 12 new phone call timeline copy summary.png" title="D365 outcall 12 new phone call timeline copy summary.png">&#128194;</a></td><td>3.3</td><td>D365 call documentation folder (SS 11&ndash;13)</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>9</td><td><code>D365_PhoneCall_Description.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 call documentation/D365 outcall 13 new phone call paste summary.png" title="D365 outcall 13 new phone call paste summary.png">&#128194;</a></td><td>3.3</td><td>D365 call documentation folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>10</td><td><code>D365_EmailTemplate_CCC131.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 email/D365 email template popup.png" title="D365 email template popup.png">&#128194;</a></td><td>4.4</td><td>D365 email folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>11</td><td><code>TrailerPlateReport_FullHistory.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/trailer plate /full trailer plate history 2.png" title="full trailer plate history 2.png">&#128194;</a></td><td>4.3</td><td>Trailer plate subfolder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>12</td><td><code>TrailerPlateReport_URL.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/trailer plate /full trailer plate history.png" title="full trailer plate history.png">&#128194;</a></td><td>4.3</td><td>Trailer plate subfolder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>13</td><td><code>D365_PhoneCall_RegardingField.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 call documentation/D365 outcall 14 new phone call and fill regarding.png" title="D365 outcall 14 new phone call and fill regarding.png">&#128194;</a></td><td>6.2</td><td>D365 call documentation folder (SS 14)</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>14</td><td><code>D365_ConvertTo_Dropdown.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 call documentation/D365 outcall 15 new phone call convert to.png" title="D365 outcall 15 new phone call convert to.png">&#128194;</a></td><td>6.2</td><td>D365 call documentation folder (SS 15&ndash;16)</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>15</td><td><code>D365_ConvertToCase_Popup.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 call documentation/D365 outcall 17 new phone call case popup.png" title="D365 outcall 17 new phone call case popup.png">&#128194;</a></td><td>6.2</td><td>D365 call documentation folder (SS 17)</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>16</td><td><code>D365_NewCase_Created.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 call documentation/D365 outcall 18 new case.png" title="D365 outcall 18 new case.png">&#128194;</a></td><td>6.2</td><td>D365 call documentation folder (SS 18)</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>17</td><td><code>D365_RefundCase_Title.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 refund request/D365 refund req edit case 1.png" title="D365 refund req edit case 1.png">&#128194;</a></td><td>6.3</td><td>D365 refund request folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>18</td><td><code>D365_RefundCase_AssignedGroup.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 refund request/D365 refund req edit case 2.png" title="D365 refund req edit case 2.png">&#128194;</a></td><td>6.3</td><td>D365 refund request folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>19</td><td><code>D365_RefundCase_Task.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 refund request/D365 refund req task.png" title="D365 refund req task.png">&#128194;</a></td><td>6.3</td><td>D365 refund request folder</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>20</td><td><code>Five9_AgentAssist_Panel.png</code></td><td>3.3</td><td>Nice-to-have &mdash; Content Needs #7</td><td><span class="tag need" style="font-size:10px;">Nice-to-Have</span></td></tr>
+        <tr><td>21</td><td><code>D365_StandardCase_Resolve.png</code> <a class="folder-link" href="../CRM Five9 and D365 screengrabs/D365 call documentation/D365 outcall 22 case resolve..png" title="D365 outcall 22 case resolve..png">&#128194;</a></td><td>6.4</td><td>D365 call documentation folder (SS 19&ndash;25)</td><td><span class="tag have" style="font-size:10px;">Captured</span></td></tr>
+        <tr><td>22</td><td><code>QC_ClosureCallTranscript.txt</code></td><td>Scenario</td><td>Nice-to-have &mdash; Content Needs #5</td><td><span class="tag need" style="font-size:10px;">Nice-to-Have</span></td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px; font-size:13px; color:var(--gray-500);">
+      <strong>19 of 22</strong> assets already captured or confirmed (March 26). <strong>2</strong> are nice-to-haves (Five9 AA panel screenshot, QC call transcript). <strong>1</strong> standard case resolve flow is captured for comparison. Remaining slides use designed graphics built directly in Articulate.
+    </div>
+  </div>
+
+  <div class="summary-panel">
+    <h2>Voiceover Summary &mdash; Sections 0&ndash;8</h2>
+    <table class="summary">
+      <thead>
+        <tr><th>Slide</th><th>Title</th><th>Approx Words</th><th>Est. Duration</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0.1</td><td>Title Slide</td><td>~55</td><td>20s</td></tr>
+        <tr><td>0.2</td><td>Learning Objectives</td><td>~60</td><td>25s</td></tr>
+        <tr><td>1.1</td><td>6 Closure Types &mdash; Overview</td><td>~45</td><td>15s</td></tr>
+        <tr><td>1.2</td><td>Card Details</td><td>~135</td><td>50s</td></tr>
+        <tr><td>1.3</td><td>Takeaway &mdash; Customer Request</td><td>~55</td><td>20s</td></tr>
+        <tr><td>2.1</td><td>Gather Three Things</td><td>~75</td><td>30s</td></tr>
+        <tr><td>2.2</td><td>Decision Tree</td><td>~110</td><td>40s</td></tr>
+        <tr><td>2.3</td><td>Controllable vs. Uncontrollable</td><td>~140</td><td>55s</td></tr>
+        <tr><td>2.4</td><td>Quick Check &mdash; Routing</td><td>~100</td><td>40s</td></tr>
+        <tr><td>3.1</td><td>Initiate Closure in CRM</td><td>~105</td><td>40s</td></tr>
+        <tr><td>3.2</td><td>Delete, Billing, Return Instructions</td><td>~70</td><td>25s</td></tr>
+        <tr><td>3.3</td><td>Collections &amp; Call Documentation</td><td>~100</td><td>40s</td></tr>
+        <tr><td>3.4</td><td>Close with Care</td><td>~80</td><td>30s</td></tr>
+        <tr><td>4.1</td><td>What&rsquo;s Different About Plus/Tolls</td><td>~55</td><td>20s</td></tr>
+        <tr><td>4.2</td><td>Steps 1&ndash;3</td><td>~80</td><td>30s</td></tr>
+        <tr><td>4.3</td><td>Stickers &amp; Trailer Plates</td><td>~100</td><td>40s</td></tr>
+        <tr><td>4.4</td><td>Billing, Toll Warning, Device Return</td><td>~120</td><td>45s</td></tr>
+        <tr><td>4.5</td><td>Collections, Refund, Close</td><td>~90</td><td>35s</td></tr>
+        <tr><td>5.0</td><td>Special Scenarios Overview</td><td>~40</td><td>15s</td></tr>
+        <tr><td>5.1</td><td>Deceased Customer</td><td>~155</td><td>60s</td></tr>
+        <tr><td>5.2</td><td>Bond Account</td><td>~130</td><td>50s</td></tr>
+        <tr><td>5.3</td><td>Consolidation</td><td>~125</td><td>50s</td></tr>
+        <tr><td>6.1</td><td>Refund Decision</td><td>~85</td><td>30s</td></tr>
+        <tr><td>6.2</td><td>Create Case from Phone Call</td><td>~90</td><td>35s</td></tr>
+        <tr><td>6.3</td><td>Configure for Billing Refunds</td><td>~120</td><td>45s</td></tr>
+        <tr><td>6.4</td><td>Do NOT Resolve</td><td>~100</td><td>40s</td></tr>
+        <tr><td>6.5</td><td>Refund Timeline</td><td>~160</td><td>60s</td></tr>
+        <tr><td>6.6</td><td>Handoffs &amp; Escalation</td><td>~105</td><td>40s</td></tr>
+        <tr><td>7.1</td><td>Q1: Routing</td><td>~25</td><td>10s</td></tr>
+        <tr><td>7.2</td><td>Q2: Deceased</td><td>~20</td><td>10s</td></tr>
+        <tr><td>7.3</td><td>Q3: Bond</td><td>~25</td><td>10s</td></tr>
+        <tr><td>7.4</td><td>Q4: Step Order</td><td>~15</td><td>8s</td></tr>
+        <tr><td>7.5</td><td>Q5: Billing Inactive</td><td>~30</td><td>12s</td></tr>
+        <tr><td>8.1</td><td>Summary &amp; Resources</td><td>~120</td><td>45s</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px; font-size:13px; color:var(--gray-500);">
+      <strong>34 voiceover scripts</strong> across sections 0&ndash;8. Total estimated voiceover: ~16 minutes 30 seconds. All scripts written and ready for AI voice generation.
+    </div>
+  </div>
+
+  <div class="summary-panel">
+    <h2>Content Needs Status</h2>
+    <table class="summary">
+      <thead>
+        <tr><th>#</th><th>Item</th><th>Status</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Call documentation steps with Five9 AA</td><td><span class="tag have" style="font-size:10px;">Confirmed</span></td><td>Screenshots 11&ndash;13 show full workflow</td></tr>
+        <tr><td>2</td><td>D365 refund case process (screen-by-screen)</td><td><span class="tag have" style="font-size:10px;">Confirmed</span></td><td>Screenshots 14&ndash;25 + refund request folder</td></tr>
+        <tr><td>3</td><td>CRM Status Details screenshots</td><td><span class="tag have" style="font-size:10px;">Delivered</span></td><td>6 screenshots covering all fields</td></tr>
+        <tr><td>4</td><td>Device return email templates (CCC 13.1 &amp; 13.2)</td><td><span class="tag have" style="font-size:10px;">Delivered</span></td><td>Markdown text + 2 UI screenshots</td></tr>
+        <tr><td>5</td><td>Real closure call transcript from QC</td><td><span class="tag need" style="font-size:10px;">Nice-to-Have</span></td><td>Would strengthen scenario scripts</td></tr>
+        <tr><td>6</td><td>Common rookie mistakes</td><td><span class="tag have" style="font-size:10px;">Confirmed</span></td><td>#1: resolving refund case</td></tr>
+        <tr><td>7</td><td>Five9 Agent Assist screenshot/demo</td><td><span class="tag need" style="font-size:10px;">Nice-to-Have</span></td><td>Guidance Cards + Checklist appearance</td></tr>
+        <tr><td>8</td><td>Trailer Plate Report screenshots + URL</td><td><span class="tag have" style="font-size:10px;">Delivered</span></td><td>2 screenshots + SSRS URL</td></tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px; font-size:13px; color:var(--gray-500);">
+      <strong>All 4 must-haves confirmed.</strong> Nice-to-haves #5 (QC call transcript) and #7 (Five9 AA panel) would strengthen the module but are not blocking the build.
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Account Closure/Shutdown &mdash; Storyboard Guide (Sections 0&ndash;8) &middot; March 31, 2026 &middot; PrePass Training &middot; Track 2 POC
+</div>
+
+<script>
+document.querySelectorAll('.slide-header').forEach(h => {
+  h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+});
+</script>
+</body>
+</html>

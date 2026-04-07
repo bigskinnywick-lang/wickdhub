@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domain & Hosting Research — Document Portal Options</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-hover: #222632;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --text: #e0e0e0;
+    --text-dim: #8a8fa8;
+    --border: #2a2e3d;
+    --green: #00d4aa;
+    --yellow: #ffd93d;
+    --blue: #4ea8de;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+  }
+
+  .container { max-width: 100%; margin: 0 auto; }
+
+  header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2.5rem 2rem;
+    background: linear-gradient(135deg, #1a1d27 0%, #252a3a 100%);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+  }
+
+  header p {
+    color: var(--text-dim);
+    font-size: 1rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .problem-box {
+    background: linear-gradient(135deg, #2a1a1a, #1a1d27);
+    border-left: 4px solid var(--accent3);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .problem-box h2 { color: var(--accent3); font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .problem-box p { color: var(--text-dim); font-size: 0.95rem; }
+
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 2.5rem 0 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+    color: var(--text);
+  }
+
+  .section-title span { color: var(--accent); }
+
+  /* Recommendation Cards */
+  .rec-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .rec-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+
+  .rec-card:hover { border-color: var(--accent); }
+
+  .rec-card.top-pick {
+    border-color: var(--green);
+    background: linear-gradient(135deg, #0f2a22, #1a1d27);
+  }
+
+  .rec-card.top-pick::before {
+    content: "TOP PICK FOR YOU";
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    background: var(--green);
+    color: #0f1117;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .rec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .rec-header h3 { font-size: 1.15rem; color: #fff; }
+
+  .price-tag {
+    background: rgba(108, 99, 255, 0.15);
+    color: var(--accent);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .rec-card.top-pick .price-tag {
+    background: rgba(0, 212, 170, 0.15);
+    color: var(--green);
+  }
+
+  .rec-desc { color: var(--text-dim); font-size: 0.93rem; margin-bottom: 1rem; }
+
+  .rec-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.6rem;
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .detail-item .icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .icon.pro { background: rgba(0, 212, 170, 0.2); color: var(--green); }
+  .icon.con { background: rgba(255, 107, 107, 0.2); color: var(--accent3); }
+  .icon.info { background: rgba(78, 168, 222, 0.2); color: var(--blue); }
+
+  /* Domain Table */
+  .domain-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 2rem;
+    font-size: 0.9rem;
+  }
+
+  .domain-table th {
+    text-align: left;
+    padding: 0.8rem 1rem;
+    background: var(--card);
+    color: var(--text-dim);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border);
+  }
+
+  .domain-table td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .domain-table tr:hover td { background: var(--card-hover); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .badge.free { background: rgba(0, 212, 170, 0.15); color: var(--green); }
+  .badge.low { background: rgba(78, 168, 222, 0.15); color: var(--blue); }
+  .badge.mid { background: rgba(255, 217, 61, 0.15); color: var(--yellow); }
+  .badge.high { background: rgba(255, 107, 107, 0.15); color: var(--accent3); }
+
+  /* Comparison bars */
+  .cost-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .cost-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--green), var(--accent));
+    min-width: 10px;
+  }
+
+  .cost-label { font-size: 0.85rem; font-weight: 600; color: var(--text); white-space: nowrap; }
+
+  /* Bottom line */
+  .bottom-line {
+    background: linear-gradient(135deg, #1a2a1a, #1a1d27);
+    border: 1px solid rgba(0, 212, 170, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+
+  .bottom-line h2 {
+    color: var(--green);
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .bottom-line p { color: var(--text-dim); font-size: 0.95rem; max-width: 700px; margin: 0 auto; }
+
+  .tag-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+
+  .tag {
+    background: rgba(108, 99, 255, 0.1);
+    color: var(--accent);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    border: 1px solid rgba(108, 99, 255, 0.2);
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+
+  footer {
+    text-align: center;
+    margin-top: 3rem;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Document Portal — Domain & Hosting Research</h1>
+    <p>Options for replacing the Teams self-chat workflow with a proper, cross-device accessible document hub for outlines, trackers, research docs, and user summaries.</p>
+  </header>
+
+  <div class="problem-box">
+    <h2>The Problem We're Solving</h2>
+    <p>You're currently stuffing outlines, trackers, research docs, and user summaries into a Teams chat to yourself. It's getting cluttered with duplicate docs and multiple versions. You need a clean, versioned, cross-device accessible home for these documents — ideally on your own domain, and ideally cheap.</p>
+  </div>
+
+  <!-- ===== TOP RECOMMENDATIONS ===== -->
+  <div class="section-title"><span>#1</span> — Recommended Options (Best Fit for Your Workflow)</div>
+
+  <div class="rec-grid">
+
+    <!-- TOP PICK -->
+    <div class="rec-card top-pick">
+      <div class="rec-header">
+        <h3>Obsidian Publish + Custom Domain</h3>
+        <span class="price-tag">~$108/yr total</span>
+      </div>
+      <div class="rec-desc">
+        You're already running an Obsidian vault as your Second Brain (PARA structure, daily notes, project docs). Obsidian Publish lets you selectively publish any vault pages to the web with a custom domain — zero migration, zero reformatting. Your existing markdown files just go live.
+      </div>
+      <div class="rec-details">
+        <div class="detail-item"><span class="icon pro">✓</span> Zero migration — publishes your existing vault</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Custom domain included in subscription</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Selective publishing (keep private stuff private)</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Graph view, search, and navigation built in</div>
+        <div class="detail-item"><span class="icon info">i</span> $8/mo (annual) + ~$10.50/yr domain</div>
+        <div class="detail-item"><span class="icon con">✗</span> No real-time collaboration features</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">Markdown Native</span>
+        <span class="tag">Already Using Obsidian</span>
+        <span class="tag">Custom Domain</span>
+        <span class="tag">Version Control</span>
+      </div>
+    </div>
+
+    <!-- OPTION 2 -->
+    <div class="rec-card">
+      <div class="rec-header">
+        <h3>GitHub Pages + Static Site Generator</h3>
+        <span class="price-tag">~$10.50/yr total</span>
+      </div>
+      <div class="rec-desc">
+        Free static hosting with a custom domain. You'd push markdown files to a GitHub repo, and a generator like MkDocs or Jekyll turns them into a clean site. Cheapest possible option — you only pay for the domain. Requires some comfort with git.
+      </div>
+      <div class="rec-details">
+        <div class="detail-item"><span class="icon pro">✓</span> Hosting is completely FREE</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Custom domain + free HTTPS</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Full version history via git</div>
+        <div class="detail-item"><span class="icon pro">✓</span> MkDocs Material theme looks great</div>
+        <div class="detail-item"><span class="icon info">i</span> Only cost is domain (~$10.50/yr)</div>
+        <div class="detail-item"><span class="icon con">✗</span> Requires git workflow to publish</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">Cheapest Option</span>
+        <span class="tag">Free Hosting</span>
+        <span class="tag">Git-Based</span>
+      </div>
+    </div>
+
+    <!-- OPTION 3 -->
+    <div class="rec-card">
+      <div class="rec-header">
+        <h3>Cloudflare Pages + Custom Domain</h3>
+        <span class="price-tag">~$10.50/yr total</span>
+      </div>
+      <div class="rec-desc">
+        Similar to GitHub Pages but with Cloudflare's global CDN for speed. Free hosting, automatic builds from a git repo, and you can register your domain through Cloudflare at wholesale cost (no markup). Pairs well with MkDocs or any static site generator.
+      </div>
+      <div class="rec-details">
+        <div class="detail-item"><span class="icon pro">✓</span> Free hosting + blazing fast CDN</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Domain registration at wholesale ($10.46/yr .com)</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Auto-deploy from GitHub on push</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Free HTTPS, DDoS protection</div>
+        <div class="detail-item"><span class="icon info">i</span> Excellent for static doc sites</div>
+        <div class="detail-item"><span class="icon con">✗</span> Still requires git workflow</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">Cheapest Option</span>
+        <span class="tag">Fast CDN</span>
+        <span class="tag">No Markup Pricing</span>
+      </div>
+    </div>
+
+    <!-- OPTION 4 -->
+    <div class="rec-card">
+      <div class="rec-header">
+        <h3>BookStack (Self-Hosted Wiki)</h3>
+        <span class="price-tag">~$50–72/yr total</span>
+      </div>
+      <div class="rec-desc">
+        A beautiful open-source wiki platform designed for organizing documentation into shelves, books, chapters, and pages. Self-hosted on a cheap VPS ($2–5/mo). Great if you want a structured, searchable knowledge base with a GUI editor — no git required.
+      </div>
+      <div class="rec-details">
+        <div class="detail-item"><span class="icon pro">✓</span> Beautiful hierarchical organization</div>
+        <div class="detail-item"><span class="icon pro">✓</span> WYSIWYG + Markdown editor</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Full-text search across all docs</div>
+        <div class="detail-item"><span class="icon pro">✓</span> User permissions & access control</div>
+        <div class="detail-item"><span class="icon info">i</span> $2–5/mo VPS + domain cost</div>
+        <div class="detail-item"><span class="icon con">✗</span> Requires server setup/maintenance</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">Open Source</span>
+        <span class="tag">GUI Editor</span>
+        <span class="tag">Self-Hosted</span>
+        <span class="tag">Searchable</span>
+      </div>
+    </div>
+
+    <!-- OPTION 5 -->
+    <div class="rec-card">
+      <div class="rec-header">
+        <h3>Notion + Simple.ink + Custom Domain</h3>
+        <span class="price-tag">~$96/yr total</span>
+      </div>
+      <div class="rec-desc">
+        If you wanted to switch to Notion for doc management, Simple.ink can publish Notion pages as a website with your custom domain. Free tier handles unlimited sites; paid tier ($8/mo) adds custom domain support. Very low effort to maintain.
+      </div>
+      <div class="rec-details">
+        <div class="detail-item"><span class="icon pro">✓</span> Drag-and-drop editing in Notion</div>
+        <div class="detail-item"><span class="icon pro">✓</span> Databases, tables, toggles, embeds</div>
+        <div class="detail-item"><span class="icon pro">✓</span> No coding or git required</div>
+        <div class="detail-item"><span class="icon info">i</span> $8/mo Simple.ink + domain cost</div>
+        <div class="detail-item"><span class="icon con">✗</span> Would require migrating from Obsidian</div>
+        <div class="detail-item"><span class="icon con">✗</span> Notion lock-in</div>
+      </div>
+      <div class="tag-row">
+        <span class="tag">No-Code</span>
+        <span class="tag">Notion Ecosystem</span>
+        <span class="tag">Easy Publishing</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== DOMAIN REGISTRARS ===== -->
+  <div class="section-title"><span>#2</span> — Domain Registrar Comparison</div>
+  <p style="color: var(--text-dim); margin-bottom: 1rem; font-size: 0.93rem;">No matter which hosting route you pick, you'll want a domain. Here's what they cost right now:</p>
+
+  <table class="domain-table">
+    <thead>
+      <tr>
+        <th>Registrar</th>
+        <th>.com (1st Year)</th>
+        <th>.com (Renewal)</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cloudflare Registrar</strong></td>
+        <td>$10.46/yr</td>
+        <td>$10.46/yr</td>
+        <td><span class="badge free">Best Value</span> Zero markup, same price always</td>
+      </tr>
+      <tr>
+        <td><strong>Porkbun</strong></td>
+        <td>$11.06/yr</td>
+        <td>$11.06/yr</td>
+        <td><span class="badge low">Transparent</span> ~$1 max markup, great UI</td>
+      </tr>
+      <tr>
+        <td><strong>Spaceship</strong></td>
+        <td>$4.99–$9.98/yr</td>
+        <td>$9.98/yr</td>
+        <td><span class="badge low">Low Renewal</span> Cheapest long-term .com</td>
+      </tr>
+      <tr>
+        <td><strong>Namecheap</strong></td>
+        <td>~$11/yr</td>
+        <td>$14–17/yr</td>
+        <td><span class="badge mid">Watch Renewals</span> Higher renewal pricing</td>
+      </tr>
+      <tr>
+        <td><strong>Squarespace (ex-Google)</strong></td>
+        <td>$20/yr</td>
+        <td>$20/yr</td>
+        <td><span class="badge high">Pricier</span> Includes WHOIS privacy</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="color: var(--text-dim); font-size: 0.88rem; margin-bottom: 0.5rem;"><strong style="color: var(--text);">Budget TLDs to consider:</strong> .site (~$3–5/yr), .xyz (~$2–5/yr), .pages (~$5/yr) — great if you don't need a .com.</p>
+
+  <!-- ===== ANNUAL COST COMPARISON ===== -->
+  <div class="section-title"><span>#3</span> — Annual Cost Comparison</div>
+
+  <div style="display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0 2rem;">
+    <div class="cost-bar-wrap">
+      <div style="width: 140px; text-align: right; font-size: 0.85rem; color: var(--text-dim);">GitHub/CF Pages</div>
+      <div class="cost-bar" style="width: 20px;"></div>
+      <span class="cost-label" style="color: var(--green);">~$10.50/yr</span>
+    </div>
+    <div class="cost-bar-wrap">
+      <div style="width: 140px; text-align: right; font-size: 0.85rem; color: var(--text-dim);">BookStack + VPS</div>
+      <div class="cost-bar" style="width: 90px;"></div>
+      <span class="cost-label">~$50–72/yr</span>
+    </div>
+    <div class="cost-bar-wrap">
+      <div style="width: 140px; text-align: right; font-size: 0.85rem; color: var(--text-dim);">Notion + Simple.ink</div>
+      <div class="cost-bar" style="width: 130px;"></div>
+      <span class="cost-label">~$96/yr</span>
+    </div>
+    <div class="cost-bar-wrap">
+      <div style="width: 140px; text-align: right; font-size: 0.85rem; color: var(--text-dim);">Obsidian Publish</div>
+      <div class="cost-bar" style="width: 145px;"></div>
+      <span class="cost-label">~$108/yr</span>
+    </div>
+    <div class="cost-bar-wrap">
+      <div style="width: 140px; text-align: right; font-size: 0.85rem; color: var(--text-dim);">Teams self-chat</div>
+      <div class="cost-bar" style="width: 10px; background: var(--accent3);"></div>
+      <span class="cost-label" style="color: var(--accent3);">Free (but chaos)</span>
+    </div>
+  </div>
+
+  <!-- ===== MY RECOMMENDATION ===== -->
+  <div class="bottom-line">
+    <h2>My Recommendation</h2>
+    <p style="margin-bottom: 1rem;">
+      Since you're already running an Obsidian vault with PARA structure, daily notes, and project folders — <strong style="color: #fff;">Obsidian Publish</strong> is the path of least resistance. You'd go from "stuffing docs in Teams" to "published on your own domain" in about 30 minutes, with zero migration. Pick pages to publish, toggle them on, done.
+    </p>
+    <p style="margin-bottom: 1rem;">
+      If you want the <strong style="color: #fff;">cheapest possible setup</strong> and don't mind a small learning curve, go <strong style="color: #fff;">Cloudflare Pages + Cloudflare domain</strong>. Domain at wholesale cost, hosting is free, and we can build a static doc site with MkDocs that looks clean and professional.
+    </p>
+    <p>
+      Either way, register through <strong style="color: var(--green);">Cloudflare Registrar</strong> or <strong style="color: var(--green);">Porkbun</strong> — they're the most honest on pricing with no renewal surprises.
+    </p>
+  </div>
+
+  <footer>
+    <p>Research compiled April 3, 2026 — Pricing may vary. Sources: Cloudflare, Obsidian.md, Porkbun, Namecheap, BookStack, Simple.ink, GitHub Docs</p>
+  </footer>
+
+</div>
+</body>
+</html>

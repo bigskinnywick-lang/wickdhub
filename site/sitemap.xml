@@ -2,38 +2,94 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://wickdhub.com/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
     </url>
     <url>
          <loc>https://wickdhub.com/outlines/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/personal/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/personal/personal-tracker/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/personal/popos-install/</loc>
+         <lastmod>2026-04-07</lastmod>
     </url>
     <url>
          <loc>https://wickdhub.com/research/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/research/domain-hosting-research/</loc>
+         <lastmod>2026-04-07</lastmod>
     </url>
     <url>
          <loc>https://wickdhub.com/summaries/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/summaries/apr7-kelsey-quickref/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/summaries/apr7-meeting-prep/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/summaries/inform-source-summary/</loc>
+         <lastmod>2026-04-07</lastmod>
     </url>
     <url>
          <loc>https://wickdhub.com/trackers/</loc>
-         <lastmod>2026-04-03</lastmod>
-    </url>
-    <url>
-         <loc>https://wickdhub.com/trackers/intro-prepass-content/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
     </url>
     <url>
          <loc>https://wickdhub.com/trackers/mcte-6week-plan/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
     </url>
     <url>
          <loc>https://wickdhub.com/trackers/track1-weekly/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
     </url>
     <url>
          <loc>https://wickdhub.com/trackers/track2-weekly/</loc>
-         <lastmod>2026-04-03</lastmod>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/aa-endofcall-capture-guide/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/aa-endofcall-storyboard/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/account-closure-storyboard/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/inform-safety-capture-guide/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/inform-safety-storyboard/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/track1-content-intro-prepass/</loc>
+         <lastmod>2026-04-07</lastmod>
+    </url>
+    <url>
+         <loc>https://wickdhub.com/trackers/content/verification-storyboard/</loc>
+         <lastmod>2026-04-07</lastmod>
     </url>
 </urlset>

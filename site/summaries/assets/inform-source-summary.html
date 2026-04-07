@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>inForm Safety — Content Discovery Summary</title>
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --accent: #2E75B6;
+    --purple: #6B2D8B;
+    --green: #27AE60;
+    --amber: #E67E22;
+    --red: #C0392B;
+    --dark: #1a1a2e;
+    --card: #16213e;
+    --card-alt: #1a2744;
+    --text: #e0e0e0;
+    --muted: #8899aa;
+    --border: #2a3a5c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 0 1.5rem;
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 2rem;
+  }
+  header h1 {
+    font-size: 1.8rem;
+    color: #fff;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.5px;
+  }
+  header .subtitle {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  header .date {
+    color: var(--accent);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .stat .number {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+  }
+  .stat .label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  h2 {
+    color: var(--accent);
+    font-size: 1.3rem;
+    margin: 2rem 0 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    color: #fff;
+    font-size: 1.05rem;
+    margin: 1.25rem 0 0.5rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card.highlight {
+    border-left: 4px solid var(--accent);
+  }
+  .card.warn {
+    border-left: 4px solid var(--amber);
+  }
+  .card.good {
+    border-left: 4px solid var(--green);
+  }
+  .card.critical {
+    border-left: 4px solid var(--red);
+  }
+  .card-title {
+    font-weight: 700;
+    color: #fff;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    margin-right: 0.3rem;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .tag-video { background: #5b2c6f33; color: #bb8fce; border: 1px solid #5b2c6f; }
+  .tag-pdf { background: #c0392b22; color: #e8a0a0; border: 1px solid #c0392b55; }
+  .tag-web { background: #2e75b622; color: #85b8e8; border: 1px solid #2e75b655; }
+  .tag-case { background: #27ae6022; color: #82d9a5; border: 1px solid #27ae6055; }
+  p, li { font-size: 0.9rem; color: var(--text); margin-bottom: 0.4rem; }
+  ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
+  li { margin-bottom: 0.3rem; }
+  strong { color: #fff; }
+  .term-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .term {
+    background: var(--card-alt);
+    border-radius: 6px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.82rem;
+  }
+  .term abbr {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .basics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+    margin: 0.5rem 0;
+  }
+  .basic-item {
+    background: var(--card-alt);
+    border-radius: 5px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .basic-item .num {
+    background: var(--accent);
+    color: #fff;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .gap-list {
+    list-style: none;
+    padding: 0;
+  }
+  .gap-list li {
+    padding: 0.5rem 0.75rem;
+    background: var(--card-alt);
+    border-radius: 6px;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    border-left: 3px solid var(--amber);
+  }
+  .gap-list li::before {
+    content: "⬜ ";
+  }
+  .section-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .quote {
+    border-left: 3px solid var(--purple);
+    padding: 0.5rem 1rem;
+    margin: 0.75rem 0;
+    font-style: italic;
+    color: var(--muted);
+    background: #1a1a2e88;
+    border-radius: 0 6px 6px 0;
+  }
+  footer {
+    text-align: center;
+    padding: 2rem 0 1rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>inForm Safety — Content Discovery Summary</h1>
+  <div class="subtitle">Module Source Material for Call Center Training</div>
+  <div class="date">Collected April 2, 2026 — Adam Wick</div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><span class="number">12</span><span class="label">Total Sources</span></div>
+  <div class="stat"><span class="number">2</span><span class="label">Videos</span></div>
+  <div class="stat"><span class="number">3</span><span class="label">PDFs</span></div>
+  <div class="stat"><span class="number">7</span><span class="label">Web Sources</span></div>
+</div>
+
+<!-- WHAT IS INFORM -->
+<h2>What is inForm Safety?</h2>
+<div class="card highlight">
+  <p><strong>INFORM Safety</strong> (Information and Reports Manager) is a reporting and data visualization tool included with the PrePass bypass service, built by HELP Inc. It transforms complex FMCSA government data into user-friendly dashboards, helping motor carriers understand their <strong>ISS score</strong> (the metric that determines bypass eligibility), track violations, coach drivers, and maintain weigh station bypass privileges.</p>
+  <p style="margin-top:0.5rem;">It pulls from <strong>100+ data sources</strong> including CVIEW/SAFER carrier records — the most robust fleet safety database in the industry. Accessed through the <strong>PrePass customer portal</strong> alongside Equipment Management, Transponder Management, and Reports.</p>
+</div>
+
+<!-- CORE FEATURES -->
+<h2>Core Features</h2>
+<div class="card highlight">
+  <div class="card-title">Company Snapshot Dashboard</div>
+  <ul>
+    <li><strong>ISS Score</strong> with last updated date</li>
+    <li><strong>Fleet Summary:</strong> vehicles, drivers, inspections, OOS rates</li>
+    <li><strong>Inspections Summary:</strong> total inspections, violations, OOS events over 24 months</li>
+    <li><strong>CSA BASICs bar chart</strong> showing all seven categories</li>
+    <li><strong>24-month trending</strong> pie chart (severity time weight)</li>
+  </ul>
+</div>
+<div class="card highlight">
+  <div class="card-title">Data Insights — Heat Maps & Drill-Downs</div>
+  <ul>
+    <li>Color-coded <strong>heat maps</strong> showing violation intensity by geography (national, state, county, highway)</li>
+    <li><strong>Google Maps/satellite integration</strong> — see inspection sites at street level</li>
+    <li>Filter controls: date range, violation type, category, state</li>
+    <li><strong>Details tab:</strong> every inspection in last 24 months, sortable by site</li>
+    <li>Search by <strong>VIN number</strong>, site, or violation type for specific fleet trends</li>
+    <li><strong>Export:</strong> local files, XML, or CSV</li>
+    <li><strong>Subscriptions tab:</strong> recurring weekly/monthly email reports</li>
+  </ul>
+</div>
+
+<!-- KEY TERMINOLOGY -->
+<h2>Key Terminology — Agent Must-Knows</h2>
+<div class="term-grid">
+  <div class="term"><abbr>FMCSA</abbr> — Federal Motor Carrier Safety Administration</div>
+  <div class="term"><abbr>CSA</abbr> — Compliance, Safety, Accountability</div>
+  <div class="term"><abbr>SMS</abbr> — Safety Measurement System (portal)</div>
+  <div class="term"><abbr>ISS</abbr> — Inspection Selection System (score)</div>
+  <div class="term"><abbr>BASICs</abbr> — Behavior Analysis & Safety Improvement Categories</div>
+  <div class="term"><abbr>MCMIS</abbr> — Motor Carrier Management Information System</div>
+  <div class="term"><abbr>OOS</abbr> — Out of Service</div>
+  <div class="term"><abbr>AVI</abbr> — Automated Vehicle Identification</div>
+  <div class="term"><abbr>CVIEW/SAFER</abbr> — Carrier data record systems</div>
+  <div class="term"><abbr>TSP</abbr> — Telematics Service Provider</div>
+</div>
+
+<h3>The Seven BASICs</h3>
+<div class="basics-grid">
+  <div class="basic-item"><span class="num">1</span> Unsafe Driving</div>
+  <div class="basic-item"><span class="num">2</span> Crash Indicator</div>
+  <div class="basic-item"><span class="num">3</span> Hours-of-Service (HOS)</div>
+  <div class="basic-item"><span class="num">4</span> Vehicle Maintenance</div>
+  <div class="basic-item"><span class="num">5</span> Controlled Substances/Alcohol</div>
+  <div class="basic-item"><span class="num">6</span> Hazardous Materials</div>
+  <div class="basic-item"><span class="num">7</span> Driver Fitness</div>
+</div>
+<p style="font-size:0.82rem; color:var(--muted); margin-top:0.5rem;">CSA scores are calculated from roadside inspections, crash reports, and violations over a <strong>24-month window</strong>. Lower = better. High scores lead to audits, higher insurance premiums, lost business with shippers, and delays at inspection sites.</p>
+
+<!-- CASE STUDIES -->
+<h2>Real-World Case Studies</h2>
+
+<div class="card good">
+  <span class="tag tag-case">Case Study</span>
+  <div class="card-title">Beneficial Cartage — Root Cause Discovery</div>
+  <p>Carrier unable to participate in bypass programs due to high ISS score. Used INFORM Safety to uncover three specific root causes, providing a roadmap for improvement.</p>
+</div>
+
+<div class="card good">
+  <span class="tag tag-case">Case Study</span>
+  <div class="card-title">Sharptown Trucking — HOS Trend Analysis</div>
+  <p>Compared HOS violation trend lines with internal records. Discovered drivers were already behind schedule at dispatch — led to management-level corrective actions.</p>
+</div>
+
+<div class="card good">
+  <span class="tag tag-case">Case Study</span>
+  <div class="card-title">Donamy Transportation — Visual Driver Coaching</div>
+  <p>Used the Google Earth photo function and visual tools to prepare driver meetings and introduce new hires to bypass benefits without complex government jargon.</p>
+</div>
+
+<div class="card good">
+  <span class="tag tag-case">Case Study</span>
+  <div class="card-title">Empire Warehouse — 25+ Year PrePass Customer</div>
+  <p>Denver, CO. 14 drivers, five Rocky Mountain states. Customer since 1993. Up to 45-minute savings per weigh station.</p>
+  <div class="quote">"Whenever we call PrePass with an issue or we have any questions, we get answers quickly. They've been honest and open with us over the years."</div>
+</div>
+
+<!-- RELATED PRODUCTS -->
+<h2>Related Products Agents Should Know</h2>
+
+<div class="card warn">
+  <div class="card-title">INFORM Tolling</div>
+  <p>Separate product, same portal. Data analytics for managing <strong>PrePass Plus</strong> toll transactions. Features toll visibility across agencies, user-defined fraud alerts (high-volume charges, unassigned devices, restricted areas), and annual financial reporting comparing spend to cash toll rate.</p>
+</div>
+
+<div class="card warn">
+  <div class="card-title">PrePass Safety ALERTS</div>
+  <p>Real-time audible and visual notifications via the PrePass Mobile App. Categories: <strong>Parking</strong> (select states), <strong>Road Restrictions</strong> (brake checks, steep grades, truck ramps), <strong>Traffic</strong> (congestion, work zones), <strong>Weather</strong> (winter hazards, flooding, wind). Works nationwide, integrates with TSP apps.</p>
+</div>
+
+<!-- BYPASS BASICS -->
+<h2>Bypass Basics — Quick Reference</h2>
+<div class="card highlight">
+  <ul>
+    <li><strong>How it works:</strong> AVI identifies truck → valid credentials + good safety record → Weigh-in-Motion → green bypass signal</li>
+    <li><strong>Must pull in if:</strong> red light on transponder, app says "Pull In," or no signal received</li>
+    <li><strong>Random pull-ins:</strong> all fleets subject to them — maintains system integrity</li>
+    <li><strong>Transponders:</strong> PrePass (top of windshield), Fusion/ElitePass (bottom), Mobile App (floor/dash/windshield)</li>
+    <li><strong>Florida Ag Interdiction:</strong> non-ag carriers need PrePass Ag service to bypass</li>
+  </ul>
+</div>
+
+<!-- PREPASS SCALE -->
+<h2>PrePass by the Numbers</h2>
+<div class="stats-bar">
+  <div class="stat"><span class="number">45K+</span><span class="label">Fleets</span></div>
+  <div class="stat"><span class="number">550K+</span><span class="label">Trucks</span></div>
+  <div class="stat"><span class="number">250M+</span><span class="label">Gallons Saved</span></div>
+  <div class="stat"><span class="number">$600M+</span><span class="label">HELP Inc. Investment</span></div>
+</div>
+
+<!-- SOURCE INVENTORY -->
+<h2>Source Inventory</h2>
+<div class="section-label">What we collected</div>
+
+<div class="card"><span class="tag tag-video">Video</span> <span class="tag tag-video">Video</span> <strong>2 YouTube videos</strong> — Product overview + detailed functionality. CC transcripts + AI summaries captured.</div>
+<div class="card"><span class="tag tag-pdf">PDF</span> <strong>InformSAFETY.pdf</strong> (11 pages) — Marketing doc with UI screenshots of dashboard, heat maps, data table, satellite view.</div>
+<div class="card"><span class="tag tag-pdf">PDF</span> <strong>DS-Inform-Fact-Sheet.pdf</strong> (1 page) — Product definition, VIN-level filtering, PrePass scale stats.</div>
+<div class="card"><span class="tag tag-pdf">PDF</span> <strong>CS-Empire-Warehouse.pdf</strong> (3 pages) — Customer case study, bypass value proposition, customer service quote.</div>
+<div class="card"><span class="tag tag-web">Web</span> <strong>7 NotebookLM web sources</strong> — CSA Score Deep Dive, Driver Info Guide, INFORM product page, 3 fleet case studies, Heavy Duty Trucking article, INFORM Tolling, Safety Alerts.</div>
+
+<!-- CONTENT GAPS -->
+<h2>Content Gaps — Still Needed</h2>
+<ul class="gap-list">
+  <li>Call center agent perspective (we have the carrier view — need the support view)</li>
+  <li>Common customer call reasons related to inForm (access issues? data questions? subscription?)</li>
+  <li>Live screen walkthrough of current inForm interface (PDF screenshots may be outdated)</li>
+  <li>Agent workflows: how to help a customer with inForm in the CRM/portal</li>
+  <li>Internal KB articles or documentation on inForm support procedures</li>
+</ul>
+
+<footer>
+  All source content saved to: Articulate POC / inForm Safety / inForm_Source_Content.md<br>
+  NotebookLM notebook: "Optimizing Fleet Safety Through INFORM Data Visualization" (11 sources)
+</footer>
+
+</body>
+</html>
