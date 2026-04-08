@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The PrePass Alliance — Storyboard Guide</title>
+<style>
+  :root {
+    --teal: #0D6E6E;
+    --teal-light: #0F8F8F;
+    --teal-bg: #E6F7F7;
+    --purple: #5B2D8E;
+    --purple-bg: #F3EDF9;
+    --green: #16A34A;
+    --green-bg: #DCFCE7;
+    --amber: #D97706;
+    --amber-bg: #FEF3C7;
+    --red: #DC2626;
+    --red-bg: #FEE2E2;
+    --blue: #2563EB;
+    --blue-bg: #DBEAFE;
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-500: #6B7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.6; }
+
+  .banner { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%); color: white; padding: 20px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(13,110,110,0.3); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
+  .banner-text { flex: 1; min-width: 200px; }
+  .banner h1 { font-size: 22px; font-weight: 700; }
+  .banner .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .banner .counts { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .banner .count-box { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; text-align: center; }
+  .banner .count-box .num { font-size: 20px; display: block; }
+
+  .container { max-width: 100%; margin: 0 auto; padding: 20px 24px 60px; }
+
+  .overview-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .overview-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 12px; }
+  .overview-panel p { font-size: 14px; color: var(--gray-500); margin-bottom: 8px; }
+  .overview-panel a { color: var(--teal); text-decoration: underline; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.vo { background: var(--teal); }
+  .legend-dot.ss { background: var(--purple); }
+  .legend-dot.have { background: var(--green); }
+  .legend-dot.need { background: var(--amber); }
+  .legend-dot.build { background: var(--blue); }
+
+  .section-divider { display: flex; align-items: center; gap: 14px; margin: 32px 0 16px; }
+  .section-badge { background: var(--teal); color: white; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+  .section-divider h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+  .section-divider .meta { font-size: 12px; color: var(--gray-500); margin-left: auto; }
+
+  .slide-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .slide-header { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--gray-100); gap: 12px; cursor: pointer; user-select: none; }
+  .slide-header:hover { background: var(--gray-50); }
+  .slide-num { background: var(--teal); color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .slide-title { flex: 1; font-size: 14px; font-weight: 600; }
+  .slide-tags { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+  .tag { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .tag.vo { background: var(--teal-bg); color: var(--teal); }
+  .tag.ss { background: var(--purple-bg); color: var(--purple); }
+  .tag.have { background: var(--green-bg); color: var(--green); }
+  .tag.need { background: var(--amber-bg); color: var(--amber); }
+  .tag.build { background: var(--blue-bg); color: var(--blue); }
+  .expand-icon { color: var(--gray-300); font-size: 18px; flex-shrink: 0; transition: transform 0.2s; }
+  .slide-card.open .expand-icon { transform: rotate(180deg); }
+
+  .slide-body { padding: 0 20px 20px; display: none; }
+  .slide-card.open .slide-body { display: block; }
+
+  .vo-block { background: var(--teal-bg); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+  .vo-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--teal); margin-bottom: 6px; }
+  .vo-block .script { font-size: 13px; color: var(--gray-700); line-height: 1.7; }
+  .vo-block .script em { color: var(--gray-500); font-style: italic; }
+
+  .ss-block { background: var(--purple-bg); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
+  .ss-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--purple); margin-bottom: 6px; }
+  .ss-block .details { font-size: 13px; color: var(--gray-700); line-height: 1.6; }
+  .ss-block .filename { font-family: 'Cascadia Code','Consolas',monospace; font-size: 11.5px; color: var(--purple); font-weight: 600; }
+  .ss-block .status { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+  .ss-block .status.captured { background: var(--green-bg); color: var(--green); }
+  .ss-block .status.needed { background: var(--amber-bg); color: var(--amber); }
+  .ss-block .status.design { background: var(--blue-bg); color: var(--blue); }
+
+  .note-box { padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; margin-bottom: 8px; }
+  .note-box.tip { background: var(--amber-bg); border-left: 3px solid var(--amber); color: var(--gray-700); }
+  .note-box.interaction { background: var(--blue-bg); border-left: 3px solid var(--blue); color: var(--gray-700); }
+  .note-box.critical { background: var(--red-bg); border-left: 3px solid var(--red); color: var(--gray-700); }
+  .note-label { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; display: block; }
+  .note-box.tip .note-label { color: var(--amber); }
+  .note-box.interaction .note-label { color: var(--blue); }
+  .note-box.critical .note-label { color: var(--red); }
+
+  .prompt-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-top: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .prompt-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 12px; }
+  .prompt-panel .prompt-block { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px 20px; font-family: 'Cascadia Code','Consolas',monospace; font-size: 12.5px; line-height: 1.7; color: var(--gray-700); white-space: pre-wrap; margin-bottom: 12px; }
+  .prompt-panel .prompt-label { font-size: 12px; font-weight: 700; color: var(--teal); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .controls { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 8px; }
+  .btn-sm { padding: 5px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; background: white; color: var(--gray-700); transition: all 0.15s; }
+  .btn-sm:hover { background: var(--gray-100); border-color: var(--gray-300); }
+
+  .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--gray-500); margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <div class="banner-text"><h1>The PrePass Alliance &mdash; Storyboard Guide</h1>
+  <div class="subtitle">Sections 0&ndash;5 &nbsp;|&nbsp; Articulate Rise &nbsp;|&nbsp; April 8, 2026 &nbsp;|&nbsp; Draft 1</div></div>
+  <div class="counts">
+    <div class="count-box"><span class="num">18</span>blocks</div>
+    <div class="count-box"><span class="num">6</span>sections</div>
+    <div class="count-box"><span class="num">~15</span>min</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="overview-panel">
+    <h2>How to Use This Document</h2>
+    <p>Each block card maps to a Rise lesson block. Expand a card to see the <strong>text/narration script</strong> (what the learner reads or hears) and <strong>visual requirements</strong> (what the learner sees). Use status badges to track asset readiness.</p>
+    <p><strong>Module Duration:</strong> ~15 minutes (self-paced) &nbsp;|&nbsp; <strong>Tool:</strong> Articulate Rise &nbsp;|&nbsp; <strong>Track:</strong> Track 1 &mdash; General Foundation (Onramp)</p>
+    <p><strong>Audience:</strong> New hires and acquisition employees with no prior PrePass knowledge</p>
+    <p><strong>Prerequisite:</strong> &ldquo;The PrePass Story&rdquo; module (history context)</p>
+    <p><strong>Source:</strong> PrePass Complete Leadership &amp; Organizational Intelligence Report (March 2026)</p>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot vo"></div>Narration / text</div>
+      <div class="legend-item"><div class="legend-dot ss"></div>Visual needed</div>
+      <div class="legend-item"><div class="legend-dot have"></div>Available (from web/PDFs)</div>
+      <div class="legend-item"><div class="legend-dot need"></div>Needs creation</div>
+      <div class="legend-item"><div class="legend-dot build"></div>Build in Rise</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.add('open'))">Expand All</button>
+    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.remove('open'))">Collapse All</button>
+  </div>
+
+  <!-- ========== SECTION 0: WELCOME ========== -->
+  <div class="section-divider">
+    <div class="section-badge">0</div>
+    <h2>Welcome &amp; Why Structure Matters</h2>
+    <span class="meta">~2 min &middot; 2 blocks</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">0.1</div>
+      <div class="slide-title">Title &amp; Hook</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">You know the PrePass story now &mdash; how a research experiment became the most trusted bypass system on American highways. But here&rsquo;s something most people don&rsquo;t realize: PrePass isn&rsquo;t one company. It&rsquo;s actually three entities working together, and understanding how they connect will help you see where your team fits, who makes decisions, and why PrePass operates differently from a typical corporation. Let&rsquo;s break it down.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Hero banner image</span> <span class="status design">Design in Rise</span><br>
+          Module title: &ldquo;The PrePass Alliance&rdquo;<br>
+          Subtitle: &ldquo;Three entities. One mission.&rdquo;<br>
+          Background: abstract partnership/structure visual with PrePass branding
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">0.2</div>
+      <div class="slide-title">Learning Objectives</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">By the end of this module, you&rsquo;ll be able to: Name the three entities that make up the PrePass organization and explain what each one does. Describe why PrePass is structured as a nonprofit public-private partnership. Explain how the Alliance board works &mdash; who sits on it and why that matters. Identify how PrePass is funded &mdash; no taxes, no donations, no government subsidies. And understand what Auxilium is and why it exists.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Objectives list</span> <span class="status design">Build in Rise</span><br>
+          Five objectives as numbered icon list<br>
+          Rise &ldquo;Numbered List&rdquo; block
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 1: THE THREE ENTITIES ========== -->
+  <div class="section-divider">
+    <div class="section-badge">1</div>
+    <h2>The Three-Entity Structure</h2>
+    <span class="meta">~3 min &middot; 4 blocks</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.1</div>
+      <div class="slide-title">The Big Picture</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">The PrePass organization is built on three entities. Think of it like a family tree. At the top is PrePass Safety Alliance &mdash; the nonprofit parent that owns the mission, the brand, and everything underneath it. Below that are two subsidiaries: PrePass LLC, which runs all the technology and commercial operations &mdash; that&rsquo;s where most employees work, including you. And Auxilium, Inc., a smaller organization that handles specific government contracts. Each one has a clear role, and they work together by design.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Org structure diagram</span> <span class="status design">Build in Rise</span><br>
+          Three-tier hierarchy graphic:<br>
+          Top: PrePass Safety Alliance (501(c)(3) nonprofit parent)<br>
+          Left branch: PrePass LLC (commercial subsidiary)<br>
+          Right branch: Auxilium, Inc. (government services)<br>
+          Rise &ldquo;Image &amp; Text&rdquo; block with custom graphic
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.2</div>
+      <div class="slide-title">PrePass Safety Alliance &mdash; The Nonprofit Parent</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">PrePass Safety Alliance is the nonprofit at the top of the structure. Chartered in 1993 as HELP Inc. and rebranded in 2019, it&rsquo;s a 501(c)(3) organization &mdash; which means it operates for a public mission, not to generate profit for shareholders. The Alliance owns the PrePass brand, sets the strategic direction, manages state partnerships, and has invested over $1 billion in highway infrastructure &mdash; all without costing states or taxpayers a dime. The Alliance installs and maintains every piece of weigh station infrastructure at its own expense.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Alliance fact card</span> <span class="status design">Build in Rise</span><br>
+          Rise &ldquo;Statement&rdquo; or &ldquo;Quote&rdquo; block<br>
+          Key facts: 501(c)(3) nonprofit | $1B+ infrastructure invested | Zero cost to states/taxpayers<br>
+          Include PrePass Safety Alliance logo
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Trainer Note</span>
+        The &ldquo;zero cost to states&rdquo; point is a powerful differentiator that often surprises new hires. Emphasize it &mdash; it comes up in customer conversations and is a point of pride.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.3</div>
+      <div class="slide-title">PrePass LLC &mdash; The Commercial Engine</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">PrePass LLC is the wholly-owned commercial subsidiary &mdash; and it&rsquo;s where the day-to-day work happens. Every product you&rsquo;ll support, every carrier you&rsquo;ll talk to, every system you&rsquo;ll use &mdash; that&rsquo;s all PrePass LLC. The company is led by President Chris Murray, who reports to Alliance CEO Mark Doughty. PrePass LLC employs approximately 300 to 500 people across offices in Phoenix (two locations), Salt Lake City, and Atlanta, plus remote employees nationwide. It delivers all PrePass technology services: bypass, tolling, compliance, analytics &mdash; everything.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">PrePass LLC overview card</span> <span class="status design">Build in Rise</span><br>
+          Rise &ldquo;Gallery&rdquo; or &ldquo;Cards&rdquo; block:<br>
+          President: Chris Murray | Reports to: Mark Doughty (Alliance CEO)<br>
+          300&ndash;500 employees | Offices: Phoenix (2), Salt Lake City, Atlanta + remote<br>
+          Delivers: Bypass, Tolling, Compliance, Safety Analytics
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">1.4</div>
+      <div class="slide-title">Auxilium, Inc. &mdash; The Conflict-of-Interest Solution</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">The third entity is Auxilium, Inc. &mdash; and it exists to solve a very specific problem. Remember that the Alliance board includes state DOT officials. Some of those same states pay for government-facing services like 360SmartView, the camera-based truck screening system. If those contracts ran through the Alliance directly, you&rsquo;d have board members approving payments to their own organization &mdash; a conflict of interest. Auxilium was created as a separate Type I supporting organization specifically to deploy state-compensated services and keep that wall clean. The Alliance is Auxilium&rsquo;s sole member and elects its board, so oversight stays intact without the conflict.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Auxilium explainer graphic</span> <span class="status design">Build in Rise</span><br>
+          Two-path diagram showing why Auxilium exists:<br>
+          Path A (problem): State DOT board member &rarr; approves payment &rarr; to Alliance = conflict<br>
+          Path B (solution): State DOT board member &rarr; payment goes to Auxilium &rarr; clean separation<br>
+          Rise &ldquo;Image &amp; Text&rdquo; block or labeled graphic
+        </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Rise Interaction</span>
+        Knowledge check: &ldquo;Why does Auxilium, Inc. exist as a separate entity?&rdquo; Multiple choice &mdash; (A) To handle international operations, (B) To mitigate conflict of interest when state DOT board members pay for government services, (C) To manage employee benefits and HR, (D) To compete with Fleetworthy in a different market. Correct: B.
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 2: THE BOARD ========== -->
+  <div class="section-divider">
+    <div class="section-badge">2</div>
+    <h2>The Alliance Board &mdash; Public Meets Private</h2>
+    <span class="meta">~3 min &middot; 3 blocks</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.1</div>
+      <div class="slide-title">Equal Seats at the Table</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">The Alliance board is what makes PrePass truly unique in the transportation industry. It has equal representation from two sides: public-sector officials &mdash; state DOT directors, highway patrol leaders, and motor carrier division heads &mdash; and private-sector trucking industry leaders &mdash; fleet owners, trucking association executives, and carrier operators. Neither side can outvote the other. Board members receive no compensation. This structure ensures that PrePass serves both the carriers who use the system and the states that enforce highway safety &mdash; because both have an equal voice in how it operates.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Board composition graphic</span> <span class="status design">Build in Rise</span><br>
+          Rise &ldquo;Two Column&rdquo; block:<br>
+          Left: Public Sector (state DOTs, highway patrol, motor carrier divisions)<br>
+          Right: Private Sector (fleet owners, trucking associations, carrier operators)<br>
+          Center divider: &ldquo;Equal Representation &mdash; No Compensation&rdquo;
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.2</div>
+      <div class="slide-title">Who Sits on the Board</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">Let&rsquo;s put some names to these seats. The current board officers are Chairman Chad Sheppick from the Utah Motor Carrier Division, Vice-Chair Jim Burg from James Burg Trucking Company, Immediate Past Chair Collin Stewart from Stewart Transport, and Treasurer Omar Villarreal from the Texas Highway Patrol Division. Directors include leaders from the Texas Trucking Association, Classic Carriers, the Mid-West Truckers Association, and members from the Virginia DMV and Tennessee Highway Patrol. These are the people who set the strategic direction for the entire organization.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Board roster</span> <span class="status design">Build in Rise</span><br>
+          Rise &ldquo;Cards&rdquo; or &ldquo;Gallery&rdquo; block with officer headshots if available:<br>
+          Chairman: Chad Sheppick (Utah Motor Carrier Div.)<br>
+          Vice-Chair: Jim Burg (James Burg Trucking)<br>
+          Past Chair: Collin Stewart (Stewart Transport)<br>
+          Treasurer: Omar Villarreal (Texas Highway Patrol)<br>
+          Source: <a href="https://www.prepassalliance.org/people/" target="_blank">prepassalliance.org/people</a>
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Trainer Note</span>
+        Board membership changes. Verify current roster at prepassalliance.org/people before each class run. The structure matters more than memorizing names &mdash; focus learners on the public/private balance.
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">2.3</div>
+      <div class="slide-title">State Partnerships &amp; Regulatory Credibility</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">The Alliance doesn&rsquo;t just have state partnerships &mdash; it&rsquo;s woven into the regulatory fabric of American trucking. PrePass operates in 46 jurisdictions with active Alliance membership. Seven Regional Directors &mdash; all former law enforcement or DOT officials &mdash; serve as liaisons between PrePass and state agencies. Senior leaders hold positions in organizations like CVSA, ITS America, and PAVE. Steve Vaughn, our SVP of Field Operations, is a past President of CVSA. Erik Dietz, EVP, was elected Vice Chair of the ITS America Board for 2026. This isn&rsquo;t just networking &mdash; it&rsquo;s why state agencies trust PrePass with their highway infrastructure.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Regulatory credibility infographic</span> <span class="status design">Build in Rise</span><br>
+          Rise &ldquo;Accordion&rdquo; or &ldquo;Tabs&rdquo; block:<br>
+          Tab 1: 46 Jurisdictions &mdash; list of active states<br>
+          Tab 2: 7 Regional Directors &mdash; former law enforcement/DOT<br>
+          Tab 3: Industry Leadership &mdash; CVSA, ITS America, PAVE roles
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 3: THE MONEY ========== -->
+  <div class="section-divider">
+    <div class="section-badge">3</div>
+    <h2>How PrePass Is Funded</h2>
+    <span class="meta">~2 min &middot; 2 blocks</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.1</div>
+      <div class="slide-title">Self-Funded, Not Tax-Funded</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">One of the most common misconceptions about PrePass is that it&rsquo;s government-funded. It&rsquo;s not. PrePass Safety Alliance is entirely self-funded through program service revenue. Zero dollars in charitable contributions. Zero tax subsidies. Revenue comes from monthly per-truck subscription fees &mdash; currently about $17.65 per vehicle per month, tiered by fleet size &mdash; plus toll processing fees, 360SmartView government contracts, compliance services, and data analytics subscriptions. About 88.5% of revenue comes from program services, with the remainder from other revenue and a small amount of investment income.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Revenue breakdown graphic</span> <span class="status design">Build in Rise</span><br>
+          Rise &ldquo;Chart&rdquo; or designed pie chart:<br>
+          88.5% Program Services | 10.5% Other Revenue | 1% Investment Income<br>
+          Callout: &ldquo;$0 charitable contributions. $0 tax subsidies.&rdquo;
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">3.2</div>
+      <div class="slide-title">Financial Strength</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">The financial picture is strong and getting stronger. In fiscal year 2024, the Alliance generated $193 million in revenue with $501 million in total assets and $107 million in net assets. That&rsquo;s a dramatic turnaround &mdash; the organization was actually in negative net asset territory from about 2014 to 2021, driven by large-scale infrastructure obligations. The CVO acquisition in 2022 changed the trajectory completely. Net assets went from negative to $29 million in 2022, to $76 million in 2023, to $107 million in 2024. This is a financially healthy organization on an upward path.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Financial trend table</span> <span class="status design">Build in Rise</span><br>
+          Rise table block with 3-year data:<br>
+          FY2022: $174.4M rev, $70.3M net income, $29M net assets<br>
+          FY2023: $196.5M rev, $46.9M net income, $76M net assets<br>
+          FY2024: $193.2M rev, $30.9M net income, $107M net assets<br>
+          Trend arrow showing net asset growth
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Trainer Note</span>
+        The financial data comes from public IRS Form 990 filings. This is all public information &mdash; not proprietary. Learners don&rsquo;t need to memorize numbers, but should walk away understanding &ldquo;nonprofit, self-funded, financially strong.&rdquo;
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 4: WHY IT MATTERS ========== -->
+  <div class="section-divider">
+    <div class="section-badge">4</div>
+    <h2>Why This Matters to You</h2>
+    <span class="meta">~2 min &middot; 3 blocks</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.1</div>
+      <div class="slide-title">The Mission Connection</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">So why does any of this matter on a daily basis? Because the structure shapes the culture. When a carrier calls with a problem, they&rsquo;re not just a customer &mdash; they&rsquo;re part of the system we were built to serve. When a state DOT contacts us, they&rsquo;re not just a partner &mdash; they&rsquo;re represented on our board. The mission statement says it clearly: &ldquo;We exist to make highways safer and more efficient through innovative, data-driven solutions.&rdquo; That&rsquo;s not marketing &mdash; it&rsquo;s the legal reason the organization exists. Every product, every call, every decision connects back to highway safety.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Mission statement card</span> <span class="status needed">Source needed</span><br>
+          Photo of the PrePass mission/values credit-card-size card from Utah office<br>
+          Mission: &ldquo;We exist to make highways safer and more efficient through innovative, data-driven solutions.&rdquo;<br>
+          Core Values: (1) Our mission drives us, (2) We invest in relationships, (3) We challenge ourselves to innovate and improve, (4) We win together
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">4.2</div>
+      <div class="slide-title">Where You Fit</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">Here&rsquo;s the short version of what you need to remember. If someone asks &ldquo;What is PrePass?&rdquo; &mdash; it&rsquo;s a nonprofit public-private partnership that makes highways safer through bypass, tolling, compliance, and analytics technology. If they ask &ldquo;Who runs it?&rdquo; &mdash; the Alliance sets the direction through a board of government and industry leaders, and PrePass LLC runs the products and operations. If they ask &ldquo;Who pays for it?&rdquo; &mdash; carriers pay subscription fees, not taxpayers. And if they ask &ldquo;What makes you different?&rdquo; &mdash; we&rsquo;re the only preclearance system in the U.S. that is developed, owned, and operated as a nonprofit.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Quick-answer reference card</span> <span class="status design">Build in Rise</span><br>
+          Rise &ldquo;Accordion&rdquo; block with 4 FAQ-style items:<br>
+          &ldquo;What is PrePass?&rdquo; | &ldquo;Who runs it?&rdquo; | &ldquo;Who pays for it?&rdquo; | &ldquo;What makes you different?&rdquo;
+        </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Rise Interaction</span>
+        Sorting activity: Match each entity to its role. Drag-and-drop or matching exercise:<br>
+        PrePass Safety Alliance &rarr; Nonprofit parent, sets strategy, manages state partnerships<br>
+        PrePass LLC &rarr; Commercial subsidiary, runs products and daily operations<br>
+        Auxilium, Inc. &rarr; Handles government contracts to avoid board conflict of interest
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SECTION 5: WRAP-UP ========== -->
+  <div class="section-divider">
+    <div class="section-badge">5</div>
+    <h2>Wrap-Up &amp; Knowledge Check</h2>
+    <span class="meta">~3 min &middot; 2 blocks</span>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.1</div>
+      <div class="slide-title">Final Knowledge Check</div>
+      <div class="slide-tags"><span class="tag build">Build in Rise</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="note-box interaction">
+        <span class="note-label">Rise Knowledge Check Block &mdash; 5 Questions</span>
+        <strong>Q1:</strong> How many entities make up the PrePass organization?<br>
+        (A) One &mdash; PrePass is a single company (B) Two &mdash; the Alliance and PrePass LLC (C) Three &mdash; the Alliance, PrePass LLC, and Auxilium (D) Four &mdash; including a government division<br>
+        <em>Correct: C</em><br><br>
+        <strong>Q2:</strong> What type of organization is PrePass Safety Alliance?<br>
+        (A) A publicly traded corporation (B) A 501(c)(3) nonprofit (C) A federal government agency (D) A private equity-backed startup<br>
+        <em>Correct: B</em><br><br>
+        <strong>Q3:</strong> How is the Alliance board composed?<br>
+        (A) All government officials (B) All trucking industry leaders (C) Equal representation from public-sector and private-sector (D) Appointed by the federal government<br>
+        <em>Correct: C</em><br><br>
+        <strong>Q4:</strong> How is PrePass funded?<br>
+        (A) Federal tax revenue (B) State government grants (C) Charitable donations (D) Self-funded through carrier subscription fees and service revenue<br>
+        <em>Correct: D</em><br><br>
+        <strong>Q5:</strong> Why was Auxilium, Inc. created?<br>
+        (A) To handle international expansion (B) To mitigate conflict of interest when state officials on the board pay for government services (C) To develop the mobile app (D) To manage employee payroll<br>
+        <em>Correct: B</em>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-card">
+    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="slide-num">5.2</div>
+      <div class="slide-title">Closing &amp; Next Steps</div>
+      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
+      <span class="expand-icon">&#9660;</span>
+    </div>
+    <div class="slide-body">
+      <div class="vo-block">
+        <div class="label">Narration Script</div>
+        <div class="script">You now understand the structure behind PrePass &mdash; who owns what, who decides what, and where the money comes from. This foundation will make everything else in your onboarding click into place. As you move into your role-specific training, you&rsquo;ll start to see these connections in action: the Alliance mission behind the products, the board decisions behind the priorities, and the self-funded model behind the way we operate. Welcome to the team.</div>
+      </div>
+      <div class="ss-block">
+        <div class="label">Visual</div>
+        <div class="details">
+          <span class="filename">Closing graphic</span> <span class="status design">Design in Rise</span><br>
+          PrePass mission statement + &ldquo;Welcome to the team.&rdquo;<br>
+          Link to next onboarding module or learning path
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== RISE AI PROMPT ========== -->
+  <div class="prompt-panel">
+    <h2>Articulate Rise AI Prompt</h2>
+    <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">Copy and paste the prompt below into Rise&rsquo;s AI assistant to generate lesson content. Then refine using the storyboard above as your guide.</p>
+    <div class="prompt-label">Prompt &mdash; The PrePass Alliance</div>
+    <div class="prompt-block">Create an Articulate Rise lesson called "The PrePass Alliance" for new employee onboarding. The audience is brand-new hires or acquisition employees who have just completed a companion module on PrePass history. They know the origin story but not the organizational structure.
+
+Tone: Conversational, clear, and grounding. Write as if you're helping someone understand where they fit inside a large organization on their first week. Define terms like 501(c)(3), public-private partnership, and Type I supporting organization when first used. Avoid legalese.
+
+Structure the lesson into these sections:
+
+SECTION 0 — Welcome & Why Structure Matters (2 min)
+- Hook: PrePass isn't one company — it's three entities working together by design. Understanding the structure helps new hires see where their team fits and why PrePass operates differently from a typical corporation.
+- Learning objectives: name the three entities and their roles, explain the nonprofit partnership model, describe the board structure, explain the funding model, understand what Auxilium is.
+
+SECTION 1 — The Three-Entity Structure (3 min)
+- Big picture: PrePass Safety Alliance (nonprofit parent) → PrePass LLC (commercial subsidiary) → Auxilium, Inc. (government services).
+- PrePass Safety Alliance: 501(c)(3) nonprofit, owns the brand, sets strategy, manages state partnerships, invested $1B+ in infrastructure at zero cost to states/taxpayers.
+- PrePass LLC: wholly-owned commercial subsidiary. Runs all technology and operations. Led by President Chris Murray (reports to Alliance CEO Mark Doughty). 300–500 employees across Phoenix (2 offices), Salt Lake City, Atlanta, + remote. Delivers bypass, tolling, compliance, analytics — everything.
+- Auxilium, Inc.: Type I supporting organization. Exists to mitigate conflict of interest — Alliance board includes state DOT officials, and some of those same states pay for 360SmartView government contracts. Auxilium handles those contracts so board members aren't approving payments to their own org. Alliance is Auxilium's sole member and elects its board.
+- Include a knowledge check on why Auxilium exists.
+
+SECTION 2 — The Alliance Board: Public Meets Private (3 min)
+- Equal representation: public-sector (state DOTs, highway patrol, motor carrier divisions) and private-sector (fleet owners, trucking associations, carrier operators). Neither side can outvote the other. Board members receive zero compensation.
+- Current officers: Chairman Chad Sheppick (Utah Motor Carrier Div.), Vice-Chair Jim Burg (James Burg Trucking), Past Chair Collin Stewart (Stewart Transport), Treasurer Omar Villarreal (Texas Highway Patrol). Directors from TX Trucking Assoc., Classic Carriers, Mid-West Truckers Assoc. Members from VA DMV, TN Highway Patrol.
+- Regulatory credibility: 46 jurisdictions, 7 Regional Directors (former law enforcement/DOT), leadership in CVSA, ITS America, PAVE. Steve Vaughn = past CVSA President, Erik Dietz = ITS America Vice Chair 2026.
+
+SECTION 3 — How PrePass Is Funded (2 min)
+- Self-funded through program service revenue. $0 charitable contributions. $0 tax subsidies.
+- Revenue sources: monthly per-truck subscriptions (~$17.65/vehicle/month, tiered by fleet size), toll processing fees, 360SmartView government contracts, compliance services, data analytics subscriptions.
+- Revenue breakdown: 88.5% program services, 10.5% other revenue, 1% investment income.
+- Financial trend: FY2024 = $193.2M revenue, $501.4M total assets, $106.9M net assets. Dramatic turnaround from negative net assets (2014–2021) to $107M positive by 2024, driven by the CVO acquisition.
+
+SECTION 4 — Why This Matters to You (2 min)
+- Mission connection: "We exist to make highways safer and more efficient through innovative, data-driven solutions." Core values: mission drives us, invest in relationships, challenge ourselves, win together.
+- Quick-answer reference: "What is PrePass?" / "Who runs it?" / "Who pays for it?" / "What makes you different?"
+- Include a matching/sorting activity: match each entity to its role.
+
+SECTION 5 — Wrap-Up & Knowledge Check (3 min)
+- 5-question final knowledge check (multiple choice) covering: number of entities, Alliance type, board composition, funding model, Auxilium purpose.
+- Closing: connect the structure to the learner's upcoming role-specific training.
+
+Include at least 3 interactions (one knowledge check mid-lesson, one sorting/matching activity, one end-of-lesson assessment). Use Rise-native blocks: accordion, tabs, two-column, gallery cards, charts. Total module: ~15 minutes self-paced.</div>
+  </div>
+
+</div>
+
+<div class="footer">PrePass Onramp &mdash; Module: The PrePass Alliance &mdash; Storyboard v1 &mdash; April 8, 2026</div>
+
+<script>
+document.querySelectorAll('.slide-header').forEach(h => {
+  h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+});
+</script>
+</body>
+</html>
