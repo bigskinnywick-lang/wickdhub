@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>April 7 — Patty Meeting Debrief & Follow-Up Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  :root {
+    --dark: #1a1a2e;
+    --card: #16213e;
+    --card-alt: #1a2744;
+    --text: #e0e0e0;
+    --muted: #8899aa;
+    --border: #2a3a5c;
+    --purple: #a78bfa;
+    --purple-dim: rgba(167, 139, 250, 0.1);
+    --purple-border: rgba(167, 139, 250, 0.3);
+    --green: #27AE60;
+    --green-dim: rgba(39, 174, 96, 0.1);
+    --green-border: rgba(39, 174, 96, 0.3);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96, 165, 250, 0.1);
+    --blue-border: rgba(96, 165, 250, 0.3);
+    --amber: #E67E22;
+    --amber-dim: rgba(230, 126, 34, 0.08);
+    --amber-border: rgba(230, 126, 34, 0.3);
+    --red: #C0392B;
+    --red-dim: rgba(192, 57, 43, 0.08);
+    --red-border: rgba(192, 57, 43, 0.3);
+    --teal: #2dd4bf;
+    --teal-dim: rgba(45, 212, 191, 0.08);
+    --teal-border: rgba(45, 212, 191, 0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    padding: 2rem 0 1.5rem;
+    border-bottom: 2px solid var(--purple);
+    margin-bottom: 2rem;
+  }
+  header h1 { font-size: 1.6rem; color: #fff; margin-bottom: 0.3rem; }
+  header .subtitle { color: var(--muted); font-size: 0.9rem; }
+  header .badges { margin-top: 0.75rem; display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+  header .badge {
+    display: inline-block;
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .badge--purple { background: var(--purple-dim); border: 1px solid var(--purple-border); color: var(--purple); }
+  .badge--green { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+  .badge--amber { background: var(--amber-dim); border: 1px solid var(--amber-border); color: var(--amber); }
+
+  /* Section headers */
+  h2 {
+    color: var(--purple);
+    font-size: 1.2rem;
+    margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    color: var(--blue);
+    font-size: 1rem;
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .card--purple { border-left: 3px solid var(--purple); }
+  .card--green { border-left: 3px solid var(--green); }
+  .card--blue { border-left: 3px solid var(--blue); }
+  .card--amber { border-left: 3px solid var(--amber); }
+  .card--red { border-left: 3px solid var(--red); }
+  .card--teal { border-left: 3px solid var(--teal); }
+
+  .card .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .label--purple { color: var(--purple); }
+  .label--green { color: var(--green); }
+  .label--blue { color: var(--blue); }
+  .label--amber { color: var(--amber); }
+  .label--red { color: var(--red); }
+  .label--teal { color: var(--teal); }
+
+  .card p { font-size: 0.88rem; margin-bottom: 0.5rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* Alert / callout box */
+  .alert-box {
+    background: var(--green-dim);
+    border: 1px solid var(--green-border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .alert-box h3 { color: var(--green); font-size: 0.95rem; margin-bottom: 0.5rem; margin-top: 0; }
+  .alert-box p { font-size: 0.88rem; }
+
+  /* Key-value rows */
+  .kv-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0.4rem 1rem;
+    font-size: 0.88rem;
+    margin-bottom: 0.75rem;
+  }
+  .kv-grid .key { color: var(--muted); font-weight: 600; }
+  .kv-grid .val { color: var(--text); }
+
+  /* Timeline table */
+  .timeline-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+  }
+  .timeline-table th {
+    text-align: left;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .timeline-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .timeline-table tr:last-child td { border-bottom: none; }
+  .timeline-table .date { color: var(--purple); font-weight: 600; white-space: nowrap; }
+  .timeline-table .event { color: var(--text); }
+  .timeline-table .action { color: var(--muted); font-style: italic; }
+
+  /* Scenario cards */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+  @media (max-width: 640px) {
+    .scenario-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Quote blocks */
+  .quote {
+    background: var(--card-alt);
+    border-left: 3px solid var(--purple);
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-style: italic;
+    font-size: 0.85rem;
+    border-radius: 0 6px 6px 0;
+    color: #c4b5fd;
+  }
+
+  /* Bottom line */
+  .bottom-line {
+    background: var(--purple-dim);
+    border: 1px solid var(--purple-border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+  }
+  .bottom-line h3 { color: var(--purple); font-size: 1rem; margin-bottom: 0.75rem; margin-top: 0; }
+  .bottom-line p { font-size: 0.9rem; max-width: 700px; margin: 0 auto; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .tag--green { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+  .tag--amber { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber-border); }
+  .tag--red { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+  .tag--blue { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue-border); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Patty Meeting — Debrief & Follow-Up</h1>
+  <div class="subtitle">April 7, 2026 · 2:00 PM MT · Post-Meeting Analysis</div>
+  <div class="badges">
+    <span class="badge badge--purple">Approach C Confirmed</span>
+    <span class="badge badge--green">She Has Enough</span>
+    <span class="badge badge--amber">Decision Gate: Apr 14</span>
+  </div>
+</header>
+
+<!-- OUTCOME SUMMARY -->
+<div class="alert-box">
+  <h3>Meeting Outcome</h3>
+  <p>Patty ran <strong>Approach C</strong> — exploratory, feeling you out, building her case. She described a <strong>Product Trainer</strong> role and left with everything she needs to go to Chris Murray tomorrow. This wasn't an interview. It was a VP completing her fit assessment to attach to a business case she's already built.</p>
+</div>
+
+<!-- WHAT SHE DESCRIBED -->
+<h2>What She Described</h2>
+
+<div class="card card--purple">
+  <div class="label label--purple">Role Details</div>
+  <div class="kv-grid">
+    <span class="key">Working Title</span><span class="val">Product Trainer</span>
+    <span class="key">Reports To</span><span class="val">Patty Mazerolle (VP HR) — directly</span>
+    <span class="key">Partners With</span><span class="val">Michael Danielson (Org Dev & Effectiveness)</span>
+    <span class="key">Scope</span><span class="val">Cross-org, up and down the entire organization</span>
+  </div>
+</div>
+
+<div class="card card--blue">
+  <div class="label label--blue">Scope Breakdown</div>
+  <p><strong>Product training</strong> — structured enablement on PrePass products across the org</p>
+  <p><strong>Upskills on product</strong> — ongoing capability building, not just onboarding</p>
+  <p><strong>Onboarding</strong> — including acquisition integration (FleetDrive 360 has no structured PrePass intro)</p>
+  <p><strong>Succession planning</strong> — framed as talent management, not a training topic</p>
+  <p><strong>Cross-org coverage</strong> — up and down every line of business</p>
+</div>
+
+<div class="card card--teal">
+  <div class="label label--teal">Relationship to MCTE</div>
+  <p>Patty called the two roles <strong>"best friends"</strong> — complementary, coexisting. MCTE (under Stephanie Wilkinson / Customer Success) covers customer-facing training. This role covers internal. Two parallel structures being stood up. The Kelsey → Patty coordination today looks like a <strong>friendly handoff</strong> — they sorted out which org you'd land in.</p>
+</div>
+
+<!-- WHERE IT STANDS -->
+<h2>Where It Stands</h2>
+
+<div class="card card--green">
+  <div class="label label--green">What's Already Done</div>
+  <p>Patty and Michael completed a <strong>needs analysis</strong> this week.</p>
+  <p>Ken Solheim (Total Rewards) is working on <strong>role description and comp</strong>.</p>
+  <p>Comp target: <strong>midpoint</strong> of the band. Patty knows your current comp. Confirmed it would be a <strong>bump</strong>.</p>
+  <p>Patty told you: <strong>"I have enough now."</strong> Your conversation completed her fit story.</p>
+</div>
+
+<div class="card card--amber">
+  <div class="label label--amber">What Happens Next</div>
+  <p><strong>Apr 8 (tomorrow)</strong> — Patty goes to Chris Murray with the business case in her one-on-one.</p>
+  <p>Chris will either <strong>pull the trigger</strong> or want <strong>another round with SLT</strong>.</p>
+  <p>Patty said: <strong>"Once Chris moves on it, it will go fast."</strong></p>
+  <p>You told her: if you don't hear back by <strong>Tuesday Apr 14</strong>, you'll schedule something.</p>
+</div>
+
+<!-- THIRD-PARTY ASSESSMENT -->
+<h2>Third-Party Assessment</h2>
+
+<div class="card card--purple">
+  <div class="label label--purple">Doer vs. Driver Read</div>
+  <p>The role <em>title</em> leans doer. The <em>scope</em> is a driver's scope. Succession planning, talent management, acquisition integration, cross-org coverage — those aren't content production tasks. That's someone who diagnoses organizational capability gaps and builds systems to close them.</p>
+  <p>Patty may be <strong>packaging a driver-scope role under a doer title</strong> to make it an easier sell to Chris. Lower title = lower comp band = faster approval. She's done this dance for 25 years in HR.</p>
+  <div class="quote">She walked in looking for a doer and walked out realizing she might have a driver. The fact that she said "I have enough" after talking to you — not after reading your resume — tells you which version of you closed it.</div>
+</div>
+
+<div class="card card--amber">
+  <div class="label label--amber">Comp Risk</div>
+  <p><strong>"Midpoint"</strong> on a Product Trainer band is different from midpoint on a Manager band — even if the work is identical. The title determines the comp band. Watch this when specifics come up.</p>
+  <p>The frame for that conversation: <em>"The scope you described — succession planning, cross-org coverage, acquisition onboarding, partnering with Michael — that's program leadership. I want to make sure the title reflects the scope so it has <strong>credibility</strong> across the org when I'm working with department heads."</em></p>
+</div>
+
+<!-- FOLLOW-UP PLAN -->
+<h2>Your Moves (Now → Apr 14)</h2>
+
+<div class="card card--green">
+  <div class="label label--green">1. Stay Visible Through the Work</div>
+  <p>Don't chase Patty. Your visibility comes through the <strong>Michael sessions</strong>. Every Wednesday collaboration is a proof point that lands on Patty's desk indirectly.</p>
+  <p><strong>Apr 9 (Wed):</strong> Normal Michael working session. Light-touch awareness check — confirm he knows the needs analysis went to Patty. Don't fish. He co-authored it; he'll keep you in the loop.</p>
+</div>
+
+<div class="card card--blue">
+  <div class="label label--blue">2. Have the FleetDrive 360 Angle Ready</div>
+  <p>Patty named the acquisition gap specifically. If anyone asks <strong>"What would you do first?"</strong> — FleetDrive 360 onboarding is a perfect Day 1 answer. It's visible, urgent, and proves the function immediately.</p>
+  <p>Frame: <em>"There are employees from the acquisition who have no structured understanding of PrePass's mission, products, or how the two companies connect. That's a quick win that demonstrates the function."</em></p>
+</div>
+
+<div class="card card--purple">
+  <div class="label label--purple">3. Keep the Kelsey Thread Warm</div>
+  <p>Let her initiate. If she reaches out, share a high-level read: Patty is working on something complementary, you're interested. <strong>Don't overshare on comp or title.</strong></p>
+  <p>Kelsey's value now is as a <strong>cross-org champion</strong> who can validate you from Customer Success if Chris or SLT needs endorsement.</p>
+</div>
+
+<div class="card card--amber">
+  <div class="label label--amber">4. Prep for Speed</div>
+  <p>If Chris greenlights, Patty said it moves fast. Have your questions ready:</p>
+  <p>→ Reporting structure confirmation · Budget for tools/Articulate licenses · Relationship to MCTE role · First 90 days expectations · Title discussion</p>
+</div>
+
+<!-- SCENARIOS -->
+<h2>Decision Scenarios</h2>
+
+<div class="scenario-grid">
+  <div class="card card--green">
+    <div class="label label--green">Chris Greenlights</div>
+    <p>Process moves to formal posting (Isaiah Love). Comp conversation happens — title matters. Be ready to move quickly.</p>
+    <p><span class="tag tag--green">Most likely</span></p>
+  </div>
+  <div class="card card--amber">
+    <div class="label label--amber">Another SLT Round</div>
+    <p>Not a no — "build more consensus." Keep building Track 1 & 2 deliverables. Michael's endorsement in SLT materials carries weight.</p>
+    <p><span class="tag tag--amber">Possible</span></p>
+  </div>
+  <div class="card card--red">
+    <div class="label label--red">Chris Says Not Now</div>
+    <p>Unlikely given the investment (needs analysis, comp work, Kelsey coordination). MCTE posting under Stephanie is still live. No doors closed.</p>
+    <p><span class="tag tag--red">Unlikely</span></p>
+  </div>
+  <div class="card card--blue">
+    <div class="label label--blue">Both Roles Move</div>
+    <p>The "best friends" scenario. You'd choose or they'd figure out a bridge. Don't raise this — let them design it. Be the obvious answer for whichever lands first.</p>
+    <p><span class="tag tag--blue">Future play</span></p>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<h2>Timeline</h2>
+
+<table class="timeline-table">
+  <thead>
+    <tr><th>Date</th><th>Event</th><th>Your Move</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="date">Apr 7 (Today)</td>
+      <td class="event">Patty meeting complete</td>
+      <td class="action">Debrief captured. No outreach needed.</td>
+    </tr>
+    <tr>
+      <td class="date">Apr 8 (Wed)</td>
+      <td class="event">Patty → Chris Murray one-on-one</td>
+      <td class="action">Nothing. This is her meeting.</td>
+    </tr>
+    <tr>
+      <td class="date">Apr 9 (Thu)</td>
+      <td class="event">Michael working session</td>
+      <td class="action">Normal collaboration. Light awareness check.</td>
+    </tr>
+    <tr>
+      <td class="date">Apr 9–13</td>
+      <td class="event">Waiting period</td>
+      <td class="action">Build Track 1/Track 2 deliverables. Stay visible through the work.</td>
+    </tr>
+    <tr>
+      <td class="date">Apr 14 (Tue)</td>
+      <td class="event">Decision gate</td>
+      <td class="action">If no word from Patty, schedule follow-up as promised.</td>
+    </tr>
+    <tr>
+      <td class="date">Ongoing</td>
+      <td class="event">Kelsey thread</td>
+      <td class="action">Let her initiate. Respond warmly if she does.</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- BOTTOM LINE -->
+<div class="bottom-line">
+  <h3>The Bottom Line</h3>
+  <p>A VP of HR with a direct line to the President built a needs analysis, engaged her Total Rewards manager on comp, used your conversation to complete a fit assessment, and told you she has enough to go to Chris. That's not exploratory anymore — that's pre-offer engineering. Stay steady, keep building, and be ready to move when it lands.</p>
+</div>
+
+</body>
+</html>
