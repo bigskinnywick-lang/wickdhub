@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M6 &mdash; Revenue Model &mdash; Rise 360 Storyboard (Rev 1)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.4rem;
+  }
+
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    font-weight: 300;
+  }
+
+  .header .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .pill-tool { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25); }
+  .pill-time { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+  .pill-depth { background: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.35); }
+  .pill-status { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+
+  /* ── Working Knowledge Banner ── */
+  .wk-banner {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.12), rgba(239, 68, 68, 0.08));
+    border: 1px solid rgba(251, 146, 60, 0.35);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .wk-banner .wk-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #fb923c;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .wk-banner .wk-desc {
+    font-size: 0.82rem;
+    color: #ccc;
+    line-height: 1.5;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #aaa;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .dot-confirmed { background: #22c55e; }
+  .dot-placeholder { background: #f59e0b; }
+  .dot-finance { background: #ef4444; }
+  .dot-interaction { background: #a78bfa; }
+  .dot-media { background: #60a5fa; }
+  .dot-note { background: #555; }
+  .dot-scope { background: #f472b6; }
+
+  /* ── Revision Log ── */
+  .revision-log {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .revision-log h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f59e0b;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .revision-entry {
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.6;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .revision-entry:last-child { border-bottom: none; }
+
+  .rev-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .rev-new { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+  .rev-design { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
+  .rev-source { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .rev-sensitive { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+  .rev-gap { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+  /* ── Slide Cards ── */
+  .slides-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .slide-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .slide-card:hover { border-color: #3a3a3a; }
+
+  .slide-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .slide-number {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .sn-confirmed { background: #16a34a; }
+  .sn-placeholder { background: #d97706; }
+  .sn-finance { background: #dc2626; }
+  .sn-interaction { background: #7c3aed; }
+  .sn-media { background: #2563eb; }
+  .sn-scope { background: #db2777; }
+
+  .slide-title-area { flex: 1; }
+
+  .slide-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  .slide-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.15rem;
+  }
+
+  .type-confirmed { color: #22c55e; }
+  .type-placeholder { color: #f59e0b; }
+  .type-finance { color: #ef4444; }
+  .type-interaction { color: #a78bfa; }
+  .type-media { color: #60a5fa; }
+  .type-scope { color: #f472b6; }
+
+  .rise-block-tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: #888;
+    border: 1px solid #333;
+    flex-shrink: 0;
+  }
+
+  .slide-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .slide-body p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #bbb;
+    margin-bottom: 0.75rem;
+  }
+
+  .slide-body p:last-child { margin-bottom: 0; }
+
+  .content-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .cl-onscreen { color: #22c55e; }
+  .cl-narration { color: #60a5fa; }
+  .cl-visual { color: #f472b6; }
+  .cl-interaction { color: #a78bfa; }
+  .cl-notes { color: #555; }
+  .cl-source { color: #f59e0b; }
+
+  .content-section {
+    background: #151515;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .content-section:last-child { margin-bottom: 0; }
+
+  .confirmed-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .placeholder-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .finance-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .scope-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(219, 39, 119, 0.15);
+    color: #f472b6;
+    border: 1px solid rgba(219, 39, 119, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  blockquote {
+    border-left: 3px solid #334;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: rgba(255,255,255,0.02);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    color: #ccc;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* ── Revenue Flow Diagram ── */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .flow-step {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+
+  .flow-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #16a34a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .flow-content .flow-title {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #e0e0e0;
+    margin-bottom: 0.2rem;
+  }
+
+  .flow-content .flow-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  .flow-arrow {
+    text-align: center;
+    color: #444;
+    font-size: 1.2rem;
+    padding: 0.1rem 0;
+  }
+
+  /* ── Stats Row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr; } }
+
+  .stat-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    text-align: center;
+  }
+
+  .stat-card .stat-number {
+    font-weight: 800;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.72rem;
+    color: #888;
+    line-height: 1.4;
+  }
+
+  /* ── Revenue Mix Cards ── */
+  .mix-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .mix-grid { grid-template-columns: 1fr; } }
+
+  .mix-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    text-align: center;
+  }
+
+  .mix-card .mix-pct {
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .mix-card .mix-label {
+    font-size: 0.75rem;
+    color: #888;
+    line-height: 1.4;
+  }
+
+  .mix-program { border-left: 3px solid #22c55e; }
+  .mix-program .mix-pct { color: #22c55e; }
+  .mix-other { border-left: 3px solid #60a5fa; }
+  .mix-other .mix-pct { color: #60a5fa; }
+  .mix-invest { border-left: 3px solid #a78bfa; }
+  .mix-invest .mix-pct { color: #a78bfa; }
+
+  /* ── Stream Cards ── */
+  .stream-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin: 0.5rem 0;
+    border-left: 3px solid #60a5fa;
+  }
+
+  .stream-card .stream-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    margin-bottom: 0.3rem;
+  }
+
+  .stream-card .stream-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── Drag-Drop Preview ── */
+  .dd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .dd-grid { grid-template-columns: 1fr; } }
+
+  .dd-bank, .dd-target {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .dd-bank-title, .dd-target-title {
+    font-weight: 600;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.6rem;
+  }
+
+  .dd-bank-title { color: #a78bfa; }
+  .dd-target-title { color: #22c55e; }
+
+  .dd-item {
+    background: #2a2a2a;
+    border: 1px dashed #444;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.78rem;
+    color: #ccc;
+  }
+
+  .dd-slot {
+    background: rgba(34, 197, 94, 0.06);
+    border: 1px dashed rgba(34, 197, 94, 0.3);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.78rem;
+    color: #666;
+  }
+
+  /* ── Section Dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.25rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  .section-divider span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #555;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── Notes Panel ── */
+  .notes-panel {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .notes-panel h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+  }
+
+  .note-item:last-child { border-bottom: none; }
+
+  .note-who {
+    color: #a78bfa;
+    font-weight: 600;
+    min-width: 120px;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+  }
+
+  .note-text { color: #bbb; line-height: 1.5; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>M6 &mdash; Revenue Model</h1>
+  <div class="subtitle">Rise 360 Storyboard &mdash; Intro to PrePass Onboarding Framework</div>
+  <div class="meta-row">
+    <span class="meta-pill pill-tool">Rise 360 Lesson</span>
+    <span class="meta-pill pill-time">Est. 10&ndash;12 min</span>
+    <span class="meta-pill pill-depth">Depth: Working Knowledge</span>
+    <span class="meta-pill pill-status">Rev 1 &mdash; First Draft &mdash; Finance Sign-Off Pending</span>
+  </div>
+</div>
+
+<!-- ── Working Knowledge Banner ── -->
+<div class="wk-banner">
+  <div class="wk-label">Working Knowledge &mdash; Unique Depth Level</div>
+  <div class="wk-desc">This is the <strong>only module in all of Track 1</strong> requiring Working Knowledge depth. All other modules are Awareness. Learners are expected to <strong>comprehend and apply</strong> revenue model concepts, not just recall facts. Interactions are designed to be more rigorous than awareness-level knowledge checks &mdash; including drag-and-drop sequencing and matching activities.</div>
+</div>
+
+<!-- ── Revision Log ── -->
+<div class="revision-log">
+  <h3>Revision Log &mdash; Rev 1 (April 8, 2026)</h3>
+  <div class="revision-entry"><span class="rev-new">NEW BUILD</span> First-draft storyboard for Module 6 &mdash; the most sensitive module in Track 1 and the only one at Working Knowledge depth. No prior storyboard existed. No NEO overlap &mdash; this content is entirely net-new for the onboarding ecosystem.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Self-funded nonprofit as opening hook.</strong> Picks up M5 Slide 17&rsquo;s transition teaser (&ldquo;How does a nonprofit sustain itself?&rdquo;) and answers it immediately: $0 in charitable contributions, 100% self-funded through commercial services. This is the most surprising fact in the module and anchors the entire revenue framing.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Animated revenue flow as centerpiece.</strong> Framework specifies &ldquo;teach via: flow diagram.&rdquo; Built as a 7-step click-through sequence: carrier signs up &rarr; device ships &rarr; bypass generates subscription fees &rarr; toll pass-through &rarr; additional revenue streams &rarr; revenue to PrePass LLC &rarr; supports nonprofit mission. Designed for Rise Process or Labeled Graphic block.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>EBITDA included as separate explainer.</strong> Per Michael&rsquo;s direction (project status), learners should understand EBITDA as a performance metric. Entire section tagged NEEDS FINANCE SIGN-OFF as most sensitive content in the course.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Dual interaction design: sequencing + matching.</strong> Working Knowledge depth warrants more rigorous assessment than other modules&rsquo; multiple-choice checks. Slide 13 uses drag-and-drop sequencing (revenue flow steps in order) and Slide 14 uses matching (revenue stream to service). Both test comprehension, not just recall.</div>
+  <div class="revision-entry"><span class="rev-source">SOURCES</span> Intelligence report (public filings: FY2024 financials, revenue mix, pricing), Michael&rsquo;s framework (element #6: &ldquo;How revenue flows,&rdquo; Working Knowledge, teach via flow diagram), Track 1 Master Plan (Module 6 section, blocking decision #4), Cross-Reference gap analysis (Section 6), NEO Comparison doc (confirms net-new territory).</div>
+  <div class="revision-entry"><span class="rev-sensitive">SENSITIVE CONTENT</span> <strong>7 slides contain <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span> tags.</strong> Pricing (~$17.65/month) on Slides 7 &amp; 8, EBITDA content on Slides 10 &amp; 11, revenue figures (FY2024 $193.2M) on Slide 9. All revenue mix percentages from public filings but tagged for verification. <strong>1 slide contains <span class="scope-flag">SCOPE TBD</span> tag</strong> (Slide 11 &mdash; bonus/commission, per master plan blocking decision #4).</div>
+  <div class="revision-entry" style="font-size: 0.78rem; color: #888; border-bottom: none;">No product team content expected for this module &mdash; content sourced from intelligence report (public filings) and Michael&rsquo;s framework. Finance sign-off is the primary gate before this module can move to development.</div>
+</div>
+
+<!-- ── Legend ── -->
+<div class="legend">
+  <span class="legend-title">Block Types</span>
+  <span class="legend-item"><span class="legend-dot dot-confirmed"></span> Confirmed Content</span>
+  <span class="legend-item"><span class="legend-dot dot-placeholder"></span> Needs Confirmation</span>
+  <span class="legend-item"><span class="legend-dot dot-finance"></span> Needs Finance Sign-Off</span>
+  <span class="legend-item"><span class="legend-dot dot-scope"></span> Scope TBD</span>
+  <span class="legend-item"><span class="legend-dot dot-interaction"></span> Learner Interaction</span>
+  <span class="legend-item"><span class="legend-dot dot-media"></span> Media / Visual</span>
+  <span class="legend-item"><span class="legend-dot dot-note"></span> Builder Note</span>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part A &mdash; The Self-Funded Nonprofit</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 1: Title Slide -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">1</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Title &mdash; Revenue Model</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT / COVER BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Module 6: Revenue Model</strong></p>
+        <p>How PrePass funds its mission &mdash; without a single charitable dollar.</p>
+        <p style="font-size: 0.78rem; color: #888;">Estimated time: 10&ndash;12 minutes &nbsp;|&nbsp; Learning Depth: <strong style="color: #fb923c;">Working Knowledge</strong></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;In Module 5, we asked a question: how does a nonprofit sustain itself without charitable donations? In this module, you&rsquo;ll get the answer. You&rsquo;ll learn how PrePass generates revenue, where that money comes from, and why understanding the business model matters to your role. This is the only module in Track 1 that goes beyond awareness &mdash; we need you to actually understand how these pieces fit together.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Dark cover slide with module number and title. Prominent &ldquo;Working Knowledge&rdquo; badge in orange/amber to visually distinguish from other modules. Subtle financial flow graphic in the background &mdash; abstract lines connecting nodes, suggesting a system. Rise &ldquo;Statement&rdquo; or custom cover block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Module title and time estimate from master plan (Module 6 section: 10&ndash;12 min, Working Knowledge). M5 Slide 17 transition teaser: &ldquo;How does a nonprofit sustain itself?&rdquo; Opening question directly answers that bridge. Learning depth distinction from Michael&rsquo;s framework (element #6 is the only Working Knowledge element).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Learning Objectives -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">2</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Learning Objectives</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>By the end of this module, you will be able to:</strong></p>
+        <p>1. <strong>Explain</strong> how PrePass Safety Alliance funds its mission entirely through commercial services, without charitable contributions.</p>
+        <p>2. <strong>Trace</strong> the revenue flow from carrier enrollment through bypass and toll transactions to the services that sustain the Alliance&rsquo;s nonprofit mission.</p>
+        <p>3. <strong>Identify</strong> the primary revenue streams (subscriptions, toll processing, government contracts, compliance services, data analytics) and describe how they connect to PrePass products.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Here&rsquo;s what we&rsquo;re going for. By the end of this module, you should be able to explain how our nonprofit is entirely self-funded, walk through the revenue flow from carrier sign-up to mission support, and name the main revenue streams and how they connect to the services you learned about in Module 5. These are Working Knowledge objectives &mdash; we need you to understand the flow, not just remember a number.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>These objectives are deliberately at Bloom&rsquo;s &ldquo;Understand&rdquo; and &ldquo;Apply&rdquo; levels (explain, trace, identify + describe), not &ldquo;Remember&rdquo; (list, recall). This is the Working Knowledge distinction &mdash; other modules use awareness-level verbs like &ldquo;identify&rdquo; or &ldquo;recognize.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Objectives written to align with Michael&rsquo;s framework element #6 (&ldquo;How revenue flows&rdquo; &mdash; Working Knowledge depth) and master plan requirement for 2&ndash;3 measurable learning objectives. Verb selection follows Bloom&rsquo;s taxonomy at comprehension/application level.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: The $0 Fact -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">3</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The $0 Fact &mdash; A Different Kind of Nonprofit</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT / IMAGE + TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p style="font-size: 1.1rem; text-align: center;"><strong style="color: #f59e0b;">$0</strong></p>
+        <p style="text-align: center; color: #ccc;">That&rsquo;s how much PrePass Safety Alliance receives in charitable contributions.</p>
+        <p>When most people hear &ldquo;nonprofit,&rdquo; they think of fundraisers, donor campaigns, and grant applications. PrePass is different. The Alliance is a 501(c)(3) nonprofit that funds its entire operation through the commercial services provided by its subsidiary, PrePass LLC. No donors. No grants. No government handouts. Every dollar comes from the value we deliver to carriers and government partners.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Let&rsquo;s start with the fact that surprises most new hires. PrePass Safety Alliance &mdash; our parent organization &mdash; receives zero dollars in charitable contributions. Zero. When you think nonprofit, you probably think of donation drives and grant writing. That&rsquo;s not us. Our entire operation is funded through the commercial services that PrePass LLC provides to carriers and government partners. Every bypass transaction, every toll processed, every compliance check &mdash; that&rsquo;s what sustains our mission.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Large &ldquo;$0&rdquo; as a hero stat, animated count-up from a number to zero (counterintuitive &mdash; draws attention). Below: a simple two-column comparison &mdash; &ldquo;Typical Nonprofit&rdquo; (donations, grants, fundraisers) vs. &ldquo;PrePass Alliance&rdquo; (commercial services, carrier subscriptions, toll processing). Use Rise &ldquo;Statement&rdquo; block with a stat callout.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Intelligence report (public filings): &ldquo;entirely self-funded ($0 charitable contributions).&rdquo; Cross-Reference Section 6. Master plan directive #1: &ldquo;Open with the self-funded nonprofit framing &mdash; start with the most surprising fact.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: How the Structure Works -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">4</div>
+      <div class="slide-title-area">
+        <div class="slide-title">How the Structure Works &mdash; Alliance &rarr; LLC &rarr; Mission</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">LABELED GRAPHIC / PROCESS BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>The revenue engine:</strong></p>
+        <p><strong>PrePass LLC</strong> (the commercial subsidiary) delivers services to carriers and government partners. The revenue it generates flows up to <strong>PrePass Safety Alliance</strong> (the 501(c)(3) nonprofit parent), which reinvests it into the mission: making highways safer and more efficient.</p>
+        <p>You learned this structure in Module 4. Now you&rsquo;ll see how money moves through it.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Remember the three-entity structure from Module 4? Here&rsquo;s where it becomes practical. PrePass LLC &mdash; that&rsquo;s the company you work for &mdash; delivers commercial services. The revenue from those services flows to the Alliance, our nonprofit parent. And the Alliance reinvests that revenue into the mission: safer, more efficient highways. There are no shareholders taking profits. There are no dividends. Revenue goes to mission. That&rsquo;s the model.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Simple three-node diagram: <strong>Carriers &amp; Partners</strong> (left) &rarr; pay for services &rarr; <strong>PrePass LLC</strong> (center) &rarr; revenue flows to &rarr; <strong>PrePass Safety Alliance</strong> (right) &rarr; reinvests in mission. Animated arrows showing the flow direction. Brief callback icon to Module 4&rsquo;s governance diagram. Rise &ldquo;Labeled Graphic&rdquo; or &ldquo;Process&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Three-entity structure from Cross-Reference Section 4 (intelligence report) and Module 4 storyboard. Revenue flow direction from intelligence report: self-funded nonprofit model. &ldquo;No shareholders, no dividends&rdquo; framing from public filings.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part B &mdash; The Revenue Flow (Centerpiece Interaction)</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 5: Revenue Flow Intro -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">5</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Follow the Money &mdash; Revenue Flow Introduction</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>How does a carrier&rsquo;s decision to use PrePass become revenue that supports our mission?</strong></p>
+        <p>In Module 5, you followed a carrier through a typical day &mdash; approaching a weigh station, getting a bypass signal, passing through a toll plaza. Now let&rsquo;s follow the money through that same journey.</p>
+        <p>Click through each step to see how revenue flows from carrier to mission.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;In Module 5, you followed a carrier through a typical day on the highway. Now we&rsquo;re going to follow the money through that same journey. Each step in the carrier experience generates revenue for PrePass &mdash; and ultimately supports the Alliance&rsquo;s mission. Click through each step to see how it works.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Transitional slide with an abstract flow diagram preview &mdash; seven connected nodes, initially grayed out. As learner advances through Slides 6&ndash;8, each node lights up. Consider a Rise &ldquo;Process&rdquo; block or a custom Storyline embed if Rise&rsquo;s native blocks don&rsquo;t support progressive reveal.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Master plan directive #2: &ldquo;Build an animated revenue flow &mdash; framework specifies teach via: flow diagram.&rdquo; Cross-module callback to M5 customer journey (Slide 5). Instructional framing from Michael&rsquo;s framework element #6.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: Revenue Flow Steps 1–3 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-media">6</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Revenue Flow &mdash; From Sign-Up to Subscription</div>
+        <div class="slide-type type-media">ANIMATED FLOW &mdash; STEPS 1&ndash;3</div>
+      </div>
+      <span class="rise-block-tag">PROCESS / LABELED GRAPHIC BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Flow Diagram &mdash; Steps 1&ndash;3 (Click-Through)</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-num">1</div>
+            <div class="flow-content">
+              <div class="flow-title">Carrier Signs Up</div>
+              <div class="flow-desc">A motor carrier &mdash; from a 5-truck owner-operator to a 10,000+ vehicle enterprise fleet &mdash; enrolls in PrePass services through sales or the Carrier Portal.</div>
+            </div>
+          </div>
+          <div class="flow-arrow">&darr;</div>
+          <div class="flow-step">
+            <div class="flow-num">2</div>
+            <div class="flow-content">
+              <div class="flow-title">Device Ships or App Activates</div>
+              <div class="flow-desc">Carrier receives RFID transponders for their fleet, or drivers activate the PrePass MOTION mobile app. Each truck is now equipped for bypass and toll transactions.</div>
+            </div>
+          </div>
+          <div class="flow-arrow">&darr;</div>
+          <div class="flow-step">
+            <div class="flow-num">3</div>
+            <div class="flow-content">
+              <div class="flow-title">Bypass Transactions Generate Subscription Fees</div>
+              <div class="flow-desc">Every time a truck approaches one of 584+ weigh station sites, the system processes a bypass decision. Carriers pay a monthly per-truck subscription fee for this service. <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;It starts when a carrier signs up. They might be a small owner-operator with five trucks or an enterprise fleet with tens of thousands. Once enrolled, each truck gets a transponder or the driver activates our mobile app. Now every time that truck approaches a weigh station &mdash; and remember, there are more than 584 sites across 46 jurisdictions &mdash; the system processes a bypass decision. The carrier pays a monthly subscription fee for each truck enrolled. That&rsquo;s our first revenue stream.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Three-step progressive reveal. Each step appears when learner clicks &ldquo;Next.&rdquo; Step 1: carrier enrollment icon. Step 2: device/phone icon. Step 3: weigh station bypass icon with a &ldquo;$&rdquo; indicator appearing. Animated connecting lines between steps. Rise &ldquo;Process&rdquo; block (vertical) or &ldquo;Labeled Graphic&rdquo; (if using a flow diagram image).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Revenue flow sequence from intelligence report and master plan directive #2. 584+ bypass sites and 46 jurisdictions from Cross-Reference Section 5 (intelligence report). Subscription model from intelligence report: per-truck monthly fees. Transponder + mobile app from NEO slide 31 and M5 storyboard.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: Revenue Flow Steps 4–5 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-finance">7</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Revenue Flow &mdash; Tolls and Additional Streams</div>
+        <div class="slide-type type-finance">NEEDS FINANCE SIGN-OFF</div>
+      </div>
+      <span class="rise-block-tag">PROCESS / LABELED GRAPHIC BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Flow Diagram &mdash; Steps 4&ndash;5 (Click-Through)</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-num">4</div>
+            <div class="flow-content">
+              <div class="flow-title">Toll Pass-Through Generates Processing Fees</div>
+              <div class="flow-desc">Carriers using PrePass Plus have their tolls consolidated and managed through a single account. PrePass processes toll transactions on the carrier&rsquo;s behalf and earns a processing fee for each transaction. <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span></div>
+            </div>
+          </div>
+          <div class="flow-arrow">&darr;</div>
+          <div class="flow-step">
+            <div class="flow-num">5</div>
+            <div class="flow-content">
+              <div class="flow-title">Additional Revenue Streams</div>
+              <div class="flow-desc">Beyond bypass and tolls, PrePass generates revenue from:
+                <br>&bull; <strong>Government contracts</strong> &mdash; 360SmartView screening technology for state agencies
+                <br>&bull; <strong>Compliance services</strong> &mdash; FleetDrive 360 (FMCSA/DOT compliance platform)
+                <br>&bull; <strong>Data analytics subscriptions</strong> &mdash; AI Toll Insights and fleet intelligence tools
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Next: tolls. When carriers use PrePass Plus for toll management, we consolidate their toll charges across multiple toll authorities into a single account. PrePass earns a processing fee for managing those transactions. But bypass and tolls aren&rsquo;t our only revenue sources. We also earn revenue from government contracts &mdash; state agencies use our 360SmartView screening technology. Our FleetDrive 360 platform generates compliance service revenue. And our data analytics tools, like AI Toll Insights, create a subscription revenue stream. Each of these connects directly to a service you learned about in Module 5.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Continue the flow from Slide 6. Step 4: toll plaza icon with consolidated billing visual. Step 5: three branching paths (government, compliance, data) each with a distinct icon. The branching shows diversification &mdash; revenue isn&rsquo;t a single pipe, it&rsquo;s multiple streams feeding into the same mission. Rise &ldquo;Process&rdquo; block continuation or a branching &ldquo;Labeled Graphic.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Revenue streams from intelligence report: toll processing fees, 360SmartView government contracts, compliance services (FleetDrive 360), data analytics subscriptions. Cross-Reference Section 6. Master plan directive #2 specifies these exact streams. FleetDrive 360 from NEO slide 31. AI Toll Insights from intelligence report (Feb 2026 launch).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Revenue Flow Steps 6–7 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-finance">8</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Revenue Flow &mdash; From LLC to Mission</div>
+        <div class="slide-type type-finance">NEEDS FINANCE SIGN-OFF (pricing detail)</div>
+      </div>
+      <span class="rise-block-tag">PROCESS / LABELED GRAPHIC BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Flow Diagram &mdash; Steps 6&ndash;7 (Click-Through)</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="flow-num">6</div>
+            <div class="flow-content">
+              <div class="flow-title">Revenue Flows to PrePass LLC</div>
+              <div class="flow-desc">All of these revenue streams &mdash; subscriptions, toll processing, government contracts, compliance, analytics &mdash; flow into PrePass LLC. The average per-truck bypass subscription is approximately <strong>$17.65/month</strong>, tiered by fleet size. <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span></div>
+            </div>
+          </div>
+          <div class="flow-arrow">&darr;</div>
+          <div class="flow-step">
+            <div class="flow-num">7</div>
+            <div class="flow-content">
+              <div class="flow-title">Supports the Alliance&rsquo;s Nonprofit Mission</div>
+              <div class="flow-desc">PrePass LLC&rsquo;s revenue supports the PrePass Safety Alliance&rsquo;s 501(c)(3) mission. The Alliance has invested <strong>over $800 million</strong> to date in services that improve safety, reduce truck-related emissions, and preserve highway infrastructure. <span class="confirmed-flag">CONFIRMED</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;All of those streams &mdash; subscriptions, toll processing, government contracts, compliance services, data analytics &mdash; converge into PrePass LLC. To give you a sense of scale: the average per-truck bypass subscription runs about seventeen dollars and sixty-five cents per month, though it&rsquo;s tiered based on fleet size. And here&rsquo;s where it comes full circle. That revenue supports the Alliance&rsquo;s nonprofit mission. To date, the Alliance has invested over 800 million dollars in services that improve safety, reduce emissions, and preserve highway infrastructure. No shareholders. No dividends. Revenue to mission.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Final two steps of the flow. Step 6: all streams converging into a single &ldquo;PrePass LLC&rdquo; node &mdash; visual convergence. Include the $17.65/month figure as a callout. Step 7: LLC node connects to Alliance mission with the $800M+ stat as a large callout. Consider a subtle animation: the number counting up to $800M+. Rise &ldquo;Process&rdquo; completion or a full-diagram reveal showing all 7 steps connected.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>The $17.65/month pricing is from the intelligence report (public filings) but is the most operationally sensitive figure on this slide. Finance must confirm this is appropriate for new-hire training before development. The $800M+ figure is from NEO slide 5 speaker notes and is already used in the Alliance&rsquo;s public communications &mdash; confirmed.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>$17.65/month per-truck subscription: intelligence report (public filings), Cross-Reference Section 6. Tiered pricing by fleet size: intelligence report. $800M+ investment: NEO slide 5 speaker notes (confirmed in M4 storyboard). Master plan directive #2: full flow sequence. &ldquo;No shareholders, no dividends&rdquo; framing from public filings structure.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part C &mdash; Financial Scale &amp; Revenue Mix</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 9: Financial Scale -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-finance">9</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Scale of the Operation &mdash; FY2024</div>
+        <div class="slide-type type-finance">NEEDS FINANCE SIGN-OFF</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT / STAT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>FY2024 Revenue:</strong></p>
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-number">$193.2M</div>
+            <div class="stat-label">Total Revenue</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">100,000+</div>
+            <div class="stat-label">Motor Carriers Served</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">800,000+</div>
+            <div class="stat-label">Commercial Vehicles</div>
+          </div>
+        </div>
+        <p style="margin-top: 0.75rem;">These numbers are from public filings. PrePass generates nearly $200 million in annual revenue &mdash; entirely through the services you just traced in the revenue flow. <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Let&rsquo;s put some numbers to the model. In fiscal year 2024, PrePass generated 193.2 million dollars in total revenue. That&rsquo;s from serving over 100,000 motor carriers and more than 800,000 commercial vehicles. Nearly 200 million &mdash; all generated through the services you just traced. No charitable contributions, no government subsidies. Commercial value, delivered at scale.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Three large stat callouts with animated count-up numbers. Dark cards with the gradient number treatment (matching M5&rsquo;s stat style). Below the stats, a single line reinforcing the self-funded framing. Rise &ldquo;Statement&rdquo; block with stat cards or a &ldquo;Gallery &mdash; Grid&rdquo; of three stat items.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>FY2024 revenue ($193.2M) is from public filings (intelligence report). The 100,000+ carriers and 800,000+ vehicles are from the intelligence report and used in M5. While sourced from public filings, finance should verify these are the figures they want in new-hire training. Revenue number is the most likely to change year-over-year &mdash; build this slide for easy annual refresh.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>FY2024 $193.2M revenue: intelligence report (public filings). 100,000+ motor carriers, 800,000+ vehicles: intelligence report, Cross-Reference Section 5. Master plan directive #3: &ldquo;Include key financial scale but not sensitive detail.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: Revenue Mix -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-finance">10</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Revenue Mix &mdash; Where the Money Comes From</div>
+        <div class="slide-type type-finance">NEEDS FINANCE SIGN-OFF</div>
+      </div>
+      <span class="rise-block-tag">CHART / INFOGRAPHIC BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>FY2024 Revenue Mix:</strong></p>
+        <div class="mix-grid">
+          <div class="mix-card mix-program">
+            <div class="mix-pct">~88.5%</div>
+            <div class="mix-label">Program Services<br><span style="font-size: 0.68rem;">Bypass subscriptions, toll processing, compliance, government contracts</span></div>
+          </div>
+          <div class="mix-card mix-other">
+            <div class="mix-pct">~10.5%</div>
+            <div class="mix-label">Other Revenue<br><span style="font-size: 0.68rem;">Ancillary services, data analytics, partnerships</span></div>
+          </div>
+          <div class="mix-card mix-invest">
+            <div class="mix-pct">~1%</div>
+            <div class="mix-label">Investment Income<br><span style="font-size: 0.68rem;">Returns on reserves and investments</span></div>
+          </div>
+        </div>
+        <p style="margin-top: 0.75rem;">The takeaway: nearly 9 out of every 10 dollars comes from the core program services &mdash; the same bypass, toll, and compliance services you traced in the revenue flow. <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Here&rsquo;s how that 193 million breaks down. About 88 and a half percent &mdash; the vast majority &mdash; comes from program services. That&rsquo;s bypass subscriptions, toll processing, compliance services, and government contracts. Another 10 and a half percent comes from other revenue like data analytics and partnerships. And about 1 percent comes from investment income. The key insight: nearly 9 out of every 10 dollars come directly from the core services you learned about in Module 5. That&rsquo;s how tightly the revenue model is connected to the product.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Horizontal stacked bar or simple donut chart with three segments. Program Services is dominant (green), Other Revenue (blue), Investment Income (purple). Below the chart, three explanation cards with percentage and description. Alternatively, use a Rise &ldquo;Gallery&rdquo; or &ldquo;Numbered List&rdquo; block styled as the three revenue mix cards shown above.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Revenue mix percentages from intelligence report (public filings): ~88.5% program services, ~10.5% other revenue, ~1% investment income. Cross-Reference Section 6. Master plan directive #3: &ldquo;Revenue mix from public filings gives learners a sense of scale without exposing sensitive internals.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part D &mdash; EBITDA &amp; Business Performance</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 11: What Is EBITDA -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-finance">11</div>
+      <div class="slide-title-area">
+        <div class="slide-title">EBITDA &mdash; Measuring Business Health</div>
+        <div class="slide-type type-finance">NEEDS FINANCE SIGN-OFF &mdash; ENTIRE SLIDE</div>
+      </div>
+      <span class="rise-block-tag">TEXT + EXPLAINER BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span></div>
+        <p><strong>EBITDA: Earnings Before Interest, Taxes, Depreciation, and Amortization</strong></p>
+        <p><strong>What is it?</strong> EBITDA strips out financial factors that don&rsquo;t reflect day-to-day operational performance &mdash; things like interest payments, tax obligations, and the accounting treatment of long-term assets. What&rsquo;s left is a clearer picture of how well the core business is performing.</p>
+        <p><strong>Why does PrePass use it?</strong> Because it focuses on operational results. When leadership talks about &ldquo;hitting EBITDA targets,&rdquo; they&rsquo;re measuring whether the business is generating healthy revenue from its services, managing its costs effectively, and sustaining the model that funds our mission.</p>
+        <p><strong>Why should you care?</strong> EBITDA is a key performance metric at PrePass. You&rsquo;ll hear it referenced in all-hands meetings, financial updates, and goal-setting conversations. Understanding what it means helps you follow how the company measures success.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;You&rsquo;ll hear a term at PrePass that might be unfamiliar: EBITDA. It stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It sounds complicated, but the concept is simple. EBITDA strips out financial factors that don&rsquo;t reflect daily operations &mdash; like interest payments and how we account for long-term assets. What&rsquo;s left is a clean measure of how well the core business is performing. When leadership talks about hitting EBITDA targets, they&rsquo;re asking: are we generating healthy revenue, managing costs well, and sustaining the model that funds our mission? You don&rsquo;t need to calculate it, but you should know what it means when you hear it.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Breakdown visual: start with &ldquo;Total Revenue&rdquo; at top, subtract illustrated blocks for Interest, Taxes, Depreciation, Amortization &rarr; what remains = EBITDA. Use a simple waterfall or subtraction diagram. Keep it conceptual, not numerical &mdash; no actual EBITDA figures should appear. Rise &ldquo;Labeled Graphic&rdquo; block or a simple infographic.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p><strong>This is the most sensitive slide in the entire Track 1 course.</strong> Michael specifically requested EBITDA terminology be included (per project status). The explainer deliberately avoids any actual EBITDA figures &mdash; it teaches the concept and why PrePass uses it, not the numbers themselves. The entire slide is tagged NEEDS FINANCE SIGN-OFF. Finance should review and approve the framing, language, and appropriateness before this moves to development.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>EBITDA inclusion directed by Michael (project status: &ldquo;Michael wants learners to understand EBITDA as a key performance metric&rdquo;). Master plan directive #4. Definition and framing written for accessibility &mdash; no source financial data used. Entire section requires finance sign-off per master plan&rsquo;s sensitive content protocol.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: EBITDA Connection / Bonus-Commission (SCOPE TBD) -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-scope">12</div>
+      <div class="slide-title-area">
+        <div class="slide-title">EBITDA &amp; Your Performance &mdash; Bonus/Commission Context</div>
+        <div class="slide-type type-scope">SCOPE TBD &mdash; Per Master Plan Blocking Decision #4</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK (CONDITIONAL)</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text <span class="scope-flag">SCOPE TBD</span> <span class="finance-flag">NEEDS FINANCE SIGN-OFF</span></div>
+        <p><strong>How EBITDA Connects to You</strong></p>
+        <p><em>[PLACEHOLDER &mdash; Content for this slide depends on Michael&rsquo;s decision re: blocking item #4.]</em></p>
+        <p><strong>If included:</strong> This slide would explain how EBITDA performance connects to bonus and/or commission structures at PrePass. For example: &ldquo;When PrePass meets its EBITDA targets, it directly affects the bonus pool available to employees. Your individual performance combined with company-level EBITDA results determines your annual bonus.&rdquo;</p>
+        <p><strong>If excluded:</strong> Remove this slide entirely. Slide 11&rsquo;s &ldquo;Why should you care?&rdquo; section already provides sufficient context for why EBITDA matters without referencing compensation. Bonus/commission detail would move to a role-specific module or HR-led session.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script (Draft &mdash; If Included)</div>
+        <p>&ldquo;Here&rsquo;s where EBITDA gets personal. When PrePass meets its EBITDA targets, that performance directly affects the bonus pool available to you. Your annual bonus is a combination of your individual performance and how the company performs at the EBITDA level. So when you hear &lsquo;we&rsquo;re tracking ahead of EBITDA target,&rsquo; that&rsquo;s not just a finance number &mdash; it&rsquo;s directly connected to your compensation.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p><strong>BLOCKING DECISION REQUIRED.</strong> Master plan blocking decision #4: &ldquo;Confirm with Michael whether bonus/commission structures belong in the company onboarding course or in a separate role-specific module.&rdquo; Project status mentions &ldquo;bonus/commission info&rdquo; but no source document defines this content. This slide is a placeholder &mdash; it should either be built with finance-approved content or removed entirely based on Michael&rsquo;s decision. Do not develop this slide until the scope question is resolved.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Bonus/commission reference from project status. Blocking decision #4 from master plan. No source content exists for this section &mdash; placeholder only. If included, content must come directly from Finance and/or HR and receive sign-off before development.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part E &mdash; Knowledge Checks (Working Knowledge Depth)</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 13: Sequencing Interaction -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">13</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Knowledge Check 1 &mdash; Put the Revenue Steps in Order</div>
+        <div class="slide-type type-interaction">DRAG-AND-DROP SEQUENCING INTERACTION</div>
+      </div>
+      <span class="rise-block-tag">SORTING / KNOWLEDGE CHECK BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p><strong>Type:</strong> Drag-and-drop sequencing (Rise &ldquo;Sorting Activity&rdquo; or Storyline embed)</p>
+        <p><strong>Prompt:</strong> &ldquo;Drag the revenue flow steps into the correct order, from carrier enrollment to mission support.&rdquo;</p>
+        <p><strong>Items to sequence (presented scrambled):</strong></p>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-num" style="background: #a78bfa;">?</div><div class="flow-content"><div class="flow-title">Carrier enrolls in PrePass services</div></div></div>
+          <div class="flow-step"><div class="flow-num" style="background: #a78bfa;">?</div><div class="flow-content"><div class="flow-title">Device ships or mobile app activates</div></div></div>
+          <div class="flow-step"><div class="flow-num" style="background: #a78bfa;">?</div><div class="flow-content"><div class="flow-title">Bypass transactions generate subscription fees</div></div></div>
+          <div class="flow-step"><div class="flow-num" style="background: #a78bfa;">?</div><div class="flow-content"><div class="flow-title">Toll pass-through generates processing fees</div></div></div>
+          <div class="flow-step"><div class="flow-num" style="background: #a78bfa;">?</div><div class="flow-content"><div class="flow-title">Additional streams: gov contracts, compliance, analytics</div></div></div>
+          <div class="flow-step"><div class="flow-num" style="background: #a78bfa;">?</div><div class="flow-content"><div class="flow-title">Revenue flows to PrePass LLC</div></div></div>
+          <div class="flow-step"><div class="flow-num" style="background: #a78bfa;">?</div><div class="flow-content"><div class="flow-title">Supports Alliance&rsquo;s nonprofit mission</div></div></div>
+        </div>
+        <p style="margin-top: 0.75rem;"><strong>Correct order:</strong> 1 &rarr; 2 &rarr; 3 &rarr; 4 &rarr; 5 &rarr; 6 &rarr; 7 (as presented in Slides 6&ndash;8)</p>
+        <p><strong>Feedback (correct):</strong> &ldquo;That&rsquo;s the flow. From carrier enrollment through every transaction to the mission that drives everything we do.&rdquo;</p>
+        <p><strong>Feedback (incorrect):</strong> &ldquo;Not quite. Remember: enrollment comes first, then the device enables transactions, those transactions generate revenue through various streams, and that revenue ultimately supports the Alliance&rsquo;s mission. Try again.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This is the primary Working Knowledge assessment. A simple multiple-choice question would only test recall (&ldquo;What percentage of revenue comes from program services?&rdquo;). Sequencing tests whether the learner understands the <em>flow</em> &mdash; the causal chain from enrollment to mission. This is the distinction between Awareness and Working Knowledge. Rise has a native &ldquo;Sorting Activity&rdquo; that supports drag-and-drop sequencing. If Rise limitations prevent 7 items, reduce to 5 key steps (combine steps 4+5 and 6+7).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Sequencing items map directly to the 7-step revenue flow from Slides 6&ndash;8. Master plan directive #5: &ldquo;Design a drag-and-drop or sequencing interaction &mdash; put the revenue steps in order.&rdquo; Working Knowledge depth per Michael&rsquo;s framework element #6.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 14: Matching Interaction -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">14</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Knowledge Check 2 &mdash; Match the Revenue Stream to the Service</div>
+        <div class="slide-type type-interaction">DRAG-AND-DROP MATCHING INTERACTION</div>
+      </div>
+      <span class="rise-block-tag">MATCHING / KNOWLEDGE CHECK BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p><strong>Type:</strong> Drag-and-drop matching (Rise &ldquo;Matching&rdquo; or &ldquo;Labeled Graphic&rdquo; quiz variant)</p>
+        <p><strong>Prompt:</strong> &ldquo;Match each revenue stream to the PrePass service that generates it.&rdquo;</p>
+        <div class="dd-grid">
+          <div class="dd-bank">
+            <div class="dd-bank-title">Revenue Streams (Drag)</div>
+            <div class="dd-item">Monthly per-truck subscription fees</div>
+            <div class="dd-item">Toll transaction processing fees</div>
+            <div class="dd-item">Government screening contracts</div>
+            <div class="dd-item">Compliance platform subscriptions</div>
+            <div class="dd-item">Data analytics subscriptions</div>
+          </div>
+          <div class="dd-target">
+            <div class="dd-target-title">Services (Drop Targets)</div>
+            <div class="dd-slot">Weigh Station Bypass &rarr; ___</div>
+            <div class="dd-slot">PrePass Plus (Toll Management) &rarr; ___</div>
+            <div class="dd-slot">360SmartView &rarr; ___</div>
+            <div class="dd-slot">FleetDrive 360 (Compliance) &rarr; ___</div>
+            <div class="dd-slot">AI Toll Insights / Fleet Intelligence &rarr; ___</div>
+          </div>
+        </div>
+        <p style="margin-top: 0.75rem;"><strong>Correct matches:</strong> Bypass &rarr; Subscription fees | PrePass Plus &rarr; Toll processing fees | 360SmartView &rarr; Gov contracts | FleetDrive 360 &rarr; Compliance subs | AI Toll Insights &rarr; Data analytics subs</p>
+        <p><strong>Feedback (correct):</strong> &ldquo;You&rsquo;ve got it. Every service we offer connects to a revenue stream &mdash; and every revenue stream supports the mission.&rdquo;</p>
+        <p><strong>Feedback (incorrect):</strong> &ldquo;Close, but not all matches are right. Think about which service generates each type of fee. Bypass creates subscriptions, tolls create processing fees, and each specialized platform has its own revenue stream.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This matching activity connects Module 5 (services) to Module 6 (revenue). It tests a different dimension than the sequencing &mdash; Slide 13 tests the flow order, Slide 14 tests the service-to-revenue linkage. Together, they provide a robust Working Knowledge assessment. If Rise doesn&rsquo;t support a native matching block, consider a Storyline embed or a Rise &ldquo;Knowledge Check &mdash; Matching&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Revenue stream &mdash; service pairings from intelligence report and Slides 6&ndash;8. Services from M5 storyboard (Slide 6: Bypass, Slide 7: Tolls, Slide 8: Compliance). Master plan directive #5: &ldquo;Match the revenue stream to the service.&rdquo; Working Knowledge depth per framework.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part F &mdash; Why This Matters &amp; Transition</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 15: Why This Matters to You -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">15</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Why This Matters to You</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT / TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Your work drives this model.</strong></p>
+        <p>Every bypass transaction processed. Every toll reconciled. Every compliance check completed. Every customer support call that keeps a carrier enrolled. Every line of code that makes the platform faster. Every sales conversation that brings a new fleet on board.</p>
+        <p>It all contributes to the revenue that sustains our mission.</p>
+        <p>Understanding how we generate revenue helps you see how your work &mdash; whatever your role &mdash; connects to the bigger picture. You&rsquo;re not just doing a job. You&rsquo;re sustaining a system that makes highways safer for everyone.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;So why does all of this matter to you? Because your work drives this model. Every bypass transaction processed, every toll reconciled, every compliance check completed, every customer call that keeps a carrier enrolled, every line of code that makes the platform better, every sales conversation that brings a new fleet on board &mdash; it all feeds into the revenue that sustains our mission. Understanding the revenue model helps you see how your specific role connects to the bigger picture. You&rsquo;re not just doing a job. You&rsquo;re part of a system that makes highways safer for everyone.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Text-forward slide with emotional weight. Consider a montage of role icons (headset for support, code bracket for engineering, handshake for sales, truck for operations) all connected by lines to a central &ldquo;Mission&rdquo; node. Or a simple, powerful statement block with the key line large: &ldquo;Your work drives this model.&rdquo; Rise &ldquo;Statement&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Master plan directive #6: &ldquo;Close with Why this matters to you &mdash; connect revenue model to the learner&rsquo;s role.&rdquo; Language adapted from master plan: &ldquo;Every bypass transaction, every toll reconciliation, every compliance check-in contributes to this model.&rdquo; Role examples expanded to be inclusive across departments.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 16: Transition to Module 7 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">16</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Transition &mdash; Next Up: Market Goals</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">BANNER / STATEMENT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>You&rsquo;ve seen how we make money. Now here&rsquo;s where we&rsquo;re investing it.</strong></p>
+        <p>In Module 7, you&rsquo;ll learn about PrePass&rsquo;s strategic priorities &mdash; platform expansion, geographic growth, compliance integration, and the competitive landscape that shapes our decisions. The revenue model you just learned is the engine. Market Goals is the roadmap.</p>
+        <p style="font-size: 0.82rem; color: #888; margin-top: 0.5rem;">Next: Module 7 &mdash; Market Goals</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;You&rsquo;ve seen how PrePass generates revenue. Now the question is: where is that revenue going? In the next module, you&rsquo;ll learn about our strategic priorities &mdash; how we&rsquo;re expanding the platform, growing into new states, integrating compliance services, and responding to competitive pressure. The revenue model you just learned is the engine. Module 7 is the roadmap. Let&rsquo;s see where we&rsquo;re headed.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Forward-looking transition card. Consider a road/highway metaphor &mdash; the revenue flow as the engine, the road ahead as market goals. &ldquo;Next: Module 7 &mdash; Market Goals&rdquo; button or link. Rise &ldquo;Statement&rdquo; or &ldquo;Continue&rdquo; block with a directional visual.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Transition language from master plan directive #6: &ldquo;You&rsquo;ve seen how we make money. Now here&rsquo;s where we&rsquo;re investing it.&rdquo; Strategic priorities previewed from master plan Module 7 section (platform expansion, geographic growth, compliance integration, competitive landscape). Master plan: &ldquo;Transition slide &mdash; brief bridge to the next module.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- Production Notes & Design Decisions -->
+<!-- ═══════════════════════════════════════ -->
+
+<div class="notes-panel">
+  <h3>Production Notes &amp; Design Decisions</h3>
+
+  <div class="note-item">
+    <span class="note-who">Working Knowledge</span>
+    <span class="note-text">This module is the <strong>only one in Track 1 at Working Knowledge depth.</strong> All other modules are Awareness. This means: objectives use comprehension/application verbs (explain, trace, identify + describe), interactions require understanding of flow and relationships (sequencing, matching) rather than simple recall (multiple choice), and the voiceover consistently reinforces &ldquo;understand how these pieces fit together&rdquo; rather than &ldquo;be aware that.&rdquo;</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">M5 Bridge</span>
+    <span class="note-text">Slide 1 picks up M5 Slide 17&rsquo;s transition teaser: &ldquo;How does a nonprofit sustain itself?&rdquo; The voiceover explicitly references this question and promises an answer. The revenue flow (Slides 6&ndash;8) parallels M5&rsquo;s customer journey &mdash; same carrier, same services, now viewed through a revenue lens. Slide 14&rsquo;s matching activity directly links M5 services to M6 revenue streams, reinforcing cross-module learning.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">M7 Bridge</span>
+    <span class="note-text">Slide 16 transitions to Module 7 (Market Goals) with &ldquo;You&rsquo;ve seen how we make money. Now here&rsquo;s where we&rsquo;re investing it.&rdquo; This frames revenue as the engine and strategy as the roadmap &mdash; a natural progression. Module 7&rsquo;s opening slide should pick up this &ldquo;engine &rarr; roadmap&rdquo; metaphor.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Net-New Content</span>
+    <span class="note-text">The NEO Comparison doc confirms: <strong>the NEO does not cover how PrePass makes money.</strong> This module is entirely net-new for the onboarding ecosystem. When presenting to stakeholders, this can be positioned as: &ldquo;This content doesn&rsquo;t exist in the current NEO &mdash; Track 1 is filling a gap Michael identified in the framework.&rdquo; This is a strong value proposition for the course.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Sensitive Content</span>
+    <span class="note-text"><strong>This is the most sensitive module in the entire Track 1 course.</strong> Sensitivity tiers: (1) <span style="color: #22c55e;">CONFIRMED</span> &mdash; public filings data used as-is (FY2024 $193.2M, revenue mix percentages, $800M+ Alliance investment). (2) <span style="color: #ef4444;">NEEDS FINANCE SIGN-OFF</span> &mdash; pricing ($17.65/month), EBITDA framing, all revenue figures even though from public sources. (3) <span style="color: #f472b6;">SCOPE TBD</span> &mdash; bonus/commission content (Slide 12). When in doubt, we tagged it. It&rsquo;s easier to remove a tag than to discover untagged sensitive content during stakeholder review.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">EBITDA Decision</span>
+    <span class="note-text">Michael explicitly requested EBITDA be included (project status). Slide 11 teaches the concept without using any actual EBITDA figures &mdash; it explains what EBITDA is, why PrePass uses it, and why employees should understand it. This is deliberate: the concept is appropriate for onboarding, but specific EBITDA numbers are not. Finance should confirm the framing is acceptable.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Blocking Decision #4</span>
+    <span class="note-text">Slide 12 (Bonus/Commission Context) is a <strong>conditional slide</strong>. Master plan blocking decision #4 asks Michael to confirm whether bonus/commission structures belong in company onboarding or a separate role-specific module. The slide is designed with both scenarios: include (with draft content) or exclude (remove entirely, Slide 11 stands alone). <strong>Do not develop Slide 12 until Michael decides.</strong></span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Dual Interactions</span>
+    <span class="note-text">Two knowledge checks instead of one. Slide 13 (sequencing) tests whether learners understand the revenue <em>flow</em> &mdash; the causal chain from enrollment to mission. Slide 14 (matching) tests whether learners can connect <em>services to revenue streams</em>. Together, these cover both dimensions of Working Knowledge: understanding the process and understanding the relationships. This is more rigorous than other modules&rsquo; single multiple-choice checks, as appropriate for the deeper learning depth.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Revenue Flow Design</span>
+    <span class="note-text">The 7-step flow is spread across three slides (6, 7, 8) rather than crammed into one. This allows the learner to absorb each phase before moving on and creates natural click-through progression for Rise&rsquo;s Process block. If built as a Rise &ldquo;Labeled Graphic,&rdquo; all 7 steps can appear on a single interactive diagram with hotspots. If using Rise &ldquo;Process,&rdquo; the three-slide approach works natively. Builder should choose based on Rise template capabilities.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Finance Gate</span>
+    <span class="note-text"><strong>7 of 16 slides contain finance-sensitive tags.</strong> This module should not move to Rise development until finance reviews and approves the tagged content. Recommended review process: share this storyboard HTML with finance stakeholders, have them approve/modify each tagged item, then proceed to development with confirmed content only.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Time Estimate</span>
+    <span class="note-text">16 slides at 10&ndash;12 min. The revenue flow (Slides 5&ndash;8) is the most time-intensive section &mdash; estimate 3&ndash;4 min for learners to click through all 7 steps. The two knowledge checks (Slides 13&ndash;14) add 2&ndash;3 min. If the module runs long in testing, the EBITDA section (Slides 11&ndash;12) is the most modular and could be extracted into an optional &ldquo;deeper dive&rdquo; without breaking the flow.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Cross-Module Refs</span>
+    <span class="note-text">Slide 4 references Module 4&rsquo;s three-entity governance structure. Slide 5 references Module 5&rsquo;s customer journey. Slide 8 references the $800M+ figure from Module 4. Slide 14&rsquo;s matching activity connects M5 services to M6 revenue. Slide 16 previews Module 7&rsquo;s strategic priorities. These cross-references reinforce Track 1&rsquo;s modular-but-connected design.</span>
+  </div>
+</div>
+
+<div class="footer">
+  M6 &mdash; Revenue Model &mdash; Rev 1 &mdash; April 8, 2026 &mdash; Track 1: Intro to PrePass Onboarding Framework<br>
+  Sources: Intelligence Report (public filings), Michael&rsquo;s Framework (element #6), Track 1 Master Plan, Cross-Reference Gap Analysis, NEO Comparison Doc<br>
+  16 slides &bull; 10&ndash;12 min &bull; Working Knowledge &bull; Finance sign-off required before development
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M1 — Mission, Vision &amp; Values — Rise 360 Storyboard (Rev 2)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.4rem;
+  }
+
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    font-weight: 300;
+  }
+
+  .header .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .pill-tool { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25); }
+  .pill-time { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+  .pill-depth { background: rgba(167, 139, 250, 0.12); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .pill-status { background: rgba(34, 197, 94, 0.12); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.25); }
+
+  /* ── Legend ── */
+  .legend {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #aaa;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .dot-confirmed { background: #22c55e; }
+  .dot-placeholder { background: #f59e0b; }
+  .dot-interaction { background: #a78bfa; }
+  .dot-media { background: #60a5fa; }
+  .dot-note { background: #555; }
+
+  /* ── Revision Log ── */
+  .revision-log {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .revision-log h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f59e0b;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .revision-entry {
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.6;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .revision-entry:last-child { border-bottom: none; }
+
+  .rev-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .rev-added { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+  .rev-changed { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
+  .rev-kept { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+
+  /* ── Slide Cards ── */
+  .slides-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    counter-reset: slide;
+  }
+
+  .slide-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .slide-card:hover { border-color: #3a3a3a; }
+
+  .slide-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .slide-number {
+    counter-increment: slide;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .sn-confirmed { background: #16a34a; }
+  .sn-placeholder { background: #d97706; }
+  .sn-interaction { background: #7c3aed; }
+  .sn-media { background: #2563eb; }
+
+  .slide-title-area { flex: 1; }
+
+  .slide-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  .slide-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.15rem;
+  }
+
+  .type-confirmed { color: #22c55e; }
+  .type-placeholder { color: #f59e0b; }
+  .type-interaction { color: #a78bfa; }
+  .type-media { color: #60a5fa; }
+
+  .rise-block-tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: #888;
+    border: 1px solid #333;
+    flex-shrink: 0;
+  }
+
+  .slide-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .slide-body p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #bbb;
+    margin-bottom: 0.75rem;
+  }
+
+  .slide-body p:last-child { margin-bottom: 0; }
+
+  .content-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .cl-onscreen { color: #22c55e; }
+  .cl-narration { color: #60a5fa; }
+  .cl-visual { color: #f472b6; }
+  .cl-interaction { color: #a78bfa; }
+  .cl-notes { color: #555; }
+  .cl-source { color: #f59e0b; }
+
+  .content-section {
+    background: #151515;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .content-section:last-child { margin-bottom: 0; }
+
+  .placeholder-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .confirmed-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  blockquote {
+    border-left: 3px solid #334;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: rgba(255,255,255,0.02);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    color: #ccc;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .values-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .values-grid { grid-template-columns: 1fr; } }
+
+  .value-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    border-left: 3px solid #22c55e;
+  }
+
+  .value-card .val-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    margin-bottom: 0.3rem;
+  }
+
+  .value-card .val-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── Pyramid Graphic ── */
+  .pyramid-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .pyramid-level {
+    text-align: center;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: white;
+  }
+
+  .pyr-values { background: #7c3aed; width: 90%; }
+  .pyr-vision { background: #2563eb; width: 65%; }
+  .pyr-mission { background: #16a34a; width: 40%; }
+
+  .pyramid-label {
+    font-size: 0.7rem;
+    color: #888;
+    margin-top: -0.2rem;
+    font-style: italic;
+  }
+
+  /* ── Section Dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.25rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  .section-divider span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #555;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── Notes Panel ── */
+  .notes-panel {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .notes-panel h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+  }
+
+  .note-item:last-child { border-bottom: none; }
+
+  .note-who {
+    color: #a78bfa;
+    font-weight: 600;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+  }
+
+  .note-text { color: #bbb; line-height: 1.5; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>M1 — Mission, Vision &amp; Values</h1>
+  <div class="subtitle">Rise 360 Storyboard — Intro to PrePass Onboarding Framework</div>
+  <div class="meta-row">
+    <span class="meta-pill pill-tool">Rise 360 Lesson</span>
+    <span class="meta-pill pill-time">Est. 8&ndash;12 min</span>
+    <span class="meta-pill pill-depth">Depth: Awareness</span>
+    <span class="meta-pill pill-status">Rev 2 &mdash; All Core Content Confirmed</span>
+  </div>
+</div>
+
+<!-- ── Revision Log ── -->
+<div class="revision-log">
+  <h3>Revision Log &mdash; Rev 2 (April 8, 2026)</h3>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> Vision statement from NEO deck slide 24 &mdash; Slide 5 upgraded from placeholder to confirmed.</div>
+  <div class="revision-entry"><span class="rev-changed">RESTRUCTURED</span> Module now follows the NEO's <strong>Mission &rarr; Vision &rarr; Values pyramid</strong> progression. New Slide 3 introduces the framework; module flow mirrors the pyramid layers.</div>
+  <div class="revision-entry"><span class="rev-changed">UPDATED</span> Each core value now has a <strong>dedicated slide</strong> (Slides 8&ndash;11) using the NEO's expanded description paragraphs (NEO slides 26&ndash;29).</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> Knowledge Check &mdash; <strong>match values to descriptions</strong> (Slide 13) per master plan.</div>
+  <div class="revision-entry"><span class="rev-kept">KEPT</span> CEO welcome bookend (Slide 1), reflection prompt (Slide 12), stories placeholder (Slide 14), transition slide (Slide 16).</div>
+  <div class="revision-entry" style="font-size: 0.78rem; color: #888; border-bottom: none;">Sources: NEO Deck December 2025 (slides 17&ndash;29), Track 1 Master Plan, NEO Comparison &amp; Recommendations doc, Cross-Reference gap analysis.</div>
+</div>
+
+<!-- ── Legend ── -->
+<div class="legend">
+  <span class="legend-title">Block Types</span>
+  <span class="legend-item"><span class="legend-dot dot-confirmed"></span> Confirmed Content</span>
+  <span class="legend-item"><span class="legend-dot dot-placeholder"></span> Placeholder — Waiting on Input</span>
+  <span class="legend-item"><span class="legend-dot dot-interaction"></span> Learner Interaction</span>
+  <span class="legend-item"><span class="legend-dot dot-media"></span> Media / Video Embed</span>
+  <span class="legend-item"><span class="legend-dot dot-note"></span> Builder Note</span>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part A — CEO Welcome &amp; Opening</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 1 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-media">1</div>
+      <div class="slide-title-area">
+        <div class="slide-title">CEO Welcome — Part 1 (Intro)</div>
+        <div class="slide-type type-media">VIDEO / MEDIA EMBED</div>
+      </div>
+      <span class="rise-block-tag">VIDEO BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual / Media</div>
+        <p>Full-width video embed — Chris Murray welcoming the learner to PrePass. <span class="placeholder-flag">AWAITING DIRECTION</span></p>
+        <p>Three options discussed (Michael coordinating with Patty):</p>
+        <p style="padding-left: 1rem; color: #999; font-size: 0.82rem;">
+          (a) Chris records on camera<br>
+          (b) Scripted message with AI voiceover<br>
+          (c) Chris freelances a short welcome message
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Talking Points (Suggested)</div>
+        <p>"Welcome to PrePass. Whether you're joining our team for the first time or starting a new chapter in your career, you're now part of an organization that's making America's highways safer every single day. Over the next few minutes, you'll learn about who we are, what drives us, and why this work matters. Let's get started."</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This is the "Part 1" of the two-part CEO bookend discussed April 1. Part 2 (closing) lives at the end of the full course, not this module. If the video isn't ready at build time, use a placeholder image with a text-over quote and swap later. Rise supports hot-swapping video blocks without rebuilding.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">2</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Introduction — What You'll Learn</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>In this module, you'll explore:</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          — Why PrePass exists (our Mission)<br>
+          — Where we're headed (our Vision)<br>
+          — How we operate every day (our Core Values)
+        </p>
+        <p style="margin-top: 0.5rem; font-size: 0.82rem; color: #999;">These aren't just words on a wall — they're the foundation for every decision we make as an organization. Together, they form a pyramid that builds from purpose to aspiration to daily action.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Clean layout with a PrePass-branded header image or motion graphic. Could use a photo of the physical PrePass values card if available as a teaser. Rise "Statement" or "Quote" block works well here.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part B — The Pyramid Framework</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 3 — NEW: Pyramid Introduction -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">3</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Pyramid — Mission, Vision &amp; Values</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT — NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">INTERACTIVE GRAPHIC / LABELED GRAPHIC</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Every organization is built on three layers.</strong> At PrePass, we think of them as a pyramid — each layer supports the ones above it:</p>
+
+        <div class="pyramid-container">
+          <div class="pyramid-level pyr-values">VALUES — How we behave every day</div>
+          <div class="pyramid-label">guides daily decisions &amp; interactions</div>
+          <div class="pyramid-level pyr-vision">VISION — What we aspire to become</div>
+          <div class="pyramid-label">sets the long-term direction</div>
+          <div class="pyramid-level pyr-mission">MISSION — Why we exist</div>
+          <div class="pyramid-label">the foundation of everything</div>
+        </div>
+
+        <p style="margin-top: 0.75rem; font-size: 0.82rem; color: #999;">We'll walk through each layer, starting at the foundation and building upward.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Think of our Mission, Vision, and Values as a pyramid. The mission sits at the base — it's the reason PrePass exists. The vision builds on that — it's where we're headed. And the values at the top are how we show up every single day to make it all happen. Let's start with the foundation.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Labeled Graphic" or "Interactive" block. Build the pyramid as a click-to-reveal: learner clicks each layer to see a short description before proceeding. Alternatively, animate the layers building upward on a timed reveal (3 seconds per layer). Use PrePass purple/black brand colors for the pyramid tiers.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Pyramid model from NEO deck slides 17&ndash;22. Adopted per master plan directive: "Redesign the module flow to mirror this progression — reveal layers as the learner clicks through."</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part C — Layer 1: Mission</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 4 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">4</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Our Mission</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Hero Statement</div>
+        <blockquote>"We exist to make highways safer and more efficient."</blockquote>
+        <p><span class="confirmed-flag">CONFIRMED</span> — sourced from NEO deck slide 23 and official PrePass materials</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover / Supporting Text</div>
+        <p>This isn't just a corporate statement — it's the reason every role at PrePass exists. Whether you're in engineering, customer support, finance, or operations, the work you do connects back to this: keeping drivers safe and freight moving.</p>
+        <p>PrePass technology screens commercial vehicles at highway speeds, deciding in milliseconds whether a truck can bypass a weigh station or needs to stop for inspection. That's the mission, live, millions of times every day.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Statement" block with the mission in large, bold text. Follow with a "Text + Image" block using a highway/trucking image to ground the abstract statement in something tangible. Consider a brief animation or counter graphic: "X million bypasses processed daily."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">5</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Mission in Action — What This Looks Like</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">LABELED GRAPHIC or PROCESS BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Every time a truck approaches a PrePass-equipped site:</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          1. An RFID transponder signal is read<br>
+          2. Data is cross-referenced against safety and credentials databases in real time<br>
+          3. The driver gets a green light (bypass) or red light (pull in) — in under 3 seconds<br>
+          4. Safe carriers move faster. Unsafe carriers get inspected. Everyone is safer.
+        </p>
+        <p style="margin-top: 0.5rem; font-size: 0.82rem; color: #999;">This is the mission, live, millions of times a day across 34+ states.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Process" or "Labeled Graphic" block — a simple 4-step flow showing the bypass in action. If you have the stock photo of a weigh station or PrePass sign, use it as the background. This makes the mission concrete before moving to vision.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part D — Layer 2: Vision</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 6 — UPDATED: Was placeholder, now confirmed -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">6</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Our Vision</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT — UPDATED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Hero Statement</div>
+        <blockquote>"Uniting the power of people, policy, and technology to enable the world's safest, most efficient and advanced highways."</blockquote>
+        <p><span class="confirmed-flag">CONFIRMED</span> — sourced from NEO deck slide 24</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover / Supporting Text</div>
+        <p>If the mission is <em>why we exist today</em>, the vision is <em>where we're headed</em>. Notice the three forces in this statement — <strong>people, policy, and technology</strong>. PrePass doesn't just build software. We sit at the intersection of government agencies, the trucking industry, and the technology that connects them. That's what makes this work unique.</p>
+        <p>As a new team member, understanding the vision helps you see how your role contributes not just to what we do now, but to what we're building toward — a future where every highway in the country is safer, more efficient, and more advanced because of the work we do together.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Same "Statement" block treatment as the mission, but visually differentiated — use a different background tone or a forward-looking image (road stretching into the horizon, expansion map). Consider a three-icon callout for "People · Policy · Technology" to reinforce the triad from the vision statement. Keep the parallel structure: big quote &rarr; supporting context.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO deck slide 24. Previously listed as "STILL NEEDED" in cross-reference doc and original storyboard (Rev 1, Slide 5). Gap now closed.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part E — Layer 3: Core Values Overview</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 7 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">7</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Our Core Values — The Top of the Pyramid</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>The mission tells us why we exist. The vision tells us where we're going. Our <strong>four core values</strong> tell us how we get there — they shape how we make decisions, treat each other, and show up for our customers every day.</p>
+        <div class="values-grid">
+          <div class="value-card">
+            <div class="val-name">1. Our Mission Drives Us</div>
+          </div>
+          <div class="value-card">
+            <div class="val-name">2. We Invest in Relationships</div>
+          </div>
+          <div class="value-card">
+            <div class="val-name">3. We Challenge Ourselves to Innovate and Improve</div>
+          </div>
+          <div class="value-card">
+            <div class="val-name">4. We Win Together</div>
+          </div>
+        </div>
+        <p style="font-size: 0.82rem; color: #999;">Let's look at each one in detail.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Now we reach the top of our pyramid — the values that guide everything we do day to day. PrePass has four core values. You'll see them on cards around the office, hear them in meetings, and feel them in how your team works together. Let's walk through each one.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Brief overview slide — show all four value names as a preview before diving into each. Rise "Text" block with a subtle branded background. This slide is a transition into the deep-dive sequence (Slides 8&ndash;11). Keep it clean — no expanded descriptions here; those come next.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part F — Values Deep Dive (Individual Slides)</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 8 — Value 1 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">8</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Value 1: Our Mission Drives Us</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT — UPDATED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TAB 1 / ACCORDION or STANDALONE SLIDE</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Value Statement</div>
+        <blockquote>"Our Mission Drives Us"</blockquote>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Expanded Description (from NEO)</div>
+        <p>We are passionate partners in moving the trucking industry forward. We champion safer, more efficient highways and remain steadfast in our commitment to making a lasting positive impact. Our mission is at the heart of every decision, every innovation, and every partnership we pursue.</p>
+        <p><span class="confirmed-flag">CONFIRMED</span> — NEO deck slide 26</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Our first value: Our Mission Drives Us. This means the mission isn't something we hang on the wall and forget. It's the tiebreaker when priorities compete. Every initiative, every product decision, every customer interaction ties back to making highways safer. When you hear people at PrePass say "that's mission-aligned," this is what they mean.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Use a Rise "Tab" or "Accordion" panel (Tab 1 of 4), or a standalone slide with a branded value card graphic. Consider pairing with a highway safety image or a graphic showing the scale of PrePass operations (584+ bypass locations, 46 jurisdictions). The visual should reinforce "mission as a daily operating principle."</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Value name: official PrePass values card. Expanded description: NEO deck slide 26. Replaces the shorter description in Rev 1 ("Every initiative, product decision, and customer interaction ties back to making highways safer. When priorities compete, the mission is the tiebreaker.").</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9 — Value 2 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">9</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Value 2: We Invest in Relationships</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT — UPDATED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TAB 2 / ACCORDION or STANDALONE SLIDE</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Value Statement</div>
+        <blockquote>"We Invest in Relationships"</blockquote>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Expanded Description (from NEO)</div>
+        <p>We earn trust every day, through every action and interaction. Integrity, transparency, accountability, kindness, and respect guide us in building meaningful connections — with our customers, our partners, and each other. Relationships are the foundation of everything we accomplish.</p>
+        <p><span class="confirmed-flag">CONFIRMED</span> — NEO deck slide 27</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Our second value: We Invest in Relationships. PrePass is a public-private partnership at its core — we work with state agencies, law enforcement, and the trucking industry simultaneously. That only works if people trust us. This value is about earning that trust every single day through integrity, transparency, accountability, kindness, and respect. Notice it's not just external — it's how we treat each other inside these walls, too.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Consider a callout with the five relationship principles (integrity, transparency, accountability, kindness, respect) as visual anchors — small icons or a horizontal strip. Pair with an image of teamwork or partnership (could reference the Alliance partnership that makes PrePass possible).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Value name: official PrePass values card. Expanded description: NEO deck slide 27. Replaces Rev 1 shorter description.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 — Value 3 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">10</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Value 3: We Challenge Ourselves to Innovate and Improve</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT — UPDATED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TAB 3 / ACCORDION or STANDALONE SLIDE</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Value Statement</div>
+        <blockquote>"We Challenge Ourselves to Innovate and Improve"</blockquote>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Expanded Description (from NEO)</div>
+        <p>We embrace both incremental and breakthrough innovation. Whether it's refining a daily process or reimagining an entire product, we stay curious, take smart risks, and never stop looking for ways to deliver more value. Complacency is not in our vocabulary.</p>
+        <p><span class="confirmed-flag">CONFIRMED</span> — NEO deck slide 28</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Our third value: We Challenge Ourselves to Innovate and Improve. The technology that powers PrePass has evolved from basic RFID screening in the 1990s to advanced safety analytics, mobile bypass, and AI-driven compliance tools. That evolution didn't happen by accident — it started with people willing to push boundaries. This value is about both the big leaps and the everyday improvements. You don't have to invent the next product — sometimes the innovation is a better process, a smarter workflow, or a question no one else thought to ask.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>A brief before/after or timeline snippet could be powerful here — 1993 RFID transponder vs. 2025 AI-driven compliance platform. Alternatively, a simple "Incremental + Breakthrough" two-column layout. Rise "Image + Text" block or "Numbered List" with two innovation types.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Value name: official PrePass values card. Expanded description: NEO deck slide 28. Replaces Rev 1 shorter description.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11 — Value 4 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">11</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Value 4: We Win Together</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT — UPDATED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TAB 4 / ACCORDION or STANDALONE SLIDE</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Value Statement</div>
+        <blockquote>"We Win Together"</blockquote>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen — Expanded Description (from NEO)</div>
+        <p>We believe the best outcomes come from constructive collaboration that brings together diverse skills, perspectives, and experiences. No single team or department delivers the PrePass experience alone. We celebrate shared victories and take shared accountability — because when one of us succeeds, we all succeed.</p>
+        <p><span class="confirmed-flag">CONFIRMED</span> — NEO deck slide 29</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Our fourth value: We Win Together. This one is about more than teamwork as a buzzword. From engineering to customer success, from the Alliance to our field operations — outcomes at PrePass are shared. The bypass system doesn't work if the tech team builds it but no one supports the carriers using it. The compliance platform doesn't matter if sales brings in customers but customer success can't retain them. We win together, or we don't win at all.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Consider a visual showing cross-department collaboration — a simplified org map with connecting lines, or the "400+ employees, 3 offices, 30 states" stat to reinforce scale of collaboration. Rise "Image + Text" block. This is the last value before the reflection prompt, so end on an energizing note.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Value name: official PrePass values card. Expanded description: NEO deck slide 29. Replaces Rev 1 shorter description.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part G — Reflection &amp; Knowledge Check</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 12 — Reflection (KEPT from Rev 1) -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">12</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Reflection — Which Value Resonates?</div>
+        <div class="slide-type type-interaction">LEARNER INTERACTION — KEPT FROM REV 1</div>
+      </div>
+      <span class="rise-block-tag">KNOWLEDGE CHECK BLOCK (SURVEY MODE)</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p><strong>Type:</strong> Reflection poll (ungraded) — Rise "Knowledge Check" set to survey mode, or a "Sorting" interaction.</p>
+        <p><strong>Prompt:</strong> "Think about your own experience — in a previous role, in school, or in your personal life. Which of these values resonates most with you right now?"</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem; margin-top: 0.5rem;">
+          &#9675; Our mission drives us<br>
+          &#9675; We invest in relationships<br>
+          &#9675; We challenge ourselves to innovate and improve<br>
+          &#9675; We win together
+        </p>
+        <p style="margin-top: 0.75rem;"><strong>Feedback (all answers):</strong> "There's no wrong answer here — every one of these values plays a role in your work at PrePass. As you settle into your role, you'll see them show up in meetings, project decisions, and how your team operates. Pay attention to which ones come up most."</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This is intentionally low-stakes — the goal is engagement, not assessment. It gives learners a moment to pause and connect personally before the graded knowledge check. In Rise, use a "Knowledge Check" block with survey/practice mode (no score tracking).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13 — NEW: Knowledge Check — Match Values to Descriptions -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">13</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Knowledge Check — Match Values to Descriptions</div>
+        <div class="slide-type type-interaction">LEARNER INTERACTION — NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">MATCHING / SORTING BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p><strong>Type:</strong> Matching activity (graded) — Rise "Matching" or "Sorting" knowledge check block.</p>
+        <p><strong>Instructions to learner:</strong> "Match each value to the description that best represents it."</p>
+        <p style="margin-top: 0.75rem;"><strong>Left column (Values):</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          A. Our Mission Drives Us<br>
+          B. We Invest in Relationships<br>
+          C. We Challenge Ourselves to Innovate and Improve<br>
+          D. We Win Together
+        </p>
+        <p style="margin-top: 0.75rem;"><strong>Right column (Descriptions — shuffled):</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          1. "Constructive collaboration that brings together diverse skills, perspectives, and experiences."<br>
+          2. "Integrity, transparency, accountability, kindness, and respect guide us in building meaningful connections."<br>
+          3. "Passionate partners in moving the trucking industry forward — safer, more efficient highways at the heart of every decision."<br>
+          4. "Embracing both incremental and breakthrough innovation — staying curious and taking smart risks."
+        </p>
+        <p style="margin-top: 0.75rem;"><strong>Correct matches:</strong> A&rarr;3, B&rarr;2, C&rarr;4, D&rarr;1</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-interaction">Feedback</div>
+        <p><strong>Correct:</strong> "Nice work! You've got a solid understanding of what each value means in practice."</p>
+        <p><strong>Incorrect:</strong> "Not quite — take another look. Each value has a distinct focus: mission alignment, relationship building, innovation, or collaboration. Try again!"</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This knowledge check tests whether learners can distinguish between the four values — not just recall their names. The descriptions are drawn from the NEO's expanded paragraphs but shortened to work as matching items. In Rise, use "Knowledge Check" block set to graded mode with "Matching" question type. Allow retry.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Added per master plan directive: "Layer in a knowledge check that tests whether learners can match values to descriptions." Descriptions derived from NEO slides 26&ndash;29.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part H — Bringing It Together</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 14 — Stories placeholder (KEPT from Rev 1) -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-placeholder">14</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Stories from PrePass — Values in the Real World</div>
+        <div class="slide-type type-placeholder">PLACEHOLDER — AWAITING NARRATIVE CONTENT</div>
+      </div>
+      <span class="rise-block-tag">SCENARIO or STORYLINE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">Concept</div>
+        <p>1&ndash;2 short anecdotes or founding stories that bring the mission and values to life. These could be about the early days of PrePass, a moment a value was tested, or a customer impact story that made someone proud to work here.</p>
+        <p><span class="placeholder-flag">WAITING ON INPUT</span> — requested from Michael as "founding stories / narrative anecdotes"</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Scenario" block or a simple "Quote" block if the stories are short. If we get longer narratives, a "Storyline" embed or a "Timeline" block showing 2&ndash;3 moments could work beautifully. Each story should tag which value it illustrates.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This slide is optional at launch if stories aren't available yet — the module works without it. But it's the emotional peak of the module if we can get the content. Build the surrounding structure now and leave a clearly marked drop zone. Good candidates: the Crescent Project origin story from Company History could do double duty here, or a customer safety save story.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15 — Module Summary -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">15</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Summary — Mission, Vision &amp; Values</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT — UPDATED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK + DIVIDER</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Here's what to take with you:</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          <strong>Our Mission:</strong> "We exist to make highways safer and more efficient."<br><br>
+          <strong>Our Vision:</strong> "Uniting the power of people, policy, and technology to enable the world's safest, most efficient and advanced highways."<br><br>
+          <strong>Our Values:</strong><br>
+          &bull; Our mission drives us<br>
+          &bull; We invest in relationships<br>
+          &bull; We challenge ourselves to innovate and improve<br>
+          &bull; We win together
+        </p>
+        <p style="margin-top: 0.75rem; font-size: 0.85rem; color: #999;">These aren't just onboarding slides — they're the shared language you'll hear in meetings, planning sessions, and everyday conversations at PrePass. The pyramid holds: mission at the base, vision as the aspiration, values as the daily practice.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Clean summary card with a mini pyramid graphic echoing Slide 3. Rise "Text" block with a subtle background color change to signal "recap." A small image of the PrePass values card could anchor it visually. Follow with a Rise "Divider" block to create a clear break before the next module.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 16 — Transition -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">16</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Transition to Module 2</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">CONTINUE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>Now that you know <em>why</em> PrePass exists, <em>where</em> we're headed, and <em>how</em> we operate every day, let's look at the principles that are driving us forward right now — the mindsets and priorities our leadership team talks about every day.</p>
+        <p><strong>Up next: Foundational Principles / Drivers &rarr;</strong></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>In Rise, this is just a "Continue" block or a lesson break if M1 and M2 are separate lessons. If they're sections within the same lesson, a "Divider" + "Text" block handles the transition. The language here bridges naturally into M2 regardless of what Foundational Principles ends up being called (values, drivers, etc.).</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Production Notes ── -->
+<div class="notes-panel">
+  <h3>Production Notes &amp; Dependencies</h3>
+
+  <div class="note-item">
+    <span class="note-who">RESOLVED</span>
+    <span class="note-text"><strong>Vision statement</strong> — now confirmed from NEO deck slide 24. Slide 6 updated from placeholder to confirmed content. No longer blocking.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Michael</span>
+    <span class="note-text"><strong>CEO video direction</strong> — coordinating with Patty on Chris Murray's approach (on camera / AI voice / freelance). Slide 1 is built to accept any of the three.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Michael</span>
+    <span class="note-text"><strong>Founding stories</strong> — any anecdotes or real-world examples that bring values to life. Slide 14 is optional but becomes the emotional anchor if content is available.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Adam</span>
+    <span class="note-text"><strong>Build in Rise now:</strong> Slides 2&ndash;13 and 15&ndash;16 are fully buildable today. That's 14 of 16 slides with confirmed content. Only Slides 1 (CEO video) and 14 (stories) remain as placeholders.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Adam</span>
+    <span class="note-text"><strong>Interaction build:</strong> Two interactions to set up — Slide 12 (reflection poll, survey mode) and Slide 13 (matching knowledge check, graded). Both are standard Rise knowledge check blocks.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Design</span>
+    <span class="note-text"><strong>Image needs:</strong> PrePass values card photo, highway/weigh station stock photo, forward-looking road image for vision slide, pyramid graphic for Slides 3 and 15. Check uploads or PrePass marketing materials.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Scope</span>
+    <span class="note-text"><strong>Estimated duration:</strong> 8&ndash;12 min at awareness depth. Grew from 10 slides to 16, but the individual value slides replace a single tabs block — net pacing should be comparable. Knowledge check (Slide 13) adds ~1&ndash;2 min. Reflection (Slide 12) adds ~1 min. Watch total pacing.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">NEO Align</span>
+    <span class="note-text"><strong>Consistency check:</strong> This module now mirrors the NEO's pyramid progression (slides 17&ndash;29). A new hire who already attended the NEO will see reinforcement, not contradiction. Anyone who hasn't attended the NEO gets the same approved framing.</span>
+  </div>
+</div>
+
+<div class="notes-panel" style="margin-top: 1rem;">
+  <h3>Rise 360 Build Blocks — Quick Reference</h3>
+
+  <div class="note-item">
+    <span class="note-who">Slide 1</span>
+    <span class="note-text">Video Block (or Image + Quote as temporary placeholder)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 2</span>
+    <span class="note-text">Text Block + Image Block</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 3</span>
+    <span class="note-text">Labeled Graphic Block or Interactive Block (pyramid — click to reveal layers)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 4</span>
+    <span class="note-text">Statement Block &rarr; Text + Image Block</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 5</span>
+    <span class="note-text">Process Block or Labeled Graphic Block (4 steps)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 6</span>
+    <span class="note-text">Statement Block (vision — now confirmed)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 7</span>
+    <span class="note-text">Text Block (values overview — transition into deep dive)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slides 8–11</span>
+    <span class="note-text">Tabs Block (4 tabs, one per value) OR 4 standalone Text + Image Blocks. Tabs keep it compact; standalone slides give more room for voiceover and visuals. Builder's choice based on pacing.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 12</span>
+    <span class="note-text">Knowledge Check Block — survey/practice mode (ungraded reflection)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 13</span>
+    <span class="note-text">Knowledge Check Block — graded, Matching question type (values &harr; descriptions)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 14</span>
+    <span class="note-text">Scenario Block or Quote Block (placeholder — content pending)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 15</span>
+    <span class="note-text">Text Block + Divider Block (summary with mini pyramid callback)</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Slide 16</span>
+    <span class="note-text">Continue Block or Divider + Text Block (module transition)</span>
+  </div>
+</div>
+
+<div class="footer">
+  M1 — Mission, Vision &amp; Values — Rise 360 Storyboard — Intro to PrePass — Rev 2 — Updated April 8, 2026 — All Core Content Confirmed
+</div>
+
+</body>
+</html>

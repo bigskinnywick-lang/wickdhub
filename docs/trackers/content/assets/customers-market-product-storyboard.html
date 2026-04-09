@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M5 &mdash; Customers, Market &amp; Product &mdash; Rise 360 Storyboard (Rev 1)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.4rem;
+  }
+
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    font-weight: 300;
+  }
+
+  .header .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .pill-tool { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25); }
+  .pill-time { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+  .pill-depth { background: rgba(167, 139, 250, 0.12); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .pill-status { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+
+  /* ── Legend ── */
+  .legend {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #aaa;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .dot-confirmed { background: #22c55e; }
+  .dot-placeholder { background: #f59e0b; }
+  .dot-product { background: #ef4444; }
+  .dot-interaction { background: #a78bfa; }
+  .dot-media { background: #60a5fa; }
+  .dot-note { background: #555; }
+
+  /* ── Revision Log ── */
+  .revision-log {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .revision-log h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f59e0b;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .revision-entry {
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.6;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .revision-entry:last-child { border-bottom: none; }
+
+  .rev-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .rev-new { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+  .rev-design { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
+  .rev-source { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .rev-gap { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+  /* ── Slide Cards ── */
+  .slides-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .slide-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .slide-card:hover { border-color: #3a3a3a; }
+
+  .slide-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .slide-number {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .sn-confirmed { background: #16a34a; }
+  .sn-placeholder { background: #d97706; }
+  .sn-product { background: #dc2626; }
+  .sn-interaction { background: #7c3aed; }
+  .sn-media { background: #2563eb; }
+
+  .slide-title-area { flex: 1; }
+
+  .slide-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  .slide-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.15rem;
+  }
+
+  .type-confirmed { color: #22c55e; }
+  .type-placeholder { color: #f59e0b; }
+  .type-product { color: #ef4444; }
+  .type-interaction { color: #a78bfa; }
+  .type-media { color: #60a5fa; }
+
+  .rise-block-tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: #888;
+    border: 1px solid #333;
+    flex-shrink: 0;
+  }
+
+  .slide-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .slide-body p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #bbb;
+    margin-bottom: 0.75rem;
+  }
+
+  .slide-body p:last-child { margin-bottom: 0; }
+
+  .content-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .cl-onscreen { color: #22c55e; }
+  .cl-narration { color: #60a5fa; }
+  .cl-visual { color: #f472b6; }
+  .cl-interaction { color: #a78bfa; }
+  .cl-notes { color: #555; }
+  .cl-source { color: #f59e0b; }
+
+  .content-section {
+    background: #151515;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .content-section:last-child { margin-bottom: 0; }
+
+  .placeholder-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .confirmed-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .product-input-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  blockquote {
+    border-left: 3px solid #334;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: rgba(255,255,255,0.02);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    color: #ccc;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* ── Value Props Grid ── */
+  .vp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .vp-grid { grid-template-columns: 1fr; } }
+
+  .vp-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .vp-card .vp-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    margin-bottom: 0.3rem;
+  }
+
+  .vp-card .vp-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  .vp-cut-costs { border-left: 3px solid #22c55e; }
+  .vp-save-time { border-left: 3px solid #60a5fa; }
+  .vp-enhance-safety { border-left: 3px solid #f59e0b; }
+  .vp-gain-insights { border-left: 3px solid #a78bfa; }
+
+  /* ── Stats Row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr; } }
+
+  .stat-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    text-align: center;
+  }
+
+  .stat-card .stat-number {
+    font-weight: 800;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.72rem;
+    color: #888;
+    line-height: 1.4;
+  }
+
+  /* ── Journey Steps ── */
+  .journey-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .journey-step {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #7c3aed;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .step-content .step-title {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #e0e0e0;
+    margin-bottom: 0.2rem;
+  }
+
+  .step-content .step-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── Service Cards ── */
+  .service-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin: 0.5rem 0;
+    border-left: 3px solid #60a5fa;
+  }
+
+  .service-card .svc-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    margin-bottom: 0.3rem;
+  }
+
+  .service-card .svc-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── Differentiator Cards ── */
+  .diff-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin: 0.5rem 0;
+    border-left: 3px solid #f59e0b;
+  }
+
+  .diff-card .diff-label {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #e0e0e0;
+    margin-bottom: 0.2rem;
+  }
+
+  .diff-card .diff-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── Section Dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.25rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  .section-divider span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #555;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── Notes Panel ── */
+  .notes-panel {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .notes-panel h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+  }
+
+  .note-item:last-child { border-bottom: none; }
+
+  .note-who {
+    color: #a78bfa;
+    font-weight: 600;
+    min-width: 100px;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+  }
+
+  .note-text { color: #bbb; line-height: 1.5; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>M5 &mdash; Customers, Market &amp; Product</h1>
+  <div class="subtitle">Rise 360 Storyboard &mdash; Intro to PrePass Onboarding Framework</div>
+  <div class="meta-row">
+    <span class="meta-pill pill-tool">Rise 360 Lesson</span>
+    <span class="meta-pill pill-time">Est. 12&ndash;15 min</span>
+    <span class="meta-pill pill-depth">Depth: Awareness</span>
+    <span class="meta-pill pill-status">Rev 1 &mdash; First Draft &mdash; Product Input Pending</span>
+  </div>
+</div>
+
+<!-- ── Revision Log ── -->
+<div class="revision-log">
+  <h3>Revision Log &mdash; Rev 1 (April 8, 2026)</h3>
+  <div class="revision-entry"><span class="rev-new">NEW BUILD</span> First-draft storyboard for Module 5 &mdash; the largest module in Track 1 and the one Michael flagged as top priority. No prior storyboard existed.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Four value props as organizing framework.</strong> Module is structured around customer outcomes (Cut Costs, Save Time, Enhance Safety, Gain Insights) rather than product features, per master plan directive and NEO slide 32.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Customer journey as centerpiece interaction.</strong> Framework specifies &ldquo;teach via: customer journey.&rdquo; Built a 6-step walkthrough from approach to back-office billing. NEO speaker notes (slide 32) provide sensory detail: &ldquo;you&rsquo;ll start looking in the windshields of trucks for the PrePass device.&rdquo;</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Services before value props.</strong> Learner meets the three core services first (Bypass, Tolls, Compliance), then sees how those services deliver the four outcomes. This avoids abstract value claims before the learner has product context.</div>
+  <div class="revision-entry"><span class="rev-source">SOURCES</span> NEO Deck December 2025 (slides 30&ndash;33, speaker notes), Track 1 Master Plan (Module 5 section), NEO Comparison &amp; Recommendations doc, Cross-Reference gap analysis (intelligence report data: scale stats, competitive differentiators).</div>
+  <div class="revision-entry"><span class="rev-gap">GAPS TAGGED</span> 5 slides contain <span class="product-input-flag">NEEDS PRODUCT INPUT</span> tags for content pending from Vedrana/Hannah product team meeting (April 9). Structure is complete &mdash; gaps are fill-in, not restructure.</div>
+  <div class="revision-entry" style="font-size: 0.78rem; color: #888; border-bottom: none;">No new files from product team found in Working Drafts or Inbound Content folders as of April 8, 2026. Storyboard built from NEO deck and intelligence report. Revision pass planned when product content arrives.</div>
+</div>
+
+<!-- ── Legend ── -->
+<div class="legend">
+  <span class="legend-title">Block Types</span>
+  <span class="legend-item"><span class="legend-dot dot-confirmed"></span> Confirmed Content</span>
+  <span class="legend-item"><span class="legend-dot dot-placeholder"></span> Needs Confirmation</span>
+  <span class="legend-item"><span class="legend-dot dot-product"></span> Needs Product Input</span>
+  <span class="legend-item"><span class="legend-dot dot-interaction"></span> Learner Interaction</span>
+  <span class="legend-item"><span class="legend-dot dot-media"></span> Media / Visual</span>
+  <span class="legend-item"><span class="legend-dot dot-note"></span> Builder Note</span>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part A &mdash; Bridge from Module 4 &amp; Who We Serve</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 1 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">1</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Title &amp; Bridge from Module 4</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Module 5: Customers, Market &amp; Product</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">You&rsquo;ve seen the mission and the organization behind PrePass. Now it&rsquo;s time to meet the people who depend on us &mdash; the carriers, the fleets, and the states. In this module, you&rsquo;ll follow a carrier through a real-world experience and discover how our products deliver on the promise you learned about in Module 4.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>In Module 4, you learned about the Alliance &mdash; its purpose, its four pillars, and its structure. You heard that PrePass exists to make highways safer and more efficient. But who does that mission actually serve? And what does it look like in practice? In this module, you&rsquo;ll step into the world of our customers &mdash; the motor carriers who move goods across America every day. You&rsquo;ll follow a driver through a typical experience with PrePass and see how each of our products connects to real outcomes. Let&rsquo;s start by understanding the scale of who we serve.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Full-width hero image: highway scene with commercial trucks in motion, PrePass branding overlay. Consider a &ldquo;road ahead&rdquo; visual that mirrors M4&rsquo;s closing transition card. Rise &ldquo;Statement&rdquo; block with the module title and subtitle layered over the image.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Bridge language picks up M4 Slide 11 transition teaser: &ldquo;you&rsquo;ll meet the people who rely on PrePass every day &mdash; the carriers, the fleets, and the states&rdquo; and &ldquo;you&rsquo;ll follow a carrier through a typical day.&rdquo; Master plan: &ldquo;Transition slide &mdash; brief bridge to the next module.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">2</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Learning Objectives</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>By the end of this module, you&rsquo;ll be able to:</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          1. Describe PrePass&rsquo;s customer base and the scale of the network (carriers, vehicles, bypass locations, jurisdictions).<br>
+          2. Explain the three core PrePass services and how they connect to the four customer value propositions (Cut Costs, Save Time, Enhance Safety, Gain Insights).<br>
+          3. Identify at least two competitive differentiators that set PrePass apart from other providers.
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Three measurable objectives at Awareness depth. Objective 1 is recall (describe). Objective 2 is comprehension (explain connection). Objective 3 is identification (name differentiators). All three are testable in the knowledge check (Slide 15).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Objectives derived from master plan Module 5 directives (four value props, three core services, competitive differentiators) and framework element #5: &ldquo;Who we serve and why &mdash; Awareness depth.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">3</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Who We Serve &mdash; The Carrier Landscape</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">LABELED GRAPHIC / INFOGRAPHIC</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>PrePass serves one of the largest commercial vehicle networks in North America.</strong></p>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-number">100,000+</div>
+            <div class="stat-label">Motor Carriers Enrolled</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">800,000+</div>
+            <div class="stat-label">Commercial Vehicles</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">584+</div>
+            <div class="stat-label">Bypass Locations &mdash; 46 Jurisdictions</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.82rem; color: #999; margin-top: 0.5rem;">Our customers range from single-truck owner-operators to massive fleets with thousands of vehicles. What they share is a need: to move freight safely, legally, and efficiently &mdash; without unnecessary stops.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Before we talk about products, let&rsquo;s talk about people. PrePass serves more than one hundred thousand motor carriers operating over eight hundred thousand commercial vehicles. Our bypass network spans five hundred eighty-four locations across forty-six jurisdictions &mdash; that&rsquo;s nearly every major freight corridor in the country. Our customers range from single-truck owner-operators to some of the largest fleets in North America. What connects them all is a simple need: they want to move freight safely, stay compliant, and keep rolling.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p><strong>Primary:</strong> A US map with bypass locations plotted as dots, showing national coverage density. Rise &ldquo;Labeled Graphic&rdquo; block &mdash; click regions to see location counts. <strong>Alternative:</strong> Three large stat callout cards arranged horizontally (as shown above), with an animated count-up effect if Rise supports it. Include a simple carrier type spectrum graphic: owner-operator on the left &rarr; mid-size fleet &rarr; enterprise fleet on the right.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>NEO speaker notes (slide 32) include a powerful sensory hook: <em>&ldquo;As you drive on major highways, you&rsquo;ll start looking in the windshields of trucks for the PrePass device.&rdquo;</em> Consider adding this as a callout quote on this slide or weaving it into the voiceover. It makes the abstract network tangible &mdash; next time the learner is on a highway, they&rsquo;ll look for the green light.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Scale stats: intelligence report (cross-reference doc, Section 5). Network specifics: NEO deck slides 30&ndash;32. Sensory quote: NEO slide 32 speaker notes. Geographic expansion (Maine Nov 2025, Vermont 2026): intelligence report.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part B &mdash; The PrePass Experience: Customer Journey</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 4 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">4</div>
+      <div class="slide-title-area">
+        <div class="slide-title">A Day on the Road &mdash; The Driver&rsquo;s View</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">QUOTE / STATEMENT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Imagine you&rsquo;re a long-haul truck driver.</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">You&rsquo;re hauling 40,000 pounds of freight down I-10. Up ahead, you see a sign: <strong>Weigh Station &mdash; All Trucks Must Enter.</strong> Pulling in means stopping, waiting in line, getting inspected, and losing time &mdash; sometimes 20 minutes, sometimes an hour. You&rsquo;ve done it hundreds of times. But today, something different happens. A green light flashes on the device mounted to your windshield. You sail past the station at highway speed. That&rsquo;s PrePass.</p>
+        <blockquote>&ldquo;As you drive on major highways, you&rsquo;ll start looking in the windshields of trucks for the PrePass device.&rdquo;</blockquote>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Let&rsquo;s put you in the driver&rsquo;s seat. You&rsquo;re a long-haul trucker hauling forty thousand pounds down I-10. You see a weigh station sign ahead &mdash; &ldquo;All Trucks Must Enter.&rdquo; In the old days, that means pulling off, idling in line, getting weighed, maybe getting inspected. It could cost you twenty minutes. It could cost you an hour. But today, a green light flashes on the small device mounted to your windshield. You&rsquo;re cleared. You keep rolling at highway speed. The weigh station already knows your truck, your carrier&rsquo;s safety record, and your compliance status. That moment &mdash; green light, keep driving &mdash; that&rsquo;s what PrePass delivers, millions of times a year.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Driver&rsquo;s-eye-view photograph or illustration: looking through a truck windshield at a highway with a weigh station ahead. A PrePass transponder device is visible at the top of the windshield with a green light indicator. Cinematic widescreen crop. If animation is available, a subtle green light pulse on the device.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Sensory detail and windshield quote: NEO slide 32 speaker notes. Bypass experience description: NEO slide 30 + intelligence report. &ldquo;Follow a carrier through a typical day&rdquo; setup: M4 Slide 11 transition teaser and master plan directive #3.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">5</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Customer Journey &mdash; Interactive Walkthrough</div>
+        <div class="slide-type type-interaction">LEARNER INTERACTION</div>
+      </div>
+      <span class="rise-block-tag">PROCESS / LABELED GRAPHIC</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p><strong>Rise Block:</strong> Process interaction (horizontal steps) or Labeled Graphic with numbered hotspots. Learner clicks through each step sequentially. Each step reveals a short description and a visual.</p>
+        <p><strong>Concept:</strong> Follow &ldquo;J&amp;R Transport&rdquo; &mdash; a mid-size fleet &mdash; through a complete PrePass experience in one day.</p>
+
+        <div class="journey-steps">
+          <div class="journey-step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">Approach &mdash; 1 Mile Out</div>
+              <div class="step-desc">The truck approaches a weigh station. The PrePass transponder (or MOTION mobile app) sends a signal about one mile before the station. The system checks the carrier&rsquo;s safety record, registration, and compliance status in real time.</div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">Decision &mdash; Bypass or Pull In</div>
+              <div class="step-desc">Within seconds, the driver gets a green light (bypass &mdash; keep rolling) or a red light (pull in for inspection). Green means the carrier&rsquo;s safety profile passed. This decision happens automatically, every time, at every equipped station.</div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">Bypass &mdash; Rolling Through</div>
+              <div class="step-desc">The driver passes the weigh station at highway speed. No stopping, no idling, no inspection line. Multiply this by dozens of stations on a cross-country route and the time savings become massive.</div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">Toll Plaza &mdash; Seamless Payment</div>
+              <div class="step-desc">Same device, different function. The PrePass transponder doubles as an electronic toll tag. As the truck passes through a toll plaza, the toll is captured and billed automatically. One device handles both bypass and tolling &mdash; no separate E-ZPass or SunPass needed.</div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <div class="step-title">Compliance Check &mdash; Behind the Scenes</div>
+              <div class="step-desc">While the driver rolls on, FleetDrive 360 is working in the background. The fleet&rsquo;s compliance status &mdash; FMCSA safety ratings, DOT registration, insurance filings &mdash; is continuously monitored. If something changes, the carrier gets an alert before it becomes a roadside problem.</div>
+            </div>
+          </div>
+          <div class="journey-step">
+            <div class="step-num">6</div>
+            <div class="step-content">
+              <div class="step-title">Back Office &mdash; Billing &amp; Insights</div>
+              <div class="step-desc">At the end of the day, the fleet manager reviews everything through the Carrier Portal: bypass transactions, toll charges, compliance alerts, and safety analytics. One platform, one invoice, complete visibility. <span class="product-input-flag">NEEDS PRODUCT INPUT</span> &mdash; Confirm portal/dashboard details with Vedrana/Hannah.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script (Step Overview)</div>
+        <p>Now let&rsquo;s walk through a full day with PrePass. We&rsquo;ll follow J&amp;R Transport, a mid-size carrier, from the moment one of their trucks approaches a weigh station to the end-of-day review in the back office. Click through each step to see how PrePass touches every part of the carrier&rsquo;s day.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Horizontal process diagram with icons for each step: truck icon &rarr; signal/antenna icon &rarr; green light icon &rarr; toll booth icon &rarr; shield/compliance icon &rarr; laptop/dashboard icon. Each step reveals a photo or illustration when clicked. Consider a route-map visual where the steps are plotted as stops along a highway.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Journey structure: master plan directive #3 (&ldquo;customer journey&rdquo;), cross-reference doc Section 5 (&ldquo;Follow a carrier through a day: weigh station approach &rarr; bypass decision &rarr; toll plaza &rarr; back-office billing&rdquo;). Technical details: NEO slides 30&ndash;31. FleetDrive 360 compliance monitoring: NEO slide 31 speaker notes. &ldquo;J&amp;R Transport&rdquo; is a fictional carrier name for the walkthrough.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part C &mdash; Three Core Services</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 6 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">6</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Core Service: Weigh Station Bypass</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Weigh Station Bypass</strong> &mdash; The service that started it all.</p>
+        <p style="color: #ccc; font-size: 0.85rem;">PrePass electronically screens commercial vehicles approaching weigh stations and inspection sites. Carriers with strong safety records and valid credentials receive a green light to bypass &mdash; no stopping required. The system uses RFID transponders (mounted to the windshield) or the MOTION mobile app to communicate between the truck and the station.</p>
+        <p style="color: #999; font-size: 0.82rem;"><strong>How it works:</strong> State agencies set the screening criteria. PrePass checks the carrier&rsquo;s safety score, registration, insurance, and size/weight credentials in real time &mdash; about one mile before the station. If everything checks out, the driver gets a green light. If not, they pull in for a standard inspection.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Weigh station bypass is where PrePass began, and it&rsquo;s still the foundation of everything we do. Here&rsquo;s how it works: when a truck with a PrePass transponder or the MOTION app approaches a weigh station, the system checks that carrier&rsquo;s safety record, registration, insurance, and credentials &mdash; all in real time, about a mile before the station. If the carrier meets the state&rsquo;s screening criteria, the driver gets a green light and keeps rolling. If not, they pull in. It&rsquo;s fast, it&rsquo;s automatic, and it happens at over five hundred eighty-four locations across the country.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Photo of a weigh station with the PrePass overhead reader visible. Inset: close-up of a PrePass RFID transponder on a windshield. Secondary image: the MOTION mobile app interface on a phone mounted in a cab. Side-by-side to show both form factors.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO deck slide 30: &ldquo;Weigh Station Bypass&rdquo; as core service. NEO slide 33: product evolution (Crescent Project 1989 &rarr; PrePass 1993). MOTION app: NEO slide 33 (launched 2018). Intelligence report: 584+ bypass locations, 46 jurisdictions.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">7</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Core Service: Toll Management Services (PrePass Plus)</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Toll Management Services &mdash; PrePass Plus</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">PrePass Plus adds electronic toll collection to the same transponder that handles bypass. One device does both &mdash; no need for carriers to manage separate toll accounts across different states. Tolls are captured automatically as trucks pass through toll plazas and billed on a single consolidated invoice.</p>
+        <p style="color: #999; font-size: 0.82rem;"><strong>Why it matters:</strong> Carriers operating across multiple states used to juggle E-ZPass, SunPass, TxTag, and other regional toll accounts. PrePass Plus consolidates all of that into one device, one account, and one bill. Upcoming: <strong>AI Toll Insights</strong> (launched Feb 2026) uses GPS data to verify toll charges and auto-dispute discrepancies. <span class="placeholder-flag">NEEDS CONFIRMATION</span> &mdash; Verify AI Toll Insights detail is appropriate for new-hire training.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>The second core service is toll management. PrePass Plus takes the same transponder that handles bypass and adds electronic toll collection. That means one device in the windshield handles both weigh station screening and toll payments. For carriers operating across multiple states, this is a big deal &mdash; instead of managing separate toll accounts in every state, everything flows through one device, one account, one invoice. PrePass has been offering toll services since 2003, and the platform keeps evolving &mdash; the newest addition, AI Toll Insights, uses GPS data to verify charges and automatically dispute any discrepancies.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Toll plaza photograph with a truck passing through. Graphic overlay showing &ldquo;One Device = Bypass + Tolls.&rdquo; Optional: a simplified before/after comparison &mdash; &ldquo;Before: 5 separate toll accounts&rdquo; vs. &ldquo;After: 1 PrePass Plus device.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO deck slide 31: &ldquo;Toll Management Services (PrePass Plus).&rdquo; NEO slide 33: PrePass Plus tolls launched 2003. AI Toll Insights: NEO slide 33 speaker notes + intelligence report (Feb 2026 launch). Consolidated billing concept: intelligence report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">8</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Core Service: Compliance Management (FleetDrive 360)</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Compliance Management &mdash; FleetDrive 360</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">FleetDrive 360 is PrePass&rsquo;s newest addition &mdash; acquired in December 2025. It brings AI-driven compliance intelligence into the PrePass ecosystem, creating a unified platform that integrates bypass, tolling, and safety analytics with FMCSA/DOT compliance management.</p>
+        <blockquote>&ldquo;Integrating compliance intelligence with bypass, tolling, and safety analytics&hellip; a unified platform that enhances operational efficiency and strengthens long-term regulatory resilience.&rdquo;</blockquote>
+        <p style="color: #999; font-size: 0.82rem;"><strong>What it covers:</strong> Safety ratings monitoring, DOT registration tracking, insurance filing verification, driver qualification management, and proactive alerts when compliance status changes. <span class="product-input-flag">NEEDS PRODUCT INPUT</span> &mdash; Confirm feature list and positioning with Vedrana/Hannah.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>The third core service is the newest and most strategic. FleetDrive 360, acquired in December 2025, brings compliance management into the PrePass platform. Think of it this way: bypass handles the weigh station, tolling handles the toll plaza, and FleetDrive 360 handles everything in between &mdash; safety ratings, DOT registration, insurance filings, driver qualifications. It&rsquo;s integrating compliance intelligence with bypass, tolling, and safety analytics into a unified platform that enhances operational efficiency and strengthens long-term regulatory resilience. For carriers, that means fewer surprises at the roadside and a clearer picture of their compliance health at all times.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Three-part visual showing the evolution: (1) Bypass device &rarr; (2) Bypass + Tolls &rarr; (3) Bypass + Tolls + Compliance. A &ldquo;platform convergence&rdquo; graphic showing the three services flowing into one unified dashboard. FleetDrive 360 logo if available from brand assets.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>FleetDrive 360 description and quoted language: NEO deck slide 31 speaker notes (verbatim). Acquisition date (Dec 2025): NEO slide 33 + intelligence report. Feature list needs product team confirmation. Master plan directive #4: &ldquo;Pull the compliance narrative directly from the NEO.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part D &mdash; Four Value Propositions: How We Deliver for Customers</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 9 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">9</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Value Prop Overview &mdash; Four Customer Outcomes</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">LABELED GRAPHIC / TABS</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Every PrePass service ladders up to four outcomes our customers care about:</strong></p>
+
+        <div class="vp-grid">
+          <div class="vp-card vp-cut-costs">
+            <div class="vp-name">Cut Costs</div>
+            <div class="vp-desc">Reduce fuel, labor, and toll management expenses through bypass and consolidated billing.</div>
+          </div>
+          <div class="vp-card vp-save-time">
+            <div class="vp-name">Save Time</div>
+            <div class="vp-desc">Eliminate unnecessary stops, shorten transit times, and streamline back-office operations.</div>
+          </div>
+          <div class="vp-card vp-enhance-safety">
+            <div class="vp-name">Enhance Safety</div>
+            <div class="vp-desc">Focus enforcement on at-risk carriers while rewarding the safest fleets with bypass privileges.</div>
+          </div>
+          <div class="vp-card vp-gain-insights">
+            <div class="vp-name">Gain Insights</div>
+            <div class="vp-desc">Deliver data-driven visibility into safety, compliance, toll accuracy, and fleet performance.</div>
+          </div>
+        </div>
+
+        <p style="font-size: 0.82rem; color: #999; margin-top: 0.5rem;">In the next four slides, we&rsquo;ll look at each one in more detail &mdash; what it means for the carrier, and which PrePass services deliver it.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Now that you know what we offer, let&rsquo;s talk about why it matters. Everything PrePass builds ladders up to four outcomes that our customers care about: Cut Costs, Save Time, Enhance Safety, and Gain Insights. These aren&rsquo;t marketing slogans &mdash; they&rsquo;re the measurable results carriers experience when they use our services. Let&rsquo;s take each one in turn.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Four-quadrant graphic with icons for each value prop. Colors: green (Cut Costs), blue (Save Time), amber (Enhance Safety), purple (Gain Insights). Rise &ldquo;Tabs&rdquo; or &ldquo;Labeled Graphic&rdquo; block &mdash; click each quadrant to preview the outcome. Alternatively, a simple four-card grid as shown above.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Four value props: NEO deck slide 32. Master plan directive #1: &ldquo;Use the four value props as the organizing framework.&rdquo; Descriptions synthesized from NEO slides 30&ndash;32 and intelligence report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">10</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Cut Costs &mdash; How PrePass Saves Carriers Money</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + STAT CALLOUT</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p style="border-left: 3px solid #22c55e; padding-left: 1rem;"><strong>Cut Costs</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">Every unnecessary stop costs a carrier money &mdash; fuel burned while idling, driver hours lost, and potential detention charges from late deliveries. PrePass bypass eliminates thousands of stops per fleet per year. PrePass Plus consolidates toll accounts, reducing administrative overhead and eliminating the need for multiple state toll tags. GPS Toll Verification catches billing errors that used to go unnoticed.</p>
+        <p style="color: #999; font-size: 0.82rem;"><strong>Services that deliver this:</strong> Weigh Station Bypass (avoided stops), PrePass Plus (consolidated tolling), AI Toll Insights (error detection). <span class="product-input-flag">NEEDS PRODUCT INPUT</span> &mdash; Request specific cost-savings data or customer case study from product/marketing team.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Let&rsquo;s start with cutting costs. Every time a truck pulls into a weigh station unnecessarily, the carrier loses money &mdash; fuel burned while idling, driver hours wasted, and sometimes late-delivery penalties. PrePass bypass eliminates those stops for safe carriers. PrePass Plus goes further by consolidating toll payments into a single account, cutting the administrative overhead of managing toll tags in every state. And now, AI Toll Insights uses GPS data to catch toll billing errors &mdash; the kind that used to slip through and add up quietly over months. Each of these services chips away at costs that carriers have just accepted as the price of doing business.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Cost-savings infographic: &ldquo;Before PrePass&rdquo; vs. &ldquo;With PrePass&rdquo; showing a simplified cost comparison. A dollar icon or downward cost-arrow graphic. If specific savings data arrives from product team, feature a large stat callout (e.g., &ldquo;$X saved per truck per year&rdquo;).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Value prop name: NEO slide 32. Cost drivers (fuel, idling, detention): synthesized from NEO + intelligence report context. AI Toll Insights: NEO slide 33 speaker notes. Specific savings data: pending from product team.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">11</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Save Time &mdash; Faster Through, More Miles Ahead</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + STAT CALLOUT</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p style="border-left: 3px solid #60a5fa; padding-left: 1rem;"><strong>Save Time</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">A single weigh station stop can take 15&ndash;30 minutes. A cross-country route might pass through a dozen or more stations. For carriers with a clean safety record, PrePass bypass turns those stops into seconds &mdash; green light, keep rolling. On the tolling side, PrePass Plus means no fumbling with separate accounts or paper receipts at every state line. And in the back office, FleetDrive 360 replaces manual compliance tracking with automated monitoring and alerts.</p>
+        <p style="color: #999; font-size: 0.82rem;"><strong>Services that deliver this:</strong> Weigh Station Bypass (station stops &rarr; seconds), PrePass Plus (seamless toll payment), FleetDrive 360 (automated compliance tracking). <span class="product-input-flag">NEEDS PRODUCT INPUT</span> &mdash; Request time-savings data or fleet testimonial from marketing team.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Time is everything in trucking. A single weigh station stop can take fifteen to thirty minutes. A cross-country route hits a dozen or more stations. For carriers with clean safety records, PrePass turns those stops into seconds &mdash; green light, keep driving. Multiply that across an entire fleet and you&rsquo;re talking about thousands of hours recovered each year. On the tolling side, PrePass Plus means no separate accounts to manage at every state line. And FleetDrive 360 replaces the manual spreadsheet tracking of compliance deadlines with automated monitoring. Time saved on the road, time saved in the back office.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Clock or timeline graphic: &ldquo;30-minute stop &rarr; 3-second bypass.&rdquo; Route map showing 12 weigh stations on a cross-country route, each marked as &ldquo;bypassed.&rdquo; A time-savings calculator concept if marketing provides fleet-level data.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Value prop name: NEO slide 32. Stop time estimates: industry standard context (15&ndash;30 min typical). Bypass-to-seconds framing: NEO slides 30&ndash;32. Specific time-savings data: pending from product/marketing team.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">12</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Enhance Safety &mdash; Safer Highways for Everyone</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p style="border-left: 3px solid #f59e0b; padding-left: 1rem;"><strong>Enhance Safety</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">PrePass doesn&rsquo;t just benefit carriers &mdash; it makes highways safer for everyone. By electronically screening and bypassing the safest fleets, the system allows state agencies to focus their limited inspection resources on higher-risk carriers. The result: safer trucks on the road, more targeted enforcement, and less congestion at weigh stations.</p>
+        <p style="color: #ccc; font-size: 0.85rem;">FleetDrive 360 adds another safety layer: carriers get proactive alerts when their compliance status changes, so problems get addressed before they become roadside violations. Upcoming features like <strong>Weather Alerts</strong> and <strong>Dynamic Parking</strong> extend safety even further &mdash; extreme weather notifications as drivers enter affected areas, and real-time parking availability along freight corridors.</p>
+        <p style="color: #999; font-size: 0.82rem;"><strong>Services that deliver this:</strong> Weigh Station Bypass (enforcement focus), FleetDrive 360 (proactive compliance), ALERTS platform (weather, parking). <strong>Remember:</strong> Safety is the first of the Alliance&rsquo;s four pillars (Module 4). This is where product delivery meets mission.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Safety is the heart of the PrePass mission &mdash; and if you remember Module 4, it&rsquo;s the first pillar of the Alliance. Here&rsquo;s how our products deliver on it. By screening and bypassing the safest carriers, PrePass lets state agencies focus their limited inspection resources on higher-risk trucks. That means safer vehicles on the road and more efficient use of enforcement. FleetDrive 360 takes it further with proactive compliance alerts &mdash; carriers know when their status changes before it becomes a problem at the roadside. And upcoming features like weather alerts and dynamic parking notifications are extending safety beyond the weigh station, helping drivers make smarter decisions on the road.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Split visual: left side shows a weigh station with &ldquo;Safe carriers bypass &rarr; Resources focus on risk&rdquo;; right side shows a compliance dashboard with a green checkmark. Safety/shield icon prominent. Connection callout to Module 4 Alliance pillars with a small &ldquo;Pillar 1: Safety&rdquo; badge.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Safety framing: NEO slides 5&ndash;6 (Alliance pillar: &ldquo;Electronically screening and bypassing the safest fleets reduces congestion and focuses agency resources on at-risk carriers&rdquo;). FleetDrive 360 compliance monitoring: NEO slide 31. Weather Alerts, Dynamic Parking: NEO slide 33 speaker notes + intelligence report. Cross-module reference: M4 Alliance pillars.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">13</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Gain Insights &mdash; Data That Drives Decisions</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p style="border-left: 3px solid #a78bfa; padding-left: 1rem;"><strong>Gain Insights</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">Data is what turns a collection of services into a platform. PrePass gives carriers visibility they&rsquo;ve never had before: bypass transaction history, toll charge verification, safety score trends, compliance status dashboards, and route-level analytics. The Carrier Portal centralizes all of this in one place.</p>
+        <p style="color: #ccc; font-size: 0.85rem;">For state agencies, PrePass provides 360SmartView &mdash; screening and safety data that helps optimize inspection strategies and resource allocation across their jurisdictions.</p>
+        <p style="color: #999; font-size: 0.82rem;"><strong>Services that deliver this:</strong> Carrier Portal (fleet visibility), AI Toll Insights (toll accuracy), FleetDrive 360 (compliance analytics), 360SmartView (government data). <span class="product-input-flag">NEEDS PRODUCT INPUT</span> &mdash; Request Carrier Portal screenshots or demo walkthrough from product team for visual assets.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>The fourth value prop &mdash; Gain Insights &mdash; is what ties everything together. Data is what turns a collection of services into a true platform. Through the Carrier Portal, fleet managers can see bypass transactions, toll charges, safety score trends, and compliance alerts &mdash; all in one place. AI Toll Insights verifies toll accuracy using GPS data. FleetDrive 360 tracks compliance health over time. And for state agencies, 360SmartView provides screening and safety data that helps them decide where to focus inspection resources. The insight isn&rsquo;t just nice to have &mdash; it&rsquo;s what makes every other service more valuable.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Dashboard mockup or screenshot of the Carrier Portal (pending from product team). Data visualization graphic: charts showing safety trends, toll summaries, bypass history. Purple/data-themed visual palette. If no portal screenshot is available at build time, use a generic dashboard wireframe with a &ldquo;screenshot pending&rdquo; placeholder.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Value prop name: NEO slide 32. Carrier Portal: NEO slide 33 (launched 2013). 360SmartView: intelligence report (government contracts revenue stream). AI Toll Insights: NEO slide 33 speaker notes. Portal details/screenshots: pending from product team.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part E &mdash; Why PrePass: Competitive Differentiators &amp; Customer Voices</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 14 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">14</div>
+      <div class="slide-title-area">
+        <div class="slide-title">What Sets Us Apart &mdash; Competitive Differentiators</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">ACCORDION / LIST BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Why PrePass? What makes us different from every other option on the market?</strong></p>
+
+        <div class="diff-card">
+          <div class="diff-label">Only Provider with Both RFID Transponder and Mobile App Bypass</div>
+          <div class="diff-desc">Competitors offer one or the other. PrePass gives carriers the choice &mdash; a windshield-mounted transponder for fleets that want hardware reliability, or the MOTION mobile app for flexibility. Same service, two form factors.</div>
+        </div>
+
+        <div class="diff-card">
+          <div class="diff-label">Only System Combining Bypass + Electronic Toll on One Device</div>
+          <div class="diff-desc">No other provider puts weigh station bypass and toll collection on a single device. Competitors require carriers to maintain separate toll accounts and hardware. PrePass Plus does both.</div>
+        </div>
+
+        <div class="diff-card">
+          <div class="diff-label">Only US-Developed Nonprofit System</div>
+          <div class="diff-desc">PrePass Safety Alliance is a 501(c)(3) nonprofit. Revenue funds the mission, not shareholders. This unique structure &mdash; public-private partnership between state agencies and the trucking industry &mdash; means PrePass is built for the industry, by the industry.</div>
+        </div>
+
+        <p style="font-size: 0.82rem; color: #999; margin-top: 0.75rem;"><strong>The competitive landscape:</strong> The primary competitor is Fleetworthy (formerly Drivewyze + Bestpass, consolidated August 2024). They offer app-based bypass and toll services, but PrePass remains the only provider with all three differentiators above. <strong>The ATA endorsement:</strong> PrePass is the only weigh-station bypass service endorsed by the American Trucking Association. <span class="confirmed-flag">CONFIRMED</span></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Here&rsquo;s a question you&rsquo;ll hear from customers, or maybe even from friends and family: &ldquo;Why PrePass? Aren&rsquo;t there other options?&rdquo; There are &mdash; but no one else offers what PrePass does. We&rsquo;re the only provider with both a physical transponder and a mobile app for bypass &mdash; carriers choose the form factor that fits their fleet. We&rsquo;re the only system that combines bypass and electronic tolling on a single device. And we&rsquo;re the only US-developed system built as a nonprofit &mdash; our revenue funds the mission, not shareholders. On top of that, PrePass is the only bypass service endorsed by the American Trucking Association. These aren&rsquo;t just talking points &mdash; they&rsquo;re the reasons carriers choose us and stay with us.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise &ldquo;Accordion&rdquo; or &ldquo;List&rdquo; block with three expandable items. Each differentiator card has an icon: (1) phone + device icon, (2) merged arrow icon, (3) nonprofit/shield icon. ATA endorsement as a callout badge or logo placement below the three differentiators. Avoid a direct competitor comparison chart &mdash; focus on PrePass strengths, not competitor weaknesses.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>These differentiators help learners answer the &ldquo;why PrePass vs. competitors&rdquo; question &mdash; critical for anyone in a customer-facing role. Keep the tone factual, not aggressive. The goal is confidence in what we offer, not disparagement of competitors.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Three differentiators: intelligence report (referenced in cross-reference doc, Section 5). ATA endorsement: NEO slide 6 speaker notes. Fleetworthy consolidation: intelligence report (Drivewyze + Bestpass, Aug 2024). Master plan directive #5: &ldquo;Include competitive differentiators.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-product">15</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Customer Voices &mdash; Who Are Our Customers?</div>
+        <div class="slide-type type-product">NEEDS PRODUCT INPUT</div>
+      </div>
+      <span class="rise-block-tag">TABS / SCENARIO BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text <span class="product-input-flag">NEEDS PRODUCT INPUT</span></div>
+        <p><strong>Placeholder &mdash; Customer Personas and Day-in-the-Life Narratives</strong></p>
+        <p style="color: #999; font-size: 0.85rem;">This slide is reserved for customer persona content from the product/marketing team (Vedrana/Hannah). The goal is to show learners 2&ndash;3 representative customer types:</p>
+        <p style="padding-left: 1rem; color: #888; font-size: 0.82rem;">
+          (a) <strong>Owner-Operator:</strong> Single truck, runs their own business, needs simplicity and cost control.<br>
+          (b) <strong>Mid-Size Fleet (50&ndash;200 trucks):</strong> Dedicated fleet manager, cares about compliance and visibility.<br>
+          (c) <strong>Enterprise Fleet (1,000+ trucks):</strong> Sophisticated operations team, needs data integration, API access, consolidated reporting.
+        </p>
+        <p style="color: #999; font-size: 0.82rem;">When product content arrives, build each persona as a Rise &ldquo;Tab&rdquo; with a brief narrative, key needs, and which PrePass services matter most to them. If real customer quotes or testimonials are available, feature them prominently.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script (Placeholder)</div>
+        <p>Not every carrier is the same. An owner-operator running one truck has very different needs than an enterprise fleet managing thousands of vehicles. Let&rsquo;s meet a few of our typical customers and see what PrePass looks like from their perspective. [Content to be developed with product team input.]</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This is the primary slide awaiting product team content. Michael met with Vedrana and Hannah on April 9 &mdash; check for new files in Working Drafts or Inbound Content folders. The three persona categories above are placeholder suggestions based on industry knowledge; replace with official PrePass customer segments when available. If no persona content arrives before build, this slide can be omitted from Rev 1 and added in Rev 2 without disrupting the module flow.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Persona framework: master plan directive #6 (&ldquo;customer personas&rdquo; tagged as product-team dependent). Framework element #5: &ldquo;teach via: customer journey.&rdquo; Persona categories are placeholder &mdash; all content pending from Vedrana/Hannah.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part F &mdash; Knowledge Check &amp; Transition</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 16 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">16</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Knowledge Check &mdash; Customers, Market &amp; Product</div>
+        <div class="slide-type type-interaction">LEARNER INTERACTION</div>
+      </div>
+      <span class="rise-block-tag">KNOWLEDGE CHECK / QUIZ BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p><strong>Format:</strong> 5-question multiple-choice quiz. Rise &ldquo;Knowledge Check&rdquo; block. Awareness depth &mdash; recall and identification. No pass/fail gate (awareness module), but learners see correct/incorrect feedback after each question.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">Questions</div>
+
+        <p style="color: #e0e0e0; font-size: 0.85rem;"><strong>Q1.</strong> Approximately how many commercial vehicles are enrolled in the PrePass network?</p>
+        <p style="padding-left: 1rem; color: #888; font-size: 0.82rem;">
+          (a) 100,000 &nbsp; (b) 500,000 &nbsp; (c) <strong>800,000+</strong> &nbsp; (d) 2 million<br>
+          <em>Tests: Learning Objective 1 (network scale). Source: intelligence report.</em>
+        </p>
+
+        <p style="color: #e0e0e0; font-size: 0.85rem; margin-top: 1rem;"><strong>Q2.</strong> What are the three core PrePass services?</p>
+        <p style="padding-left: 1rem; color: #888; font-size: 0.82rem;">
+          (a) Bypass, Tolling, GPS Tracking &nbsp; (b) <strong>Weigh Station Bypass, Toll Management, Compliance Management</strong> &nbsp; (c) Bypass, Fuel Cards, ELD &nbsp; (d) Tolling, Fleet Tracking, Insurance<br>
+          <em>Tests: Learning Objective 2 (three core services). Source: NEO slide 31.</em>
+        </p>
+
+        <p style="color: #e0e0e0; font-size: 0.85rem; margin-top: 1rem;"><strong>Q3.</strong> Which of the following is NOT one of PrePass&rsquo;s four customer value propositions?</p>
+        <p style="padding-left: 1rem; color: #888; font-size: 0.82rem;">
+          (a) Cut Costs &nbsp; (b) Save Time &nbsp; (c) <strong>Increase Fleet Size</strong> &nbsp; (d) Gain Insights<br>
+          <em>Tests: Learning Objective 2 (four value props). Source: NEO slide 32.</em>
+        </p>
+
+        <p style="color: #e0e0e0; font-size: 0.85rem; margin-top: 1rem;"><strong>Q4.</strong> What makes PrePass unique compared to competitors? (Select two)</p>
+        <p style="padding-left: 1rem; color: #888; font-size: 0.82rem;">
+          (a) <strong>Only provider with both RFID transponder and mobile app bypass</strong> &nbsp; (b) Lowest price in the market &nbsp; (c) <strong>Only system combining bypass + electronic toll on one device</strong> &nbsp; (d) Government-owned system<br>
+          <em>Tests: Learning Objective 3 (competitive differentiators). Source: intelligence report.</em>
+        </p>
+
+        <p style="color: #e0e0e0; font-size: 0.85rem; margin-top: 1rem;"><strong>Q5.</strong> What is FleetDrive 360?</p>
+        <p style="padding-left: 1rem; color: #888; font-size: 0.82rem;">
+          (a) A GPS tracking device &nbsp; (b) A fuel card program &nbsp; (c) <strong>PrePass&rsquo;s compliance management platform (acquired Dec 2025)</strong> &nbsp; (d) A toll collection system<br>
+          <em>Tests: Learning Objective 2 (core services &rarr; compliance). Source: NEO slide 31.</em>
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Five questions cover all three learning objectives. Q4 is &ldquo;select two&rdquo; &mdash; Rise supports multi-select knowledge checks. All questions are at awareness/recall depth. Consider randomizing answer order in Rise. Feedback for correct answers should reinforce the key concept; feedback for incorrect answers should redirect to the relevant slide.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Q1: intelligence report. Q2: NEO slide 31. Q3: NEO slide 32. Q4: intelligence report (cross-reference doc). Q5: NEO slide 31 + intelligence report. All answers verified against confirmed content in this storyboard.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 17 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">17</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Transition &mdash; Next Up: Revenue Model</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">BANNER / STATEMENT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Coming up in Module 6:</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">You now know who we serve, what we offer, and why carriers choose PrePass. But how does all of this sustain a nonprofit organization? Module 6 takes you inside the revenue model &mdash; how bypass transactions, toll services, and compliance subscriptions generate the revenue that funds the Alliance&rsquo;s mission. You might be surprised by how it works.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>You now know who PrePass serves, what products we offer, and why carriers choose us over the alternatives. But there&rsquo;s a question we haven&rsquo;t answered yet: how does all of this actually work as a business? Remember, PrePass Safety Alliance is a nonprofit &mdash; there are no shareholders, no charitable donations. So how does the operation sustain itself? In Module 6, you&rsquo;ll see exactly how revenue flows through the PrePass ecosystem &mdash; from a carrier signing up to the Alliance reinvesting in its mission. It&rsquo;s a model unlike anything you&rsquo;ve probably seen before. Let&rsquo;s keep going.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Transition card with a forward-looking visual. Consider a subtle revenue/financial theme &mdash; a flow diagram teaser or a &ldquo;from service to mission&rdquo; arrow. Rise &ldquo;Statement&rdquo; or &ldquo;Continue&rdquo; block. Include &ldquo;Next: Module 6 &mdash; Revenue Model&rdquo; button or link.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Transition language bridges to Module 6 (Revenue Model). Self-funded nonprofit framing referenced from Module 4 and master plan Module 6 section. &ldquo;No shareholders, no charitable donations&rdquo;: intelligence report. Master plan: &ldquo;Transition slide &mdash; brief bridge to the next module.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Production Notes ── -->
+<div class="notes-panel">
+  <h3>Production Notes &amp; Design Decisions</h3>
+
+  <div class="note-item">
+    <span class="note-who">Organizing Framework</span>
+    <span class="note-text">Module is structured around the <strong>four value props</strong> (Cut Costs, Save Time, Enhance Safety, Gain Insights) from NEO slide 32, per master plan directive #1. The three core services are introduced first (Part C) so learners have product context before encountering the value prop framework (Part D). This &ldquo;services then outcomes&rdquo; sequence avoids abstract claims before concrete product knowledge.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">M4 Bridge</span>
+    <span class="note-text">Slide 1 picks up the M4 Slide 11 transition teaser: &ldquo;you&rsquo;ll meet the people who rely on PrePass every day&rdquo; and &ldquo;follow a carrier through a typical day.&rdquo; The voiceover explicitly references the Alliance&rsquo;s four pillars from Module 4, creating continuity. The customer journey (Slide 5) delivers on the promise made in M4&rsquo;s closing line.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">M6 Bridge</span>
+    <span class="note-text">Slide 17 transitions to Module 6 (Revenue Model) by posing the &ldquo;how does a nonprofit sustain itself?&rdquo; question. This creates a natural hook &mdash; Module 5 shows what PrePass does for customers, Module 6 shows how that generates revenue.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Customer Journey</span>
+    <span class="note-text">The 6-step journey on Slide 5 covers the full arc from approach to back-office, per master plan directive #3 and framework element #5 (&ldquo;teach via: customer journey&rdquo;). &ldquo;J&amp;R Transport&rdquo; is a fictional carrier name &mdash; replace with a real customer story if the product team provides one. The sensory hook (&ldquo;looking in the windshields of trucks&rdquo;) from NEO slide 32 speaker notes is featured on Slide 4.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Product Input Gaps</span>
+    <span class="note-text"><strong>5 slides contain <span style="color: #ef4444;">NEEDS PRODUCT INPUT</span> tags:</strong><br>
+    &mdash; Slide 5 (Step 6): Carrier Portal / dashboard details<br>
+    &mdash; Slide 8: FleetDrive 360 feature list and positioning<br>
+    &mdash; Slide 10: Cost-savings data or customer case study<br>
+    &mdash; Slide 11: Time-savings data or fleet testimonial<br>
+    &mdash; Slide 13: Carrier Portal screenshots<br>
+    &mdash; Slide 15: Customer personas and day-in-the-life narratives (entire slide)<br>
+    Michael met with Vedrana/Hannah on April 9. When content arrives, these are fill-in tasks &mdash; no structural changes needed.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Competitive Tone</span>
+    <span class="note-text">Slide 14 (Competitive Differentiators) names Fleetworthy as the primary competitor but keeps the tone factual, not aggressive. Master plan directive #5 says these help learners answer &ldquo;why PrePass vs. competitors.&rdquo; The ATA endorsement is positioned as a credibility marker, not a sales pitch.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Cross-Module Refs</span>
+    <span class="note-text">Slide 12 (Enhance Safety) explicitly connects to Module 4&rsquo;s Alliance Pillar 1: Safety. Slide 17 (Transition) references Module 4&rsquo;s &ldquo;self-funded nonprofit&rdquo; framing. These cross-references reinforce the modular-but-connected design of Track 1.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Time Estimate</span>
+    <span class="note-text">17 slides at 12&ndash;15 min. This is the largest module in Track 1. The customer journey interaction (Slide 5) is the most time-intensive element &mdash; estimate 2&ndash;3 min for learners to click through all 6 steps. If the module runs long in testing, Slide 15 (Customer Personas) is the easiest to defer to a Rev 2 update.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">For Michael</span>
+    <span class="note-text">Three questions for the next working session: (1) Did the April 9 meeting with Vedrana/Hannah produce any content we can pull in for Rev 2? Check Working Drafts and Inbound Content folders. (2) Is the Fleetworthy competitive mention appropriate for all audiences, or should it be limited to customer-facing roles? (3) Should AI Toll Insights (Slide 7) and Weather/Parking alerts (Slide 12) be presented as launched features or upcoming features? The NEO speaker notes are ambiguous on timing.</span>
+  </div>
+</div>
+
+<div class="footer">
+  Module 5: Customers, Market &amp; Product &mdash; Rise 360 Storyboard Rev 1 &mdash; April 8, 2026<br>
+  Track 1: Intro to PrePass Onboarding Framework &mdash; Adam Wick / Michael Danielson Collaboration<br>
+  Sources: NEO Deck December 2025 (slides 30&ndash;33), Intelligence Report, Track 1 Master Plan, NEO Comparison &amp; Recommendations, Cross-Reference Gap Analysis
+</div>
+
+</body>
+</html>

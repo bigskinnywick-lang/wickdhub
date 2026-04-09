@@ -71,8 +71,12 @@ nav:
       - AA End-of-Call Storyboard: trackers/content/aa-endofcall-storyboard.md
       - AA End-of-Call Capture Guide: trackers/content/aa-endofcall-capture-guide.md
       - inForm Safety Capture Guide: trackers/content/inform-safety-capture-guide.md
-      - PrePass History Storyboard: trackers/content/prepass-history-storyboard.md
-      - PrePass Alliance Storyboard: trackers/content/prepass-alliance-storyboard.md
+      - M1 Mission Vision Values: trackers/content/mission-vision-values-storyboard.md
+      - M3 PrePass History: trackers/content/prepass-history-storyboard.md
+      - M4 PrePass Alliance: trackers/content/prepass-alliance-storyboard.md
+      - M5 Customers Market Product: trackers/content/customers-market-product-storyboard.md
+      - M6 Revenue Model: trackers/content/revenue-model-storyboard.md
+      - M7 Market Goals: trackers/content/market-goals-storyboard.md
   - Research:
     - Overview: research/index.md
     - Domain & Hosting Research: research/domain-hosting-research.md

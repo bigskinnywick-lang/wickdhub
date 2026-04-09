@@ -3,619 +3,1157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PrePass History — Storyboard Guide</title>
+<title>M3 — Company History — Rise 360 Storyboard (Rev 2)</title>
 <style>
-  :root {
-    --teal: #0D6E6E;
-    --teal-light: #0F8F8F;
-    --teal-bg: #E6F7F7;
-    --purple: #5B2D8E;
-    --purple-bg: #F3EDF9;
-    --green: #16A34A;
-    --green-bg: #DCFCE7;
-    --amber: #D97706;
-    --amber-bg: #FEF3C7;
-    --red: #DC2626;
-    --red-bg: #FEE2E2;
-    --blue: #2563EB;
-    --blue-bg: #DBEAFE;
-    --gray-50: #F9FAFB;
-    --gray-100: #F3F4F6;
-    --gray-200: #E5E7EB;
-    --gray-300: #D1D5DB;
-    --gray-500: #6B7280;
-    --gray-700: #374151;
-    --gray-900: #111827;
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.6; }
 
-  .banner { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%); color: white; padding: 20px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(13,110,110,0.3); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
-  .banner-text { flex: 1; min-width: 200px; }
-  .banner h1 { font-size: 22px; font-weight: 700; }
-  .banner .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
-  .banner .counts { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
-  .banner .count-box { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; text-align: center; }
-  .banner .count-box .num { font-size: 20px; display: block; }
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
 
-  .container { max-width: 100%; margin: 0 auto; padding: 20px 24px 60px; }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.4rem;
+  }
 
-  .overview-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .overview-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 12px; }
-  .overview-panel p { font-size: 14px; color: var(--gray-500); margin-bottom: 8px; }
-  .overview-panel a { color: var(--teal); text-decoration: underline; }
-  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--gray-700); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .legend-dot.vo { background: var(--teal); }
-  .legend-dot.ss { background: var(--purple); }
-  .legend-dot.have { background: var(--green); }
-  .legend-dot.need { background: var(--amber); }
-  .legend-dot.build { background: var(--blue); }
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    font-weight: 300;
+  }
 
-  .section-divider { display: flex; align-items: center; gap: 14px; margin: 32px 0 16px; }
-  .section-badge { background: var(--teal); color: white; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
-  .section-divider h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); }
-  .section-divider .meta { font-size: 12px; color: var(--gray-500); margin-left: auto; }
+  .header .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
 
-  .slide-card { background: white; border: 1px solid var(--gray-200); border-radius: 12px; margin-bottom: 14px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .slide-header { display: flex; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--gray-100); gap: 12px; cursor: pointer; user-select: none; }
-  .slide-header:hover { background: var(--gray-50); }
-  .slide-num { background: var(--teal); color: white; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
-  .slide-title { flex: 1; font-size: 14px; font-weight: 600; }
-  .slide-tags { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
-  .tag { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.4px; }
-  .tag.vo { background: var(--teal-bg); color: var(--teal); }
-  .tag.ss { background: var(--purple-bg); color: var(--purple); }
-  .tag.have { background: var(--green-bg); color: var(--green); }
-  .tag.need { background: var(--amber-bg); color: var(--amber); }
-  .tag.build { background: var(--blue-bg); color: var(--blue); }
-  .expand-icon { color: var(--gray-300); font-size: 18px; flex-shrink: 0; transition: transform 0.2s; }
-  .slide-card.open .expand-icon { transform: rotate(180deg); }
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
 
-  .slide-body { padding: 0 20px 20px; display: none; }
-  .slide-card.open .slide-body { display: block; }
+  .pill-tool { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25); }
+  .pill-time { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+  .pill-depth { background: rgba(167, 139, 250, 0.12); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .pill-status { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
 
-  .vo-block { background: var(--teal-bg); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
-  .vo-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--teal); margin-bottom: 6px; }
-  .vo-block .script { font-size: 13px; color: var(--gray-700); line-height: 1.7; }
-  .vo-block .script em { color: var(--gray-500); font-style: italic; }
+  /* ── Legend ── */
+  .legend {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-  .ss-block { background: var(--purple-bg); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 12px; }
-  .ss-block .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--purple); margin-bottom: 6px; }
-  .ss-block .details { font-size: 13px; color: var(--gray-700); line-height: 1.6; }
-  .ss-block .filename { font-family: 'Cascadia Code','Consolas',monospace; font-size: 11.5px; color: var(--purple); font-weight: 600; }
-  .ss-block .status { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
-  .ss-block .status.captured { background: var(--green-bg); color: var(--green); }
-  .ss-block .status.needed { background: var(--amber-bg); color: var(--amber); }
-  .ss-block .status.design { background: var(--blue-bg); color: var(--blue); }
+  .legend-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    font-weight: 600;
+  }
 
-  .note-box { padding: 10px 14px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; margin-bottom: 8px; }
-  .note-box.tip { background: var(--amber-bg); border-left: 3px solid var(--amber); color: var(--gray-700); }
-  .note-box.interaction { background: var(--blue-bg); border-left: 3px solid var(--blue); color: var(--gray-700); }
-  .note-box.critical { background: var(--red-bg); border-left: 3px solid var(--red); color: var(--gray-700); }
-  .note-label { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; display: block; }
-  .note-box.tip .note-label { color: var(--amber); }
-  .note-box.interaction .note-label { color: var(--blue); }
-  .note-box.critical .note-label { color: var(--red); }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #aaa;
+  }
 
-  .prompt-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-top: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
-  .prompt-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 12px; }
-  .prompt-panel .prompt-block { background: var(--gray-100); border: 1px solid var(--gray-200); border-radius: 8px; padding: 16px 20px; font-family: 'Cascadia Code','Consolas',monospace; font-size: 12.5px; line-height: 1.7; color: var(--gray-700); white-space: pre-wrap; margin-bottom: 12px; }
-  .prompt-panel .prompt-label { font-size: 12px; font-weight: 700; color: var(--teal); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
 
-  .controls { display: flex; justify-content: flex-end; margin-bottom: 10px; gap: 8px; }
-  .btn-sm { padding: 5px 12px; border: 1px solid var(--gray-200); border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; background: white; color: var(--gray-700); transition: all 0.15s; }
-  .btn-sm:hover { background: var(--gray-100); border-color: var(--gray-300); }
+  .dot-confirmed { background: #22c55e; }
+  .dot-placeholder { background: #f59e0b; }
+  .dot-interaction { background: #a78bfa; }
+  .dot-media { background: #60a5fa; }
+  .dot-note { background: #555; }
 
-  .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--gray-500); margin-top: 20px; }
+  /* ── Revision Log ── */
+  .revision-log {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .revision-log h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f59e0b;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .revision-entry {
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.6;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .revision-entry:last-child { border-bottom: none; }
+
+  .rev-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .rev-added { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+  .rev-changed { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
+  .rev-removed { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+  .rev-kept { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+
+  /* ── Slide Cards ── */
+  .slides-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .slide-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .slide-card:hover { border-color: #3a3a3a; }
+
+  .slide-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .slide-number {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .sn-confirmed { background: #16a34a; }
+  .sn-placeholder { background: #d97706; }
+  .sn-interaction { background: #7c3aed; }
+  .sn-media { background: #2563eb; }
+
+  .slide-title-area { flex: 1; }
+
+  .slide-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  .slide-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.15rem;
+  }
+
+  .type-confirmed { color: #22c55e; }
+  .type-placeholder { color: #f59e0b; }
+  .type-interaction { color: #a78bfa; }
+  .type-media { color: #60a5fa; }
+
+  .rise-block-tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: #888;
+    border: 1px solid #333;
+    flex-shrink: 0;
+  }
+
+  .slide-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .slide-body p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #bbb;
+    margin-bottom: 0.75rem;
+  }
+
+  .slide-body p:last-child { margin-bottom: 0; }
+
+  .content-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .cl-onscreen { color: #22c55e; }
+  .cl-narration { color: #60a5fa; }
+  .cl-visual { color: #f472b6; }
+  .cl-interaction { color: #a78bfa; }
+  .cl-notes { color: #555; }
+  .cl-source { color: #f59e0b; }
+
+  .content-section {
+    background: #151515;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .content-section:last-child { margin-bottom: 0; }
+
+  .placeholder-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .confirmed-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .nicole-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  blockquote {
+    border-left: 3px solid #334;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: rgba(255,255,255,0.02);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    color: #ccc;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* ── Dual-Track Timeline ── */
+  .dual-track {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 0;
+    margin: 1rem 0;
+    font-size: 0.82rem;
+  }
+
+  .track-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .track-corporate { background: rgba(96, 165, 250, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25); }
+  .track-product { background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+  .track-people { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+
+  .timeline-node {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.6rem 0.85rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .timeline-node .year {
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #e0e0e0;
+  }
+
+  .timeline-node .event {
+    font-size: 0.78rem;
+    color: #888;
+    margin-top: 0.15rem;
+  }
+
+  /* ── Section Dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.25rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  .section-divider span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #555;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── Notes Panel ── */
+  .notes-panel {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .notes-panel h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+  }
+
+  .note-item:last-child { border-bottom: none; }
+
+  .note-who {
+    color: #a78bfa;
+    font-weight: 600;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+  }
+
+  .note-text { color: #bbb; line-height: 1.5; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    color: #555;
+  }
 </style>
 </head>
 <body>
 
-<div class="banner">
-  <div class="banner-text"><h1>The PrePass Story &mdash; Storyboard Guide</h1>
-  <div class="subtitle">Sections 0&ndash;4 &nbsp;|&nbsp; Articulate Rise &nbsp;|&nbsp; April 8, 2026 &nbsp;|&nbsp; Draft 1</div></div>
-  <div class="counts">
-    <div class="count-box"><span class="num">16</span>blocks</div>
-    <div class="count-box"><span class="num">5</span>sections</div>
-    <div class="count-box"><span class="num">~15</span>min</div>
+<div class="header">
+  <h1>M3 &mdash; Company History</h1>
+  <div class="subtitle">Rise 360 Storyboard &mdash; Intro to PrePass Onboarding Framework</div>
+  <div class="meta-row">
+    <span class="meta-pill pill-tool">Rise 360 Lesson</span>
+    <span class="meta-pill pill-time">Est. 10&ndash;12 min</span>
+    <span class="meta-pill pill-depth">Depth: Awareness</span>
+    <span class="meta-pill pill-status">Rev 2 &mdash; NEO Aligned, Product Track Added</span>
   </div>
 </div>
 
-<div class="container">
+<!-- ── Revision Log ── -->
+<div class="revision-log">
+  <h3>Revision Log &mdash; Rev 2 (April 8, 2026)</h3>
+  <div class="revision-entry"><span class="rev-changed">ALIGNED</span> Corporate ownership timeline now matches NEO slide 16 exactly: Lockheed Martin (1993) &rarr; <strong>ACS (2001)</strong> &rarr; Xerox (2010) &rarr; Conduent (2017) &rarr; CVO/Alinda (2018) &rarr; Alliance acquires CVO (2022) &rarr; FleetDrive 360 (2025). <strong>ACS was missing from Rev 1.</strong></div>
+  <div class="revision-entry"><span class="rev-changed">UPDATED</span> Crescent Project date corrected from "late 1980s" to <strong>1989</strong> per NEO slide 33 speaker notes. States/provinces list verified against NEO.</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> <strong>Product/Service Evolution track</strong> (Part D) &mdash; dual-track timeline design with corporate history on top, product milestones on bottom. Products from NEO slide 33: PrePass Plus (2003), Carrier Portal (2013), ElitePass (2015), MOTION app (2018), ALERTS (2019), TSP integrations (2023&ndash;24), FleetDrive 360 (2025).</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> <strong>Narrative anchor</strong> from NEO slide 16 speaker notes: "From the start, the service and stability of the PrePass program has not changed since its inception 30+ years ago." Used as voiceover/callout on the closing timeline slide.</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> <strong>Headcount growth milestones</strong> (Slide 14) as a "people" dimension. Tagged <span class="nicole-flag">NEEDS NICOLE INPUT</span> &mdash; exact figures pending.</div>
+  <div class="revision-entry"><span class="rev-changed">RESTRUCTURED</span> Converted from Rev 1 teal/light theme to <strong>M1 Rev 2 dark format</strong> with content labels, source annotations, status flags, and production notes on every slide.</div>
+  <div class="revision-entry"><span class="rev-removed">REMOVED</span> Slides 3.2 (More Than Bypass), 3.3 (Where We're Headed), and 3.4 (Competitive Landscape) &mdash; this content belongs in <strong>Module 5: Customers, Market &amp; Product</strong> and <strong>Module 7: Market Goals</strong>. History module now stays focused on the historical narrative.</div>
+  <div class="revision-entry"><span class="rev-changed">UPDATED</span> Module duration from ~15 min to <strong>10&ndash;12 min</strong> per master plan. Reduced from 16 blocks/5 sections to <strong>17 slides/6 parts</strong>.</div>
+  <div class="revision-entry"><span class="rev-kept">KEPT</span> Interactive timeline concept, Crescent Project origin story, CVO acquisition pivot, knowledge checks, transition slide structure.</div>
+  <div class="revision-entry" style="font-size: 0.78rem; color: #888; border-bottom: none;">Sources: NEO Deck December 2025 (slides 16, 33), Track 1 Master Plan (Module 3 section), NEO Comparison &amp; Recommendations doc, Cross-Reference gap analysis, intelligence report.</div>
+</div>
 
-  <div class="overview-panel">
-    <h2>How to Use This Document</h2>
-    <p>Each block card maps to a Rise lesson block. Expand a card to see the <strong>text/narration script</strong> (what the learner reads or hears) and <strong>visual requirements</strong> (what the learner sees). Use status badges to track asset readiness.</p>
-    <p><strong>Module Duration:</strong> ~15 minutes (self-paced) &nbsp;|&nbsp; <strong>Tool:</strong> Articulate Rise &nbsp;|&nbsp; <strong>Track:</strong> Track 1 &mdash; General Foundation (Onramp)</p>
-    <p><strong>Audience:</strong> New hires and acquisition employees with no prior PrePass knowledge</p>
-    <p><strong>Source:</strong> PrePass Complete Leadership &amp; Organizational Intelligence Report (March 2026)</p>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot vo"></div>Narration / text</div>
-      <div class="legend-item"><div class="legend-dot ss"></div>Visual needed</div>
-      <div class="legend-item"><div class="legend-dot have"></div>Available (from web/PDFs)</div>
-      <div class="legend-item"><div class="legend-dot need"></div>Needs creation</div>
-      <div class="legend-item"><div class="legend-dot build"></div>Build in Rise</div>
-    </div>
-  </div>
+<!-- ── Legend ── -->
+<div class="legend">
+  <span class="legend-title">Block Types</span>
+  <span class="legend-item"><span class="legend-dot dot-confirmed"></span> Confirmed Content</span>
+  <span class="legend-item"><span class="legend-dot dot-placeholder"></span> Placeholder &mdash; Waiting on Input</span>
+  <span class="legend-item"><span class="legend-dot dot-interaction"></span> Learner Interaction</span>
+  <span class="legend-item"><span class="legend-dot dot-media"></span> Media / Visual Asset</span>
+  <span class="legend-item"><span class="legend-dot dot-note"></span> Builder Note</span>
+</div>
 
-  <div class="controls">
-    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.add('open'))">Expand All</button>
-    <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.remove('open'))">Collapse All</button>
-  </div>
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part A &mdash; Module Open</span></div>
+<!-- ═══════════════════════════════════════ -->
 
-  <!-- ========== SECTION 0: WELCOME ========== -->
-  <div class="section-divider">
-    <div class="section-badge">0</div>
-    <h2>Welcome &amp; Why This Matters</h2>
-    <span class="meta">~2 min &middot; 2 blocks</span>
-  </div>
+<div class="slides-container">
 
+  <!-- SLIDE 1 -->
   <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">0.1</div>
-      <div class="slide-title">Title &amp; Hook</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">1</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Title Card</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">BANNER / HERO BLOCK</span>
     </div>
     <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">PrePass isn&rsquo;t just the name on your badge &mdash; it&rsquo;s a 30-year mission to make America&rsquo;s highways safer. From a research experiment in the 1980s to a $193 million enterprise serving over 100,000 carriers today, the story of PrePass is one of public-private partnership, constant reinvention, and a belief that technology can save lives on the road. In this module, you&rsquo;ll learn how we got here &mdash; and why it matters to the work you do every day.</div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Module 3: Company History</strong></p>
+        <p style="color: #999; font-size: 0.85rem;">
+          "The PrePass Story &mdash; From Research Project to Industry Standard"<br>
+          Estimated time: 10&ndash;12 minutes &nbsp;|&nbsp; Learning depth: Awareness
+        </p>
       </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Hero banner image</span> <span class="status design">Design in Rise</span><br>
-          Module title: &ldquo;The PrePass Story&rdquo;<br>
-          Subtitle: &ldquo;From research project to industry standard.&rdquo;<br>
-          Background: highway/truck imagery with PrePass branding overlay
-        </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>PrePass isn't just the name on your badge &mdash; it's a 30-year mission to make America's highways safer. From a collaborative research experiment in 1989 to an enterprise serving over 100,000 carriers today, the story of PrePass is one of public-private partnership, constant reinvention, and a belief that technology can save lives on the road. In this module, you'll learn how we got here &mdash; and why it matters to the work you do every day.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Full-width hero banner with highway/truck imagery and PrePass branding overlay. Module number prominently displayed. Rise "Banner" block with title text overlay. Consider a faded montage: early weigh station photo blending into modern PrePass site.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Module title and estimated time from Track 1 Master Plan. Hook narrative adapted from intelligence report and NEO deck framing. "1989" date per NEO slide 33.</p>
       </div>
     </div>
   </div>
 
+  <!-- SLIDE 2 -->
   <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">0.2</div>
-      <div class="slide-title">Learning Objectives</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">2</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Learning Objectives</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">NUMBERED LIST BLOCK</span>
     </div>
     <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">By the end of this module, you&rsquo;ll be able to: Describe PrePass&rsquo;s origin story &mdash; from the Crescent Project to today. Explain the key milestones that shaped the company &mdash; RFID selection, HELP Inc., the CVO acquisition, and the rebrand. Articulate why PrePass operates as a nonprofit public-private partnership instead of a for-profit company. Identify where PrePass operates today and the scale of the network. And understand how PrePass is evolving from a single-product bypass provider into a comprehensive fleet platform.</div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>By the end of this module, you'll be able to:</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          1. Describe PrePass's origin &mdash; from the 1989 Crescent Project through the founding of HELP Inc. as a nonprofit in 1993.<br>
+          2. Trace the corporate ownership sequence that shaped the company &mdash; from Lockheed Martin through CVO/Alinda to the Alliance's 2022 acquisition.<br>
+          3. Identify key product milestones that evolved PrePass from a single bypass service into a multi-product fleet platform.
+        </p>
       </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Objectives list</span> <span class="status design">Build in Rise</span><br>
-          Five objectives displayed as numbered icon list<br>
-          Use Rise &ldquo;Numbered List&rdquo; block with icons
-        </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Here's what you'll walk away knowing. First, the origin story &mdash; how a research collaboration in the late 1980s became an organization that changed the trucking industry. Second, the ownership journey &mdash; the companies that operated the technology and the pivotal moment when the Alliance brought it all in-house. And third, the product evolution &mdash; how PrePass grew from bypass-only into the platform you'll be supporting today.</p>
       </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 1: THE ORIGIN ========== -->
-  <div class="section-divider">
-    <div class="section-badge">1</div>
-    <h2>Where It All Started (1980s&ndash;1995)</h2>
-    <span class="meta">~3 min &middot; 3 blocks</span>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">1.1</div>
-      <div class="slide-title">The Problem on the Highway</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">In the 1980s, every commercial truck on American highways had to stop at weigh stations &mdash; every single time. Safe, compliant carriers sat in the same lines as everyone else. The delays cost the trucking industry billions in fuel, time, and productivity. State DOT directors and trucking executives in western states asked a simple question: What if safe trucks could keep moving?</div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Numbered List" block with icons. Three objectives, clean layout. Consider a small timeline graphic alongside to preview the visual journey.</p>
       </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Weigh station queue photo</span> <span class="status needed">Source needed</span><br>
-          Stock or archival photo of trucks lined up at a weigh station<br>
-          Overlay text: &ldquo;What if safe trucks could keep moving?&rdquo;
-        </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Objectives derived from Track 1 Master Plan Module 3 requirements and cross-reference gap analysis. Three measurable objectives per master plan spec (2&ndash;3).</p>
       </div>
     </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">1.2</div>
-      <div class="slide-title">The Crescent Project</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">That question launched the Crescent Project in the late 1980s &mdash; a collaborative research effort between state DOTs and trucking executives across Arizona, California, New Mexico, Oregon, Texas, Washington, and British Columbia. The goal: test technologies for weighing and screening trucks at highway speeds without stopping them. In 1991, the project evaluated multiple approaches and chose RFID &mdash; Radio Frequency Identification &mdash; as the winning technology. That decision is still at the heart of what we do today.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Map graphic</span> <span class="status design">Build in Rise</span><br>
-          Simple US map highlighting the 7 founding Crescent Project states/provinces<br>
-          Timeline callout: &ldquo;Late 1980s &rarr; 1991: RFID selected&rdquo;
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">1.3</div>
-      <div class="slide-title">HELP Inc. Is Born</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">In 1993, the research became an organization. HELP Inc. &mdash; Heavy-vehicle Electronic License Plate, Inc. &mdash; was chartered as a 501(c)(3) nonprofit by trucking industry leaders, enforcement agencies, and state DOTs. The structure was intentional: a nonprofit where the trucking industry and government agencies shared equal seats at the table. Lockheed Martin was contracted to build the system, and in 1995, PrePass went live at its first weigh station sites in California.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Timeline graphic</span> <span class="status design">Build in Rise</span><br>
-          Three milestone markers: 1993 (HELP Inc. chartered) &rarr; 1994 (Lockheed Martin builds) &rarr; 1995 (First CA sites go live)<br>
-          Include logos if available: HELP Inc., Lockheed Martin
-        </div>
-      </div>
-      <div class="note-box tip">
-        <span class="note-label">Trainer Note</span>
-        The nonprofit structure is covered in depth in the companion module &ldquo;The PrePass Alliance.&rdquo; Keep it light here &mdash; just plant the seed that this was a deliberate design choice.
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 2: GROWTH & CHANGE ========== -->
-  <div class="section-divider">
-    <div class="section-badge">2</div>
-    <h2>Growth, Change &amp; the CVO Pivot (1995&ndash;2022)</h2>
-    <span class="meta">~4 min &middot; 4 blocks</span>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">2.1</div>
-      <div class="slide-title">The Technology Kept Moving</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">For decades, PrePass expanded steadily across the country. But the technology operations behind the scenes changed hands multiple times &mdash; from Lockheed Martin to Xerox, from Xerox to Conduent. Each transition meant adapting to a new corporate owner running the day-to-day technology while HELP Inc. continued to own the mission and the network.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Vendor chain graphic</span> <span class="status design">Build in Rise</span><br>
-          Horizontal flow: Lockheed Martin &rarr; Xerox &rarr; Conduent &rarr; CVO Holding Company<br>
-          Use Rise &ldquo;Process&rdquo; or &ldquo;Timeline&rdquo; block
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">2.2</div>
-      <div class="slide-title">CVO Holding Company &amp; Alinda Capital</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">In 2018, HELP Inc. partnered with Alinda Capital Partners to spin the technology operations into a new entity called CVO Holding Company. For the first time, the technology vendor was purpose-built to serve PrePass rather than being a division inside a giant corporation. This set the stage for what came next.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Transition diagram</span> <span class="status design">Build in Rise</span><br>
-          Simple two-box graphic: HELP Inc. (mission) + CVO Holding Company (technology)<br>
-          Arrow showing partnership with Alinda Capital Partners
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">2.3</div>
-      <div class="slide-title">The 2019 Rebrand</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">In 2019, HELP Inc. rebranded to PrePass Safety Alliance. The new name reflected what the organization had become &mdash; the PrePass brand was already recognized across the industry, and the &ldquo;Safety Alliance&rdquo; reinforced the mission at the heart of everything: making highways safer through public-private partnership.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Logo evolution</span> <span class="status needed">Source needed</span><br>
-          Side-by-side: HELP Inc. logo &rarr; PrePass Safety Alliance logo<br>
-          If HELP Inc. logo unavailable, use text treatment with arrow
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">2.4</div>
-      <div class="slide-title">The Pivotal Moment &mdash; June 2022</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag have">Available</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">June 2022 was the turning point. PrePass Safety Alliance acquired CVO Holding Company, bringing the technology operations fully in-house for the first time in the organization&rsquo;s history. No more third-party vendors running the platform. CVO was rebranded as PrePass LLC in January 2023 with Chris Murray named President. This single move transformed PrePass from a nonprofit that outsourced its technology to a nonprofit that owns and operates everything &mdash; the mission, the network, the platform, and the people.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Acquisition graphic</span> <span class="status design">Build in Rise</span><br>
-          Before/after diagram: &ldquo;Before 2022&rdquo; (Alliance + external vendor) vs. &ldquo;After 2022&rdquo; (Alliance owns PrePass LLC)<br>
-          Bold callout: &ldquo;For the first time &mdash; mission and technology under one roof.&rdquo;
-        </div>
-      </div>
-      <div class="note-box interaction">
-        <span class="note-label">Rise Interaction</span>
-        Knowledge check: &ldquo;What happened in June 2022 that transformed PrePass?&rdquo; Multiple choice &mdash; (A) PrePass went public on the stock exchange, (B) The Alliance acquired its technology vendor CVO Holding Company, (C) PrePass merged with a competitor, (D) The federal government took over PrePass operations. Correct: B.
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 3: PREPASS TODAY ========== -->
-  <div class="section-divider">
-    <div class="section-badge">3</div>
-    <h2>PrePass Today</h2>
-    <span class="meta">~3 min &middot; 4 blocks</span>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">3.1</div>
-      <div class="slide-title">By the Numbers</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">Today, PrePass is the most utilized weigh station bypass and toll management platform in North America. The numbers tell the story: 584+ bypass locations across 46 jurisdictions. Over 100,000 motor carriers and 800,000+ commercial vehicles enrolled. More than 1 billion cumulative safe bypasses facilitated. An estimated $9 billion saved for the trucking industry and 405 million gallons of fuel conserved. And $193 million in annual revenue &mdash; entirely self-funded, with zero charitable contributions.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Stats dashboard</span> <span class="status design">Build in Rise</span><br>
-          Rise &ldquo;Gallery&rdquo; or &ldquo;Numbered&rdquo; block with 5&ndash;6 stat cards:<br>
-          584+ locations | 100K+ carriers | 800K+ vehicles | 1B+ bypasses | $9B saved | 405M gallons
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">3.2</div>
-      <div class="slide-title">More Than Bypass</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">PrePass started as a weigh station bypass provider, but that&rsquo;s only part of the picture today. The product portfolio has expanded into a multi-product fleet platform. Bypass is the foundation &mdash; both RFID transponder and mobile app. PrePass Plus combines bypass and toll payment on a single E-ZPass compatible device. Toll Management provides nationwide consolidated billing, dispute resolution, and GPS toll verification through INFORM Tolling. INFORM Safety delivers data analytics for ISS and CSA safety score improvement. And the 2025 acquisition of FleetDrive 360 added AI-driven FMCSA and DOT compliance.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Product ecosystem graphic</span> <span class="status design">Build in Rise</span><br>
-          Rise &ldquo;Tab&rdquo; or &ldquo;Accordion&rdquo; block with one tab per product family:<br>
-          Bypass | PrePass Plus | Toll Management | INFORM Safety | Compliance (FleetDrive 360)
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">3.3</div>
-      <div class="slide-title">Where We&rsquo;re Headed</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">PrePass is executing a platform expansion strategy &mdash; evolving from a single-product bypass provider into the trucking industry&rsquo;s comprehensive operations platform. Recent moves include the FleetDrive 360 acquisition for AI-driven compliance, the NECS Fleet Solutions partnership for vehicle legalization and fuel tax recovery, the launch of AI Toll Insights for machine-learning toll analytics, geographic expansion into Maine and Vermont, and deeper integrations with fleet tech platforms like Motive, Samsara, and Geotab. The vision: one trusted platform for bypass, tolling, compliance, safety, and analytics.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Platform vision graphic</span> <span class="status design">Build in Rise</span><br>
-          Center circle: &ldquo;PrePass Platform&rdquo; with spokes to: Bypass, Tolling, Compliance, Safety, Analytics<br>
-          Rise &ldquo;Image &amp; Text&rdquo; or custom graphic
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">3.4</div>
-      <div class="slide-title">The Competitive Landscape</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">You should know that PrePass doesn&rsquo;t operate in a vacuum. In August 2024, Bestpass-Fleetworthy Solutions acquired Drivewyze and rebranded as Fleetworthy &mdash; creating a unified competitor with bypass, toll management, and compliance services. What makes PrePass different? We&rsquo;re the only provider offering both RFID transponder and mobile app bypass. The only system combining bypass and toll payment on one device. The only preclearance system developed, owned, and operated in the United States as a nonprofit. And we maintain 99.99% RFID transmission reliability with stronger data privacy &mdash; carrier data is purged after 90 days.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Differentiator comparison</span> <span class="status design">Build in Rise</span><br>
-          Rise &ldquo;Two Column&rdquo; or &ldquo;Table&rdquo; block: PrePass vs. Fleetworthy<br>
-          Highlight PrePass advantages: RFID+App, Bypass+Toll combo, Nonprofit US-owned, 99.99% reliability
-        </div>
-      </div>
-      <div class="note-box tip">
-        <span class="note-label">Trainer Note</span>
-        Keep competitor content factual, not combative. New hires should understand the landscape without developing an adversarial tone. The goal is confidence in PrePass&rsquo;s value, not trash-talking the competition.
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 4: WRAP-UP ========== -->
-  <div class="section-divider">
-    <div class="section-badge">4</div>
-    <h2>Wrap-Up &amp; Check Your Knowledge</h2>
-    <span class="meta">~3 min &middot; 3 blocks</span>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">4.1</div>
-      <div class="slide-title">Timeline Recap</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">Let&rsquo;s walk through the full timeline one more time. Late 1980s: the Crescent Project launches. 1991: RFID is selected. 1993: HELP Inc. is chartered as a nonprofit. 1995: first PrePass sites go live in California. 2018: CVO Holding Company is created with Alinda Capital. 2019: HELP Inc. rebrands to PrePass Safety Alliance. June 2022: the Alliance acquires CVO, bringing technology in-house. January 2023: CVO becomes PrePass LLC under President Chris Murray. And today: 584+ sites, 46 jurisdictions, 100,000+ carriers, and a platform that grows every quarter.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Full interactive timeline</span> <span class="status design">Build in Rise</span><br>
-          Rise &ldquo;Timeline&rdquo; block with all key dates<br>
-          Each node: year + one-line milestone
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">4.2</div>
-      <div class="slide-title">Knowledge Check</div>
-      <div class="slide-tags"><span class="tag build">Build in Rise</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="note-box interaction">
-        <span class="note-label">Rise Knowledge Check Block &mdash; 4 Questions</span>
-        <strong>Q1:</strong> What was the name of the 1980s research project that led to PrePass?<br>
-        (A) Highway Shield Initiative (B) The Crescent Project (C) Operation Weigh-Free (D) The RFID Alliance<br>
-        <em>Correct: B</em><br><br>
-        <strong>Q2:</strong> In what year did PrePass first go live at weigh station sites?<br>
-        (A) 1991 (B) 1993 (C) 1995 (D) 2000<br>
-        <em>Correct: C</em><br><br>
-        <strong>Q3:</strong> What major event in June 2022 transformed the organization?<br>
-        (A) PrePass merged with Drivewyze (B) HELP Inc. was dissolved (C) The Alliance acquired CVO Holding Company (D) PrePass launched its mobile app<br>
-        <em>Correct: C</em><br><br>
-        <strong>Q4:</strong> Which of the following is true about PrePass today?<br>
-        (A) PrePass is a for-profit publicly traded company (B) PrePass only offers RFID bypass (C) PrePass is the only US preclearance system owned and operated as a nonprofit (D) PrePass operates in all 50 states<br>
-        <em>Correct: C</em>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">4.3</div>
-      <div class="slide-title">What&rsquo;s Next</div>
-      <div class="slide-tags"><span class="tag vo">Text</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Narration Script</div>
-        <div class="script">Now that you know the story, the next module dives into how the organization actually works &mdash; the relationship between PrePass Safety Alliance, PrePass LLC, and Auxilium. Understanding that structure will help you see where your team fits in the bigger picture. See you there.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Next module teaser</span> <span class="status design">Build in Rise</span><br>
-          Card linking to &ldquo;The PrePass Alliance&rdquo; module<br>
-          PrePass mission statement: &ldquo;We exist to make highways safer and more efficient through innovative, data-driven solutions.&rdquo;
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== RISE AI PROMPT ========== -->
-  <div class="prompt-panel">
-    <h2>Articulate Rise AI Prompt</h2>
-    <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px;">Copy and paste the prompt below into Rise&rsquo;s AI assistant to generate lesson content. Then refine using the storyboard above as your guide.</p>
-    <div class="prompt-label">Prompt &mdash; The PrePass Story</div>
-    <div class="prompt-block">Create an Articulate Rise lesson called "The PrePass Story" for new employee onboarding. The audience is brand-new hires or acquisition employees with no prior knowledge of PrePass or the trucking industry.
-
-Tone: Conversational, welcoming, and confident. Write as if you're a knowledgeable colleague explaining the company story on someone's first day. Avoid jargon without context — define terms like RFID, ISS, CSA, and DOT the first time they appear.
-
-Structure the lesson into these sections:
-
-SECTION 0 — Welcome & Why This Matters (2 min)
-- Hook: PrePass is a 30-year mission to make highways safer — from a 1980s research experiment to a $193M enterprise serving 100K+ carriers.
-- Learning objectives: origin story, key milestones, nonprofit structure, network scale, platform evolution.
-
-SECTION 1 — Where It All Started, 1980s–1995 (3 min)
-- The problem: every truck had to stop at every weigh station. Safe carriers waited in the same lines.
-- The Crescent Project (late 1980s): collaborative research between state DOTs and trucking executives in AZ, CA, NM, OR, TX, WA, and British Columbia to test weighing trucks at highway speed.
-- 1991: RFID selected as the technology.
-- 1993: HELP Inc. (Heavy-vehicle Electronic License Plate, Inc.) chartered as a 501(c)(3) nonprofit.
-- Lockheed Martin contracted to build the system.
-- 1995: PrePass goes live at first California weigh station sites.
-
-SECTION 2 — Growth, Change & the CVO Pivot, 1995–2022 (4 min)
-- Technology operations changed hands: Lockheed Martin → Xerox → Conduent → CVO Holding Company.
-- 2018: HELP Inc. partnered with Alinda Capital Partners to create CVO Holding Company as a dedicated technology vendor.
-- 2019: HELP Inc. rebranded to PrePass Safety Alliance.
-- June 2022 — THE pivotal moment: Alliance acquired CVO Holding Company, bringing technology fully in-house. CVO rebranded as PrePass LLC (Jan 2023), Chris Murray named President.
-- Include a knowledge check after the 2022 acquisition.
-
-SECTION 3 — PrePass Today (3 min)
-- Stats: 584+ bypass locations, 46 jurisdictions, 100K+ carriers, 800K+ vehicles, 1B+ bypasses, $9B saved, 405M gallons conserved, $193M annual revenue (self-funded, $0 charitable contributions).
-- Product portfolio: Bypass (RFID + app), PrePass Plus (bypass + toll on one device), Toll Management (INFORM Tolling, GPS Toll Verification), INFORM Safety (ISS/CSA analytics), Compliance (FleetDrive 360, acquired Dec 2025).
-- Platform expansion strategy: FleetDrive 360 acquisition, NECS partnership, AI Toll Insights launch (Feb 2026), Maine/Vermont expansion, Motive/Samsara/Geotab integrations.
-- Competitive landscape: Fleetworthy (Bestpass + Drivewyze, Aug 2024). PrePass differentiators — only RFID+app bypass, only bypass+toll combo device, only US-owned nonprofit preclearance, 99.99% RFID reliability, 90-day data purge. Keep tone factual, not adversarial.
-
-SECTION 4 — Wrap-Up (3 min)
-- Full timeline recap with all key dates.
-- 4-question knowledge check (multiple choice).
-- Teaser for next module: "The PrePass Alliance" — how the three-entity structure works.
-
-Include at least 2 knowledge checks (one mid-lesson, one end-of-lesson). Use Rise-native interactions: timeline blocks, tabs, numbered lists, image-and-text blocks. Total module: ~15 minutes self-paced.</div>
   </div>
 
 </div>
 
-<div class="footer">PrePass Onramp &mdash; Module: The PrePass Story &mdash; Storyboard v1 &mdash; April 8, 2026</div>
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part B &mdash; The Origin Story (1989&ndash;1995)</span></div>
+<!-- ═══════════════════════════════════════ -->
 
-<script>
-document.querySelectorAll('.slide-header').forEach(h => {
-  h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
-});
-</script>
+<div class="slides-container">
+
+  <!-- SLIDE 3 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">3</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Problem on the Highway</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>In the 1980s, every commercial truck on American highways had to stop at weigh stations &mdash; every single time. Safe, compliant carriers sat in the same lines as everyone else. The delays cost the trucking industry billions in fuel, time, and productivity. State DOT directors and trucking executives in western states asked a simple question: <strong>What if safe trucks could keep moving?</strong></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Picture this: it's the 1980s, and every truck on every highway has to stop at every weigh station. Safe carriers, unsafe carriers &mdash; everyone waits in the same line. For the trucking industry, that meant billions lost to delays. But a group of state DOT directors and trucking executives had a different idea. They asked: what if safe trucks could keep moving?</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Stock or archival photo of trucks lined up at a weigh station. Overlay text: "What if safe trucks could keep moving?" Dark/sepia tone to establish the historical period. <span class="placeholder-flag">IMAGE SOURCE NEEDED</span></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Historical context from intelligence report. Problem framing consistent with NEO slide 33 speaker notes (Crescent Project motivation). Kept from Rev 1 Slide 1.1.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">4</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Crescent Project (1989)</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT &mdash; DATE UPDATED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">LABELED GRAPHIC / MAP BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>That question launched the <strong>Crescent Project in 1989</strong> &mdash; a collaborative research program between state DOT directors and trucking executives across <strong>Arizona, California, New Mexico, Oregon, Texas, Washington, and British Columbia</strong>. The goal: test technologies for weighing and screening trucks at highway speeds without stopping them.</p>
+        <p>In 1991, the project evaluated multiple approaches and chose <strong>RFID &mdash; Radio Frequency Identification</strong> &mdash; as the winning technology. That decision is still at the heart of what we do today.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>That question launched the Crescent Project in 1989 &mdash; a collaborative research effort between state DOT directors and trucking executives across seven jurisdictions: Arizona, California, New Mexico, Oregon, Texas, Washington, and British Columbia. Together, they tested technologies for screening trucks at highway speeds. In 1991, they chose RFID &mdash; Radio Frequency Identification &mdash; as the winning technology. That decision, made over 35 years ago, is still at the heart of everything we do.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Simple US/Canada map highlighting the 7 founding Crescent Project jurisdictions (AZ, CA, NM, OR, TX, WA, BC). Timeline callout: "1989: Crescent Project launches &rarr; 1991: RFID selected." Rise "Labeled Graphic" or "Image + Text" block. The map is the emotional hook &mdash; this was a broad coalition, not one company's idea.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Rev 1 said "late 1980s." NEO slide 33 specifies 1989. Updated for precision and NEO alignment. The seven jurisdictions list is confirmed in both the NEO speaker notes and the intelligence report.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO deck slide 33 speaker notes (Crescent Project, 1989, state list). Cross-reference doc Section 3 (confirmed milestone list). Intelligence report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">5</div>
+      <div class="slide-title-area">
+        <div class="slide-title">HELP Inc. Is Born (1993&ndash;1995)</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TIMELINE / PROCESS BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>In <strong>1993</strong>, the research became an organization. <strong>HELP Inc.</strong> &mdash; Heavy-vehicle Electronic License Plate, Inc. &mdash; was chartered as a <strong>501(c)(3) nonprofit</strong> by trucking industry leaders, enforcement agencies, and state DOTs.</p>
+        <p>The structure was intentional: a nonprofit where the trucking industry and government agencies shared equal seats at the table. <strong>Lockheed Martin</strong> was contracted to build the system, and in <strong>1995</strong>, PrePass went live at its first weigh station sites in California.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>In 1993, the research became an organization. HELP Inc. &mdash; Heavy-vehicle Electronic License Plate, Inc. &mdash; was chartered as a 501(c)(3) nonprofit. The structure was deliberate: a public-private partnership where the trucking industry and government agencies had equal seats at the table. Lockheed Martin was brought in to build the technology, and in 1995, PrePass went live at its first California weigh station sites.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Three milestone markers in a Rise "Timeline" or "Process" block: 1993 (HELP Inc. chartered) &rarr; 1994 (Lockheed Martin builds system) &rarr; 1995 (First CA sites go live). Include logos if available: HELP Inc., Lockheed Martin.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>The nonprofit structure is covered in depth in Module 4: PrePass Alliance Relationship. Keep it light here &mdash; just plant the seed that this was a deliberate design choice, not an accident.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO slide 16 timeline (Lockheed Martin 1993). Intelligence report (HELP Inc. charter, first CA sites). Cross-reference doc Section 3.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part C &mdash; Corporate Ownership Journey (1993&ndash;2022)</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 6 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">6</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Ownership Sequence</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT &mdash; CORRECTED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">PROCESS / TIMELINE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>For decades, PrePass expanded steadily across the country. But the technology operations behind the scenes changed hands multiple times:</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          <strong>Lockheed Martin</strong> (1993) &mdash; Built and initially operated the system<br>
+          <strong>ACS (Affiliated Computer Services)</strong> (2001) &mdash; Acquired Lockheed Martin's transportation services division<br>
+          <strong>Xerox</strong> (2010) &mdash; Acquired ACS, inherited PrePass operations<br>
+          <strong>Conduent</strong> (2017) &mdash; Spun off from Xerox as a standalone business process company<br>
+          <strong>CVO Holding Company / Alinda Capital</strong> (2018) &mdash; Purpose-built entity to serve PrePass
+        </p>
+        <p>Through every transition, <strong>HELP Inc. (later PrePass Safety Alliance) continued to own the mission and the network</strong>. The technology vendor changed; the purpose never did.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>While the PrePass network kept growing, the technology operations changed hands multiple times. Lockheed Martin built the original system. In 2001, ACS &mdash; Affiliated Computer Services &mdash; acquired Lockheed Martin's transportation services. In 2010, Xerox acquired ACS. In 2017, Xerox spun off Conduent as a standalone company. And in 2018, HELP Inc. partnered with Alinda Capital Partners to create CVO Holding Company &mdash; a purpose-built vendor for PrePass. Through every transition, the nonprofit parent continued to own the mission. The technology vendor changed; the purpose never did.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Horizontal process flow: Lockheed Martin &rarr; ACS &rarr; Xerox &rarr; Conduent &rarr; CVO. Rise "Process" or "Timeline" block. Each node shows year and company name. Consider a persistent bar above showing "HELP Inc. / PrePass Safety Alliance" spanning the full timeline to reinforce that the mission owner stayed constant.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p><strong>Critical Rev 2 fix:</strong> Rev 1 omitted ACS (2001) entirely, going straight from Lockheed Martin to Xerox. The NEO slide 16 shows the full chain including ACS. This correction ensures the storyboard matches what leadership has approved and what new hires will see in the live NEO session.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO deck slide 16 &mdash; corporate ownership timeline. Sequence verified: Lockheed Martin (1993) &rarr; ACS (2001) &rarr; Xerox (2010) &rarr; Conduent (2017) &rarr; CVO/Alinda (2018). This is the leadership-approved sequence.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">7</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The 2019 Rebrand</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>In <strong>2019</strong>, HELP Inc. rebranded to <strong>PrePass Safety Alliance</strong>. The new name reflected what the organization had become &mdash; the PrePass brand was already recognized across the industry, and "Safety Alliance" reinforced the mission at the heart of everything: making highways safer through public-private partnership.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>In 2019, HELP Inc. rebranded to PrePass Safety Alliance. The name "HELP Inc." no longer captured what the organization had become. The PrePass brand was already recognized industry-wide, and "Safety Alliance" reinforced the core mission: safer highways through partnership. You might still see "CVO" on some older materials &mdash; the NEO notes that CVO-branded items still exist in some places.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Side-by-side: HELP Inc. logo &rarr; PrePass Safety Alliance logo. If HELP Inc. logo is unavailable, use a text treatment with an arrow. Rise "Image + Text" or "Two Column" block. <span class="placeholder-flag">HELP INC. LOGO SOURCE NEEDED</span></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO slide 16 speaker notes (rebrand, CVO-branded items note). Intelligence report (2019 rebrand confirmed).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">8</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Pivotal Moment &mdash; June 2022</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + GRAPHIC BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>June 2022</strong> was the turning point. PrePass Safety Alliance acquired CVO Holding Company, bringing the technology operations <strong>fully in-house for the first time</strong> in the organization's history.</p>
+        <p>No more third-party vendors running the platform. CVO was rebranded as <strong>PrePass LLC</strong> in January 2023 with <strong>Chris Murray named President</strong>.</p>
+        <p style="color: #ccc;">This single move transformed PrePass from a nonprofit that outsourced its technology to a nonprofit that <strong>owns and operates everything</strong> &mdash; the mission, the network, the platform, and the people.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>June 2022 was the turning point. PrePass Safety Alliance acquired CVO Holding Company, bringing the technology operations fully in-house for the first time in the organization's history. No more third-party vendors. CVO was rebranded as PrePass LLC in January 2023, with Chris Murray named President. This single move transformed PrePass from a nonprofit that outsourced its technology to a nonprofit that owns and operates everything &mdash; the mission, the network, the platform, and the people.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Before/after diagram: "Before 2022" (Alliance + external vendor as separate boxes) vs. "After 2022" (Alliance owns PrePass LLC, unified). Bold callout: "For the first time &mdash; mission and technology under one roof." Rise "Two Column" or custom graphic block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-interaction">Knowledge Check (Mid-Lesson)</div>
+        <p><strong>Q:</strong> What happened in June 2022 that transformed PrePass?</p>
+        <p style="padding-left: 1rem; color: #999; font-size: 0.82rem;">
+          (A) PrePass went public on the stock exchange<br>
+          (B) The Alliance acquired its technology vendor CVO Holding Company<br>
+          (C) PrePass merged with a competitor<br>
+          (D) The federal government took over PrePass operations
+        </p>
+        <p><strong>Correct: B</strong></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO slide 16 timeline (Alliance acquires CVO 2022). Intelligence report (Chris Murray named President Jan 2023, PrePass LLC rebrand). Cross-reference doc Section 3.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part D &mdash; Product &amp; Service Evolution (Dual Track)</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 9 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">9</div>
+      <div class="slide-title-area">
+        <div class="slide-title">While the Ownership Changed, the Products Kept Growing</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT &mdash; NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TEXT + TIMELINE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>While corporate ownership shifted, PrePass never stopped innovating. Here's how the product portfolio evolved:</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          <strong>1989</strong> &mdash; Crescent Project: research begins<br>
+          <strong>1993</strong> &mdash; PrePass weigh station bypass: the original service<br>
+          <strong>2003</strong> &mdash; PrePass Plus: adds toll payment to the bypass transponder<br>
+          <strong>2013</strong> &mdash; Carrier Portal: self-service tools for fleet managers<br>
+          <strong>2015</strong> &mdash; ElitePass: premium service tier<br>
+          <strong>2018</strong> &mdash; MOTION mobile app: bypass without hardware<br>
+          <strong>2019</strong> &mdash; ALERTS: safety and compliance notifications<br>
+          <strong>2023&ndash;24</strong> &mdash; TSP integrations: connecting with Motive, Samsara, Geotab<br>
+          <strong>2025</strong> &mdash; FleetDrive 360: AI-driven FMCSA/DOT compliance platform (acquisition)
+        </p>
+        <p>From one product to a comprehensive fleet operations platform &mdash; each milestone built on the one before it.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>While the corporate owners changed, the products never stopped evolving. PrePass started as a weigh station bypass service in 1993. By 2003, PrePass Plus added toll payment to the same transponder. In 2013, the Carrier Portal gave fleet managers self-service tools. ElitePass launched in 2015 as a premium tier. The MOTION mobile app arrived in 2018, letting drivers bypass weigh stations without any hardware. ALERTS added safety notifications in 2019. Then came TSP integrations in 2023 and 2024, connecting PrePass with fleet management platforms like Motive and Samsara. And in 2025, the acquisition of FleetDrive 360 brought AI-driven compliance into the ecosystem. That's the arc &mdash; from one product to a comprehensive fleet platform.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Timeline" block with each product milestone as a node. Alternatively, a vertical scrolling timeline with year on left and product name + one-line description on right. Use product icons or logos where available. The visual should convey growth and expansion over time.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO deck slide 33 &mdash; product evolution timeline. All milestones confirmed: Crescent Project (1989), PrePass (1993), PrePass Plus tolls (2003), Carrier Portal (2013), ElitePass (2015), MOTION/Mobile App (2018), ALERTS (2019), TSP integrations (2023&ndash;24), FleetDrive 360 (2025).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-media">10</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Dual-Track Interactive Timeline</div>
+        <div class="slide-type type-media">INTERACTIVE GRAPHIC &mdash; NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">LABELED GRAPHIC / CUSTOM TIMELINE</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Dual-Track Design</div>
+        <p><strong>Design concept:</strong> Two parallel timelines, one above the other, sharing a common date axis.</p>
+
+        <div style="margin: 1rem 0;">
+          <div class="track-label track-corporate">Corporate History Track (Top)</div>
+          <div class="timeline-node"><span class="year">1993</span> <span class="event">Lockheed Martin builds system for HELP Inc.</span></div>
+          <div class="timeline-node"><span class="year">2001</span> <span class="event">ACS acquires Lockheed Martin's transport division</span></div>
+          <div class="timeline-node"><span class="year">2010</span> <span class="event">Xerox acquires ACS</span></div>
+          <div class="timeline-node"><span class="year">2017</span> <span class="event">Conduent spins off from Xerox</span></div>
+          <div class="timeline-node"><span class="year">2018</span> <span class="event">CVO Holding Co. created with Alinda Capital</span></div>
+          <div class="timeline-node"><span class="year">2019</span> <span class="event">HELP Inc. rebrands to PrePass Safety Alliance</span></div>
+          <div class="timeline-node"><span class="year">2022</span> <span class="event">Alliance acquires CVO &mdash; technology comes in-house</span></div>
+        </div>
+
+        <div style="margin: 1rem 0;">
+          <div class="track-label track-product">Product Evolution Track (Bottom)</div>
+          <div class="timeline-node"><span class="year">1989</span> <span class="event">Crescent Project research begins</span></div>
+          <div class="timeline-node"><span class="year">1993</span> <span class="event">PrePass weigh station bypass launches</span></div>
+          <div class="timeline-node"><span class="year">2003</span> <span class="event">PrePass Plus adds toll payment</span></div>
+          <div class="timeline-node"><span class="year">2013</span> <span class="event">Carrier Portal for fleet managers</span></div>
+          <div class="timeline-node"><span class="year">2015</span> <span class="event">ElitePass premium tier</span></div>
+          <div class="timeline-node"><span class="year">2018</span> <span class="event">MOTION mobile app &mdash; bypass without hardware</span></div>
+          <div class="timeline-node"><span class="year">2019</span> <span class="event">ALERTS safety notifications</span></div>
+          <div class="timeline-node"><span class="year">2023&ndash;24</span> <span class="event">TSP integrations (Motive, Samsara, Geotab)</span></div>
+          <div class="timeline-node"><span class="year">2025</span> <span class="event">FleetDrive 360 compliance platform acquired</span></div>
+        </div>
+
+        <p><span class="confirmed-flag">CONFIRMED</span> &mdash; Both tracks verified against NEO slides 16 and 33</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Here's the full picture &mdash; two stories happening at the same time. On top, the corporate ownership journey. On the bottom, the product evolution. Notice how the products kept growing no matter who was operating the technology. That's the power of the nonprofit model &mdash; the mission stayed constant even as the business structure evolved.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p>Rise "Labeled Graphic" with hotspots on each timeline node. Learner clicks a node to see a one-sentence detail pop-up. Alternatively, Rise "Timeline" block doesn't support dual-track natively &mdash; consider building this as a custom image with clickable hotspots, or two side-by-side vertical timelines using a "Two Column" layout with "Timeline" blocks in each column.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This is the signature visual for Module 3. It tells the whole story in one view. If dual-track is too complex for Rise's native blocks, build it as a designed image (Canva, Figma, or similar) and import as a Labeled Graphic with hotspot overlays. The key insight for the learner: two timelines running in parallel, one constant thread (the mission).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Corporate track: NEO slide 16. Product track: NEO slide 33. Dual-track concept: Track 1 Master Plan Module 3 directive ("Consider a dual-track timeline: corporate history on top, product evolution on bottom").</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part E &mdash; PrePass Today &amp; The People Dimension</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 11 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">11</div>
+      <div class="slide-title-area">
+        <div class="slide-title">By the Numbers &mdash; PrePass Today</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">GALLERY / STAT CARDS BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Key Stats</div>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          <strong>584+</strong> bypass locations across <strong>46 jurisdictions</strong><br>
+          <strong>100,000+</strong> motor carriers enrolled<br>
+          <strong>800,000+</strong> commercial vehicles<br>
+          <strong>1 billion+</strong> cumulative safe bypasses facilitated<br>
+          <strong>$9 billion</strong> estimated savings for the trucking industry<br>
+          <strong>405 million gallons</strong> of fuel conserved
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Today, PrePass is the most utilized weigh station bypass and toll management platform in North America. The numbers tell the story: 584-plus bypass locations across 46 jurisdictions. Over 100,000 motor carriers and 800,000 commercial vehicles enrolled. More than 1 billion cumulative safe bypasses. An estimated $9 billion saved for the trucking industry and 405 million gallons of fuel conserved. That's what 30-plus years of mission-driven work looks like at scale.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Gallery" or "Numbered" block with 6 stat cards, each showing one big number + brief descriptor. Dark background with high-contrast numbers. Consider animated counters if Rise supports them. This is the "wow" moment of the module.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Intelligence report (operational statistics, public filings). Financial figures ($193M revenue) deliberately moved to Module 6: Revenue Model to avoid scope overlap. Scale statistics confirmed from multiple sources.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-placeholder">12</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Our People Growth</div>
+        <div class="slide-type type-placeholder">PLACEHOLDER &mdash; NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">STAT + TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>The story isn't just about technology and ownership changes &mdash; it's about the people who made it happen.</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          <strong>[~150 employees]</strong> &rarr; at [year TBD] <span class="nicole-flag">NEEDS NICOLE INPUT</span><br>
+          <strong>[Growth milestone TBD]</strong> &rarr; at [year TBD] <span class="nicole-flag">NEEDS NICOLE INPUT</span><br>
+          <strong>400+ employees</strong> &rarr; today, across Phoenix, West Valley City, Salt Lake City, and 30 states <span class="confirmed-flag">CONFIRMED</span>
+        </p>
+        <p>From a small team running a research experiment to 400+ people powering the trucking industry's most trusted platform.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>There's another dimension to this story &mdash; the people. PrePass started with a small team. Today, we're over 400 employees across Phoenix, West Valley City, Salt Lake City, and 30 states. [When Nicole's data arrives, insert specific growth milestones here.] Every ownership change, every product launch, every expansion was driven by the people who believed in the mission.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Animated growth chart or infographic showing headcount growth over time. Start small, end at 400+. Could overlay on the dual-track timeline from Slide 10 as a third "people" bar, or stand alone as a simple growth line. Rise "Text + Image" with a custom infographic.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p><strong><span class="nicole-flag">NEEDS NICOLE INPUT</span></strong> &mdash; Nicole has internal headcount data. When it arrives: (1) fill in specific headcount figures at key inflection points (e.g., post-CVO acquisition, post-FleetDrive 360), (2) update the growth narrative with exact numbers, (3) flip this slide from PLACEHOLDER to CONFIRMED. The "400+ employees" current figure and three locations (Phoenix, WVC, SLC) are confirmed from NEO slides 48&ndash;49.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Current headcount (400+) and locations: NEO slides 48&ndash;49. Historical headcount data: <span class="nicole-flag">NEEDS NICOLE INPUT</span>. Growth from ~150 to 400+ referenced in project status and master plan.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">13</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Constant Through It All</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT &mdash; NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT / QUOTE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Narrative Anchor</div>
+        <blockquote>"From the start, the service and stability of the PrePass program has not changed since its inception 30+ years ago. Regardless of the changes, the brand recognition is still strong."</blockquote>
+        <p><span class="confirmed-flag">CONFIRMED</span> &mdash; NEO deck slide 16 speaker notes (leadership-approved language)</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Supporting Text</div>
+        <p>Ownership changed five times. The technology moved from external vendors to in-house. The product portfolio grew from one service to a comprehensive platform. The team grew from a handful to 400+. But the mission &mdash; making highways safer and more efficient &mdash; never changed. That's the story you're now part of.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Here's what ties all of this together. [Read the quote.] Ownership changed five times. The technology moved from external vendors to fully in-house. The product grew from one service to a comprehensive platform. The team grew from a handful to over 400. But the mission &mdash; making highways safer and more efficient &mdash; never changed. That's the story you're now part of.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise "Statement" or "Quote" block with the quote in large, prominent text. Consider placing it over a highway image to create a reflective moment. This is the emotional anchor of the module &mdash; let the quote breathe. Follow with the supporting text in a lighter, smaller treatment below.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This is the narrative anchor that the Master Plan and NEO Comparison doc both flagged as essential. It ties the whole history together and gives the learner a "so what" takeaway. Position this as a pause &mdash; a reflective moment before the knowledge check.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>NEO deck slide 16 speaker notes &mdash; exact quote from facilitator script. This is leadership-approved language that new hires will also hear in the live NEO session. Using it creates consistency between Track 1 and the NEO.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part F &mdash; Knowledge Check &amp; Transition</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 14 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">14</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Knowledge Check</div>
+        <div class="slide-type type-interaction">LEARNER INTERACTION</div>
+      </div>
+      <span class="rise-block-tag">KNOWLEDGE CHECK BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Quiz &mdash; 5 Questions (Awareness Depth)</div>
+
+        <p><strong>Q1:</strong> What was the name of the 1989 research project that led to PrePass?</p>
+        <p style="padding-left: 1rem; color: #999; font-size: 0.82rem;">
+          (A) Highway Shield Initiative<br>
+          (B) The Crescent Project<br>
+          (C) Operation Weigh-Free<br>
+          (D) The RFID Alliance
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><strong>Correct: B</strong></p>
+
+        <p style="margin-top: 1rem;"><strong>Q2:</strong> Which company was NOT part of the corporate ownership chain for PrePass technology operations?</p>
+        <p style="padding-left: 1rem; color: #999; font-size: 0.82rem;">
+          (A) ACS (Affiliated Computer Services)<br>
+          (B) Xerox<br>
+          (C) Amazon Web Services<br>
+          (D) Conduent
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><strong>Correct: C</strong></p>
+
+        <p style="margin-top: 1rem;"><strong>Q3:</strong> What major event in June 2022 transformed the organization?</p>
+        <p style="padding-left: 1rem; color: #999; font-size: 0.82rem;">
+          (A) PrePass merged with Drivewyze<br>
+          (B) HELP Inc. was dissolved<br>
+          (C) The Alliance acquired CVO Holding Company, bringing technology in-house<br>
+          (D) PrePass launched its mobile app
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><strong>Correct: C</strong></p>
+
+        <p style="margin-top: 1rem;"><strong>Q4:</strong> What product milestone in 2003 expanded PrePass beyond weigh station bypass?</p>
+        <p style="padding-left: 1rem; color: #999; font-size: 0.82rem;">
+          (A) MOTION mobile app<br>
+          (B) ElitePass premium tier<br>
+          (C) PrePass Plus, adding toll payment to the transponder<br>
+          (D) FleetDrive 360 compliance platform
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><strong>Correct: C</strong></p>
+
+        <p style="margin-top: 1rem;"><strong>Q5:</strong> What has remained constant throughout all of PrePass's ownership changes?</p>
+        <p style="padding-left: 1rem; color: #999; font-size: 0.82rem;">
+          (A) The same CEO has led the company since 1993<br>
+          (B) PrePass has always been a for-profit company<br>
+          (C) The mission of making highways safer and more efficient<br>
+          (D) The technology has always been operated in-house
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><strong>Correct: C</strong></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Five questions covering all three learning objectives: origin story (Q1), ownership sequence (Q2, Q3), and product evolution (Q4). Q5 ties back to the narrative anchor. All quiz-style multiple choice, appropriate for Awareness depth. Q2 is new in Rev 2 to test the corrected ownership chain including ACS.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Questions derived from confirmed content: NEO slides 16 and 33, intelligence report, cross-reference doc. All answer options based on real entities/events to create plausible distractors.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">15</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Transition &mdash; Next: The PrePass Alliance</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT + TEASER BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p>Now that you know the story, the next module dives into how the organization actually works today &mdash; the relationship between <strong>PrePass Safety Alliance</strong>, <strong>PrePass LLC</strong>, and the <strong>Alliance's four pillars: Safety, Advocacy, Efficiency, and Innovation</strong>.</p>
+        <p style="font-size: 0.85rem; color: #999;">Understanding that structure will help you see where your team fits in the bigger picture.</p>
+        <p><strong>Up next: Module 4 &mdash; PrePass Alliance Relationship</strong></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Now that you know the story, the next module dives into how the organization actually works today. You'll learn about the relationship between PrePass Safety Alliance and PrePass LLC, and the four pillars that drive the Alliance's mission: Safety, Advocacy, Efficiency, and Innovation. Understanding that structure will help you see where your team fits in the bigger picture. See you there.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Card or teaser graphic linking to Module 4. Use the Alliance pillar names as a preview. Consider a simple icon set: shield (Safety), megaphone (Advocacy), gear (Efficiency), lightbulb (Innovation). Rise "Button" or "Continue" block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Rev 1 transition referenced "the three-entity structure." Rev 2 updates this to also mention the four Alliance pillars (from NEO slides 5&ndash;6), which are the centerpiece of the revised Module 4. This creates a natural hook into the reframed Module 4 content.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Module 4 content preview from Track 1 Master Plan (Module 4 section). Alliance pillars from NEO slides 5&ndash;6.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Production Notes Panel ── -->
+<div class="notes-panel">
+  <h3>Production Notes</h3>
+  <div class="note-item">
+    <span class="note-who">Adam</span>
+    <span class="note-text">The dual-track timeline (Slide 10) is the signature visual for this module. If Rise's native Timeline block doesn't support two parallel tracks, build it as a designed graphic in Canva/Figma and import as a Labeled Graphic with hotspot overlays.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Michael</span>
+    <span class="note-text">Competitive landscape and detailed product descriptions were removed from this module (they were in Rev 1 slides 3.2&ndash;3.4). That content is reserved for Module 5: Customers, Market &amp; Product and Module 7: Market Goals. Confirm this scope decision is correct.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Nicole</span>
+    <span class="note-text">Slide 12 (Our People Growth) is tagged NEEDS NICOLE INPUT. When headcount data arrives, fill in: (1) starting headcount and year, (2) key growth inflection points, (3) headcount at CVO acquisition (2022). Current figure of 400+ across 3 locations is confirmed from the NEO.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Scope</span>
+    <span class="note-text">Revenue figure ($193M) was in Rev 1's "By the Numbers" slide. It has been removed from Module 3 to avoid overlap with Module 6: Revenue Model, which covers financials in depth at Working Knowledge level. The scale stats (584+ sites, 100K+ carriers, etc.) remain here as they're historical/operational, not financial.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Verification</span>
+    <span class="note-text">All corporate timeline dates verified against NEO slide 16. All product dates verified against NEO slide 33. The ACS (2001) gap in Rev 1 has been corrected. The Crescent Project date has been updated from "late 1980s" to "1989" per NEO slide 33 speaker notes.</span>
+  </div>
+</div>
+
+<div class="footer">
+  Track 1 &mdash; Intro to PrePass &nbsp;|&nbsp; Module 3: Company History &nbsp;|&nbsp; Storyboard Rev 2 &nbsp;|&nbsp; April 8, 2026<br>
+  Format: M1 Rev 2 standard &nbsp;|&nbsp; 15 slides &nbsp;|&nbsp; 6 parts &nbsp;|&nbsp; Est. 10&ndash;12 min
+</div>
+
 </body>
 </html>
