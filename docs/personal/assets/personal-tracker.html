@@ -228,7 +228,7 @@
 <div class="header">
   <h1>Personal Tracker</h1>
   <div class="subtitle">Projects, errands, and personal to-dos</div>
-  <div class="last-updated">Last updated: April 7, 2026</div>
+  <div class="last-updated">Last updated: April 8, 2026</div>
 </div>
 
 <div class="stats-row">
@@ -290,6 +290,16 @@
     <div class="task-content">
       <div class="task-title">Full-width layout + CSS fixes</div>
       <div class="task-note">Removed 1220px cap, fixed banner overlaps, cleaned dead nav links</div>
+    </div>
+    <span class="task-badge badge-done">Done</span>
+  </div>
+
+  <div class="task done" data-status="done">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-low"></div>
+    <div class="task-content">
+      <div class="task-title">Cloudflare Access — site login gate</div>
+      <div class="task-note">Zero Trust email OTP, robots.txt added — site is now private</div>
     </div>
     <span class="task-badge badge-done">Done</span>
   </div>
@@ -362,6 +372,26 @@
     </div>
     <span class="task-badge badge-done">Done</span>
   </div>
+
+  <div class="task done" data-status="done">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-low"></div>
+    <div class="task-content">
+      <div class="task-title">Gemma 4 E4B pulled + running</div>
+      <div class="task-note">Google's latest open model — beats Gemma 3 27B, fits 8GB VRAM</div>
+    </div>
+    <span class="task-badge badge-done">Done</span>
+  </div>
+
+  <div class="task" data-status="todo">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-med"></div>
+    <div class="task-content">
+      <div class="task-title">Install Obsidian + connect to Ollama</div>
+      <div class="task-note">Flatpak install, point secondbrain vault, Ollama plugin for local AI summaries</div>
+    </div>
+    <span class="task-badge badge-todo">To Do</span>
+  </div>
 </div>
 
 <!-- ── Hardware & Plex ── -->
@@ -376,8 +406,8 @@
     <div class="task-check" onclick="toggleTask(this)"></div>
     <div class="priority-marker priority-med"></div>
     <div class="task-content">
-      <div class="task-title">Inventory 7th/8th gen Intel rigs (family machines)</div>
-      <div class="task-note">Full specs — CPU, RAM, GPU, storage. One has GTX 1080, one has RX 5600 XT</div>
+      <div class="task-title">Inventory AMD Ryzen 3000 + Radeon 590 (daughter's machine)</div>
+      <div class="task-note">Full specs — designated Plex server. Radeon 590 8GB for transcoding</div>
     </div>
     <span class="task-badge badge-todo">To Do</span>
   </div>
@@ -386,8 +416,28 @@
     <div class="task-check" onclick="toggleTask(this)"></div>
     <div class="priority-marker priority-med"></div>
     <div class="task-content">
-      <div class="task-title">Inventory Ryzen 3000 APU + Radeon 590 (daughter's unused machine)</div>
-      <div class="task-note">Full specs — potential Plex server or additional Ollama node</div>
+      <div class="task-title">Inventory 8th gen Intel rig — future Ollama node</div>
+      <div class="task-note">Full specs — GPU TBD, will run Ollama for distributed inference</div>
+    </div>
+    <span class="task-badge badge-todo">To Do</span>
+  </div>
+
+  <div class="task" data-status="todo">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-med"></div>
+    <div class="task-content">
+      <div class="task-title">Inventory 7th gen Intel rig</div>
+      <div class="task-note">Full specs — GTX 1080 or RX 5600 XT, role TBD</div>
+    </div>
+    <span class="task-badge badge-todo">To Do</span>
+  </div>
+
+  <div class="task" data-status="todo">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-low"></div>
+    <div class="task-content">
+      <div class="task-title">Check storage for additional machine</div>
+      <div class="task-note">Might have another rig stashed — inventory if found</div>
     </div>
     <span class="task-badge badge-todo">To Do</span>
   </div>
@@ -397,7 +447,7 @@
     <div class="priority-marker priority-med"></div>
     <div class="task-content">
       <div class="task-title">Inventory Aero laptop</div>
-      <div class="task-note">Full specs — OLED display, dedicated gaming/media machine</div>
+      <div class="task-note">Full specs — OLED display, designated second gaming machine</div>
     </div>
     <span class="task-badge badge-todo">To Do</span>
   </div>
@@ -406,8 +456,8 @@
     <div class="task-check" onclick="toggleTask(this)"></div>
     <div class="priority-marker priority-low"></div>
     <div class="task-content">
-      <div class="task-title">Research Plex server setup — pick best candidate machine</div>
-      <div class="task-note">Transcoding needs, 4K disc ripping workflow, storage requirements</div>
+      <div class="task-title">Set up Plex server on AMD rig</div>
+      <div class="task-note">Transcoding config, 4K disc ripping workflow, storage requirements</div>
     </div>
     <span class="task-badge badge-todo">To Do</span>
   </div>
@@ -416,8 +466,8 @@
     <div class="task-check" onclick="toggleTask(this)"></div>
     <div class="priority-marker priority-low"></div>
     <div class="task-content">
-      <div class="task-title">Evaluate which machines could double as Ollama nodes</div>
-      <div class="task-note">1080 has 8GB VRAM, RX 5600 XT has 6GB, Radeon 590 has 8GB — all viable</div>
+      <div class="task-title">Set up Ollama node on 8th gen Intel</div>
+      <div class="task-note">Pop!_OS or Ubuntu, Ollama install, network access from fleet</div>
     </div>
     <span class="task-badge badge-todo">To Do</span>
   </div>
