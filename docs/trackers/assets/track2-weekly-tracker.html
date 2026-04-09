@@ -17,15 +17,72 @@
     padding: 2rem;
   }
 
+  /* ── Hub Navigation ── */
+  .hub-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .hub-nav .nav-label {
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    margin-right: 0.25rem;
+  }
+
+  .hub-nav a, .hub-nav .nav-current {
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .hub-nav a {
+    color: #888;
+    background: transparent;
+    border: 1px solid #333;
+  }
+
+  .hub-nav a:hover {
     color: #60a5fa;
     border-color: rgba(96, 165, 250, 0.4);
     background: rgba(96, 165, 250, 0.05);
   }
+
+  .hub-nav a.hub-link {
+    color: #a78bfa;
+    border-color: rgba(167, 139, 250, 0.3);
+    background: rgba(167, 139, 250, 0.08);
+  }
+
+  .hub-nav a.hub-link:hover {
     border-color: rgba(167, 139, 250, 0.5);
     background: rgba(167, 139, 250, 0.12);
   }
 
-/* ── Header ── */
+  .hub-nav .nav-current {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  .hub-nav .nav-separator {
+    color: #333;
+    font-size: 1rem;
+  }
+
+  /* ── Header ── */
   .header {
     text-align: center;
     margin-bottom: 2.5rem;
@@ -408,13 +465,25 @@
     body { padding: 1rem; }
     .stats-row { grid-template-columns: repeat(2, 1fr); }
     .module-grid { grid-template-columns: 1fr; }
-}
+    .hub-nav { font-size: 0.7rem; }
+  }
 </style>
 </head>
 <body>
+
+<!-- ── Hub Navigation ── -->
+<div class="hub-nav">
+  <span class="nav-label">Trackers</span>
+  <a href="../MCTE Goals and timeline/MCTE_6Week_Plan.html" class="hub-link" title="Overarching goal tracker">MCTE Hub</a>
+  <span class="nav-separator">/</span>
+  <a href="../Michael Colab/Track1_Weekly_Tracker.html" title="Track 1 weekly progress">Track 1: Michael Colab</a>
+  <span class="nav-separator">/</span>
+  <span class="nav-current">Track 2: Articulate POC</span>
+</div>
+
 <div class="header">
   <h1>Track 2 — Articulate POC</h1>
-  <div class="subtitle">Week of April 6 &ndash; 11, 2026 &mdash; MCTE Week 3: Account Closure Build Sprint</div>
+  <div class="subtitle">Week of April 6 &ndash; 12, 2026 &mdash; MCTE Week 3: POC Delivery &amp; Executive Visibility</div>
   <div class="project-badge">Call Center Modules &mdash; Specialized Deep-Dive Training</div>
 </div>
 
@@ -454,20 +523,20 @@
     <span class="chevron-small">&rsaquo;</span>
   </h3>
   <div class="module-grid">
-    <div class="module-card status-yellow">
+    <div class="module-card status-green">
       <span class="mod-num">1</span>
       <span class="mod-name">Account Closure/Shutdown</span>
-      <span class="mod-status-dot yellow" title="In progress — Sections 0–2 complete, resuming at Section 3"></span>
+      <span class="mod-status-dot green" title="Rise build complete — testing &amp; polish pass done April 9"></span>
     </div>
-    <div class="module-card status-yellow">
+    <div class="module-card status-green">
       <span class="mod-num">2</span>
       <span class="mod-name">Verification</span>
-      <span class="mod-status-dot yellow" title="Rise build complete; storyboard Sections 0–5 done"></span>
+      <span class="mod-status-dot green" title="Rise build complete — testing &amp; polish pass done April 9; published to Reach360"></span>
     </div>
-    <div class="module-card status-red">
+    <div class="module-card status-yellow">
       <span class="mod-num">3</span>
       <span class="mod-name">inForm</span>
-      <span class="mod-status-dot red" title="Pipeline — no content yet, per Bill Causse"></span>
+      <span class="mod-status-dot yellow" title="Storyboard complete (22 slides, 22 VO scripts); portal screenshots needed; per Bill Causse"></span>
     </div>
     <div class="module-card status-red">
       <span class="mod-num">4</span>
@@ -476,8 +545,8 @@
     </div>
     <div class="module-card status-green">
       <span class="mod-num">M</span>
-      <span class="mod-name">AA End-of-Call Documentation</span>
-      <span class="mod-status-dot green" title="Storyboard v3 complete, published to Reach360"></span>
+      <span class="mod-name">End of Call Documentation</span>
+      <span class="mod-status-dot green" title="Complete — Storyline 360 build with Rise wrapper; published to Reach360; presented to Bill March 30"></span>
     </div>
     <div class="module-card status-green">
       <span class="mod-num">M</span>
@@ -490,12 +559,71 @@
 <!-- ── Daily Cards ── -->
 <div class="days-container">
 
-  <!-- TUESDAY -->
-  <div class="day-card today open">
+  <!-- MONDAY Apr 6 -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Monday, April 6</span>
+        <span class="day-date">Day 1</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-done">Done</span>
+        <span class="chevron">&rsaquo;</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text"><strong>Week 3 planning &mdash; DONE</strong> &mdash; tracker rolled, content sprint scheduled for Thu&ndash;Fri <span class="task-tag tag-admin">ADMIN</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- TUESDAY Apr 7 -->
+  <div class="day-card">
     <div class="day-header" onclick="toggleDay(this)">
       <div class="day-header-left">
         <span class="day-name">Tuesday, April 7</span>
-        <span class="day-date">Day 1 &mdash; TODAY</span>
+        <span class="day-date">Day 2 &mdash; MEETINGS</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-done">Done</span>
+        <span class="chevron">&rsaquo;</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text">Meeting day &mdash; Kelsey Butler (11:30 AM) and Patty Mazerolle (2:00 PM) meetings completed <span class="task-tag tag-admin">ADMIN</span></span></li>
+        <li><input type="checkbox"><span class="task-text">If time after meetings: resume Account Closure &mdash; Section 3 (Closing PrePass Account) <span class="task-tag tag-build">BUILD</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- WEDNESDAY Apr 8 -->
+  <div class="day-card">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Wednesday, April 8</span>
+        <span class="day-date">Day 3 &mdash; Michael Working Session</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="day-status status-done">Done</span>
+        <span class="chevron">&rsaquo;</span>
+      </div>
+    </div>
+    <div class="day-body">
+      <ul class="checklist">
+        <li><input type="checkbox" checked><span class="task-text">Michael working session (12:00 PM) &mdash; show-and-tell of 3 Rise modules; NEO deck received; Track 1 strategy aligned <span class="task-tag tag-admin">ADMIN</span></span></li>
+        <li><input type="checkbox"><span class="task-text">CRM screenshot capture &mdash; truck deletion, sticker deactivation, bond indicator, consolidation (live session needed) <span class="task-tag tag-capture">CAPTURE</span></span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- THURSDAY Apr 9 &mdash; CONTENT SPRINT -->
+  <div class="day-card today open">
+    <div class="day-header" onclick="toggleDay(this)">
+      <div class="day-header-left">
+        <span class="day-name">Thursday, April 9</span>
+        <span class="day-date">Day 4 &mdash; TODAY</span>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
         <span class="day-status status-today">Today</span>
@@ -504,60 +632,21 @@
     </div>
     <div class="day-body">
       <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text">Account Closure module &mdash; resume Section 3: Closing PrePass Account (carried from Week 2) <span class="task-tag tag-build">BUILD</span></span></li>
-        <li><input type="checkbox"><span class="task-text">CRM screenshot capture &mdash; 4 missing: truck deletion, sticker deactivation, bond indicator, consolidation (live session needed) <span class="task-tag tag-capture">CAPTURE</span></span></li>
-        <li><input type="checkbox"><span class="task-text">Fix Account Security KB Section 15 &mdash; Brian Cooley reference (if edit access granted) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Account Closure &mdash; testing &amp; polish pass complete</strong> &mdash; Rise build finalized <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Verification &mdash; testing &amp; polish pass complete</strong> &mdash; Rise build finalized <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox"><span class="task-text">inForm portal screenshots (6 captures) &mdash; unblocks next Articulate build <span class="task-tag tag-capture">CAPTURE</span></span></li>
+        <li><input type="checkbox"><span class="task-text">CRM screenshot capture &mdash; truck deletion, sticker deactivation, bond indicator, consolidation <span class="task-tag tag-capture">CAPTURE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">Maintenance session &mdash; trackers updated, daily note written, build files cleaned up <span class="task-tag tag-admin">ADMIN</span></span></li>
       </ul>
     </div>
   </div>
 
-  <!-- WEDNESDAY -->
-  <div class="day-card">
-    <div class="day-header" onclick="toggleDay(this)">
-      <div class="day-header-left">
-        <span class="day-name">Wednesday, April 8</span>
-        <span class="day-date">Day 2</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span class="day-status status-upcoming">Upcoming</span>
-        <span class="chevron">&rsaquo;</span>
-      </div>
-    </div>
-    <div class="day-body">
-      <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text">Account Closure &mdash; continue Section 3 + push into Section 4 (PrePass Plus/Tolls) <span class="task-tag tag-build">BUILD</span></span></li>
-        <li><input type="checkbox"><span class="task-text">inForm portal screenshots &mdash; 6 captures needed for future module pipeline <span class="task-tag tag-capture">CAPTURE</span></span></li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- THURSDAY -->
-  <div class="day-card">
-    <div class="day-header" onclick="toggleDay(this)">
-      <div class="day-header-left">
-        <span class="day-name">Thursday, April 9</span>
-        <span class="day-date">Day 3 &mdash; Content Sprint</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span class="day-status status-upcoming">Upcoming</span>
-        <span class="chevron">&rsaquo;</span>
-      </div>
-    </div>
-    <div class="day-body">
-      <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text">Account Closure build sprint &mdash; target first finished deliverable (Sections 3&ndash;4 complete) <span class="task-tag tag-build">BUILD</span></span></li>
-        <li><input type="checkbox"><span class="task-text">Review existing inForm videos on PrePass website &mdash; content discovery for future module <span class="task-tag tag-content">CONTENT</span></span></li>
-        <li><input type="checkbox"><span class="task-text">Verification storyboard completion &mdash; finalize remaining sections <span class="task-tag tag-build">BUILD</span></span></li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- FRIDAY -->
+  <!-- FRIDAY Apr 10 &mdash; CONTENT SPRINT -->
   <div class="day-card">
     <div class="day-header" onclick="toggleDay(this)">
       <div class="day-header-left">
         <span class="day-name">Friday, April 10</span>
-        <span class="day-date">Day 4 &mdash; Content Sprint</span>
+        <span class="day-date">Day 5 &mdash; CONTENT SPRINT</span>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
         <span class="day-status status-upcoming">Upcoming</span>
@@ -566,29 +655,32 @@
     </div>
     <div class="day-body">
       <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text">Account Closure &mdash; overflow build + polish for storyboard review with Bill <span class="task-tag tag-build">BUILD</span></span></li>
-        <li><input type="checkbox"><span class="task-text">Integrate any new CRM screenshots captured this week into storyboard <span class="task-tag tag-capture">CAPTURE</span></span></li>
-        <li><input type="checkbox"><span class="task-text">FG v3 reintegration pass for completed modules (AA End-of-Call, Verification) <span class="task-tag tag-review">REVIEW</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Account Closure &mdash; Storyline step-by-step draft (if Rise build done Thu) <span class="task-tag tag-build">BUILD</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Verification storyboard completion &mdash; keep pipeline flowing <span class="task-tag tag-build">BUILD</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Review existing inForm videos on PrePass website &mdash; content discovery for future module <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text"><strong>Week 3 goal check:</strong> Account Closure first finished deliverable, CRM + inForm screenshots captured, Verification storyboard advancing, inForm content scoped <span class="task-tag tag-milestone">MILESTONE</span></span></li>
       </ul>
     </div>
   </div>
 
-  <!-- SATURDAY -->
-  <div class="day-card">
+  <!-- CARRIED FROM WEEK 2 -->
+  <div class="day-card" style="border-color: rgba(234, 179, 8, 0.3);">
     <div class="day-header" onclick="toggleDay(this)">
       <div class="day-header-left">
-        <span class="day-name">Saturday, April 11</span>
-        <span class="day-date">Day 5 &mdash; Week Wrap</span>
+        <span class="day-name">Carried from Week 2</span>
+        <span class="day-date">Now scheduled above</span>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span class="day-status status-upcoming">Upcoming</span>
+        <span class="day-status" style="background:rgba(234,179,8,0.15);color:#eab308;">Carry</span>
         <span class="chevron">&rsaquo;</span>
       </div>
     </div>
     <div class="day-body">
       <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text">Update this tracker + PROJECT STATUS.md with week&rsquo;s progress <span class="task-tag tag-admin">ADMIN</span></span></li>
-        <li><input type="checkbox"><span class="task-text"><strong>Week 3 goal check:</strong> Account Closure first finished deliverable, CRM screenshot gaps closed, inForm content scoped, Verification storyboard finalized <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Account Closure &mdash; Sections 0&ndash;2 done, resume at Section 3 &rarr; scheduled Wed&ndash;Thu <span class="task-tag tag-build">BUILD</span></span></li>
+        <li><input type="checkbox"><span class="task-text">CRM screenshot capture (4 missing) &rarr; scheduled Wed&ndash;Thu <span class="task-tag tag-capture">CAPTURE</span></span></li>
+        <li><input type="checkbox"><span class="task-text">Account Security KB Section 15 fix &rarr; scheduled Thursday (if access) <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox"><span class="task-text">inForm video review &rarr; scheduled Friday <span class="task-tag tag-content">CONTENT</span></span></li>
       </ul>
     </div>
   </div>
@@ -600,20 +692,24 @@
   <h3>Key Dates &amp; Milestones</h3>
   <div class="timeline">
     <div class="timeline-item">
-      <span class="timeline-date">Apr 2</span>
-      <span class="timeline-event">Account Closure Sections 0&ndash;2 complete &mdash; resuming at Section 3</span>
+      <span class="timeline-date">Apr 8&ndash;9</span>
+      <span class="timeline-event"><strong>Account Closure Rise build sprint</strong> &mdash; goal: first finished Track 2 deliverable</span>
     </div>
     <div class="timeline-item">
-      <span class="timeline-date">Apr 7</span>
-      <span class="timeline-event">Week 3 start &mdash; Account Closure build sprint, CRM captures, inForm screenshots</span>
+      <span class="timeline-date">Apr 9 (Thu)</span>
+      <span class="timeline-event">inForm portal screenshots (6 captures) &mdash; unblocks next Articulate build</span>
     </div>
     <div class="timeline-item">
-      <span class="timeline-date">Apr 9&ndash;10</span>
-      <span class="timeline-event">Content sprint &mdash; Account Closure first deliverable target, Verification storyboard, inForm review</span>
+      <span class="timeline-date">Apr 9 (Thu)</span>
+      <span class="timeline-event">CRM screenshot capture &mdash; 4 missing shots for Account Closure</span>
     </div>
     <div class="timeline-item">
-      <span class="timeline-date">May 5</span>
-      <span class="timeline-event">New hire class starts &mdash; Adam&rsquo;s availability constrained</span>
+      <span class="timeline-date">Apr 10 (Fri)</span>
+      <span class="timeline-event"><strong>Week 3 goal check</strong> &mdash; Account Closure delivered, screenshots captured, pipeline advancing</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">May 4</span>
+      <span class="timeline-event"><strong>HARD DEADLINE &mdash; Classroom start</strong> &mdash; all Track 2 content must be ready</span>
     </div>
     <div class="timeline-item">
       <span class="timeline-date">TBD</span>
@@ -631,7 +727,7 @@
 </div>
 
 <div class="footer">
-  Track 2 Weekly Tracker &mdash; Week of April 6 &ndash; 11, 2026 &mdash; Articulate POC &mdash; Built with Claude &mdash; Last updated April 7, 2026
+  Track 2 Weekly Tracker &mdash; Week of April 6 &ndash; 12, 2026 &mdash; Articulate POC &mdash; Built with Claude &mdash; Last updated April 9, 2026
 </div>
 
 <script>

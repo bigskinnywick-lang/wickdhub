@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M7 &mdash; Market Goals &mdash; Rise 360 Storyboard (Rev 1)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.4rem;
+  }
+
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    font-weight: 300;
+  }
+
+  .header .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .pill-tool { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25); }
+  .pill-time { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+  .pill-depth { background: rgba(167, 139, 250, 0.12); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .pill-status { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+
+  /* ── Updateability Banner ── */
+  .update-banner {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.10), rgba(245, 158, 11, 0.08));
+    border: 1px solid rgba(239, 68, 68, 0.30);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .update-banner .ub-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #ef4444;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .update-banner .ub-desc {
+    font-size: 0.82rem;
+    color: #ccc;
+    line-height: 1.5;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #aaa;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .dot-confirmed { background: #22c55e; }
+  .dot-placeholder { background: #f59e0b; }
+  .dot-sensitive { background: #ef4444; }
+  .dot-interaction { background: #a78bfa; }
+  .dot-media { background: #60a5fa; }
+  .dot-note { background: #555; }
+
+  /* ── Revision Log ── */
+  .revision-log {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .revision-log h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f59e0b;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .revision-entry {
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.6;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .revision-entry:last-child { border-bottom: none; }
+
+  .rev-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .rev-new { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+  .rev-design { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
+  .rev-source { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .rev-sensitive { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+  /* ── Slide Cards ── */
+  .slides-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .slide-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .slide-card:hover { border-color: #3a3a3a; }
+
+  .slide-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .slide-number {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .sn-confirmed { background: #16a34a; }
+  .sn-placeholder { background: #d97706; }
+  .sn-sensitive { background: #dc2626; }
+  .sn-interaction { background: #7c3aed; }
+  .sn-media { background: #2563eb; }
+
+  .slide-title-area { flex: 1; }
+
+  .slide-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  .slide-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.15rem;
+  }
+
+  .type-confirmed { color: #22c55e; }
+  .type-placeholder { color: #f59e0b; }
+  .type-sensitive { color: #ef4444; }
+  .type-interaction { color: #a78bfa; }
+  .type-media { color: #60a5fa; }
+
+  .rise-block-tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: #888;
+    border: 1px solid #333;
+    flex-shrink: 0;
+  }
+
+  .slide-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .slide-body p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #bbb;
+    margin-bottom: 0.75rem;
+  }
+
+  .slide-body p:last-child { margin-bottom: 0; }
+
+  .content-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .cl-onscreen { color: #22c55e; }
+  .cl-narration { color: #60a5fa; }
+  .cl-visual { color: #f472b6; }
+  .cl-interaction { color: #a78bfa; }
+  .cl-notes { color: #555; }
+  .cl-source { color: #f59e0b; }
+
+  .content-section {
+    background: #151515;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .content-section:last-child { margin-bottom: 0; }
+
+  .confirmed-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .placeholder-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .sensitive-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .executive-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(219, 39, 119, 0.15);
+    color: #f472b6;
+    border: 1px solid rgba(219, 39, 119, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  blockquote {
+    border-left: 3px solid #334;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: rgba(255,255,255,0.02);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    color: #ccc;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* ── Strategy Priority Cards ── */
+  .priority-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .priority-grid { grid-template-columns: 1fr; } }
+
+  .priority-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .priority-card .pri-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    margin-bottom: 0.3rem;
+  }
+
+  .priority-card .pri-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  .pri-platform { border-left: 3px solid #60a5fa; }
+  .pri-compliance { border-left: 3px solid #22c55e; }
+  .pri-geographic { border-left: 3px solid #f59e0b; }
+  .pri-data { border-left: 3px solid #a78bfa; }
+
+  /* ── Proof Point Steps ── */
+  .proof-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .proof-step {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+
+  .proof-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #7c3aed;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .proof-content .proof-title {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: #e0e0e0;
+    margin-bottom: 0.2rem;
+  }
+
+  .proof-content .proof-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── Matching Activity Grid ── */
+  .match-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .match-grid { grid-template-columns: 1fr; } }
+
+  .match-col-header {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    color: #888;
+    margin-bottom: 0.5rem;
+  }
+
+  .match-item {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.82rem;
+    color: #bbb;
+    margin-bottom: 0.4rem;
+  }
+
+  /* ── Section Dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.25rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  .section-divider span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #555;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── Notes Panel ── */
+  .notes-panel {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .notes-panel h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+  }
+
+  .note-item:last-child { border-bottom: none; }
+
+  .note-who {
+    color: #a78bfa;
+    font-weight: 600;
+    min-width: 110px;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+  }
+
+  .note-text { color: #bbb; line-height: 1.5; }
+
+  /* ── Refresh Cadence Callout ── */
+  .refresh-callout {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(245, 158, 11, 0.06));
+    border: 1px dashed rgba(239, 68, 68, 0.35);
+    border-radius: 8px;
+    padding: 0.85rem 1.1rem;
+    margin: 0.75rem 0;
+  }
+
+  .refresh-callout .rc-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ef4444;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+
+  .refresh-callout .rc-text {
+    font-size: 0.8rem;
+    color: #ccc;
+    line-height: 1.5;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>M7 &mdash; Market Goals</h1>
+  <div class="subtitle">Rise 360 Storyboard &mdash; Intro to PrePass Onboarding Framework</div>
+  <div class="meta-row">
+    <span class="meta-pill pill-tool">Rise 360 Lesson</span>
+    <span class="meta-pill pill-time">Est. 6&ndash;8 min</span>
+    <span class="meta-pill pill-depth">Depth: Awareness</span>
+    <span class="meta-pill pill-status">Rev 1 &mdash; New Build</span>
+  </div>
+</div>
+
+<!-- ── Updateability Banner ── -->
+<div class="update-banner">
+  <div class="ub-label">Highest-Refresh Module in Track 1</div>
+  <div class="ub-desc">This module contains the most time-sensitive content in the course. Every slide with a <span class="sensitive-flag">TIME-SENSITIVE</span> tag contains dates, initiative names, or competitive details that will need periodic review. Recommended cadence: <strong>quarterly review, semi-annual content update.</strong> See Production Notes for refresh ownership discussion.</div>
+</div>
+
+<!-- ── Revision Log ── -->
+<div class="revision-log">
+  <h3>Revision Log &mdash; Rev 1 (April 8, 2026)</h3>
+  <div class="revision-entry"><span class="rev-new">NEW BUILD</span> Module 7 &mdash; Market Goals. First storyboard draft. Designed as the shortest module in Track 1 (6&ndash;8 min, Awareness depth) per master plan directive: &ldquo;teach via: strategy snapshot.&rdquo;</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Engine &rarr; roadmap bridge from Module 6.</strong> Opens by picking up M6 Slide 16&rsquo;s closing line: &ldquo;You&rsquo;ve seen how we make money. Now here&rsquo;s where we&rsquo;re investing it.&rdquo; Frames the module as &ldquo;Where We&rsquo;re Going&rdquo; &mdash; forward-looking, strategic, concrete for new hires.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Four strategic priorities as modular blocks.</strong> Each priority (Platform Expansion, Compliance Integration, Geographic Expansion, Data &amp; AI Innovation) is a self-contained slide that can be swapped, updated, or reordered without rebuilding the module. Designed for maximum updateability per master plan blocking decision #6.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>NEO proof points as strategy evidence.</strong> Per NEO Comparison doc recommendation: &ldquo;Concrete examples make strategy real.&rdquo; GPS Toll Verification, Dynamic Parking, and Weather Alerts from NEO slide 33 speaker notes are woven into the Data &amp; AI slide as tangible &ldquo;what this looks like right now&rdquo; examples.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Competitive context on one slide.</strong> Fleetworthy (Drivewyze + Bestpass consolidation, Aug 2024) included as factual competitive landscape. Tone is informational, not adversarial. Tagged NEEDS CONFIRMATION &mdash; verify with executive that competitive intelligence is appropriate for new-hire training.</div>
+  <div class="revision-entry"><span class="rev-design">DESIGN DECISION</span> <strong>Matching activity for knowledge check.</strong> Cross-reference doc suggests &ldquo;Match the goal to the business reason&rdquo; &mdash; natural fit for Rise Matching interaction. Tests Awareness-level recognition of strategic priorities and their purposes.</div>
+  <div class="revision-entry"><span class="rev-sensitive">UPDATEABILITY</span> Every slide containing time-sensitive content is tagged with a visible <span class="sensitive-flag">TIME-SENSITIVE</span> marker. Strategy priority slides are built as modular blocks. Refresh cadence callout included on Slide 3. Production notes flag refresh ownership as an open question for Michael.</div>
+  <div class="revision-entry"><span class="rev-source">SOURCES</span> Intelligence report (strategic priorities, competitive analysis, geographic expansion, FleetDrive 360 acquisition), NEO Deck December 2025 (slide 33: product evolution, speaker notes: GPS Toll Verification, Dynamic Parking, Weather Alerts), NEO Comparison doc (Module 7 section), Cross-Reference gap analysis (Section 7), Track 1 Master Plan (Module 7 section, blocking decision #6), M6 Storyboard Slide 16 (transition language).</div>
+  <div class="revision-entry" style="font-size: 0.78rem; color: #888; border-bottom: none;">No product team content expected for this module. All strategic content sourced from intelligence report (confirmed) and NEO (approved). Competitive details need executive confirmation before development.</div>
+</div>
+
+<!-- ── Legend ── -->
+<div class="legend">
+  <span class="legend-title">Block Types</span>
+  <span class="legend-item"><span class="legend-dot dot-confirmed"></span> Confirmed Content</span>
+  <span class="legend-item"><span class="legend-dot dot-placeholder"></span> Needs Confirmation</span>
+  <span class="legend-item"><span class="legend-dot dot-sensitive"></span> Time-Sensitive Content</span>
+  <span class="legend-item"><span class="legend-dot dot-interaction"></span> Learner Interaction</span>
+  <span class="legend-item"><span class="legend-dot dot-note"></span> Builder Note</span>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part A &mdash; Engine &rarr; Roadmap Bridge</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 1: Module Title -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">1</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Title &mdash; Market Goals</div>
+        <div class="slide-type type-confirmed">Confirmed</div>
+      </div>
+      <span class="rise-block-tag">Rise: Statement</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Module 7: Market Goals</strong></p>
+        <p><em>Where We&rsquo;re Going</em></p>
+        <p style="font-size: 0.82rem; color: #888;">Estimated time: 6&ndash;8 minutes &nbsp;|&nbsp; Depth: Awareness</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Welcome to Module 7: Market Goals. In the last module, you learned how PrePass generates revenue. Now we&rsquo;re going to look at where that revenue is being invested &mdash; the strategic priorities shaping where PrePass is headed. This is a short module, but an important one. By the end, you&rsquo;ll be able to describe the key directions the company is moving and why they matter.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Title card with forward-motion imagery &mdash; highway stretching toward the horizon, or an abstract &ldquo;road ahead&rdquo; graphic. PrePass branding (purple/black). Module number and title prominent. &ldquo;Where We&rsquo;re Going&rdquo; as subtitle. Rise &ldquo;Statement&rdquo; block with large text.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Module framing from master plan (Module 7 section: &ldquo;teach via: strategy snapshot,&rdquo; 6&ndash;8 min, Awareness). Title and metaphor from M6 Slide 16 transition language.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Learning Objectives -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">2</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Learning Objectives</div>
+        <div class="slide-type type-confirmed">Confirmed</div>
+      </div>
+      <span class="rise-block-tag">Rise: Text</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>By the end of this module, you&rsquo;ll be able to:</strong></p>
+        <p>1. <strong>Identify</strong> PrePass&rsquo;s four strategic priorities and describe what each one means for the company&rsquo;s direction.</p>
+        <p>2. <strong>Recognize</strong> concrete examples of how those priorities are being executed right now (products, acquisitions, geographic expansion).</p>
+        <p>3. <strong>Describe</strong> the competitive landscape that shapes PrePass&rsquo;s strategic decisions.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Here&rsquo;s what you&rsquo;ll take away from this module. First, you&rsquo;ll be able to name PrePass&rsquo;s four strategic priorities. Second, you&rsquo;ll recognize the real products and initiatives that bring those priorities to life. And third, you&rsquo;ll understand the competitive context that makes these moves urgent. Let&rsquo;s start with the big picture.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>All three objectives are Awareness-level (identify, recognize, describe) per the framework. These match the master plan&rsquo;s &ldquo;2&ndash;3 measurable learning objectives&rdquo; requirement. The knowledge check on Slide 10 maps directly to Objective 1.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Objectives derived from master plan Module 7 section (strategic priorities, concrete examples, competitive context) and framework element #7 (Awareness depth). Aligned with cross-reference doc Section 7 action items.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: The Engine → Roadmap Bridge -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">3</div>
+      <div class="slide-title-area">
+        <div class="slide-title">&ldquo;Where Is All That Revenue Going?&rdquo;</div>
+        <div class="slide-type type-confirmed">Confirmed</div>
+      </div>
+      <span class="rise-block-tag">Rise: Statement</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>The revenue model is the engine. This is the roadmap.</strong></p>
+        <p>In Module 6, you learned how PrePass generates $193M+ in annual revenue through bypass subscriptions, toll processing, compliance services, and data analytics. That revenue doesn&rsquo;t just keep the lights on &mdash; it fuels a deliberate strategy to expand the platform, enter new markets, and build new capabilities.</p>
+        <p>PrePass is investing in four strategic priorities that are shaping the company&rsquo;s future. Let&rsquo;s look at each one.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Remember the revenue model from the last module? Think of it as the engine. Now we&rsquo;re looking at the roadmap &mdash; where all that revenue is going. PrePass isn&rsquo;t standing still. The company is actively investing in four strategic priorities that will define its future. These aren&rsquo;t abstract plans on a whiteboard &mdash; they&rsquo;re happening right now. Let&rsquo;s walk through each one.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Split visual: left side shows the &ldquo;engine&rdquo; from M6 (revenue flow icon or engine graphic), right side shows a road/arrow pointing forward. Or a simple transition graphic: engine icon &rarr; arrow &rarr; roadmap icon. The $193M+ figure from M6 appears as a connecting stat. Rise &ldquo;Statement&rdquo; block with large pull quote for the opening line.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Bridge language from M6 Storyboard Slide 16: &ldquo;You&rsquo;ve seen how we make money. Now here&rsquo;s where we&rsquo;re investing it.&rdquo; and &ldquo;The revenue model is the engine. Market Goals is the roadmap.&rdquo; Revenue figure ($193.2M) from intelligence report FY2024 data. <span class="confirmed-flag">CONFIRMED</span></p>
+      </div>
+      <div class="refresh-callout">
+        <div class="rc-label">Refresh Note</div>
+        <div class="rc-text">The $193M+ revenue figure will need updating when FY2025 data becomes available. Tag for annual refresh alongside Module 6.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part B &mdash; Strategic Priorities (Modular Blocks)</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 4: Strategy Overview -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">4</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Four Strategic Priorities &mdash; Overview</div>
+        <div class="slide-type type-confirmed">Confirmed</div>
+      </div>
+      <span class="rise-block-tag">Rise: Labeled Graphic or Tabs</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>PrePass is moving in four strategic directions:</strong></p>
+        <div class="priority-grid">
+          <div class="priority-card pri-platform">
+            <div class="pri-name">Platform Expansion</div>
+            <div class="pri-desc">Evolving from single-product bypass to a comprehensive fleet operations platform</div>
+          </div>
+          <div class="priority-card pri-compliance">
+            <div class="pri-name">Compliance Integration</div>
+            <div class="pri-desc">Bringing AI-driven FMCSA/DOT compliance into the PrePass ecosystem</div>
+          </div>
+          <div class="priority-card pri-geographic">
+            <div class="pri-name">Geographic Expansion</div>
+            <div class="pri-desc">Growing the bypass and toll network state by state across the U.S.</div>
+          </div>
+          <div class="priority-card pri-data">
+            <div class="pri-name">Data &amp; AI Innovation</div>
+            <div class="pri-desc">Leveraging fleet data and artificial intelligence to create new services and value</div>
+          </div>
+        </div>
+        <p style="font-size: 0.82rem; color: #888; margin-top: 0.5rem;">Click each priority to learn more &mdash; or continue to see them one at a time.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Here are the four strategic priorities driving PrePass forward. Platform expansion &mdash; we&rsquo;re growing from bypass into a full fleet operations platform. Compliance integration &mdash; we&rsquo;re building AI-driven DOT compliance into everything we do. Geographic expansion &mdash; we&rsquo;re adding new states to the network. And data and AI innovation &mdash; we&rsquo;re turning fleet data into new services. Let&rsquo;s look at each one in more detail.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Four-quadrant graphic or labeled graphic with icons for each priority (platform = connected nodes, compliance = shield/checkmark, geographic = map pins, data = circuit/AI). Rise &ldquo;Labeled Graphic&rdquo; or &ldquo;Tabs&rdquo; interaction &mdash; click each quadrant for detail. Consider color-coding that carries through Slides 5&ndash;8 (blue for platform, green for compliance, amber for geographic, purple for data).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p><strong>Modular design:</strong> This overview slide references all four priorities, and Slides 5&ndash;8 each cover one in detail. If a priority is retired or a new one is added, swap the relevant slide and update this overview card. No other slides need to change. This is the core updateability feature of the module.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Strategic priorities from intelligence report (platform expansion strategy, FleetDrive 360 acquisition, geographic growth, AI Toll Insights) and master plan Module 7 section. <span class="confirmed-flag">CONFIRMED</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Platform Expansion -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">5</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Priority 1: Platform Expansion</div>
+        <div class="slide-type type-confirmed">Confirmed <span class="sensitive-flag">TIME-SENSITIVE</span></div>
+      </div>
+      <span class="rise-block-tag">Rise: Text + Image</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>From bypass to full fleet operations.</strong></p>
+        <p>PrePass started as a weigh station bypass service. Today, it&rsquo;s evolving into a comprehensive fleet operations platform that combines bypass, tolling, compliance, and data analytics into a single ecosystem.</p>
+        <p><strong>What this looks like right now:</strong> In Module 5, you learned about the three core services &mdash; Weigh Station Bypass, Toll Management (PrePass Plus), and Compliance Management (FleetDrive 360). The platform strategy is about connecting these services so carriers get more value from a single relationship with PrePass, instead of managing multiple vendors.</p>
+        <p>Recent moves: TSP integrations (2023&ndash;24) brought PrePass data into the fleet management systems carriers already use. The Motive Marketplace integration (September 2024) extended this further. <span class="sensitive-flag">TIME-SENSITIVE</span></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;PrePass started with one thing: getting safe trucks past weigh stations faster. But the company has been steadily expanding into a full fleet operations platform. Today, bypass, tolling, compliance, and data analytics are all part of the same ecosystem. That means carriers don&rsquo;t need to juggle five different vendors &mdash; they can get it all from PrePass. Recent integrations with fleet management systems like Motive make this platform strategy real.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Evolution graphic: simple bypass icon (left) &rarr; arrow &rarr; connected platform icon (right) showing bypass + tolls + compliance + analytics as interconnected nodes. Or a timeline showing the progression: Bypass (1993) &rarr; + Tolls (2003) &rarr; + Compliance (2025) &rarr; + Data/AI (2026). Color-code with blue to match the platform priority. Rise &ldquo;Text + Image&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Intelligence report: platform expansion strategy (&ldquo;evolving from single-product bypass to comprehensive fleet operations platform&rdquo;). TSP integrations and Motive Marketplace from intelligence report. Core services framing connects to M5 storyboard. NEO slide 33 product evolution timeline. <span class="confirmed-flag">CONFIRMED</span></p>
+      </div>
+      <div class="refresh-callout">
+        <div class="rc-label">Refresh Trigger</div>
+        <div class="rc-text">New platform partnerships or integrations will need to be added here. Review when new TSP/marketplace partnerships are announced.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: Compliance Integration -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">6</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Priority 2: Compliance Integration</div>
+        <div class="slide-type type-confirmed">Confirmed <span class="sensitive-flag">TIME-SENSITIVE</span></div>
+      </div>
+      <span class="rise-block-tag">Rise: Text + Image</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>FleetDrive 360: Compliance meets the platform.</strong></p>
+        <p>In December 2025, PrePass acquired <strong>FleetDrive 360</strong> &mdash; an AI-driven compliance platform that helps carriers manage FMCSA and DOT regulatory requirements. This wasn&rsquo;t just a product purchase; it was a strategic move to integrate compliance intelligence directly into the PrePass ecosystem. <span class="sensitive-flag">TIME-SENSITIVE</span></p>
+        <p><strong>Why it matters:</strong> Carriers already trust PrePass for bypass and tolling. Adding compliance means they can manage safety ratings, audit preparation, and regulatory alerts from the same platform. As the NEO puts it: &ldquo;integrating compliance intelligence with bypass, tolling, and safety analytics&hellip; a unified platform that enhances operational efficiency and strengthens long-term regulatory resilience.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Our second priority is compliance integration. In December 2025, PrePass acquired FleetDrive 360, an AI-powered platform for FMCSA and DOT compliance. Think about it from a carrier&rsquo;s perspective: they already rely on PrePass for getting past weigh stations and managing tolls. Now they can manage their compliance &mdash; safety ratings, audit prep, regulatory alerts &mdash; all in the same place. That&rsquo;s the power of integration.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>FleetDrive 360 logo or branded graphic alongside the PrePass logo, with a &ldquo;+&rdquo; or merge visual. Below, a three-column layout: Bypass | Tolling | Compliance, all under one PrePass umbrella. Green accent color for the compliance priority. Rise &ldquo;Text + Image&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>FleetDrive 360 acquisition (Dec 2025) from intelligence report. Integration narrative from NEO slide 31 speaker notes. Master plan Module 7 section lists &ldquo;Compliance integration&rdquo; as priority. <span class="confirmed-flag">CONFIRMED</span></p>
+      </div>
+      <div class="refresh-callout">
+        <div class="rc-label">Refresh Trigger</div>
+        <div class="rc-text">FD360 integration milestones (feature launches, new compliance capabilities) should be added as they occur. The acquisition date (Dec 2025) is fixed, but the &ldquo;what it looks like right now&rdquo; framing will evolve.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: Geographic Expansion -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-sensitive">7</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Priority 3: Geographic Expansion</div>
+        <div class="slide-type type-sensitive">Time-Sensitive <span class="sensitive-flag">TIME-SENSITIVE</span></div>
+      </div>
+      <span class="rise-block-tag">Rise: Text + Image</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Growing the network, state by state.</strong></p>
+        <p>PrePass currently operates <strong>584+ bypass locations across 46 jurisdictions</strong>. But there&rsquo;s still room to grow. The company is actively expanding into new states:</p>
+        <p><strong>Recent:</strong> Maine joined the network in November 2025. <span class="sensitive-flag">TIME-SENSITIVE</span></p>
+        <p><strong>Next:</strong> Vermont is targeted for 2026. <span class="sensitive-flag">TIME-SENSITIVE</span></p>
+        <p>Each new state means more bypass opportunities for carriers, more data flowing through the platform, and a stronger competitive position against rivals who may not have the same geographic reach.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Our third priority is geographic expansion. PrePass already covers 584 bypass locations in 46 states and jurisdictions. But we&rsquo;re still growing. Maine came online in November 2025, and Vermont is on the roadmap for 2026. Every new state strengthens the network &mdash; more locations for carriers, more data for innovation, and a wider footprint than any competitor.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>U.S. map with PrePass coverage shaded (46 states), with Maine and Vermont highlighted or pulsing as recent/upcoming additions. A small counter or stat callout: &ldquo;584+ locations &rarr; and growing.&rdquo; Amber accent color for geographic priority. Rise &ldquo;Text + Image&rdquo; block. Consider using the same map style as M5&rsquo;s coverage visual for cross-module consistency.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p><strong>This is the slide most likely to need updating.</strong> State launches are concrete, dated events. When Vermont goes live (or the next state after that), swap the &ldquo;Recent&rdquo; and &ldquo;Next&rdquo; entries. The 584+ and 46 jurisdictions figures may also increment. Consider building this as a Rise &ldquo;Text + Image&rdquo; block where the image (map) and text (state names, dates) can be swapped independently.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Intelligence report: geographic expansion (Maine Nov 2025, Vermont 2026). M5 storyboard: 584+ bypass locations, 46 jurisdictions. Master plan Module 7 section. <span class="confirmed-flag">CONFIRMED</span> &mdash; but dates and figures will shift. All numeric content on this slide is <span class="sensitive-flag">TIME-SENSITIVE</span>.</p>
+      </div>
+      <div class="refresh-callout">
+        <div class="rc-label">Refresh Trigger</div>
+        <div class="rc-text"><strong>Update when:</strong> (1) Vermont or any new state goes live, (2) bypass location count crosses a new milestone, (3) jurisdiction count changes. This slide should be the first stop on any quarterly content review.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Data & AI Innovation -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">8</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Priority 4: Data &amp; AI Innovation</div>
+        <div class="slide-type type-confirmed">Confirmed <span class="sensitive-flag">TIME-SENSITIVE</span></div>
+      </div>
+      <span class="rise-block-tag">Rise: Labeled Graphic or Accordion</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Turning fleet data into driver and carrier value.</strong></p>
+        <p>PrePass processes millions of transactions, toll records, and compliance data points every day. The fourth strategic priority is using that data &mdash; combined with AI &mdash; to create new services that help carriers operate smarter.</p>
+        <p><strong>What this looks like right now:</strong></p>
+        <div class="proof-steps">
+          <div class="proof-step">
+            <div class="proof-icon">1</div>
+            <div class="proof-content">
+              <div class="proof-title">GPS Toll Verification</div>
+              <div class="proof-desc">Uses GPS data to verify toll charges against actual truck positions and auto-dispute discrepancies. Saves carriers money on erroneous toll charges. <span class="sensitive-flag">TIME-SENSITIVE</span></div>
+            </div>
+          </div>
+          <div class="proof-step">
+            <div class="proof-icon">2</div>
+            <div class="proof-content">
+              <div class="proof-title">Dynamic Parking</div>
+              <div class="proof-desc">Real-time parking availability alerts along freight corridors. Helps drivers find safe parking &mdash; a persistent industry pain point. <span class="sensitive-flag">TIME-SENSITIVE</span></div>
+            </div>
+          </div>
+          <div class="proof-step">
+            <div class="proof-icon">3</div>
+            <div class="proof-content">
+              <div class="proof-title">Weather Alerts</div>
+              <div class="proof-desc">Extreme weather notifications sent to drivers as they enter affected areas. Enhances safety by giving drivers advance warning of hazardous conditions. <span class="sensitive-flag">TIME-SENSITIVE</span></div>
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 0.82rem; color: #888; margin-top: 0.5rem;">These initiatives launched alongside AI Toll Insights (February 2026), which applies machine learning to toll audit and reconciliation. <span class="sensitive-flag">TIME-SENSITIVE</span></p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Our fourth priority is data and AI innovation. PrePass handles millions of transactions every day. We&rsquo;re using that data, combined with artificial intelligence, to build services that didn&rsquo;t exist before. GPS Toll Verification checks your toll charges against your actual GPS position and disputes errors automatically. Dynamic Parking shows real-time parking availability along freight corridors &mdash; a huge deal for drivers struggling to find safe rest stops. Weather Alerts notify drivers when they&rsquo;re entering areas with severe weather. And AI Toll Insights, launched in February 2026, uses machine learning to audit toll charges at scale. These aren&rsquo;t concepts &mdash; they&rsquo;re products in the market right now.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Three proof-point cards or an accordion interaction &mdash; click each to reveal detail. Icons: GPS pin for Toll Verification, parking sign for Dynamic Parking, weather/cloud icon for Weather Alerts. Purple accent color for data/AI priority. Consider a &ldquo;powered by data&rdquo; visual thread connecting all three. Rise &ldquo;Labeled Graphic&rdquo; with clickable hotspots, or &ldquo;Accordion&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>These three proof points come directly from the NEO Comparison doc recommendation: &ldquo;Concrete examples make strategy real.&rdquo; They transform the abstract &ldquo;data and AI&rdquo; priority into things a new hire can picture. If any of these initiatives are renamed, retired, or superseded, swap them here. The slide structure (header + 3 proof points) works with any set of examples.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>GPS Toll Verification, Dynamic Parking, Weather Alerts from NEO slide 33 speaker notes. <span class="confirmed-flag">CONFIRMED</span> AI Toll Insights launch (Feb 2026) from intelligence report. <span class="confirmed-flag">CONFIRMED</span> NEO Comparison doc Module 7 section: &ldquo;incorporate NEO&rsquo;s product roadmap items as evidence of strategic direction.&rdquo;</p>
+      </div>
+      <div class="refresh-callout">
+        <div class="rc-label">Refresh Trigger</div>
+        <div class="rc-text">New AI/data products or features should replace or supplement these proof points. This slide is designed so the three examples can be swapped independently without restructuring. Check NEO updates and product announcements quarterly.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part C &mdash; Competitive Context</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 9: Competitive Landscape -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-placeholder">9</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Competitive Landscape &mdash; Why Speed Matters</div>
+        <div class="slide-type type-placeholder">Needs Confirmation <span class="placeholder-flag">NEEDS CONFIRMATION</span></div>
+      </div>
+      <span class="rise-block-tag">Rise: Text + Image</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>PrePass doesn&rsquo;t operate in a vacuum.</strong></p>
+        <p>In August 2024, two competitors &mdash; <strong>Drivewyze</strong> (a bypass provider) and <strong>Bestpass</strong> (a toll management company) &mdash; merged to form <strong>Fleetworthy Solutions</strong>. Sound familiar? That&rsquo;s essentially the same combination PrePass offers: bypass + tolling + compliance. <span class="sensitive-flag">TIME-SENSITIVE</span></p>
+        <p><strong>What this means for PrePass:</strong> The competitive landscape is consolidating. Carriers now have a direct alternative that bundles similar services. PrePass&rsquo;s strategic priorities &mdash; platform expansion, compliance integration, geographic growth, and AI innovation &mdash; are how we respond. Our advantage: 30+ years of trusted relationships, the only nonprofit model in the space, and the only bypass service endorsed by the American Trucking Association.</p>
+        <p style="font-size: 0.82rem; color: #888;">This isn&rsquo;t about fear &mdash; it&rsquo;s about understanding why these strategic priorities are urgent, not optional.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;Now, let&rsquo;s talk about why these priorities are urgent. In August 2024, two competitors &mdash; Drivewyze and Bestpass &mdash; merged into a single company called Fleetworthy Solutions. They now offer a combination of bypass, tolling, and fleet services that looks a lot like what PrePass does. That&rsquo;s the reality of a competitive market. But PrePass has major advantages: over 30 years of trusted relationships with carriers and state agencies, the only nonprofit model in the space, and the only bypass service endorsed by the American Trucking Association. The strategic priorities you just learned about &mdash; that&rsquo;s how we stay ahead.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Simple two-column comparison &mdash; NOT a detailed feature chart (this is Awareness level, not a sales battle card). Left: Fleetworthy (formed Aug 2024, Drivewyze + Bestpass). Right: PrePass (30+ years, nonprofit, ATA-endorsed). Tone is factual and confident, not combative. Consider a simple &ldquo;landscape&rdquo; graphic rather than a head-to-head comparison. Rise &ldquo;Text + Image&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p><strong>Executive confirmation required.</strong> This slide presents competitive intelligence in a new-hire training context. Some organizations prefer not to name competitors directly in onboarding. <strong>Before development: confirm with Michael and/or executive leadership that naming Fleetworthy, Drivewyze, and Bestpass is appropriate.</strong> If not approved, this slide can be reframed as &ldquo;the industry is consolidating&rdquo; without naming specific companies. The strategic response framing still works either way.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Fleetworthy consolidation (Drivewyze + Bestpass, Aug 2024) from intelligence report. ATA endorsement from NEO slide 6 speaker notes. 30+ year history from NEO slide 16 and company history module. Nonprofit differentiator from M6 storyboard. <span class="placeholder-flag">NEEDS CONFIRMATION</span> &mdash; verify with executive that naming competitors is appropriate for new-hire training. <span class="sensitive-flag">TIME-SENSITIVE</span> &mdash; competitive landscape may shift.</p>
+      </div>
+      <div class="refresh-callout">
+        <div class="rc-label">Refresh Trigger</div>
+        <div class="rc-text">Update if Fleetworthy makes significant moves (new features, acquisitions, state coverage), or if a new competitor emerges. Also update if PrePass achieves a major competitive milestone. Competitive slides are inherently time-sensitive &mdash; review every quarter.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part D &mdash; Knowledge Check</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 10: Matching Activity -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">10</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Knowledge Check &mdash; Match the Goal to the Business Reason</div>
+        <div class="slide-type type-interaction">Interaction</div>
+      </div>
+      <span class="rise-block-tag">Rise: Matching</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p><strong>Type:</strong> Matching (drag-and-drop or tap-to-connect)</p>
+        <p><strong>Prompt:</strong> &ldquo;Match each strategic priority to the business reason behind it.&rdquo;</p>
+        <div class="match-grid">
+          <div>
+            <div class="match-col-header">Strategic Priority</div>
+            <div class="match-item"><strong>Platform Expansion</strong></div>
+            <div class="match-item"><strong>Compliance Integration</strong></div>
+            <div class="match-item"><strong>Geographic Expansion</strong></div>
+            <div class="match-item"><strong>Data &amp; AI Innovation</strong></div>
+          </div>
+          <div>
+            <div class="match-col-header">Business Reason</div>
+            <div class="match-item">Carriers prefer one vendor over five &mdash; a unified platform increases retention and lifetime value</div>
+            <div class="match-item">Adding regulatory services to the bypass/toll ecosystem makes PrePass harder to replace</div>
+            <div class="match-item">Every new state strengthens the network and widens the competitive moat</div>
+            <div class="match-item">Millions of daily data points can become new services that carriers will pay for</div>
+          </div>
+        </div>
+        <p style="font-size: 0.82rem; color: #888; margin-top: 0.5rem;"><strong>Correct matches:</strong> Platform &harr; one vendor, Compliance &harr; harder to replace, Geographic &harr; network &amp; competitive moat, Data &harr; new services from data points.</p>
+        <p><strong>Feedback (correct):</strong> &ldquo;That&rsquo;s right. Each priority connects to a clear business reason &mdash; they&rsquo;re not abstract goals, they&rsquo;re strategic moves with purpose.&rdquo;</p>
+        <p><strong>Feedback (incorrect):</strong> &ldquo;Not quite. Review the priorities above and think about what each one achieves for the company. Try again.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>This matching activity directly tests Learning Objective 1 (&ldquo;Identify PrePass&rsquo;s four strategic priorities and describe what each one means&rdquo;). The &ldquo;business reason&rdquo; phrasing is Awareness-level &mdash; learners recognize the connection, they don&rsquo;t need to generate it from memory. Rise &ldquo;Knowledge Check &mdash; Matching&rdquo; block is the ideal format. If matching isn&rsquo;t available in the Rise plan, a multiple-select (&ldquo;select all that apply&rdquo;) or sorting activity can substitute.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Activity format suggested by cross-reference doc Section 7: &ldquo;Quick matching activity &mdash; Match the goal to the business reason.&rdquo; Priority names from intelligence report. Business reasons synthesized from master plan and intelligence report strategic rationale. <span class="confirmed-flag">CONFIRMED</span></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part E &mdash; Closing &amp; Transition</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 11: Why This Matters to You -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">11</div>
+      <div class="slide-title-area">
+        <div class="slide-title">&ldquo;Why This Matters to You&rdquo;</div>
+        <div class="slide-type type-confirmed">Confirmed</div>
+      </div>
+      <span class="rise-block-tag">Rise: Statement</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Strategy isn&rsquo;t just leadership&rsquo;s job. It shows up in yours.</strong></p>
+        <p>When a customer asks &ldquo;What&rsquo;s next for PrePass?&rdquo; &mdash; now you have an answer. When you hear about a new product launch, a state going live, or an integration with a fleet management system &mdash; you&rsquo;ll know which strategic priority it connects to.</p>
+        <p>Understanding where the company is going helps you see how your role fits into the bigger picture &mdash; whether you&rsquo;re in customer care, engineering, sales, marketing, or any other team.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;So why does this matter to you, as a new hire? Because strategy shows up in everyday work. When a customer asks what&rsquo;s next for PrePass, you&rsquo;ll have an answer. When you hear about a new product or a new state launch, you&rsquo;ll know exactly which strategic priority it supports. That context makes you more effective in any role &mdash; whether you&rsquo;re talking to customers, building products, or supporting the team. You don&rsquo;t just work here. You&rsquo;re part of where we&rsquo;re going.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Text-forward slide with emotional weight. Consider a simple, powerful statement block with the key line large: &ldquo;You&rsquo;re part of where we&rsquo;re going.&rdquo; Optional: montage of role icons (headset, code bracket, handshake, truck) connecting to the four priority icons from Slide 4. Rise &ldquo;Statement&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Closing pattern consistent with M6 Slide 15 (&ldquo;Why this matters to you&rdquo; closer). Master plan consistent element: connect content to learner&rsquo;s role. Framing is original to this storyboard. <span class="confirmed-flag">CONFIRMED</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: Transition to Module 8 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">12</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Transition &mdash; Next: Module 8</div>
+        <div class="slide-type type-confirmed">Confirmed</div>
+      </div>
+      <span class="rise-block-tag">Rise: Statement / Continue</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>You know where we&rsquo;re going. Now meet the people making it happen.</strong></p>
+        <p>In Module 8, you&rsquo;ll get an overview of PrePass&rsquo;s departments &mdash; who leads each team, what they do, and how they connect to the strategy you just learned about. From Technology to Sales to Customer Care, every department plays a role in executing these priorities.</p>
+        <p style="font-size: 0.82rem; color: #888; margin-top: 0.5rem;">Next: Module 8 &mdash; Departmental Overview</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>&ldquo;You now know PrePass&rsquo;s strategic priorities and why they matter. In the final module, you&rsquo;ll meet the teams that make it all happen. Module 8 gives you a tour of PrePass&rsquo;s departments &mdash; who leads them, what they do, and how each one connects to the company&rsquo;s direction. Let&rsquo;s go.&rdquo;</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Transition card connecting strategy (roadmap) to people (org/team). Consider a visual bridge: the road from Slide 1 leading into a building or team silhouette. &ldquo;Next: Module 8 &mdash; Departmental Overview&rdquo; button. Rise &ldquo;Statement&rdquo; or &ldquo;Continue&rdquo; block with directional visual.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Transition language connects M7 strategic priorities to M8&rsquo;s departmental structure per master plan: &ldquo;Transition slide &mdash; brief bridge to the next module.&rdquo; Framing (&ldquo;the people making it happen&rdquo;) is original to this storyboard, designed to create continuity with Module 8&rsquo;s org explorer concept.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- Production Notes -->
+<!-- ═══════════════════════════════════════ -->
+
+<div class="notes-panel">
+  <h3>Production Notes</h3>
+
+  <div class="note-item">
+    <span class="note-who">M6 Bridge</span>
+    <span class="note-text">Slide 3 picks up M6 Slide 16&rsquo;s transition: &ldquo;The revenue model is the engine. Market Goals is the roadmap.&rdquo; The voiceover explicitly references M6&rsquo;s revenue model and the $193M+ figure. The &ldquo;engine &rarr; roadmap&rdquo; metaphor runs through the opening and is intentionally retired after Slide 3 to avoid overuse.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">M8 Bridge</span>
+    <span class="note-text">Slide 12 transitions to Module 8 (Departmental Overview) with &ldquo;You know where we&rsquo;re going. Now meet the people making it happen.&rdquo; This creates a natural flow: strategy (M7) &rarr; the teams executing it (M8). Module 8&rsquo;s opening slide should reference the strategic priorities as context for why each department matters.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Modular Design</span>
+    <span class="note-text"><strong>Core updateability feature:</strong> Slides 5&ndash;8 are self-contained priority blocks. Each follows the same structure: priority name &rarr; what it means &rarr; what it looks like right now &rarr; refresh trigger. To update a priority: swap the slide. To add a fifth priority: duplicate the template and insert after Slide 8, then update the overview on Slide 4 and the matching activity on Slide 10. To remove a priority: delete the slide and update Slides 4 and 10. No other slides need to change.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who" style="color: #ef4444;">Refresh Ownership</span>
+    <span class="note-text"><strong>OPEN QUESTION FOR MICHAEL:</strong> Master plan blocking decision #6 flags this directly: &ldquo;Module 7 will go stale faster than any other module. Someone needs to own the quarterly/semi-annual content update cycle.&rdquo; <strong>Who owns refreshing this module when strategy evolves?</strong> Recommendation: assign a named content owner (Michael, a product marketing contact, or a designated L&amp;D lead) with a calendar reminder. Suggested cadence: quarterly review (15 min scan of TIME-SENSITIVE tags), semi-annual content update (swap outdated proof points, update competitive context, refresh geographic figures). This module is designed to make those updates quick &mdash; the modular slide structure means a refresh should take under an hour.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Competitive Slide</span>
+    <span class="note-text">Slide 9 names Fleetworthy, Drivewyze, and Bestpass directly. This is tagged NEEDS CONFIRMATION &mdash; executive sign-off required before development. Fallback: reframe as &ldquo;the industry is consolidating&rdquo; without naming companies. The strategic response framing (&ldquo;here&rsquo;s how our priorities respond&rdquo;) works either way. Adam recommends keeping the names for transparency &mdash; new hires will Google competitors anyway.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Time-Sensitive Tags</span>
+    <span class="note-text">Every <span class="sensitive-flag">TIME-SENSITIVE</span> tag in this storyboard marks content that will need review. Quick inventory: Slide 3 (revenue figure), Slide 5 (TSP/Motive dates), Slide 6 (FD360 acquisition framing), Slide 7 (state launches and bypass counts &mdash; HIGHEST priority), Slide 8 (AI/data initiatives and launch dates), Slide 9 (competitive landscape). A content owner doing a quarterly scan should check each tagged item in under 15 minutes.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Cross-Module Refs</span>
+    <span class="note-text">Slide 3 references M6 revenue model and $193M figure. Slide 5 references M5 core services. Slide 6 references M5 FleetDrive 360 discussion. Slide 7 uses M5&rsquo;s bypass location and jurisdiction figures. Slide 9 references M4&rsquo;s ATA endorsement and nonprofit status, and M6&rsquo;s nonprofit revenue model. Slide 11 echoes M6 Slide 15&rsquo;s &ldquo;why this matters to you&rdquo; pattern. These cross-references reinforce Track 1&rsquo;s modular-but-connected design.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">Scope &amp; Length</span>
+    <span class="note-text">At 12 slides, this is the shortest storyboard in Track 1, consistent with the 6&ndash;8 min target and &ldquo;strategy snapshot&rdquo; directive. Resist the temptation to add depth &mdash; this module is Awareness level. If stakeholders want more detail on any priority, that belongs in a role-specific Track 2 module, not here.</span>
+  </div>
+
+  <div class="note-item">
+    <span class="note-who">NEO Connection</span>
+    <span class="note-text">Per the NEO Comparison doc: &ldquo;The NEO mentions specific near-term initiatives that your module could reference as proof points for the strategic themes.&rdquo; Slide 8&rsquo;s proof points (GPS Toll Verification, Dynamic Parking, Weather Alerts) come directly from NEO slide 33 speaker notes. A new hire who heard about these in the NEO will recognize them in this module, reinforcing the learning rather than contradicting it.</span>
+  </div>
+</div>
+
+<div class="footer">
+  M7 &mdash; Market Goals &mdash; Rev 1 &mdash; April 8, 2026 &mdash; Track 1: Intro to PrePass Onboarding Framework
+</div>
+
+</body>
+</html>

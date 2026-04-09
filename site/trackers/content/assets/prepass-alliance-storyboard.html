@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M4 &mdash; PrePass Alliance Relationship &mdash; Rise 360 Storyboard (Rev 2)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f0f0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.4rem;
+  }
+
+  .header .subtitle {
+    font-size: 0.95rem;
+    color: #888;
+    font-weight: 300;
+  }
+
+  .header .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .pill-tool { background: rgba(96, 165, 250, 0.12); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.25); }
+  .pill-time { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.25); }
+  .pill-depth { background: rgba(167, 139, 250, 0.12); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+  .pill-status { background: rgba(34, 197, 94, 0.12); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.25); }
+
+  /* ── Legend ── */
+  .legend {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .legend-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: #aaa;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .dot-confirmed { background: #22c55e; }
+  .dot-placeholder { background: #f59e0b; }
+  .dot-interaction { background: #a78bfa; }
+  .dot-media { background: #60a5fa; }
+  .dot-note { background: #555; }
+
+  /* ── Revision Log ── */
+  .revision-log {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .revision-log h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #f59e0b;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .revision-entry {
+    font-size: 0.82rem;
+    color: #bbb;
+    line-height: 1.6;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #222;
+  }
+
+  .revision-entry:last-child { border-bottom: none; }
+
+  .rev-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 3px;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .rev-added { background: rgba(34, 197, 94, 0.2); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.3); }
+  .rev-changed { background: rgba(96, 165, 250, 0.2); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); }
+  .rev-removed { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+  .rev-kept { background: rgba(167, 139, 250, 0.15); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.25); }
+
+  /* ── Slide Cards ── */
+  .slides-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .slide-card {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .slide-card:hover { border-color: #3a3a3a; }
+
+  .slide-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #222;
+  }
+
+  .slide-number {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+    color: white;
+  }
+
+  .sn-confirmed { background: #16a34a; }
+  .sn-placeholder { background: #d97706; }
+  .sn-interaction { background: #7c3aed; }
+  .sn-media { background: #2563eb; }
+
+  .slide-title-area { flex: 1; }
+
+  .slide-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e0e0e0;
+  }
+
+  .slide-type {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.15rem;
+  }
+
+  .type-confirmed { color: #22c55e; }
+  .type-placeholder { color: #f59e0b; }
+  .type-interaction { color: #a78bfa; }
+  .type-media { color: #60a5fa; }
+
+  .rise-block-tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.06);
+    color: #888;
+    border: 1px solid #333;
+    flex-shrink: 0;
+  }
+
+  .slide-body {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .slide-body p {
+    font-size: 0.88rem;
+    line-height: 1.7;
+    color: #bbb;
+    margin-bottom: 0.75rem;
+  }
+
+  .slide-body p:last-child { margin-bottom: 0; }
+
+  .content-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .cl-onscreen { color: #22c55e; }
+  .cl-narration { color: #60a5fa; }
+  .cl-visual { color: #f472b6; }
+  .cl-interaction { color: #a78bfa; }
+  .cl-notes { color: #555; }
+  .cl-source { color: #f59e0b; }
+
+  .content-section {
+    background: #151515;
+    border: 1px solid #252525;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .content-section:last-child { margin-bottom: 0; }
+
+  .placeholder-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  .confirmed-flag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+
+  blockquote {
+    border-left: 3px solid #334;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 0;
+    background: rgba(255,255,255,0.02);
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    color: #ccc;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  /* ── Pillar Cards ── */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 0.75rem 0;
+  }
+
+  @media (max-width: 600px) { .pillars-grid { grid-template-columns: 1fr; } }
+
+  .pillar-card {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .pillar-card.safety { border-left: 3px solid #22c55e; }
+  .pillar-card.advocacy { border-left: 3px solid #60a5fa; }
+  .pillar-card.efficiency { border-left: 3px solid #f59e0b; }
+  .pillar-card.innovation { border-left: 3px solid #a78bfa; }
+
+  .pillar-card .pillar-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #e0e0e0;
+    margin-bottom: 0.3rem;
+  }
+
+  .pillar-card .pillar-desc {
+    font-size: 0.78rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  /* ── Stat Callout ── */
+  .stat-callout {
+    background: #1f1f1f;
+    border: 1px solid #2a2a2a;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+    margin: 0.75rem 0;
+  }
+
+  .stat-callout .stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #22c55e, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: block;
+  }
+
+  .stat-callout .stat-label {
+    font-size: 0.82rem;
+    color: #888;
+    margin-top: 0.25rem;
+  }
+
+  /* ── Governance Diagram ── */
+  .gov-flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 1rem 0;
+  }
+
+  .gov-entity {
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: white;
+    width: 80%;
+  }
+
+  .gov-alliance { background: #16a34a; }
+  .gov-llc { background: #2563eb; }
+  .gov-auxilium { background: #6b7280; font-size: 0.75rem; width: 55%; opacity: 0.7; }
+
+  .gov-arrow {
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .gov-label {
+    font-size: 0.68rem;
+    color: #888;
+    font-style: italic;
+    margin-top: -0.1rem;
+  }
+
+  /* ── Section Dividers ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.25rem;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  .section-divider span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #555;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* ── Notes Panel ── */
+  .notes-panel {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .notes-panel h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #888;
+    margin-bottom: 1rem;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+  }
+
+  .note-item:last-child { border-bottom: none; }
+
+  .note-who {
+    color: #a78bfa;
+    font-weight: 600;
+    min-width: 80px;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+  }
+
+  .note-text { color: #bbb; line-height: 1.5; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #2a2a2a;
+    font-size: 0.75rem;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>M4 &mdash; PrePass Alliance Relationship</h1>
+  <div class="subtitle">Rise 360 Storyboard &mdash; Intro to PrePass Onboarding Framework</div>
+  <div class="meta-row">
+    <span class="meta-pill pill-tool">Rise 360 Lesson</span>
+    <span class="meta-pill pill-time">Est. 8&ndash;10 min</span>
+    <span class="meta-pill pill-depth">Depth: Awareness</span>
+    <span class="meta-pill pill-status">Rev 2 &mdash; NEO-Aligned, Purpose-Led Reframe</span>
+  </div>
+</div>
+
+<!-- ── Revision Log ── -->
+<div class="revision-log">
+  <h3>Revision Log &mdash; Rev 2 (April 8, 2026)</h3>
+  <div class="revision-entry"><span class="rev-changed">RESTRUCTURED</span> Module flow completely reordered. Rev 1 led with three-entity governance structure. <strong>Rev 2 leads with purpose and impact</strong> &mdash; WHY the Alliance exists (mission, pillars, proof points) before HOW it&rsquo;s structured. This mirrors how the NEO deck presents the Alliance (slides 4&ndash;14) and addresses the biggest content gap flagged in the NEO comparison.</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> <strong>Four Alliance Pillars</strong> as the module centerpiece (Slide 5): Safety, Advocacy, Efficiency, Innovation. Interactive tabbed block with one-line description + real-world example per pillar. Source: NEO slides 5&ndash;6.</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> <strong>$800M+ investment figure</strong> and <strong>ATA endorsement</strong> as proof-point callouts (Slide 6). Source: NEO slide 5 speaker notes and slide 6 speaker notes.</div>
+  <div class="revision-entry"><span class="rev-changed">COMPRESSED</span> Governance section from 4 slides (Rev 1 Section 1) to <strong>2 slides</strong>. Auxilium demoted to optional &ldquo;deeper dive&rdquo; detail per master plan blocking decision #2. Three-entity structure retained but streamlined.</div>
+  <div class="revision-entry"><span class="rev-removed">REMOVED</span> Individual Alliance leader bio slides (Rev 1 did not have these, but the master plan explicitly blocks replicating the NEO&rsquo;s 7 bio slides). Replaced with single leadership acknowledgment slide pointing learners to the NEO orientation.</div>
+  <div class="revision-entry"><span class="rev-removed">REMOVED</span> Board roster details (Rev 1 Section 2, slides 2.1&ndash;2.3). Board composition concept retained as supporting context in governance section; individual names and regulatory credibility details removed to stay within 8&ndash;10 min target.</div>
+  <div class="revision-entry"><span class="rev-removed">REMOVED</span> Revenue model content (Rev 1 Section 3, slides 3.1&ndash;3.2). Financial details &mdash; self-funded model, revenue breakdown, FY2024 financials &mdash; moved entirely to <strong>Module 6: Revenue Model</strong> where they belong at Working Knowledge depth. M4 retains only the &ldquo;self-funded nonprofit&rdquo; framing as a one-line mention.</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> <strong>Module 3 bridge</strong> (Slide 1) &mdash; opening picks up the transition teaser from the end of Module 3 (&ldquo;In Module 3, you learned the story. Now let&rsquo;s look at the organization behind it.&rdquo;).</div>
+  <div class="revision-entry"><span class="rev-changed">UPDATED</span> Converted from Rev 1 teal/light theme to <strong>M1/M3 Rev 2 dark format</strong> with content labels, source annotations, status flags, and production notes on every slide.</div>
+  <div class="revision-entry"><span class="rev-changed">UPDATED</span> Learning objectives rewritten to reflect purpose-led framing (Rev 1 had 5 objectives focused on entities/board/funding; Rev 2 has 3 objectives focused on purpose/pillars/structure).</div>
+  <div class="revision-entry"><span class="rev-changed">UPDATED</span> Knowledge check rewritten. Rev 1 had 5 questions focused on governance mechanics. Rev 2 has 5 questions balanced across pillars, purpose, and structure.</div>
+  <div class="revision-entry"><span class="rev-added">ADDED</span> Transition slide bridging to <strong>Module 5: Customers, Market &amp; Product</strong>.</div>
+  <div class="revision-entry"><span class="rev-kept">KEPT</span> Chris Murray &rarr; Mark Doughty reporting relationship, Jeff Christian dual CFO role, public-private board concept, self-funded nonprofit framing.</div>
+  <div class="revision-entry" style="font-size: 0.78rem; color: #888; border-bottom: none;">Sources: NEO Deck December 2025 (slides 4&ndash;14), Track 1 Master Plan (Module 4 section), NEO Comparison &amp; Recommendations doc, Cross-Reference gap analysis, intelligence report.</div>
+</div>
+
+<!-- ── Legend ── -->
+<div class="legend">
+  <span class="legend-title">Block Types</span>
+  <span class="legend-item"><span class="legend-dot dot-confirmed"></span> Confirmed Content</span>
+  <span class="legend-item"><span class="legend-dot dot-placeholder"></span> Placeholder &mdash; Waiting on Input</span>
+  <span class="legend-item"><span class="legend-dot dot-interaction"></span> Learner Interaction</span>
+  <span class="legend-item"><span class="legend-dot dot-media"></span> Media / Visual Asset</span>
+  <span class="legend-item"><span class="legend-dot dot-note"></span> Builder Note</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part A &mdash; Module Open</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 1 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">1</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Title Card</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">BANNER / HERO BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Module 4: The PrePass Alliance</strong></p>
+        <p style="color: #999; font-size: 0.85rem;">
+          &ldquo;The Organization Behind the Mission&rdquo;<br>
+          Estimated time: 8&ndash;10 minutes &nbsp;|&nbsp; Learning depth: Awareness
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>In Module 3, you learned the story &mdash; how a research experiment in 1989 became the most trusted bypass system on American highways. Now let&rsquo;s look at the organization behind it. PrePass isn&rsquo;t a typical company. Behind the technology and the brand is a nonprofit alliance that exists for one reason: to make highways safer. In this module, you&rsquo;ll learn why the Alliance exists, what it stands for, and how the organization is structured to deliver on that mission every day.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Full-width hero banner with PrePass Alliance branding. Background: highway or partnership-themed image. Module number and title in large type. Subtitle below. Rise &ldquo;Banner&rdquo; or &ldquo;Hero Image&rdquo; block.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Module 3 transition teaser (end of M3 storyboard). Bridge language per master plan Module 4 directive.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">2</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Learning Objectives</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>By the end of this module, you&rsquo;ll be able to:</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          1. Describe the Alliance&rsquo;s purpose and identify the four pillars that define its mission (Safety, Advocacy, Efficiency, Innovation).<br>
+          2. Explain how PrePass is organized &mdash; the relationship between the Alliance nonprofit and PrePass LLC, and why this structure matters.<br>
+          3. Articulate at least one proof point that demonstrates the Alliance&rsquo;s real-world impact (e.g., $800M+ invested, ATA endorsement).
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Three objectives, all measurable at Awareness depth. Rev 1 had five objectives focused heavily on governance mechanics (entities, board, Auxilium, funding). Rev 2 shifts to purpose, pillars, and impact &mdash; the things a new hire actually needs to internalize in week one. Governance is supporting context, not the headline.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Objectives derived from master plan Module 4 section and NEO comparison recommendations.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part B &mdash; Why the Alliance Exists</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 3 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">3</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Alliance Mission &mdash; Purpose First</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">STATEMENT + TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Hero Statement</div>
+        <blockquote>&ldquo;PrePass Safety Alliance is a nonprofit public-private partnership of state agencies and trucking industry leaders dedicated to highway safety.&rdquo;</blockquote>
+        <p><span class="confirmed-flag">CONFIRMED</span> &mdash; sourced from NEO deck slide 4</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>PrePass Safety Alliance isn&rsquo;t a corporation chasing quarterly earnings. It&rsquo;s a nonprofit &mdash; a 501(c)(3) public-private partnership where state agencies and trucking industry leaders work together with one shared purpose: making highways safer. The Alliance owns the PrePass brand. It sets the strategic direction. And it has invested over $800 million to date on services that improve safety, reduce truck-related emissions, and preserve highway infrastructure. That&rsquo;s not marketing language &mdash; that&rsquo;s three decades of investment backed by the only weigh-station bypass service endorsed by the American Trucking Association.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise &ldquo;Statement&rdquo; block with the Alliance description in large text, followed by a &ldquo;Text + Image&rdquo; block. Use a highway or partnership image that conveys collaboration between government and industry. Consider a PrePass Safety Alliance logo placement.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Alliance description: NEO slide 4. $800M figure: NEO slide 5 speaker notes. ATA endorsement: NEO slide 6 speaker notes. 501(c)(3) status: intelligence report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">4</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Numbers That Tell the Story</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">STAT / CALLOUT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Stat Callouts</div>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 0.75rem 0;">
+          <div class="stat-callout" style="flex: 1; min-width: 200px;">
+            <span class="stat-number">$800M+</span>
+            <span class="stat-label">Invested in highway safety services</span>
+          </div>
+          <div class="stat-callout" style="flex: 1; min-width: 200px;">
+            <span class="stat-number" style="font-size: 1.4rem;">ATA Endorsed</span>
+            <span class="stat-label">Only bypass service endorsed by the American Trucking Association</span>
+          </div>
+        </div>
+
+        <p style="font-size: 0.82rem; color: #999; margin-top: 0.5rem;">&ldquo;To date, the Alliance has invested over $800 million on services that improve safety, reduce truck-related emissions and preserve highway infrastructure.&rdquo;</p>
+        <p><span class="confirmed-flag">CONFIRMED</span> &mdash; NEO slide 5 speaker notes</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Let those numbers sink in. Over $800 million invested &mdash; not from taxes, not from donations, but entirely self-funded through the services PrePass provides to carriers. And the American Trucking Association, the largest trade association for the trucking industry, endorses PrePass as the only weigh-station bypass service that meets their standard. These aren&rsquo;t abstract claims. They&rsquo;re proof that the Alliance delivers real results &mdash; and they&rsquo;re facts you&rsquo;ll want to know when someone asks you what makes PrePass different.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Two large stat callout blocks side by side. Rise &ldquo;Numbered&rdquo; or custom &ldquo;Statement&rdquo; block. $800M+ as the dominant visual element. ATA endorsement as a secondary callout with the ATA logo if available. High-contrast design to make the numbers pop.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>$800M figure: NEO slide 5 speaker notes. ATA endorsement: NEO slide 6 speaker notes (&ldquo;PrePass is the only weigh-station bypass service endorsed by ATA&rdquo;). Self-funded framing: intelligence report (IRS Form 990 filings confirm $0 charitable contributions).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">5</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Four Pillars &mdash; What the Alliance Stands For</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT &mdash; NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TABS / ACCORDION BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Interactive Pillar Cards</div>
+        <p><strong>Everything the Alliance does is built on four pillars:</strong></p>
+
+        <div class="pillars-grid">
+          <div class="pillar-card safety">
+            <div class="pillar-name">Safety</div>
+            <div class="pillar-desc">Electronically screening and bypassing the safest fleets reduces congestion at weigh stations and focuses agency resources on at-risk carriers. Every bypass of a safe truck makes the road safer for everyone.</div>
+          </div>
+          <div class="pillar-card advocacy">
+            <div class="pillar-name">Advocacy</div>
+            <div class="pillar-desc">Collaboration between the Alliance, government agencies, and trucking companies since inception. PrePass brings both sides to the same table &mdash; literally, on the board &mdash; to advance shared goals.</div>
+          </div>
+          <div class="pillar-card efficiency">
+            <div class="pillar-name">Efficiency</div>
+            <div class="pillar-desc">Save Time, Fuel, and Money for carriers while making regulatory compliance more efficient. Bypasses save an estimated 3.5 minutes per stop &mdash; multiplied across millions of transactions a year.</div>
+          </div>
+          <div class="pillar-card innovation">
+            <div class="pillar-name">Innovation</div>
+            <div class="pillar-desc">Focusing on innovative technology and services for safety and decision-making. From RFID transponders in the 1990s to AI-driven compliance today, the Alliance continuously evolves how highways operate.</div>
+          </div>
+        </div>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>The Alliance organizes its mission around four pillars &mdash; and each one connects directly to the work PrePass does every day.</p>
+        <p><strong>Safety</strong> is the foundation. By electronically screening trucks at highway speed, PrePass identifies which fleets have the strongest safety records and lets them bypass. That frees up state inspectors to focus their limited time on carriers that actually need attention. It&rsquo;s a smarter use of everyone&rsquo;s resources.</p>
+        <p><strong>Advocacy</strong> is about partnership. The Alliance was built from day one as a collaboration between government agencies and the trucking industry. That&rsquo;s not just a talking point &mdash; it&rsquo;s baked into the governance structure, which we&rsquo;ll see in a moment.</p>
+        <p><strong>Efficiency</strong> is the promise to carriers. Every bypass saves time, fuel, and money. When you multiply that across hundreds of thousands of trucks and millions of transactions, the economic impact is enormous.</p>
+        <p><strong>Innovation</strong> is how the Alliance stays relevant. PrePass started with RFID technology in the early 1990s. Today it&rsquo;s expanding into AI-powered compliance, GPS toll verification, and data analytics. The technology changes; the commitment to safety doesn&rsquo;t.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-interaction">Interaction Design</div>
+        <p>Rise <strong>&ldquo;Tabs&rdquo;</strong> or <strong>&ldquo;Accordion&rdquo;</strong> block &mdash; one tab per pillar. Learner clicks each tab to reveal the pillar description and real-world example. Consider an icon for each pillar (shield for Safety, handshake for Advocacy, clock/fuel gauge for Efficiency, lightbulb for Innovation). Ensure all four tabs must be visited before the learner can proceed (Rise &ldquo;Continue&rdquo; button gating).</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Four pillars: NEO slides 5&ndash;6. Pillar names and descriptions adapted from NEO slide 5 content and speaker notes. Real-world examples written to connect each pillar to tangible outcomes. Master plan Module 4, item #2: &ldquo;Build an interactive block for each pillar.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part C &mdash; How It&rsquo;s Structured</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 6 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">6</div>
+      <div class="slide-title-area">
+        <div class="slide-title">The Organization Behind the Mission</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT &mdash; COMPRESSED IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">LABELED GRAPHIC / IMAGE + TEXT</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen &mdash; Governance Overview</div>
+        <p><strong>The Alliance mission is delivered through two connected organizations:</strong></p>
+
+        <div class="gov-flow">
+          <div class="gov-entity gov-alliance">PrePass Safety Alliance<br><span style="font-weight: 400; font-size: 0.72rem;">501(c)(3) Nonprofit &mdash; Sets strategy, owns brand, manages state partnerships</span></div>
+          <div class="gov-arrow">&darr; &nbsp;wholly owns</div>
+          <div class="gov-entity gov-llc">PrePass LLC<br><span style="font-weight: 400; font-size: 0.72rem;">Commercial Subsidiary &mdash; Runs products, technology &amp; daily operations</span></div>
+          <div class="gov-label">Chris Murray (President) reports to Mark Doughty (Alliance CEO)</div>
+          <div class="gov-arrow" style="margin-top: 0.5rem; font-size: 0.75rem; color: #666;">&darr; &nbsp;(optional detail)</div>
+          <div class="gov-entity gov-auxilium">Auxilium, Inc.<br><span style="font-weight: 400; font-size: 0.68rem;">Type I Supporting Org &mdash; Handles state-compensated services to avoid board conflict of interest</span></div>
+        </div>
+
+        <p style="font-size: 0.82rem; color: #999;">Jeff Christian serves as CFO for both the Alliance and PrePass LLC &mdash; a dual role that keeps financial strategy aligned across the organization.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Now that you understand why the Alliance exists, let&rsquo;s look at how it&rsquo;s organized to deliver on that mission.</p>
+        <p>At the top is <strong>PrePass Safety Alliance</strong> &mdash; the 501(c)(3) nonprofit parent. The Alliance owns the PrePass brand, sets the strategic direction, and manages relationships with state agencies across the country. Its board has equal representation from government officials and trucking industry leaders &mdash; neither side can outvote the other, and nobody on the board gets paid. That balance is what gives PrePass credibility with both regulators and the carriers it serves.</p>
+        <p>Below the Alliance is <strong>PrePass LLC</strong>, the wholly-owned commercial subsidiary. This is where you work. PrePass LLC builds and runs all the technology &mdash; bypass, tolling, compliance, analytics &mdash; everything carriers interact with. It&rsquo;s led by President Chris Murray, who reports to Alliance CEO Mark Doughty.</p>
+        <p>There&rsquo;s also a third entity called <strong>Auxilium, Inc.</strong> that handles specific government contracts where the Alliance would otherwise have a conflict of interest. You don&rsquo;t need to know the details right now &mdash; just know it exists to keep governance clean.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise &ldquo;Labeled Graphic&rdquo; or &ldquo;Image + Text&rdquo; block. Two-tier diagram: Alliance on top, LLC below, connected by an ownership arrow. Auxilium shown as a smaller, dimmed branch to signal &ldquo;optional detail.&rdquo; Key relationship callout: Murray &rarr; Doughty. Jeff Christian dual-role callout. Clean, simple &mdash; the point is orientation, not organizational chart mastery.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Rev 1 devoted 4 slides to the three-entity structure. Rev 2 compresses this to one slide. Per master plan blocking decision #2: &ldquo;Default recommendation: omit [Auxilium] from main flow, mention only if governance detail is specifically requested by stakeholders.&rdquo; Auxilium is mentioned here but not explained in depth. If stakeholders request more detail, it can be expanded into a &ldquo;deeper dive&rdquo; accordion within this slide.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Three-entity structure: intelligence report (confirmed). Chris Murray &rarr; Mark Doughty reporting: NEO slide 34 + intelligence report. Jeff Christian dual CFO role: NEO slides 8&ndash;9. Board composition (equal public/private, unpaid): intelligence report. Auxilium purpose: intelligence report (Type I supporting org for state-compensated services).</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">7</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Alliance Leadership &mdash; The Team Behind the Mission</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT &mdash; NEW IN REV 2</div>
+      </div>
+      <span class="rise-block-tag">TEXT + IMAGE BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>The Alliance Leadership Team</strong></p>
+        <p>The Alliance is led by CEO <strong>Mark Doughty</strong>, supported by a dedicated leadership team that includes:</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          Erik Dietz &mdash; Executive Vice President<br>
+          Jeff Christian &mdash; Chief Financial Officer (Alliance + PrePass LLC)<br>
+          Steve Vaughn &mdash; SVP, Field Operations<br>
+          Ashley Simmons &mdash; VP, External Affairs<br>
+          Jarrod Del Prado &mdash; VP, Operations
+        </p>
+        <p style="font-size: 0.82rem; color: #999; margin-top: 0.5rem;">You&rsquo;ll learn more about the Alliance leaders and their backgrounds during the New Employee Orientation. Some of them &mdash; particularly Jarrod and Steve &mdash; work closely alongside PrePass LLC teams on a regular basis.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>The Alliance has its own dedicated leadership team, led by CEO Mark Doughty. You don&rsquo;t need to memorize everyone&rsquo;s name right now &mdash; you&rsquo;ll meet them in greater detail during the New Employee Orientation. What&rsquo;s worth knowing is that the Alliance team is not distant or separate. Their office is about ten minutes from the PrePass corporate headquarters in Phoenix, and Alliance leaders like Jarrod Del Prado and Steve Vaughn regularly work alongside PrePass LLC teams. It&rsquo;s one mission, two organizations, working side by side.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Simple text list with names and titles &mdash; no headshots, no bio paragraphs. This is an awareness-level acknowledgment, not a bio gallery. Consider a Rise &ldquo;List&rdquo; block or clean &ldquo;Text&rdquo; block. Optionally, an icon or photo showing the Phoenix office proximity as a visual cue.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>The NEO devotes 7 slides to individual Alliance leader bios (NEO slides 8&ndash;14). Per master plan Module 4 item #6: &ldquo;Don&rsquo;t replicate. Instead, a single slide acknowledging the leadership team exists with a note that learners will meet them in the NEO orientation.&rdquo; This slide fulfills that directive. If stakeholder feedback requests more detail, individual bios can be added as an optional accordion &mdash; but the default is to defer to the NEO.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Leadership roster: NEO slides 8&ndash;14 (Mark Doughty, Erik Dietz, Jeff Christian, Steve Vaughn, Ashley Simmons, Jarrod Del Prado). Alliance office proximity: NEO slide 4 speaker notes (&ldquo;Alliance office is 10 min from Phoenix corporate office&rdquo;). Jarrod/Steve working alongside PrePass teams: NEO speaker notes.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part D &mdash; Why This Matters to You</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 8 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">8</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Connecting It to Your Work</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>What this means for you:</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          <strong>Your work is mission-driven.</strong> You&rsquo;re not working for a company trying to maximize shareholder returns. You&rsquo;re part of a nonprofit partnership that exists to make highways safer. Every carrier call, every system update, every data point connects back to that purpose.<br><br>
+          <strong>Both sides of the table trust us.</strong> When a state DOT contacts PrePass, they&rsquo;re not just calling a vendor &mdash; they&rsquo;re represented on our board. When a carrier enrolls, they&rsquo;re joining a system endorsed by their own industry association. That dual trust is rare, and it&rsquo;s your credibility when you pick up the phone.<br><br>
+          <strong>The structure enables the mission.</strong> The nonprofit/LLC arrangement isn&rsquo;t bureaucracy &mdash; it&rsquo;s by design. The Alliance keeps the mission pure while PrePass LLC has the operational flexibility to build products and grow the business. You work in the engine room; the Alliance sets the compass.
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>So what does all of this mean for you, starting your first week? Three things. First, your work is mission-driven. This isn&rsquo;t a company trying to maximize shareholder returns &mdash; it&rsquo;s a nonprofit partnership, and every action you take connects back to highway safety. Second, both sides of the table trust PrePass. State regulators sit on our board. The trucking industry endorses our service. That dual trust is your credibility in every carrier conversation and every state interaction. And third, the structure exists for a reason. The Alliance keeps the mission pure. PrePass LLC gives you the tools and the team to execute. You&rsquo;re in the engine room &mdash; the Alliance sets the compass.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Rise &ldquo;Accordion&rdquo; or &ldquo;Flashcard&rdquo; block with three expandable sections: &ldquo;Mission-Driven Work,&rdquo; &ldquo;Dual Trust,&rdquo; and &ldquo;Structure with Purpose.&rdquo; Clean icons for each. Alternatively, a three-column card layout.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Framing synthesized from: NEO comparison recommendations (&ldquo;new hires need to know why it matters to their work&rdquo;), intelligence report (self-funded nonprofit, board composition), NEO slide 6 speaker notes (ATA endorsement). No direct quote &mdash; editorial synthesis for learner relevance.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════ -->
+<div class="section-divider"><span>Part E &mdash; Knowledge Check &amp; Close</span></div>
+<!-- ═══════════════════════════════════════ -->
+
+<div class="slides-container">
+
+  <!-- SLIDE 9 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-interaction">9</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Knowledge Check &mdash; Alliance Essentials</div>
+        <div class="slide-type type-interaction">LEARNER INTERACTION</div>
+      </div>
+      <span class="rise-block-tag">KNOWLEDGE CHECK BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-interaction">Knowledge Check &mdash; 5 Questions</div>
+        <p><strong>Q1:</strong> What is the primary purpose of PrePass Safety Alliance?</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          (A) To generate profit for shareholders through transportation services<br>
+          (B) To serve as a nonprofit public-private partnership dedicated to highway safety<br>
+          (C) To enforce federal trucking regulations on behalf of the government<br>
+          (D) To compete with other bypass providers in the private market
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><em>Correct: B</em> &mdash; The Alliance is a 501(c)(3) nonprofit partnership of state agencies and trucking industry leaders. (NEO slide 4)</p>
+
+        <p style="margin-top: 1rem;"><strong>Q2:</strong> Which of the following is NOT one of the Alliance&rsquo;s four pillars?</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          (A) Safety<br>
+          (B) Profitability<br>
+          (C) Efficiency<br>
+          (D) Innovation
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><em>Correct: B</em> &mdash; The four pillars are Safety, Advocacy, Efficiency, and Innovation. Profitability is not a pillar of a nonprofit organization. (NEO slides 5&ndash;6)</p>
+
+        <p style="margin-top: 1rem;"><strong>Q3:</strong> How much has the Alliance invested to date on highway safety services?</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          (A) Over $100 million<br>
+          (B) Over $500 million<br>
+          (C) Over $800 million<br>
+          (D) Over $2 billion
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><em>Correct: C</em> &mdash; &ldquo;To date, the Alliance has invested over $800 million on services that improve safety, reduce truck-related emissions and preserve highway infrastructure.&rdquo; (NEO slide 5 speaker notes)</p>
+
+        <p style="margin-top: 1rem;"><strong>Q4:</strong> Who does PrePass LLC President Chris Murray report to?</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          (A) The PrePass LLC board of directors<br>
+          (B) The American Trucking Association<br>
+          (C) Alliance CEO Mark Doughty<br>
+          (D) The U.S. Department of Transportation
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><em>Correct: C</em> &mdash; PrePass LLC is a wholly-owned subsidiary of the Alliance. Chris Murray reports to Mark Doughty. (NEO slide 34, intelligence report)</p>
+
+        <p style="margin-top: 1rem;"><strong>Q5:</strong> What makes the Alliance board structure unique?</p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          (A) All board members are paid executives from the trucking industry<br>
+          (B) The board is appointed by the federal government<br>
+          (C) It has equal representation from public-sector officials and private-sector trucking leaders, with no compensation<br>
+          (D) Board seats are purchased by the highest bidder
+        </p>
+        <p style="color: #22c55e; font-size: 0.82rem;"><em>Correct: C</em> &mdash; The board balances government officials (state DOTs, highway patrol) and industry leaders (fleet owners, trucking associations). Neither side can outvote the other, and members serve without pay. (Intelligence report)</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-notes">Builder Note</div>
+        <p>Quiz-style for Awareness depth. Questions cover all three learning objectives: purpose/pillars (Q1, Q2), proof points (Q3), and structure (Q4, Q5). Distractors are plausible but clearly wrong to avoid trick-question frustration at the awareness level. Rise Knowledge Check block with immediate feedback after each question.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">10</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Module Summary &mdash; What to Remember</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">TEXT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>The Alliance in Three Sentences</strong></p>
+        <p style="padding-left: 1rem; color: #ccc; font-size: 0.85rem;">
+          PrePass Safety Alliance is a nonprofit partnership between government and industry, dedicated to making highways safer through four pillars: Safety, Advocacy, Efficiency, and Innovation.<br><br>
+          The Alliance owns and directs the mission; PrePass LLC &mdash; where you work &mdash; builds the technology and serves the carriers.<br><br>
+          With $800M+ invested and the only ATA-endorsed bypass service, the Alliance has three decades of impact behind it &mdash; and you&rsquo;re now part of what comes next.
+        </p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>Before we move on, here&rsquo;s the Alliance in three sentences. One: it&rsquo;s a nonprofit partnership between government and industry, built on four pillars &mdash; Safety, Advocacy, Efficiency, and Innovation. Two: the Alliance owns the mission; PrePass LLC, where you work, builds the technology and serves the carriers. And three: with over $800 million invested and the only ATA-endorsed bypass service, this isn&rsquo;t just an organizational chart &mdash; it&rsquo;s three decades of impact. And you&rsquo;re now part of what comes next.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Clean three-line summary card with each sentence on its own line. Rise &ldquo;Statement&rdquo; or &ldquo;Quote&rdquo; block. Visually distinct from the rest of the module as a recap &mdash; slightly different background shade or a border treatment.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Summary synthesized from module content. All facts sourced from NEO slides 4&ndash;6 and intelligence report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11 -->
+  <div class="slide-card">
+    <div class="slide-header">
+      <div class="slide-number sn-confirmed">11</div>
+      <div class="slide-title-area">
+        <div class="slide-title">Transition &mdash; Next Up: Customers, Market &amp; Product</div>
+        <div class="slide-type type-confirmed">CONFIRMED CONTENT</div>
+      </div>
+      <span class="rise-block-tag">BANNER / STATEMENT BLOCK</span>
+    </div>
+    <div class="slide-body">
+      <div class="content-section">
+        <div class="content-label cl-onscreen">On-Screen Text</div>
+        <p><strong>Coming up in Module 5:</strong></p>
+        <p style="color: #ccc; font-size: 0.85rem;">You&rsquo;ve seen the mission and the organization. Next, you&rsquo;ll meet the people who rely on PrePass every day &mdash; the carriers, the fleets, and the states. Module 5 takes you inside the customer experience: who we serve, what they need, and the products that deliver on the Alliance&rsquo;s four pillars.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-narration">Voiceover Script</div>
+        <p>You now understand the organization behind PrePass &mdash; its purpose, its pillars, and its structure. Next, we&rsquo;ll bring that mission to life through the people who use PrePass every day. In Module 5, you&rsquo;ll follow a carrier through a typical day &mdash; from approaching a weigh station to bypassing it in seconds &mdash; and you&rsquo;ll see how each of our products connects back to the four pillars you just learned about. Let&rsquo;s keep going.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-visual">Visual Suggestion</div>
+        <p>Transition card with a forward-looking visual &mdash; road stretching ahead, or a subtle preview image of trucks/weigh stations. Rise &ldquo;Statement&rdquo; or &ldquo;Continue&rdquo; block. Include a &ldquo;Next: Module 5 &mdash; Customers, Market &amp; Product&rdquo; button or link.</p>
+      </div>
+      <div class="content-section">
+        <div class="content-label cl-source">Content Source</div>
+        <p>Transition language written to bridge to Module 5. Four pillars reference creates continuity. Master plan: &ldquo;Transition slide &mdash; brief bridge to the next module.&rdquo;</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ── Production Notes ── -->
+<div class="notes-panel">
+  <h3>Production Notes</h3>
+  <div class="note-item">
+    <span class="note-who">Scope</span>
+    <span class="note-text">11 slides across 5 parts (A&ndash;E). Down from 18 blocks/6 sections in Rev 1. Estimated 8&ndash;10 min self-paced, down from ~15 min. Scope reduction achieved by: (1) removing revenue model content to M6, (2) compressing governance from 4 slides to 1, (3) replacing individual bios with a single acknowledgment slide, (4) removing detailed board roster and regulatory credibility slides.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Blocking</span>
+    <span class="note-text"><strong>Auxilium detail level:</strong> Master plan blocking decision #2 resolved &mdash; Auxilium mentioned but not explained in depth. Default recommendation followed: &ldquo;omit from main flow, mention only if governance detail is specifically requested.&rdquo; If stakeholders request Auxilium detail, add an accordion within Slide 6.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Content</span>
+    <span class="note-text">All core content confirmed from NEO deck and intelligence report. No open content gaps. This is a framing and restructuring task, not a content-sourcing task. All slides have source annotations.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">NEO Sync</span>
+    <span class="note-text">Module now mirrors the NEO&rsquo;s presentation of the Alliance (slides 4&ndash;14): purpose and pillars first, then leadership, then structure. This means a new hire who completes both Track 1 and the NEO orientation will hear a consistent narrative, not a competing one.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">M3 Bridge</span>
+    <span class="note-text">Slide 1 opens with: &ldquo;In Module 3, you learned the story. Now let&rsquo;s look at the organization behind it.&rdquo; This picks up the transition teaser from the end of Module 3. Verify the M3 closing slide includes a mention of the four pillars &mdash; M4 Slide 5 references them as a continuation.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">M5 Bridge</span>
+    <span class="note-text">Slide 11 transitions to Module 5 with a &ldquo;follow a carrier through a typical day&rdquo; teaser, connecting Alliance pillars to product delivery. This sets up the customer journey interaction planned for M5.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">Removed</span>
+    <span class="note-text">The following Rev 1 content was intentionally removed:<br>
+    &mdash; <strong>Board roster with individual names</strong> (Rev 1 slides 2.1&ndash;2.2): Board composition concept retained; specific names removed. Board membership changes frequently; the structure matters more than the names.<br>
+    &mdash; <strong>Regulatory credibility deep dive</strong> (Rev 1 slide 2.3): 46 jurisdictions, regional directors, CVSA/ITS America leadership roles. Good content but pushes beyond 10 min and Awareness depth. Consider for Module 5 or a future &ldquo;Alliance deep dive&rdquo; elective.<br>
+    &mdash; <strong>Revenue model</strong> (Rev 1 slides 3.1&ndash;3.2): Self-funded model, revenue breakdown, FY2024 financials. All moved to Module 6 (Revenue Model) where this content lives at Working Knowledge depth.<br>
+    &mdash; <strong>Rise AI Prompt</strong> (Rev 1 footer): Removed. Will generate a new prompt aligned to Rev 2 structure when ready for Rise build.</span>
+  </div>
+  <div class="note-item">
+    <span class="note-who">For Michael</span>
+    <span class="note-text">Two questions for the next working session: (1) Does the M3 storyboard closing slide currently mention the four pillars? If not, a small edit to M3&rsquo;s transition slide would strengthen the M3 &rarr; M4 bridge. (2) Is the &ldquo;self-funded&rdquo; mention in Slide 4 voiceover sufficient, or should we add a brief &ldquo;self-funded, not tax-funded&rdquo; callout somewhere in the module? (The full detail lives in M6, but the concept appears in M4 context.)</span>
+  </div>
+</div>
+
+
+<div class="footer">PrePass Onramp &mdash; Track 1 &mdash; M4: PrePass Alliance Relationship &mdash; Rev 2 &mdash; April 8, 2026</div>
+
+</body>
+</html>
