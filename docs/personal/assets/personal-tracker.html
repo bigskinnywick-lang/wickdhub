@@ -385,12 +385,22 @@
 
   <div class="task" data-status="todo">
     <div class="task-check" onclick="toggleTask(this)"></div>
-    <div class="priority-marker priority-med"></div>
+    <div class="priority-marker priority-high"></div>
     <div class="task-content">
       <div class="task-title">Install Obsidian + connect to Ollama</div>
-      <div class="task-note">Flatpak install, point secondbrain vault, Ollama plugin for local AI summaries</div>
+      <div class="task-note">Flatpak install, point secondbrain vault, Smart Connections plugin w/ gemma4:e4b</div>
     </div>
-    <span class="task-badge badge-todo">To Do</span>
+    <span class="task-badge badge-urgent">Priority</span>
+  </div>
+
+  <div class="task" data-status="todo">
+    <div class="task-check" onclick="toggleTask(this)"></div>
+    <div class="priority-marker priority-high"></div>
+    <div class="task-content">
+      <div class="task-title">Cloudflare Tunnel — expose Open WebUI externally</div>
+      <div class="task-note">Install cloudflared, tunnel to localhost:8080, Access gate on ai.wickdhub.com</div>
+    </div>
+    <span class="task-badge badge-urgent">Priority</span>
   </div>
 </div>
 
