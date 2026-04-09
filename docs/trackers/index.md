@@ -15,9 +15,5 @@ Project status, content gap tracking, and implementation progress.
 Storyboard guides, content trackers, and screenshot capture references for Articulate modules.
 
 - **[Track 1 Content — Intro to PrePass](content/track1-content-intro-prepass.md)** — Shared deliverable status across Intro to PrePass modules
-- **[Account Closure — Storyboard (Sections 0–8)](content/account-closure-storyboard.md)**
-- **[Verification — Storyboard (Sections 0–5)](content/verification-storyboard.md)**
 - **[inForm Safety — Storyboard (Sections 0–6)](content/inform-safety-storyboard.md)**
-- **[AA End-of-Call — Storyboard](content/aa-endofcall-storyboard.md)**
-- **[AA End-of-Call — Screenshot Capture Guide](content/aa-endofcall-capture-guide.md)**
 - **[inForm Safety — Screenshot Capture Guide](content/inform-safety-capture-guide.md)**
