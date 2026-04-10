@@ -8,13 +8,12 @@ Quick reference for Claude (or Adam) to add, update, or maintain content on the 
 
 | What | Path |
 |------|------|
-| **Local GitHub repo (source of truth)** | `~/Documents/GitHub/wickdhub/` |
-| **Secondbrain backup** | `~/secondbrain/wickdhub-starter/` |
+| **Local repo (source of truth)** | `~/Documents/GitHub/wickdhub/` |
 | **Live site** | [wickdhub.com](https://wickdhub.com) |
 | **GitHub repo** | `bigskinnywick-lang/wickdhub` |
 | **Hosting** | Cloudflare Pages — auto-deploys from GitHub on push |
 
-> Always work in the **local GitHub repo**. After changes, sync to the secondbrain backup.
+> Single local clone at `~/Documents/GitHub/wickdhub/`. No secondbrain backup — removed April 10, 2026.
 
 ---
 
@@ -209,20 +208,6 @@ Sub-sections nest one level deeper (like Content under Trackers).
 
 ---
 
-## Syncing Secondbrain Backup
-
-After making changes to the GitHub repo, sync to secondbrain:
-
-```bash
-rsync -av --exclude='.DS_Store' --exclude='site/' \
-  ~/Documents/GitHub/wickdhub/ \
-  ~/secondbrain/wickdhub-starter/
-```
-
-> The GitHub repo is always the source of truth. Secondbrain is a backup copy.
-
----
-
 ## Custom CSS Notes
 
 `docs/stylesheets/custom.css` provides:
@@ -254,6 +239,5 @@ When Adam asks to add something to WickdHub:
 - [ ] Create markdown wrapper using `iframe-wrap` pattern
 - [ ] Update `docs/<section>/index.md` if it has a link list
 - [ ] Add to `nav:` in `mkdocs.yml`
-- [ ] Copy files to the **local GitHub repo** (`~/Documents/GitHub/wickdhub/`)
-- [ ] Sync secondbrain backup
+- [ ] Ensure files are in the **local repo** (`~/Documents/GitHub/wickdhub/`)
 - [ ] Remind Adam to commit + push via GitHub Desktop
