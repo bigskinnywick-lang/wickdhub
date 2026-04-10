@@ -9,6 +9,7 @@ Project status, content gap tracking, and implementation progress.
 - **[Track 2 Weekly — Articulate POC](track2-weekly.md)** — Module development progress for Account Closure, Verification, inForm Safety, and Mini Modules
 - **[Track 1 Weekly — Intro to PrePass](track1-weekly.md)** — Weekly progress on Track 1 collaboration with Michael
 - **[MCTE 6-Week Plan](mcte-6week-plan.md)** — Strategic roadmap and milestone tracker
+- **[Mid-Year Self-Eval](midyear-self-eval.md)** — 2026 mid-year check-in across all five evaluation sections
 
 ## Content
 
