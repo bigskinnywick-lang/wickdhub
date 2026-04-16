@@ -19,8 +19,9 @@ Storyboard guides, content trackers, and screenshot capture references for Artic
 
 ## Track 2 — Call Center Storyboards
 
-- **[inForm Safety — Storyboard (Sections 0–6)](inform-safety-storyboard.md)** — Full storyboard for the inForm Safety module
+- **[inForm Safety — Storyboard (CS Audience)](inform-safety-storyboard.md)** — CS-facing course: product awareness, talk tracks, and hand-off to Tech Support. ~10 min, 13 slides.
+- *inForm Safety — Storyboard (Tech Support Audience)* — **Pending.** On hold until Tech Support's role with inForm is clarified.
 
 ## Capture Guides
 
-- **[inForm Safety — Screenshot Capture Guide](inform-safety-capture-guide.md)** — Screenshot specs for the inForm Safety module
+- **[inForm Safety — Screenshot Capture Guide (CS Audience)](inform-safety-capture-guide.md)** — Lean capture list: only 2 live portal captures needed for the CS course.

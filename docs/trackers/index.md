@@ -16,5 +16,5 @@ Project status, content gap tracking, and implementation progress.
 Storyboard guides, content trackers, and screenshot capture references for Articulate modules.
 
 - **[Track 1 Content — Intro to PrePass](content/track1-content-intro-prepass.md)** — Shared deliverable status across Intro to PrePass modules
-- **[inForm Safety — Storyboard (Sections 0–6)](content/inform-safety-storyboard.md)**
-- **[inForm Safety — Screenshot Capture Guide](content/inform-safety-capture-guide.md)**
+- **[inForm Safety — Storyboard (CS Audience)](content/inform-safety-storyboard.md)** — CS-facing course, ~10 min
+- **[inForm Safety — Capture Guide (CS Audience)](content/inform-safety-capture-guide.md)** — 2 live captures needed

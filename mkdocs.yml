@@ -66,8 +66,8 @@ nav:
     - Content:
       - Overview: trackers/content/index.md
       - Track 1 Content - Intro to PrePass: trackers/content/track1-content-intro-prepass.md
-      - inForm Safety Storyboard: trackers/content/inform-safety-storyboard.md
-      - inForm Safety Capture Guide: trackers/content/inform-safety-capture-guide.md
+      - inForm Safety Storyboard (CS): trackers/content/inform-safety-storyboard.md
+      - inForm Safety Capture Guide (CS): trackers/content/inform-safety-capture-guide.md
       - M1 Mission Vision Values: trackers/content/mission-vision-values-storyboard.md
       - M3 PrePass History: trackers/content/prepass-history-storyboard.md
       - M4 PrePass Alliance: trackers/content/prepass-alliance-storyboard.md

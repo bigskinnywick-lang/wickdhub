@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>inForm Safety — Storyboard Guide (Sections 0–6)</title>
+<title>inForm Safety — Storyboard (CS Audience)</title>
 <style>
   :root {
     --teal: #0D6E6E;
@@ -30,15 +30,14 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--gray-50); color: var(--gray-900); line-height: 1.6; }
 
-  .banner { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%); color: white; padding: 20px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(13,110,110,0.3); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; }
-  .banner-text { flex: 1; min-width: 200px; }
+  .banner { background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%); color: white; padding: 28px 40px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(13,110,110,0.3); }
   .banner h1 { font-size: 22px; font-weight: 700; }
   .banner .subtitle { font-size: 14px; opacity: 0.85; margin-top: 4px; }
-  .banner .counts { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .banner .counts { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); display: flex; gap: 10px; }
   .banner .count-box { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; text-align: center; }
   .banner .count-box .num { font-size: 20px; display: block; }
 
-  .container { max-width: 100%; margin: 0 auto; padding: 20px 24px 60px; }
+  .container { max-width: 960px; margin: 0 auto; padding: 24px 40px 80px; }
 
   .overview-panel { background: white; border: 1px solid var(--gray-200); border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   .overview-panel h2 { font-size: 16px; font-weight: 700; color: var(--teal); margin-bottom: 12px; }
@@ -112,33 +111,37 @@
   .btn-sm:hover { background: var(--gray-100); border-color: var(--gray-300); }
 
   .footer { text-align: center; padding: 20px; font-size: 12px; color: var(--gray-500); margin-top: 20px; }
+
+  .audience-pill { display: inline-block; background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.4px; margin-left: 8px; }
 </style>
 </head>
 <body>
 
 <div class="banner">
-  <div class="banner-text"><h1>inForm Safety &mdash; Storyboard Guide</h1>
-  <div class="subtitle">Sections 0&ndash;6 &nbsp;|&nbsp; Screenshots + AI Voiceover Scripts &nbsp;|&nbsp; April 3, 2026 &nbsp;|&nbsp; Draft 1</div></div>
+  <h1>inForm Safety &mdash; Storyboard <span class="audience-pill">CS AUDIENCE</span></h1>
+  <div class="subtitle">Product Intro &amp; Talk Tracks &nbsp;|&nbsp; 13 Slides &nbsp;|&nbsp; ~10 min &nbsp;|&nbsp; Rebuild v1 &nbsp;|&nbsp; April 16, 2026</div>
   <div class="counts">
-    <div class="count-box"><span class="num">22</span>slides</div>
-    <div class="count-box"><span class="num">7</span>screenshots</div>
-    <div class="count-box"><span class="num">22</span>VO scripts</div>
+    <div class="count-box"><span class="num">7</span>Sections</div>
+    <div class="count-box"><span class="num">13</span>Slides</div>
+    <div class="count-box"><span class="num">~10</span>Minutes</div>
   </div>
 </div>
 
 <div class="container">
 
   <div class="overview-panel">
-    <h2>How to Use This Document</h2>
-    <p>Each slide card contains the <strong>AI voiceover script</strong> (what the learner hears) and <strong>screenshot/visual requirements</strong> (what the learner sees). Expand a card to see both. Use the status badges to track what&rsquo;s captured vs. what needs to be created.</p>
-    <p><strong>Module Duration:</strong> ~18 minutes (self-paced) &nbsp;|&nbsp; <strong>Tool:</strong> Articulate 360 (Rise or Storyline) &nbsp;|&nbsp; <strong>Track:</strong> Track 2 &mdash; Specialized Deep-Dive</p>
-    <p><strong>D365 KB Reference:</strong> <a href="https://prepass.crm.dynamics.com/main.aspx?forceUCI=1&appid=5da4e37c-a425-ed11-b83b-00224824739e" target="_blank">FAQ&rsquo;s INFORM Safety &mdash; Open in Dynamics 365</a></p>
+    <h2>Course Purpose &amp; Audience</h2>
+    <p><strong>Audience:</strong> Customer Service agents (inbound/outbound call center).</p>
+    <p><strong>What this course does:</strong> Makes CS agents confident in <em>talking about</em> inForm Safety &mdash; what it is, why carriers love it, and how to introduce it to customers. This is a <strong>product awareness + talk-track</strong> course, not a troubleshooting course.</p>
+    <p><strong>What it does NOT do:</strong> Set up access, read dashboard data in depth, troubleshoot subscriptions, or explain data refresh mechanics. Those skills belong to the <em>inForm Safety &mdash; Tech Support</em> course (companion build).</p>
+    <p><strong>Hand-off rule baked into this course:</strong> If the conversation goes beyond introduction or interest, CS routes to Tech Support. No intake, no setup, no data debugging.</p>
+    <p><strong>Tool:</strong> Articulate 360 (Rise recommended &mdash; content-heavy, light interactions).</p>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot vo"></div>Voiceover script</div>
-      <div class="legend-item"><div class="legend-dot ss"></div>Screenshot needed</div>
-      <div class="legend-item"><div class="legend-dot have"></div>Available (from PDFs/web)</div>
-      <div class="legend-item"><div class="legend-dot need"></div>Needs live capture</div>
-      <div class="legend-item"><div class="legend-dot build"></div>Design/build in Articulate</div>
+      <div class="legend-item"><span class="legend-dot vo"></span>Voiceover script</div>
+      <div class="legend-item"><span class="legend-dot ss"></span>Screenshot / visual</div>
+      <div class="legend-item"><span class="legend-dot have"></span>Asset ready</div>
+      <div class="legend-item"><span class="legend-dot need"></span>Capture needed</div>
+      <div class="legend-item"><span class="legend-dot build"></span>Design / build in Articulate</div>
     </div>
   </div>
 
@@ -147,86 +150,66 @@
     <button class="btn-sm" onclick="document.querySelectorAll('.slide-card').forEach(c=>c.classList.remove('open'))">Collapse All</button>
   </div>
 
-  <!-- ========== SECTION 0 ========== -->
+  <!-- ===== SECTION 0 ===== -->
   <div class="section-divider">
     <div class="section-badge">0</div>
-    <h2>Welcome &amp; Objectives</h2>
-    <span class="meta">1.5 min &middot; 2 slides</span>
+    <h2>Welcome &amp; Why This Matters</h2>
+    <div class="meta">1 slide &middot; ~0.5 min</div>
   </div>
 
-  <div class="slide-card">
+  <div class="slide-card open">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">0.1</div>
-      <div class="slide-title">Title Slide</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Welcome &mdash; Why CS should know inForm Safety</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">BUILD</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Customers call with questions about their safety data, their ISS scores, and how to access the tools that help them stay on the road. inForm Safety is the product behind those answers &mdash; and knowing how it works makes you the expert on the other end of the line. In this module, you&rsquo;ll learn what inForm Safety does, why carriers depend on it, and exactly how to handle every type of inForm call that comes your way.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Title graphic</span> <span class="status design">Design in Articulate</span><br>
-          Module title: &ldquo;inForm Safety&rdquo;<br>
-          Subtitle: &ldquo;Know the product. Own the call.&rdquo;<br>
-          PrePass branding / safety data visualization icon
+        <div class="label">Voiceover Script (~30s)</div>
+        <div class="script">
+          inForm Safety is one of the most useful tools PrePass offers carriers &mdash; and it comes free with their subscription. As a CS agent, you're often the first person who can point it out. In this short course, you'll learn what inForm is, why carriers care, and how to bring it up naturally in a call. <em>You won't be setting up access or troubleshooting data &mdash; we hand those off to Tech Support. Your job is to plant the flag.</em>
         </div>
+      </div>
+      <div class="note-box interaction">
+        <span class="note-label">Build Note</span>
+        Simple title slide &mdash; PrePass teal background, inForm Safety wordmark, three short bullet promises ("You'll be able to...: 1) describe inForm in one sentence, 2) name 3 things carriers get out of it, 3) know when to bring it up and when to hand off").
       </div>
     </div>
   </div>
 
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">0.2</div>
-      <div class="slide-title">Learning Objectives</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">By the end of this module, you&rsquo;ll be able to: explain what inForm Safety does and why carriers use it. Identify the key data points in the inForm dashboard &mdash; ISS score, BASICs, and inspections. Route inForm calls correctly &mdash; existing users, new customers, and non-PrePass callers each go somewhere different. Walk a customer through the access setup process. And set accurate expectations on data sources, refresh timing, and report formats.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Objectives list graphic</span> <span class="status design">Design in Articulate</span><br>
-          Five objectives displayed as numbered list or icon grid<br>
-          Clean layout &mdash; no screenshot needed
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 1 ========== -->
+  <!-- ===== SECTION 1 ===== -->
   <div class="section-divider">
     <div class="section-badge">1</div>
     <h2>What Is inForm Safety?</h2>
-    <span class="meta">3 min &middot; 5 slides</span>
+    <div class="meta">2 slides &middot; ~2 min</div>
   </div>
 
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">1.1</div>
-      <div class="slide-title">The Big Picture</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">The product in one sentence</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">SS</span><span class="tag have">HAVE</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">inForm Safety is an online reporting and visualization tool that comes included &mdash; at no extra cost &mdash; with every PrePass and PrePass Plus subscription. It takes complex government safety data from the FMCSA and turns it into dashboards that carriers can actually use. The core purpose? Help carriers understand and improve their Inspection Selection System score &mdash; their ISS score. That&rsquo;s the number that determines whether a truck bypasses a weigh station or gets pulled in for inspection. A better ISS score means more bypasses, less downtime, and happier drivers.</div>
+        <div class="label">Voiceover Script (~45s)</div>
+        <div class="script">
+          Here's inForm Safety in one sentence: it's a free online reporting tool that turns a carrier's government safety data into easy-to-read dashboards. That's it. If a customer asks, "what is inForm?" &mdash; that sentence is enough. It's bundled with PrePass and PrePass Plus at no extra cost, and it helps carriers see exactly what's driving their ISS score &mdash; the score that decides whether their trucks bypass weigh stations.
+        </div>
       </div>
       <div class="ss-block">
         <div class="label">Visual</div>
         <div class="details">
-          <span class="filename">Product overview graphic</span> <span class="status design">Design in Articulate</span><br>
-          Simple flow diagram: FMCSA Data &rarr; inForm Safety &rarr; Actionable Dashboards &rarr; Better ISS Score &rarr; More Bypasses<br>
-          Could also use product logo or portal screenshot as backdrop
+          <strong>Headline:</strong> "Your carrier's safety data &mdash; on one screen, for free."<br>
+          <strong>Sub-visual:</strong> inForm Safety product logo/mark (pull from <span class="filename">Resources/InformSAFETY.pdf</span>). Three icon-callouts: "Online tool" / "Free with PrePass" / "Visual dashboards."
+          <span class="status captured">Asset in Resources/</span>
         </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Talk-Track Nugget</span>
+        Pull-out quote for agents to memorize: <em>"It's a free online dashboard that shows you what's driving your ISS score."</em> That's the whole pitch. Everything else is detail.
       </div>
     </div>
   </div>
@@ -234,129 +217,64 @@
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">1.2</div>
-      <div class="slide-title">ISS Score = Bypass Eligibility</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Why carriers care &mdash; ISS score &amp; BASICs at a glance</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">SS</span><span class="tag have">HAVE</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Let&rsquo;s talk about the ISS score, because it&rsquo;s the reason inForm Safety exists. The Inspection Selection System score is set by the FMCSA and it determines whether a truck gets a green light to bypass a weigh station or a red light to pull in. A poor ISS score means more pull-ins &mdash; which means lost time, missed deliveries, and frustrated drivers. For carriers, improving that score isn&rsquo;t optional &mdash; it directly affects their bottom line. inForm Safety shows them exactly what&rsquo;s driving their score so they can take action.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">ISS score concept graphic</span> <span class="status design">Design in Articulate</span><br>
-          Visual showing: Good ISS &rarr; green bypass signal &rarr; truck on road vs. Poor ISS &rarr; red pull-in signal &rarr; truck at scale<br>
-          Reinforce the tangible impact
+        <div class="label">Voiceover Script (~60s)</div>
+        <div class="script">
+          Two terms show up constantly on these calls: <strong>ISS score</strong> and <strong>BASICs</strong>. You don't need to be an expert on either &mdash; but here's what you need to recognize. The ISS score, set by FMCSA, decides if a truck bypasses a weigh station or gets pulled in. Lower is better. The BASICs are the seven safety categories FMCSA uses to calculate that score &mdash; things like Unsafe Driving, Hours-of-Service Compliance, Vehicle Maintenance, and so on. Roadside inspections and violations feed into those categories on a rolling 24-month window. Carriers care about inForm because it shows them all of this in one place &mdash; instead of chasing data across government websites.
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">1.3</div>
-      <div class="slide-title">CSA BASICs — The Seven Categories</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag have">PDF Source</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">The ISS score is built from data across seven categories called BASICs &mdash; Behavior Analysis and Safety Improvement Categories. These are: Unsafe Driving, Crash Indicator, Hours-of-Service Compliance, Vehicle Maintenance, Controlled Substances and Alcohol, Hazardous Materials Compliance, and Driver Fitness. The FMCSA calculates these from roadside inspections, crash reports, and violations over a rolling 24-month window. Lower scores are better. You don&rsquo;t need to memorize all seven &mdash; but knowing they exist helps you understand what a customer means when they say &ldquo;my Vehicle Maintenance BASIC is too high.&rdquo;</div>
-      </div>
       <div class="ss-block">
         <div class="label">Visual</div>
         <div class="details">
-          <span class="filename">BASICs bar chart</span> <span class="status captured">From InformSAFETY.pdf</span><br>
-          Use the CSA BASICs bar chart from the marketing PDF showing all seven categories<br>
-          Alternatively: build a clean 7-item visual in Articulate with icons per category
+          <strong>Left side:</strong> Simple definition card for ISS ("Inspection Selection System &mdash; FMCSA score, 0&ndash;100, lower = more bypass eligibility").<br>
+          <strong>Right side:</strong> BASICs bar chart from the marketing PDF &mdash; the 7-category visual.
+          <span class="filename">Resources/InformSAFETY.pdf</span> <span class="status captured">Available</span>
         </div>
       </div>
       <div class="note-box tip">
-        <span class="note-label">Agent Note</span>
-        You won&rsquo;t interpret BASICs data for customers &mdash; that&rsquo;s Second Level Support&rsquo;s job. But recognizing the terminology helps you route the call correctly and show the customer you understand their concern.
+        <span class="note-label">Language Note</span>
+        Agents don't need to memorize all 7 BASICs &mdash; just recognize the term. If a customer says "my vehicle maintenance BASIC is high," the agent should recognize that's a real thing in inForm and route accordingly.
       </div>
     </div>
   </div>
 
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">1.4</div>
-      <div class="slide-title">Real-World Impact — Case Studies</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Here&rsquo;s what inForm Safety looks like in practice. Beneficial Cartage couldn&rsquo;t participate in bypass programs because their ISS score was too high. They used inForm Safety to uncover three specific root causes &mdash; and built a roadmap to bring their score down. Sharptown Trucking compared their hours-of-service violation trends with internal dispatch records and discovered that drivers were already behind schedule when they left the yard. That led to management-level corrective actions. And Donamy Transportation &mdash; a fleet with a strong safety record &mdash; used inForm&rsquo;s visual tools and Google Earth photos to run driver meetings without confusing government jargon. Three different fleets, three different problems, all solved with the same tool.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Three case study cards</span> <span class="status design">Design in Articulate</span><br>
-          Three clickable cards or tiles, each with company name, problem summary, and how inForm helped<br>
-          Keep it scannable &mdash; 2&ndash;3 lines per card
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">1.5</div>
-      <div class="slide-title">Section Takeaway</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">You don&rsquo;t need to be a safety expert. But understanding what inForm Safety does helps you speak the customer&rsquo;s language. When a carrier mentions their ISS score, their BASICs, or their inspection trends &mdash; you&rsquo;ll know what they&rsquo;re talking about. And that confidence comes through on the call.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Takeaway callout</span> <span class="status design">Design in Articulate</span><br>
-          Highlighted callout box or banner with the key message<br>
-          Transition to next section
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 2 ========== -->
+  <!-- ===== SECTION 2 ===== -->
   <div class="section-divider">
     <div class="section-badge">2</div>
-    <h2>The Dashboard &mdash; What Carriers See</h2>
-    <span class="meta">3 min &middot; 5 slides</span>
+    <h2>Feature Highlights &mdash; What Customers Get</h2>
+    <div class="meta">3 slides &middot; ~2.5 min</div>
   </div>
 
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">2.1</div>
-      <div class="slide-title">Dashboard Tour — Intro</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag need">Capture</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Dashboard at a glance</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">SS</span><span class="tag need">NEED</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Let&rsquo;s take a quick tour of what a carrier sees when they log into inForm Safety. You won&rsquo;t be navigating this system yourself &mdash; it&rsquo;s a customer-facing portal. But knowing the layout helps you answer questions and set expectations when someone calls in confused about what they&rsquo;re looking at.</div>
+        <div class="label">Voiceover Script (~45s)</div>
+        <div class="script">
+          When a carrier logs in, the first thing they see is the Company Snapshot &mdash; their ISS score, fleet summary, and a 24-month inspection history, all on one screen. This is the page that sells itself. You don't need to know how to navigate it &mdash; but knowing it <em>exists</em> lets you say things like, "the moment you log in, your ISS score is right there, with a breakdown of what's influencing it." That's a concrete, useful thing to tell a customer.
+        </div>
       </div>
       <div class="ss-block">
         <div class="label">Visual</div>
         <div class="details">
-          <span class="filename">inForm portal landing / login</span> <span class="status needed">Needs live capture</span><br>
-          Screenshot of the PrePass portal navigation showing where inForm Safety sits (under Reports)<br>
-          Or: the inForm Safety landing page after login
+          <strong>Hero screenshot:</strong> Company Snapshot dashboard &mdash; one clean capture with 3 subtle callouts (ISS panel, Fleet Summary, Inspections). Keep annotations light &mdash; this is exposure, not a walkthrough.<br>
+          <strong>Capture:</strong> <span class="filename">inForm_captures/01_company_snapshot.png</span>
+          <span class="status needed">Capture pending</span>
         </div>
       </div>
       <div class="note-box interaction">
-        <span class="note-label">Interaction</span>
-        This section works best as an annotated guided tour &mdash; labeled graphic in Rise, or guided walkthrough in Storyline with numbered hotspots.
+        <span class="note-label">Design Note</span>
+        In Rise: Image &amp; Text block, image 60% width. If live capture is blocked, the marketing PDF dashboard image works as a placeholder.
       </div>
     </div>
   </div>
@@ -364,21 +282,23 @@
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">2.2</div>
-      <div class="slide-title">Company Snapshot</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag need">Capture</span><span class="tag have">PDF Ref</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Heat maps &amp; visual insights</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag ss">SS</span><span class="tag need">NEED</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">The first thing a carrier sees is the Company Snapshot. This has three panels: the ISS Score with its last-updated date, a Fleet Summary showing vehicle count, driver count, inspections, and out-of-service rates, and an Inspections Summary covering total inspections, violations, and OOS events over the last 24 months. Below that is a CSA BASICs bar chart &mdash; all seven categories at a glance &mdash; and a 24-month trending view that shows how violations are weighted over time. This is the screen customers are usually looking at when they call with questions.</div>
+        <div class="label">Voiceover Script (~35s)</div>
+        <div class="script">
+          One of the features carriers get excited about: heat maps. inForm plots violations geographically &mdash; national, state, county, even down to the interstate. A safety manager can literally see where their drivers are getting flagged. That's a totally different conversation than a spreadsheet of codes. You can name-drop this: "there's a visual heat map that shows where your violations are happening on the road."
+        </div>
       </div>
       <div class="ss-block">
         <div class="label">Visual</div>
         <div class="details">
-          <span class="filename">Company Snapshot dashboard</span> <span class="status needed">Needs live capture</span><br>
-          Annotated screenshot showing: ISS Score panel, Fleet Summary panel, Inspections Summary, BASICs bar chart, trending pie chart<br>
-          PDF reference available in InformSAFETY.pdf (pages showing snapshot layout) for mockup fallback
+          <strong>Image:</strong> Heat map view (live capture preferred; marketing PDF has a usable static). Overlay text: "See violations by state, county, or specific highway."<br>
+          <strong>Capture:</strong> <span class="filename">inForm_captures/02_heat_map.png</span>
+          <span class="status needed">Capture pending</span>
         </div>
       </div>
     </div>
@@ -387,111 +307,65 @@
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">2.3</div>
-      <div class="slide-title">Heat Maps &amp; Geographic Visualization</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag need">Capture</span><span class="tag have">PDF Ref</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Automated email reports (the "set it and forget it" sell)</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">BUILD</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">One of inForm Safety&rsquo;s most powerful features is the geographic heat map. It shows color-coded violation intensity across the country &mdash; and carriers can drill down from the national level all the way to a specific state, county, or interstate highway route. It integrates with Google Maps and satellite views, and includes filter controls for date range, violation type, category, and state. This is the feature that lets a safety manager walk into a meeting and say &ldquo;we have a problem on I-81 in Virginia&rdquo; instead of wading through spreadsheets. If a customer mentions heat maps or geographic data, this is what they&rsquo;re talking about.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Heat map / geographic view</span> <span class="status needed">Needs live capture</span><br>
-          Screenshot of the color-coded heat map with Google Maps integration<br>
-          Show filter controls (date range, type, category, state) if visible<br>
-          PDF reference available in InformSAFETY.pdf for mockup fallback
+        <div class="label">Voiceover Script (~40s)</div>
+        <div class="script">
+          The third highlight worth knowing: automated email subscriptions. A carrier can set inForm to email them a safety report daily, weekly, or monthly &mdash; up to 50 subscriptions per DOT. For a safety manager, this means the data lands in their inbox without them logging in. That's a sticky feature. If a customer mentions they're drowning in safety data, this is a great thing to bring up.
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">2.4</div>
-      <div class="slide-title">Data Insights &amp; Reporting</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag need">Capture</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">The Data Insights section gives carriers a detailed view &mdash; every inspection from the last 24 months, sortable by inspection site. They can export data to local files, XML, or CSV. And there&rsquo;s a subscriptions feature that lets carriers set up automated email reports &mdash; daily, weekly, or monthly. Each DOT can have up to 50 subscriptions, and reports come in PDF format only. The data gets refreshed right before each send. If a customer asks about setting up subscriptions or changing their report schedule, this is the feature they&rsquo;re referencing. You can explain the basics, but if they need help navigating the portal, that goes to Second Level Support.</div>
-      </div>
       <div class="ss-block">
         <div class="label">Visual</div>
         <div class="details">
-          <span class="filename">Data Insights tab + Subscriptions view</span> <span class="status needed">Needs live capture</span><br>
-          Two screenshots: (1) Data Insights / details tab showing inspection list, (2) Subscriptions management screen<br>
-          Annotate export options and subscription controls
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">2.5</div>
-      <div class="slide-title">Data Sources &amp; Refresh Timing</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Here&rsquo;s something that will save you on calls. Customers sometimes say their data looks wrong or out of date. There are two main data sources, and they refresh on different schedules. Inspections and violations come from SAFER &mdash; that data gets a full upload nightly with incremental updates every 15 minutes. Crash data comes from the FMCSA and is uploaded monthly. Also, inspection reports in the Industry Portal show data at the account level, but inForm Safety displays at the DOT level &mdash; so the numbers may look different even if they&rsquo;re both correct. If a customer says &ldquo;my data doesn&rsquo;t match what I see on the FMCSA website,&rdquo; these timing and scope differences are usually why.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Data refresh reference card</span> <span class="status design">Design in Articulate</span><br>
-          Clean table or infographic:
-          <br>&bull; Inspections &amp; Violations: SAFER &mdash; nightly full upload, 15-min updates
-          <br>&bull; Crash Data: FMCSA &mdash; monthly upload
-          <br>&bull; Scope: Account level (Industry Portal) vs. DOT level (inForm Safety)
+          <strong>Design:</strong> Icon graphic &mdash; envelope + schedule icons (daily/weekly/monthly) + number "50" for subscriptions-per-DOT. Clean and simple &mdash; no live screenshot needed here.
+          <span class="status design">Design in Articulate</span>
         </div>
       </div>
       <div class="note-box tip">
-        <span class="note-label">Pro Tip</span>
-        Incomplete inspection reports from officers can cause missing data in the Data Insights section. If a customer says specific records are missing, this may be why &mdash; route to Second Level for investigation.
+        <span class="note-label">Talk-Track Nugget</span>
+        Memorable phrasing: <em>"You can set up automated email reports &mdash; daily, weekly, or monthly &mdash; so the safety data comes to you."</em>
       </div>
     </div>
   </div>
 
-  <!-- ========== SECTION 3 ========== -->
+  <!-- ===== SECTION 3 ===== -->
   <div class="section-divider">
     <div class="section-badge">3</div>
-    <h2>Agent Call Handling &mdash; Routing &amp; Setup</h2>
-    <span class="meta">4 min &middot; 5 slides</span>
+    <h2>When &amp; How to Bring It Up</h2>
+    <div class="meta">3 slides &middot; ~2.5 min</div>
   </div>
 
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">3.1</div>
-      <div class="slide-title">The Three Call Types</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Listen for these cues</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">BUILD</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">When a customer calls about inForm Safety, the first thing you need to figure out is which of three buckets they fall into &mdash; because the routing is different for each one. Bucket one: an existing inForm user who has questions about their data or the platform. Bucket two: an existing PrePass customer who wants inForm Safety access but doesn&rsquo;t have it yet. And bucket three: someone who is not a PrePass customer at all, but is asking about inForm. Let&rsquo;s walk through each one.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Three-bucket routing graphic</span> <span class="status design">Design in Articulate</span><br>
-          Interactive flowchart or three-path visual:<br>
-          &bull; Existing INFORM user &rarr; Second Level Support (ext 1925047)<br>
-          &bull; Existing PrePass customer, wants access &rarr; YOU (intake + email)<br>
-          &bull; Non-PrePass caller &rarr; Inside Sales (ext 1925037/1925012)
+        <div class="label">Voiceover Script (~45s)</div>
+        <div class="script">
+          You're not a salesperson &mdash; but you <em>are</em> in a great position to mention inForm when a customer gives you a natural opening. Listen for: questions about safety scores, complaints about weigh station pull-ins, mentions of inspections or violations, or any frustration about tracking safety data. When you hear those, you've got a cue. A quick, friendly mention is often all it takes.
         </div>
       </div>
       <div class="note-box interaction">
-        <span class="note-label">Interaction</span>
-        In Rise: scenario block or process block with three paths. In Storyline: branching slide where learner picks a caller type and follows the correct path.
+        <span class="note-label">Design Note</span>
+        Rise "Flashcards" or "Labeled Graphic" interaction &mdash; 4 cards, each showing a customer phrase and the cue it represents.
+      </div>
+      <div class="ss-block">
+        <div class="label">Content</div>
+        <div class="details">
+          <strong>Card 1:</strong> "Why do I keep getting pulled into weigh stations?" &rarr; Cue: ISS score / bypass issue.<br>
+          <strong>Card 2:</strong> "How do I see my inspection history?" &rarr; Cue: they need the Data Insights view.<br>
+          <strong>Card 3:</strong> "I don't know what's affecting our safety score." &rarr; Cue: BASICs breakdown is exactly this.<br>
+          <strong>Card 4:</strong> "Is there a way to get reports emailed to me?" &rarr; Cue: subscriptions.
+          <span class="status design">Design in Articulate</span>
+        </div>
       </div>
     </div>
   </div>
@@ -499,26 +373,24 @@
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">3.2</div>
-      <div class="slide-title">Existing INFORM Users — Route to Second Level</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">The 30-second intro (what to actually say)</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">BUILD</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">If an existing inForm user calls with questions about their data, their dashboard, or anything related to how the platform works &mdash; transfer them to Second Level Support at extension 1925047. You are not expected to troubleshoot inForm data. Acknowledge their concern, provide context if you can &mdash; like the data refresh timing we just covered &mdash; and route to the team that specializes in it. Think of it this way: you&rsquo;re the expert on getting the customer to the right place. Second Level is the expert on the data.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Routing card</span> <span class="status design">Design in Articulate</span><br>
-          Highlighted card: &ldquo;Existing INFORM User &rarr; Second Level Support &mdash; ext 1925047&rdquo;<br>
-          Include a brief &ldquo;what to say&rdquo; script example
+        <div class="label">Voiceover Script (~50s)</div>
+        <div class="script">
+          Here's a talk-track you can lift word-for-word. Use it when a customer gives you a cue &mdash; or any time it feels natural. <em>"Since you're asking about [their concern], I want to make sure you know about inForm Safety. It's a free dashboard that comes with your PrePass subscription &mdash; it shows your ISS score, your inspection history, and what's driving your safety numbers, all in one place. If you're interested, I can connect you with our team that sets up access. Want me to go ahead?"</em> That's the whole script. Short, clear, and it ends with a question that makes the hand-off easy.
         </div>
       </div>
-      <div class="note-box critical">
-        <span class="note-label">Key Rule</span>
-        Transfer, don&rsquo;t troubleshoot. Data questions from existing inForm users always go to Second Level Support at extension 1925047.
+      <div class="note-box interaction">
+        <span class="note-label">Design Note</span>
+        Rise "Process" block or Quote block styled as a script card. Highlight the question at the end in a different color.
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Talk-Track Nugget</span>
+        <strong>The close:</strong> <em>"Want me to go ahead?"</em> &mdash; this sentence is what turns the intro into an action. If they say yes, you warm-transfer. If they say no, no pressure, you move on.
       </div>
     </div>
   </div>
@@ -526,208 +398,101 @@
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">3.3</div>
-      <div class="slide-title">Existing PrePass Customer — Access Setup (Your Job)</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Handling "tell me more" &mdash; keep it short, then hand off</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">BUILD</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">This is the call type you own. An existing PrePass or PrePass Plus customer wants inForm Safety access. Here&rsquo;s the process, step by step. First, verify eligibility &mdash; they need an active PrePass account. Remind them that inForm Safety is included at no additional cost. They&rsquo;ll need to accept the End User License Agreement. Second, verify authorization &mdash; confirm the requester is an authorized Safety User for the DOT. If they already have a PrePass.com username, inForm access can be enabled on that same account. Third, collect three pieces of information: their email address, their first and last name, and their DOT number. And fourth, email that info to inform@prepass.com. Phoenix Ops handles the actual setup from there. Set the expectation: &ldquo;Our operations team will get your access set up, and you&rsquo;ll receive a confirmation email.&rdquo;</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">4-step process graphic</span> <span class="status design">Design in Articulate</span><br>
-          Interactive step-through: Verify Eligibility &rarr; Verify Authorization &rarr; Collect Info &rarr; Email inform@prepass.com<br>
-          Highlight the three data points: email, name, DOT number
+        <div class="label">Voiceover Script (~40s)</div>
+        <div class="script">
+          If a customer says, "tell me more," don't try to be the expert. Hit the three features you already know: the Company Snapshot dashboard, the visual heat maps, and the automated email reports. Then transition to the hand-off: <em>"The best way to see it is to have our team get you set up &mdash; I'll connect you with them."</em> Your job ends at interest. The moment it turns into "how do I log in" or "my data looks wrong," it's a Tech Support conversation.
         </div>
       </div>
-      <div class="note-box tip">
-        <span class="note-label">Value-Add Script</span>
-        &ldquo;inForm Safety gives you dashboards and visualizations of your fleet&rsquo;s inspection and violation data &mdash; it&rsquo;s a great tool for understanding your ISS score and coaching drivers. And it&rsquo;s included with your PrePass subscription at no extra charge.&rdquo;
+      <div class="note-box critical">
+        <span class="note-label">Do NOT</span>
+        &bull; Don't walk the customer through the login page.<br>
+        &bull; Don't explain data refresh timing or why numbers differ between inForm and FMCSA websites.<br>
+        &bull; Don't collect email/name/DOT for setup &mdash; that workflow belongs to Tech Support now.<br>
+        &bull; Don't quote subscription limits or subscription format. You <em>can</em> mention they exist; Tech Support explains the mechanics.
       </div>
     </div>
   </div>
 
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">3.4</div>
-      <div class="slide-title">Non-PrePass Callers — Route to Sales</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">If someone who is not a PrePass customer calls asking about inForm Safety, transfer them to Inside Sales. English-speaking callers go to extension 1925037, and Spanish-speaking callers go to extension 1925012. Sales will discuss PrePass subscription options and handle the conversation from there. You can let the caller know that inForm Safety is a feature available to PrePass subscribers &mdash; and that our Sales team can walk them through their options.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Routing card</span> <span class="status design">Design in Articulate</span><br>
-          &ldquo;Non-PrePass Caller &rarr; Inside Sales&rdquo;<br>
-          English: ext 1925037 | Spanish: ext 1925012
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">3.5</div>
-      <div class="slide-title">Quick Reference Card</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Here&rsquo;s your quick reference &mdash; keep this handy. Existing inForm user with data questions: Second Level Support, extension 1925047. Existing PrePass customer wants access: you handle intake, then email inform@prepass.com. New customer, not on PrePass: Inside Sales, extension 1925037 for English or 1925012 for Spanish. Three call types, three clear paths. When in doubt about whether someone is an existing user or a new access request, ask: &ldquo;Do you currently have inForm Safety access on your PrePass account?&rdquo;</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Extension reference table</span> <span class="status design">Design in Articulate</span><br>
-          Clean table with three rows:<br>
-          &bull; Existing INFORM user &mdash; data questions | Second Level Support | ext 1925047<br>
-          &bull; Existing PrePass customer &mdash; wants access | YOU (intake) | &rarr; inform@prepass.com<br>
-          &bull; Non-PrePass caller | Inside Sales | ext 1925037 / 1925012<br>
-          Consider making this downloadable as a PDF job aid
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 4 ========== -->
+  <!-- ===== SECTION 4 ===== -->
   <div class="section-divider">
     <div class="section-badge">4</div>
-    <h2>Common Call Scenarios</h2>
-    <span class="meta">3 min &middot; 4 slides</span>
+    <h2>The Hand-Off</h2>
+    <div class="meta">1 slide &middot; ~1 min</div>
   </div>
 
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">4.1</div>
-      <div class="slide-title">Scenario: "How do I get inForm Safety?"</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Where inForm calls go</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">BUILD</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Scenario one. A PrePass customer calls and says &ldquo;I heard you have a safety reporting tool &mdash; how do I get it?&rdquo; This is your setup call. Explain that inForm Safety is included with their subscription at no extra cost. Verify they&rsquo;re an authorized Safety User for the DOT. Collect their email, name, and DOT number. Email that info to inform@prepass.com. And close with: &ldquo;Our operations team will set up your access and you&rsquo;ll receive a confirmation email.&rdquo; This is also a great opportunity to sell the value: &ldquo;inForm Safety gives you dashboards and visualizations of your fleet&rsquo;s inspection and violation data &mdash; it&rsquo;s a great tool for understanding your ISS score and coaching drivers.&rdquo;</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Scenario card &mdash; Tab 1</span> <span class="status design">Design in Articulate</span><br>
-          Tabbed interaction: scenario description at top, step-by-step resolution below<br>
-          Highlight the value-add script
+        <div class="label">Voiceover Script (~55s)</div>
+        <div class="script">
+          Three kinds of inForm calls, three routes. If the customer is an existing PrePass account and wants access &mdash; warm-transfer to Tech Support, they handle the setup end to end. If the customer is already using inForm and has a data question or something's not working &mdash; same thing, Tech Support. And if the caller isn't a PrePass customer at all but wants inForm, that's an Inside Sales call &mdash; English or Spanish line depending on the caller. The common thread: <em>CS introduces the product, Tech Support and Sales do the heavy lifting.</em>
         </div>
       </div>
-      <div class="note-box interaction">
-        <span class="note-label">Interaction</span>
-        In Rise: tabs block with 4 tabs. In Storyline: tab interaction or accordion.
+      <div class="ss-block">
+        <div class="label">Visual &mdash; Routing card (persistent resource)</div>
+        <div class="details">
+          Design a clean 3-row routing card. Rise table or custom graphic.<br><br>
+          <strong>Row 1:</strong> Existing PrePass customer wants inForm access &rarr; Tech Support (warm transfer)<br>
+          <strong>Row 2:</strong> Existing inForm user &mdash; data question or issue &rarr; Tech Support (warm transfer)<br>
+          <strong>Row 3:</strong> Non-PrePass caller interested in inForm &rarr; Inside Sales (EN / ES)<br>
+          <span class="status design">Design in Articulate</span>
+        </div>
+      </div>
+      <div class="note-box tip">
+        <span class="note-label">Extension Note</span>
+        Specific extensions are intentionally kept off this slide &mdash; they live in the CS extension directory (single source of truth). The storyboard author should link to that directory here so numbers don't go stale inside the course.
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Content Gap &mdash; Confirm with Adam</span>
+        <strong>Decision needed before build:</strong> Does Tech Support take warm transfers, or does CS create a case/ticket and Tech Support calls the customer back? Current storyboard assumes warm transfer &mdash; update if the process is async.
       </div>
     </div>
   </div>
 
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">4.2</div>
-      <div class="slide-title">Scenario: "My data looks wrong"</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Scenario two. An existing inForm user calls and says &ldquo;my violation data doesn&rsquo;t match what I see on the FMCSA website&rdquo; or &ldquo;some of my inspections are missing.&rdquo; Acknowledge the concern &mdash; don&rsquo;t dismiss it. If it feels appropriate, you can share context: inspection and violation data refreshes every 15 minutes from SAFER, crash data updates monthly from the FMCSA, and the Industry Portal shows account-level data while inForm shows DOT-level data, so the numbers may naturally differ. Then transfer to Second Level Support at extension 1925047. They have the tools to investigate. The key rule here: acknowledge, provide context if you can, and route. Do not try to troubleshoot inForm data yourself.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Scenario card &mdash; Tab 2</span> <span class="status design">Design in Articulate</span><br>
-          Scenario description at top, resolution steps below<br>
-          Callout: &ldquo;Transfer to Second Level Support &mdash; ext 1925047&rdquo;
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">4.3</div>
-      <div class="slide-title">Scenario: "I want to set up email reports"</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Scenario three. An inForm user asks about setting up or changing their automated email reports. Here&rsquo;s what you can tell them. Subscriptions send automated data queries to their email on a daily, weekly, or monthly basis. Each DOT can have up to 50 subscriptions, and they&rsquo;re deletable anytime from within the portal. Reports come in PDF format only, and the data is refreshed right before each send. Most customers can manage subscriptions themselves through the portal. But if they need help navigating or are running into issues, transfer to Second Level Support at extension 1925047.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Scenario card &mdash; Tab 3</span> <span class="status design">Design in Articulate</span><br>
-          Scenario description at top, key facts in bullet format<br>
-          Include: 50 subscriptions per DOT, PDF only, daily/weekly/monthly
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">4.4</div>
-      <div class="slide-title">Scenario: "I'm not a PrePass customer"</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Scenario four. A caller who isn&rsquo;t a PrePass customer asks about getting inForm Safety for their fleet. This is a warm lead for Sales. Let them know that inForm Safety is available to PrePass subscribers as a value-added feature, and transfer them to Inside Sales &mdash; extension 1925037 for English, or 1925012 for Spanish. Sales will take it from there. Keep it brief, keep it positive: &ldquo;That&rsquo;s a great tool &mdash; let me connect you with our Sales team so they can walk you through the options.&rdquo;</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Scenario card &mdash; Tab 4</span> <span class="status design">Design in Articulate</span><br>
-          Short scenario with clear routing: Inside Sales ext 1925037 / 1925012<br>
-          Warm handoff script example
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 5 ========== -->
+  <!-- ===== SECTION 5 ===== -->
   <div class="section-divider">
     <div class="section-badge">5</div>
     <h2>Knowledge Check</h2>
-    <span class="meta">3 min &middot; 5 slides</span>
+    <div class="meta">3 questions &middot; ~1.5 min</div>
   </div>
 
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">5.1</div>
-      <div class="slide-title">Q1: Routing — Data Discrepancy</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Quiz</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Q1 &mdash; The one-sentence pitch</div>
+      <div class="slide-tags"><span class="tag build">QUIZ</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Question</div>
-        <div class="script">An existing inForm user calls and says their violation data doesn&rsquo;t match what they see on the FMCSA website. What do you do?<br><br>
-        A) Try to troubleshoot the data discrepancy yourself<br>
-        B) Transfer to Second Level Support at extension 1925047 &check;<br>
-        C) Tell them inForm data is always correct and FMCSA may be outdated<br>
-        D) Transfer to Inside Sales</div>
+      <div class="ss-block">
+        <div class="label">Question (Multiple Choice)</div>
+        <div class="details">
+          A customer asks, "What even is inForm Safety?" &mdash; which response is best?<br><br>
+          A) "It's a premium add-on that costs extra but it's really worth it." &#10060;<br>
+          B) "It's a free online dashboard that shows what's driving your ISS score." &#9989;<br>
+          C) "It's a tool our engineers use to track your account." &#10060;<br>
+          D) "Honestly I'd have to transfer you for that one." &#10060;
+        </div>
       </div>
-      <div class="vo-block">
-        <div class="label">Feedback — Correct</div>
-        <div class="script">That&rsquo;s right. Data questions from existing inForm users always go to Second Level Support at ext 1925047. You&rsquo;re not expected to troubleshoot inForm data &mdash; acknowledge, provide context if you can, and route correctly.</div>
+      <div class="note-box tip">
+        <span class="note-label">Feedback (correct)</span>
+        Exactly right. Free, online, dashboard, ISS score &mdash; four ideas, one sentence. That's the core pitch.
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Feedback (incorrect)</span>
+        inForm Safety is <em>free</em> with PrePass and PrePass Plus &mdash; and you can absolutely answer a basic "what is it" question without a transfer. Save the transfer for setup and data questions.
       </div>
     </div>
   </div>
@@ -735,22 +500,24 @@
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">5.2</div>
-      <div class="slide-title">Q2: Product Knowledge — ISS Score</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Quiz</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Q2 &mdash; Spotting the cue</div>
+      <div class="slide-tags"><span class="tag build">QUIZ</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Question</div>
-        <div class="script">What does inForm Safety help carriers understand and improve?<br><br>
-        A) Their toll payment history<br>
-        B) Their Inspection Selection System (ISS) score &check;<br>
-        C) Their PrePass transponder signal strength<br>
-        D) Their fleet fuel efficiency</div>
+      <div class="ss-block">
+        <div class="label">Question (Multiple Choice)</div>
+        <div class="details">
+          You're on a call and the customer says, "I feel like my trucks are getting pulled into weigh stations way more than they used to." What's a natural next move?<br><br>
+          A) Apologize and escalate to a supervisor. &#10060;<br>
+          B) Mention inForm Safety &mdash; weigh station pull-ins connect directly to ISS score, which inForm visualizes. &#9989;<br>
+          C) Tell them weigh stations are operated by the states, nothing you can do. &#10060;<br>
+          D) Offer them a refund. &#10060;
+        </div>
       </div>
-      <div class="vo-block">
-        <div class="label">Feedback — Correct</div>
-        <div class="script">Exactly. inForm Safety is built around the ISS score &mdash; the FMCSA metric that determines whether a truck bypasses a weigh station or gets pulled in. It visualizes the inspection, violation, and BASICs data that make up that score.</div>
+      <div class="note-box tip">
+        <span class="note-label">Feedback (correct)</span>
+        Nice catch. Weigh station frustration is one of the clearest cues that inForm can help &mdash; because ISS score <em>is</em> the thing driving it.
       </div>
     </div>
   </div>
@@ -758,175 +525,147 @@
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">5.3</div>
-      <div class="slide-title">Q3: Access Setup — Required Info</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Quiz</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Q3 &mdash; Where the line is</div>
+      <div class="slide-tags"><span class="tag build">QUIZ</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Question</div>
-        <div class="script">A PrePass customer wants inForm Safety access. What three pieces of information do you need to collect?<br><br>
-        A) Account number, DOT number, phone number<br>
-        B) Email address, first/last name, DOT number &check;<br>
-        C) Company name, fleet size, ISS score<br>
-        D) Username, password, account number</div>
+      <div class="ss-block">
+        <div class="label">Question (Multiple Choice)</div>
+        <div class="details">
+          The customer says, "Great, sign me up &mdash; and also my HOS data in inForm looks wrong." What do you do?<br><br>
+          A) Collect their email, name, and DOT and email inform@prepass.com. &#10060;<br>
+          B) Tell them inForm data is always correct and not to worry. &#10060;<br>
+          C) Warm-transfer to Tech Support &mdash; both setup and data questions belong there. &#9989;<br>
+          D) Offer to log in on their behalf and look at the data. &#10060;
+        </div>
       </div>
-      <div class="vo-block">
-        <div class="label">Feedback — Correct</div>
-        <div class="script">Right. Phoenix Ops handles setup &mdash; they need the customer&rsquo;s email address, first and last name, and DOT number. You email this info to inform@prepass.com and let the customer know they&rsquo;ll receive a confirmation.</div>
+      <div class="note-box tip">
+        <span class="note-label">Feedback (correct)</span>
+        Correct. In the new model, <em>CS introduces and hands off.</em> Setup and data questions both live with Tech Support &mdash; one clean transfer.
+      </div>
+      <div class="note-box critical">
+        <span class="note-label">Feedback (incorrect)</span>
+        Collecting email/name/DOT and emailing inform@prepass.com used to be the CS workflow &mdash; it isn't anymore. That intake now lives with Tech Support. Your role stops at interest.
       </div>
     </div>
   </div>
 
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">5.4</div>
-      <div class="slide-title">Q4: Cost — True/False</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Quiz</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Question</div>
-        <div class="script">True or False: inForm Safety is an add-on product that costs extra on top of the PrePass subscription.<br><br>
-        A) True<br>
-        B) False &check;</div>
-      </div>
-      <div class="vo-block">
-        <div class="label">Feedback — Correct</div>
-        <div class="script">False. inForm Safety is a value-added feature included at no additional cost for PrePass and PrePass Plus customers. This is a great talking point &mdash; make sure customers know it&rsquo;s already part of what they&rsquo;re paying for.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="slide-card">
-    <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
-      <div class="slide-num">5.5</div>
-      <div class="slide-title">Q5: Scenario — Non-PrePass Caller</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Quiz</span></div>
-      <span class="expand-icon">&#9660;</span>
-    </div>
-    <div class="slide-body">
-      <div class="vo-block">
-        <div class="label">Question</div>
-        <div class="script">A caller who is NOT a PrePass customer asks about getting inForm Safety for their fleet. What&rsquo;s the correct action?<br><br>
-        A) Collect their info and email inform@prepass.com<br>
-        B) Tell them inForm is only for existing customers and there&rsquo;s nothing you can do<br>
-        C) Transfer to Inside Sales (English ext 1925037, Spanish ext 1925012) &check;<br>
-        D) Transfer to Second Level Support at ext 1925047</div>
-      </div>
-      <div class="vo-block">
-        <div class="label">Feedback — Correct</div>
-        <div class="script">That&rsquo;s right. Non-PrePass callers interested in inForm go to Inside Sales, who will discuss PrePass subscription options. English: ext 1925037, Spanish: ext 1925012. It&rsquo;s a warm lead &mdash; hand it off positively.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== SECTION 6 ========== -->
+  <!-- ===== SECTION 6 ===== -->
   <div class="section-divider">
     <div class="section-badge">6</div>
-    <h2>Summary &amp; Resources</h2>
-    <span class="meta">1 min &middot; 1 slide</span>
+    <h2>Wrap &amp; Resources</h2>
+    <div class="meta">1 slide &middot; ~0.5 min</div>
   </div>
 
   <div class="slide-card">
     <div class="slide-header" onclick="this.parentElement.classList.toggle('open')">
       <div class="slide-num">6.1</div>
-      <div class="slide-title">Recap &amp; Resource Links</div>
-      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">Design</span></div>
-      <span class="expand-icon">&#9660;</span>
+      <div class="slide-title">Summary + where to go next</div>
+      <div class="slide-tags"><span class="tag vo">VO</span><span class="tag build">BUILD</span></div>
+      <span class="expand-icon">&#9662;</span>
     </div>
     <div class="slide-body">
       <div class="vo-block">
-        <div class="label">Voiceover Script</div>
-        <div class="script">Let&rsquo;s recap. inForm Safety is a free reporting tool for PrePass customers that visualizes fleet safety data and ISS scores. The ISS score drives bypass eligibility &mdash; poor scores mean more weigh station pull-ins. Seven BASICs categories, rolling 24-month data window. For routing: existing users with data questions go to Second Level Support at extension 1925047. Existing PrePass customers wanting access &mdash; you handle intake and email inform@prepass.com. Non-PrePass prospects go to Inside Sales at extension 1925037 or 1925012. For setup, you need three things: email, name, and DOT number. Phoenix Ops does the rest. You now know what inForm Safety does, why carriers rely on it, and exactly how to handle every type of inForm call that comes your way. When a customer asks about their safety data &mdash; you&rsquo;ve got this.</div>
-      </div>
-      <div class="ss-block">
-        <div class="label">Visual</div>
-        <div class="details">
-          <span class="filename">Summary + resource links</span> <span class="status design">Design in Articulate</span><br>
-          Key takeaway bullets (6&ndash;7 items) with resource links:<br>
-          &bull; <a href="https://prepass.crm.dynamics.com/main.aspx?forceUCI=1&appid=5da4e37c-a425-ed11-b83b-00224824739e" target="_blank">FAQ&rsquo;s INFORM Safety (D365 KB Article)</a><br>
-          &bull; inForm Safety product page (prepass.com)<br>
-          &bull; Quick Reference Card (downloadable PDF job aid &mdash; extension numbers + routing + setup checklist)
+        <div class="label">Voiceover Script (~30s)</div>
+        <div class="script">
+          Three things to take with you: inForm Safety is a free dashboard that shows carriers their ISS score and safety data. Listen for the cue &mdash; pull-ins, inspections, safety scores &mdash; and use the 30-second intro. When they say yes, hand off to Tech Support. You'll know you've nailed this when introducing inForm feels as easy as mentioning any other PrePass feature.
         </div>
       </div>
-      <div class="note-box tip">
-        <span class="note-label">Build Note</span>
-        Consider making the extension reference card a downloadable PDF job aid that agents can print or keep on their desktop. Attach to the resources section.
+      <div class="ss-block">
+        <div class="label">Resources Panel</div>
+        <div class="details">
+          &bull; <strong>FAQ's INFORM Safety (D365 KB)</strong> &mdash; link to Dynamics 365 article<br>
+          &bull; <strong>inForm Safety product page</strong> &mdash; prepass.com<br>
+          &bull; <strong>Companion course:</strong> inForm Safety &mdash; Tech Support (access setup, data reading, troubleshooting)<br>
+          &bull; <strong>Routing card:</strong> downloadable PDF from Section 4
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ========== CAPTURE SUMMARY ========== -->
+  <!-- ===== SUMMARY PANEL ===== -->
   <div class="summary-panel">
-    <h2>Screenshot &amp; Asset Capture Summary</h2>
+    <h2>Build Summary</h2>
     <table class="summary">
       <thead>
         <tr>
-          <th>Slide</th>
-          <th>Asset</th>
-          <th>Source</th>
-          <th>Status</th>
+          <th style="width:8%">#</th>
+          <th style="width:32%">Section</th>
+          <th style="width:10%">Slides</th>
+          <th style="width:12%">Duration</th>
+          <th style="width:38%">Notes</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>1.3</td>
-          <td>CSA BASICs bar chart</td>
-          <td><code>InformSAFETY.pdf</code></td>
-          <td><span class="status captured">Available</span></td>
-        </tr>
-        <tr>
-          <td>2.1</td>
-          <td>Portal navigation / inForm landing page</td>
-          <td>Live portal</td>
-          <td><span class="status needed">Needs capture</span></td>
-        </tr>
-        <tr>
-          <td>2.2</td>
-          <td>Company Snapshot dashboard (ISS, fleet, inspections, BASICs, trending)</td>
-          <td>Live portal (PDF fallback)</td>
-          <td><span class="status needed">Needs capture</span></td>
-        </tr>
-        <tr>
-          <td>2.3</td>
-          <td>Heat map / geographic visualization</td>
-          <td>Live portal (PDF fallback)</td>
-          <td><span class="status needed">Needs capture</span></td>
-        </tr>
-        <tr>
-          <td>2.4a</td>
-          <td>Data Insights / details tab</td>
-          <td>Live portal</td>
-          <td><span class="status needed">Needs capture</span></td>
-        </tr>
-        <tr>
-          <td>2.4b</td>
-          <td>Subscriptions management screen</td>
-          <td>Live portal</td>
-          <td><span class="status needed">Needs capture</span></td>
-        </tr>
-        <tr>
-          <td>Various</td>
-          <td>Routing flowchart, reference card, process graphics</td>
-          <td>Build in Articulate</td>
-          <td><span class="status design">Design</span></td>
-        </tr>
+        <tr><td>0</td><td>Welcome &amp; Why This Matters</td><td>1</td><td>~0.5 min</td><td>Title + 3 promises</td></tr>
+        <tr><td>1</td><td>What Is inForm Safety?</td><td>2</td><td>~2 min</td><td>One-sentence pitch + ISS/BASICs at a glance</td></tr>
+        <tr><td>2</td><td>Feature Highlights</td><td>3</td><td>~2.5 min</td><td>Dashboard, heat maps, email subscriptions</td></tr>
+        <tr><td>3</td><td>When &amp; How to Bring It Up</td><td>3</td><td>~2.5 min</td><td>Cues &rarr; 30-sec intro &rarr; hand-off trigger</td></tr>
+        <tr><td>4</td><td>The Hand-Off</td><td>1</td><td>~1 min</td><td>3-route card; no extensions embedded</td></tr>
+        <tr><td>5</td><td>Knowledge Check</td><td>3</td><td>~1.5 min</td><td>Pitch, cue-spotting, scope-of-role</td></tr>
+        <tr><td>6</td><td>Wrap &amp; Resources</td><td>1</td><td>~0.5 min</td><td>Links to Tech Support course + KB</td></tr>
+        <tr><td colspan="2"><strong>Total</strong></td><td><strong>13</strong></td><td><strong>~10 min</strong></td><td>Passing score: 2 of 3 (67%)</td></tr>
       </tbody>
     </table>
   </div>
 
+  <div class="summary-panel">
+    <h2>Asset Status &mdash; CS Course</h2>
+    <table class="summary">
+      <thead>
+        <tr><th>#</th><th>Asset</th><th>Slide</th><th>Source</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>inForm wordmark / product mark</td><td>1.1</td><td><code>Resources/InformSAFETY.pdf</code></td><td><span class="tag have">HAVE</span></td></tr>
+        <tr><td>2</td><td>CSA BASICs bar chart (marketing)</td><td>1.2</td><td><code>Resources/InformSAFETY.pdf</code></td><td><span class="tag have">HAVE</span></td></tr>
+        <tr><td>3</td><td>Company Snapshot dashboard</td><td>2.1</td><td>Live portal capture</td><td><span class="tag need">NEED</span></td></tr>
+        <tr><td>4</td><td>Heat map view</td><td>2.2</td><td>Live portal capture (PDF fallback OK)</td><td><span class="tag need">NEED</span></td></tr>
+        <tr><td>5</td><td>Subscriptions icon graphic</td><td>2.3</td><td>Articulate design</td><td><span class="tag build">BUILD</span></td></tr>
+        <tr><td>6</td><td>Cue flashcards (4 customer phrases)</td><td>3.1</td><td>Articulate design</td><td><span class="tag build">BUILD</span></td></tr>
+        <tr><td>7</td><td>Talk-track card (30-sec intro)</td><td>3.2</td><td>Articulate design</td><td><span class="tag build">BUILD</span></td></tr>
+        <tr><td>8</td><td>Routing card (3 rows)</td><td>4.1</td><td>Articulate design</td><td><span class="tag build">BUILD</span></td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px; color:var(--gray-500); margin-top:12px;">
+      <strong>Live captures needed:</strong> 2 (Company Snapshot + heat map). Everything else is either in the Resources PDFs or built natively in Articulate. If Five9/portal access is blocked, marketing PDF images are acceptable Rev-1 placeholders.
+    </p>
+  </div>
+
+  <div class="summary-panel">
+    <h2>What Moved Out to the Tech Support Course</h2>
+    <table class="summary">
+      <thead>
+        <tr><th style="width:55%">Topic from original storyboard</th><th>New home</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Full dashboard walkthrough (Company Snapshot + Panels 1&ndash;3)</td><td>Tech Support</td></tr>
+        <tr><td>Data source mechanics (SAFER, FMCSA, 15-min refresh, monthly crash data)</td><td>Tech Support</td></tr>
+        <tr><td>DOT-level vs. account-level data differences</td><td>Tech Support</td></tr>
+        <tr><td>Setup intake workflow (email/name/DOT &rarr; inform@prepass.com)</td><td>Tech Support</td></tr>
+        <tr><td>EULA verification, authorized Safety User check</td><td>Tech Support</td></tr>
+        <tr><td>Subscription mechanics (50/DOT, PDF format, delivery timing)</td><td>Tech Support</td></tr>
+        <tr><td>Troubleshooting "my data looks wrong" calls</td><td>Tech Support</td></tr>
+        <tr><td>Phoenix Ops relationship / inform@prepass.com handling</td><td>Tech Support</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px; color:var(--gray-500); margin-top:12px;">
+      The Tech Support course inherits most of the original Section 2, all of Section 3's intake workflow, and the deeper-dive call scenarios. CS retains product awareness, talk tracks, and clean routing only.
+    </p>
+  </div>
+
   <div class="footer">
-    inForm Safety &mdash; Storyboard Guide v1 &nbsp;|&nbsp; April 3, 2026 &nbsp;|&nbsp; Track 2: Articulate POC &nbsp;|&nbsp; 22 slides &middot; 7 screenshots &middot; 22 VO scripts
+    inForm Safety &mdash; CS Audience Storyboard &middot; Rebuild v1 &middot; April 16, 2026<br>
+    Companion: inForm Safety &mdash; Tech Support Storyboard (to be rebuilt next)
   </div>
 
 </div>
 
 <script>
-document.querySelectorAll('.slide-header').forEach(h => {
-  h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
-});
+  // Auto-collapse all but the first on load (first is already open)
+  document.querySelectorAll('.slide-card').forEach((c, i) => {
+    if (i > 0) c.classList.remove('open');
+  });
 </script>
 
 </body>
