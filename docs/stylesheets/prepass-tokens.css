@@ -1,0 +1,131 @@
+/* PrePass Design System — tokens
+   Source: claude.ai/design handoff "Prepass Design System"
+   Extracted from PrePass Internal PPTX template. */
+
+:root {
+  /* ===== Brand colors (from PPTX theme "PrePass") ===== */
+  --pp-purple-900: #29005F;
+  --pp-purple-500: #5B2D8E;
+  --pp-orange-500: #F2A84A;
+  --pp-sky-300:    #88DEFB;
+  --pp-slate-300:  #B7C2D1;
+  --pp-offwhite:   #F9FAFB;
+
+  --pp-ink:        #404040;
+  --pp-black:      #000000;
+  --pp-white:      #FFFFFF;
+  --pp-ink-soft:   #E7EBEF;
+
+  --pp-purple-950: #1A003D;
+  --pp-purple-800: #3D1769;
+  --pp-purple-700: #4A2379;
+  --pp-purple-600: #522985;
+  --pp-purple-400: #8562B0;
+  --pp-purple-300: #A88ECA;
+  --pp-purple-200: #C9B8DF;
+  --pp-purple-100: #E5DAEF;
+  --pp-purple-50:  #F3EDF8;
+
+  --pp-orange-600: #E0913A;
+  --pp-orange-100: #FDECD4;
+
+  --pp-sky-500:    #4EC2EF;
+  --pp-sky-100:    #DEF4FE;
+
+  --pp-slate-700:  #5C6674;
+  --pp-slate-500:  #8995A6;
+  --pp-slate-100:  #EEF1F5;
+
+  --pp-success:    #2BA672;
+  --pp-warning:    #F2A84A;
+  --pp-danger:     #D7443C;
+  --pp-info:       #4EC2EF;
+
+  /* ===== Semantic foreground / background ===== */
+  --fg-1:          var(--pp-ink);
+  --fg-2:          var(--pp-slate-700);
+  --fg-3:          var(--pp-slate-500);
+  --fg-on-purple:  var(--pp-white);
+  --fg-brand:      var(--pp-purple-500);
+  --fg-link:       var(--pp-purple-500);
+  --fg-link-hover: var(--pp-purple-900);
+
+  --bg-canvas:     var(--pp-white);
+  --bg-surface:    var(--pp-offwhite);
+  --bg-raised:     var(--pp-white);
+  --bg-brand:      var(--pp-purple-900);
+  --bg-brand-alt:  var(--pp-purple-500);
+  --bg-muted:      var(--pp-ink-soft);
+
+  --border-1:      var(--pp-ink-soft);
+  --border-2:      var(--pp-slate-300);
+
+  /* ===== Type ===== */
+  --font-sans:    'Aptos', 'Aptos Display', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Aptos Display', 'Aptos', 'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Consolas, monospace;
+
+  --fs-12: 0.75rem;
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-22: 1.375rem;
+  --fs-28: 1.75rem;
+  --fs-36: 2.25rem;
+  --fs-48: 3rem;
+  --fs-60: 3.75rem;
+  --fs-84: 5.25rem;
+
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semi:    600;
+  --fw-bold:    700;
+  --fw-black:   900;
+
+  --lh-tight: 1.05;
+  --lh-snug:  1.2;
+  --lh-body:  1.5;
+  --lh-loose: 1.65;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug:  -0.01em;
+  --tracking-wide:  0.04em;
+  --tracking-caps:  0.08em;
+
+  /* ===== Spacing (4px grid) ===== */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+  --sp-20: 80px;
+  --sp-24: 96px;
+
+  /* ===== Radii ===== */
+  --radius-xs:      4px;
+  --radius-sm:      6px;
+  --radius-md:      10px;
+  --radius-lg:      16px;
+  --radius-xl:      24px;
+  --radius-pill:    999px;
+  --radius-corner:  48px;
+
+  /* ===== Shadows (purple-tinted) ===== */
+  --shadow-xs: 0 1px 2px rgba(41, 0, 95, 0.06);
+  --shadow-sm: 0 2px 8px rgba(41, 0, 95, 0.08);
+  --shadow-md: 0 8px 24px rgba(41, 0, 95, 0.10);
+  --shadow-lg: 0 20px 40px rgba(41, 0, 95, 0.14);
+  --shadow-purple-glow: 0 12px 32px rgba(91, 45, 142, 0.32);
+
+  /* ===== Motion ===== */
+  --ease-standard: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --ease-out:      cubic-bezier(0.16, 0.84, 0.44, 1);
+  --dur-fast:  120ms;
+  --dur-base:  200ms;
+  --dur-slow:  320ms;
+}

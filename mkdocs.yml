@@ -4,18 +4,18 @@ site_description: Outlines, trackers, research docs & user summaries — all in 
 
 theme:
   name: material
-  logo: assets/images/helmet.png
-  favicon: assets/images/helmet.png
+  logo: assets/images/prepass/prepass-wordmark-white.png
+  favicon: assets/images/prepass/prepass-mark-color.png
   palette:
     - scheme: slate
-      primary: deep purple
-      accent: teal
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
     - scheme: default
-      primary: deep purple
-      accent: teal
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -34,6 +34,7 @@ theme:
     - toc.follow
 
 extra_css:
+  - stylesheets/prepass-tokens.css
   - stylesheets/custom.css
 
 plugins:
