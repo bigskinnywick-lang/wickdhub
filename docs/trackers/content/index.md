@@ -11,8 +11,8 @@ Storyboard guides, content trackers, and screenshot capture references for Artic
 ## Track 1 — Intro to PrePass Storyboards
 
 - **[M1 — Mission, Vision & Values](mission-vision-values-storyboard.md)** — Storyboard for Module 1 (Revision 2 — NEO pyramid framing)
-- **[M3 — PrePass History](prepass-history-storyboard.md)** — Storyboard for Module 3 (Revision 2 — NEO timeline alignment)
-- **[M4 — PrePass Alliance](prepass-alliance-storyboard.md)** — Storyboard for Module 4 (Revision 2 — purpose-first reframe)
+- *M3 — PrePass History* — **Built.** Storyboard retired; module posted to Reach (Apr 23, 2026).
+- *M4 — PrePass Alliance* — **Built.** Storyboard retired; module posted to Reach.
 - **[M5 — Customers, Market & Product](customers-market-product-storyboard.md)** — Storyboard for Module 5 (New build — four value props framework)
 - **[M6 — Revenue Model](revenue-model-storyboard.md)** — Storyboard for Module 6 (New build — self-funded nonprofit framing)
 - **[M7 — Market Goals](market-goals-storyboard.md)** — Storyboard for Module 7 (New build — strategic priorities snapshot)
