@@ -576,24 +576,25 @@
     </div>
   </div>
 
-  <!-- MONDAY Apr 20 &mdash; TODAY -->
-  <div class="day-card today open">
+  <!-- MONDAY Apr 20 -->
+  <div class="day-card">
     <div class="day-header" onclick="toggleDay(this)">
       <div class="day-header-left">
         <span class="day-name">Monday, April 20</span>
-        <span class="day-date">Day 1 &mdash; TODAY</span>
+        <span class="day-date">Day 1 &mdash; Complete</span>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span class="day-status status-today">Today</span>
+        <span class="day-status status-done">Done</span>
         <span class="chevron">&rsaquo;</span>
       </div>
     </div>
     <div class="day-body">
       <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text"><strong>Class visitors &mdash; schedule &amp; send meeting makers</strong> for May new hire class by EOD <span class="task-tag tag-content">CONTENT</span></span></li>
-        <li><input type="checkbox"><span class="task-text"><strong>Jon sync</strong> &mdash; interview status + offer acceptance timing; need for May roster seat placement <span class="task-tag tag-admin">ADMIN</span></span></li>
-        <li><input type="checkbox"><span class="task-text">AAA screenshot swap &mdash; check Five9 status; replace placeholders when available <span class="task-tag tag-build">BUILD</span></span></li>
-        <li><input type="checkbox"><span class="task-text">AAA assigned to call center via Reach &mdash; ready for team huddles starting Tuesday <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Class visitors &mdash; meeting makers sent</strong> for May new hire class; most visitors have accepted <span class="task-tag tag-content">CONTENT</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Jon sync</strong> &mdash; interviews complete; offers went out 4/20; seats can start being placed on May roster <span class="task-tag tag-admin">ADMIN</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Josh weekly sync (2:00 PM) &mdash; new workstream:</strong> individual side-by-side call reviews for new hires (Bill ask, originated with Josh); Adriana + Eddy involved; Jon strategy session follow-up booked for Tue (slipped to Wed due to illness) <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox"><span class="task-text">AAA screenshot swap &mdash; Five9 still not fixed; completed Wed (4/22 AM) instead <span class="task-tag tag-build">BUILD</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">AAA assigned to call center via Reach &mdash; ready for huddles <span class="task-tag tag-milestone">MILESTONE</span></span></li>
       </ul>
     </div>
   </div>
@@ -603,18 +604,16 @@
     <div class="day-header" onclick="toggleDay(this)">
       <div class="day-header-left">
         <span class="day-name">Tuesday, April 21</span>
-        <span class="day-date">Day 2</span>
+        <span class="day-date">Day 2 &mdash; Out Sick</span>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span class="day-status status-upcoming">Upcoming</span>
+        <span class="day-status" style="background:rgba(148,163,184,0.15);color:#94a3b8;">Sick Day</span>
         <span class="chevron">&rsaquo;</span>
       </div>
     </div>
     <div class="day-body">
       <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text"><strong>AAA huddles begin</strong> &mdash; team huddles kick off; track feedback through Jon and supervisors <span class="task-tag tag-milestone">MILESTONE</span></span></li>
-        <li><input type="checkbox"><span class="task-text"><strong>inForm Safety (CS) Rise build</strong> &mdash; paste AI prompt, iterate; drop in placeholder images until captures <span class="task-tag tag-build">BUILD</span></span></li>
-        <li><input type="checkbox"><span class="task-text">inForm captures &mdash; 2 live shots (Company Snapshot + heat map) next time portal is accessible <span class="task-tag tag-capture">CAPTURE</span></span></li>
+        <li><span class="task-text"><em>Out sick &mdash; no work. AAA huddles kick-off, inForm Rise build, inForm captures, and Jon strategy session all slipped to Wed.</em></span></li>
       </ul>
     </div>
   </div>
@@ -624,35 +623,40 @@
     <div class="day-header" onclick="toggleDay(this)">
       <div class="day-header-left">
         <span class="day-name">Wednesday, April 22</span>
-        <span class="day-date">Day 3</span>
+        <span class="day-date">Day 3 &mdash; AAA Closeout + Jon Session</span>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span class="day-status status-upcoming">Upcoming</span>
+        <span class="day-status status-done">Done</span>
         <span class="chevron">&rsaquo;</span>
       </div>
     </div>
     <div class="day-body">
       <ul class="checklist">
-        <li><input type="checkbox"><span class="task-text">inForm Safety (CS) Rise &mdash; continue build; structure + nav + knowledge checks <span class="task-tag tag-build">BUILD</span></span></li>
-        <li><input type="checkbox"><span class="task-text">AAA &mdash; monitor huddle feedback; triage any guidance-card adjustments <span class="task-tag tag-review">REVIEW</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>AAA Advanced Agent Assist rush job (Bill) &mdash; COMPLETE</strong> <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text">AAA screenshot swap &mdash; placeholders replaced (AM) <span class="task-tag tag-build">BUILD</span></span></li>
+        <li><input type="checkbox" checked><span class="task-text"><strong>Jon strategy session (rescheduled from Tue)</strong> &mdash; side-by-side call reviews for new hire class; Jon to loop in Adriana + Eddy; follow-up Mon 4/27 at 2:00 PM to hammer out details <span class="task-tag tag-milestone">MILESTONE</span></span></li>
+        <li><input type="checkbox"><span class="task-text">inForm Safety (CS) Rise build &mdash; still pending; AAA rush took priority <span class="task-tag tag-build">BUILD</span></span></li>
+        <li><input type="checkbox"><span class="task-text">inForm captures &mdash; still pending; portal access window needed <span class="task-tag tag-capture">CAPTURE</span></span></li>
+        <li><input type="checkbox"><span class="task-text">AAA huddles kick-off &mdash; monitoring begins this week as huddles roll <span class="task-tag tag-review">REVIEW</span></span></li>
       </ul>
     </div>
   </div>
 
-  <!-- THURSDAY Apr 23 -->
-  <div class="day-card">
+  <!-- THURSDAY Apr 23 &mdash; TODAY -->
+  <div class="day-card today open">
     <div class="day-header" onclick="toggleDay(this)">
       <div class="day-header-left">
         <span class="day-name">Thursday, April 23</span>
-        <span class="day-date">Day 4</span>
+        <span class="day-date">Day 4 &mdash; TODAY</span>
       </div>
       <div style="display:flex;align-items:center;gap:0.75rem;">
-        <span class="day-status status-upcoming">Upcoming</span>
+        <span class="day-status status-today">Today</span>
         <span class="chevron">&rsaquo;</span>
       </div>
     </div>
     <div class="day-body">
       <ul class="checklist">
+        <li><input type="checkbox"><span class="task-text"><strong>M3 Company History (Track 1) &mdash; primary focus today</strong> per Michael commitment; Track 2 build work deprioritized <span class="task-tag tag-milestone">MILESTONE</span></span></li>
         <li><input type="checkbox"><span class="task-text">inForm Safety (CS) Rise &mdash; integrate live captures if harvested; continue polish <span class="task-tag tag-build">BUILD</span></span></li>
         <li><input type="checkbox"><span class="task-text">Hand-off mechanic decision &mdash; warm transfer vs. case-and-callback for CS&rarr;Tech Support; prep for Bill conversation <span class="task-tag tag-admin">ADMIN</span></span></li>
       </ul>
@@ -714,19 +718,35 @@
     </div>
     <div class="timeline-item">
       <span class="timeline-date">Apr 20 (Mon)</span>
-      <span class="timeline-event">Class visitors + meeting makers sent; Jon sync on interview status; AAA assigned to call center via Reach</span>
+      <span class="timeline-event">Class visitors + meeting makers sent (most accepted); Jon sync (interviews done, offers out); Josh 2 PM sync launched side-by-side workstream; AAA assigned to call center via Reach</span>
     </div>
     <div class="timeline-item">
       <span class="timeline-date">Apr 21 (Tue)</span>
-      <span class="timeline-event"><strong>AAA huddles begin</strong> &mdash; call center team huddles start using course; inForm Safety (CS) Rise build starts</span>
+      <span class="timeline-event">Out sick &mdash; AAA huddles kick-off + inForm build + Jon strategy session slipped</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 22 (Wed)</span>
+      <span class="timeline-event"><strong>AAA Advanced Agent Assist rush job complete</strong>; screenshot swap closed out; Jon strategy session held (side-by-side mechanics to Adriana + Eddy, follow-up Mon 4/27 at 2 PM)</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">Apr 23 (Thu)</span>
+      <span class="timeline-event"><strong>TODAY:</strong> M3 Company History (Track 1) primary focus; inForm CS work deferred</span>
     </div>
     <div class="timeline-item">
       <span class="timeline-date">Apr 24 (Fri)</span>
       <span class="timeline-event">inForm Safety (CS) reviewable v1 target; AAA huddle retro</span>
     </div>
     <div class="timeline-item">
+      <span class="timeline-date">Apr 27 (Mon) 2:00 PM</span>
+      <span class="timeline-event">Jon follow-up &mdash; hammer out side-by-side call review mechanics with Adriana + Eddy</span>
+    </div>
+    <div class="timeline-item">
       <span class="timeline-date">May 4</span>
       <span class="timeline-event"><strong>HARD DEADLINE &mdash; Classroom start</strong> &mdash; completed modules supplement FG v3</span>
+    </div>
+    <div class="timeline-item">
+      <span class="timeline-date">May 5 (Tue)</span>
+      <span class="timeline-event">Custom NEO for May class &mdash; Michael delivering live (tentative ~1:30 PM MT)</span>
     </div>
     <div class="timeline-item">
       <span class="timeline-date">August 3</span>
@@ -740,7 +760,7 @@
 </div>
 
 <div class="footer">
-  Track 2 Weekly Tracker &mdash; Week of April 20 &ndash; 24, 2026 &mdash; Articulate POC &mdash; Built with Claude &mdash; Last updated April 19, 2026
+  Track 2 Weekly Tracker &mdash; Week of April 20 &ndash; 24, 2026 &mdash; Articulate POC &mdash; Built with Claude &mdash; Last updated April 23, 2026
 </div>
 
 <script>
