@@ -1,14 +1,17 @@
 # Trackers
 
-Project status, content gap tracking, and implementation progress.
+L&D Specialist proof-of-work portfolio — weekly build progress, content gaps, and implementation status. Gate: May 19, 2026 Utah interview.
 
 ---
 
 ## Active Trackers
 
-- **[Track 2 Weekly — Articulate POC](track2-weekly.md)** — Module development progress for Account Closure, Verification, inForm Safety, and Mini Modules
-- **[Track 1 Weekly — Intro to PrePass](track1-weekly.md)** — Weekly progress on Track 1 collaboration with Michael
-- **[MCTE 6-Week Plan](mcte-6week-plan.md)** — Strategic roadmap and milestone tracker
+- **[Track 1 Weekly — Intro to PrePass](track1-weekly.md)** — Internal onboarding framework with Michael Danielson (Org Dev & Effectiveness). Aligns to Phase I "Onboarding Program."
+- **[Track 2 Weekly — Articulate POC](track2-weekly.md)** — Self-paced Call Center modules (Account Closure, Verification, inForm Safety, Mini Modules). Build-and-deliver muscle for the Specialist seat.
+
+## Frozen / Historical
+
+- **[MCTE 6-Week Plan](mcte-6week-plan.md)** — MCTE-era artifact (frozen 2026-04-30, no longer updated). URL stays live as historical reference; MCTE role was filled by another candidate Apr 28, with continued relationship-maintenance via Kelsey Butler.
 
 ## Content
 

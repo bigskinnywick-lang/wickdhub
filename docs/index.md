@@ -1,6 +1,6 @@
 # WickdHub
 
-Welcome to the hub. Everything you need — outlines, trackers, research, and summaries — organized and accessible from any device.
+Personal proof-of-work hub for the L&D Specialist role under Patty Mazerolle's HR org. Gate: May 19, 2026 Utah on-site. Trackers, content storyboards, research, and summaries — organized and accessible from any device.
 
 ---
 
