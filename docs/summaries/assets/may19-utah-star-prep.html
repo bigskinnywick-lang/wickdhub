@@ -68,6 +68,20 @@
     font-weight: 600;
     white-space: nowrap;
   }
+  header.hero .companion-link {
+    display: inline-block;
+    margin-top: 0.85rem;
+    color: var(--purple);
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--purple-border);
+    border-radius: 6px;
+    background: var(--purple-dim);
+    transition: background 0.15s;
+  }
+  header.hero .companion-link:hover { background: rgba(167, 139, 250, 0.2); }
   .badge--purple { background: var(--purple-dim); border: 1px solid var(--purple-border); color: var(--purple); }
   .badge--green { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
   .badge--amber { background: var(--amber-dim); border: 1px solid var(--amber-border); color: var(--amber); }
@@ -387,6 +401,7 @@
     <span class="badge badge--purple">1 precision move staged</span>
     <span class="badge badge--blue">Verbal-only primary</span>
   </div>
+  <a href="../may19-utah-interview-visualization/" class="companion-link">Read the visualization →</a>
 </header>
 
 <nav class="story-nav">
