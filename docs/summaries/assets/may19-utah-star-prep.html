@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>May 19 Utah — STAR Prep</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  :root {
+    --dark: #1a1a2e;
+    --card: #16213e;
+    --card-alt: #1a2744;
+    --text: #e0e0e0;
+    --muted: #8899aa;
+    --border: #2a3a5c;
+    --purple: #a78bfa;
+    --purple-dim: rgba(167, 139, 250, 0.1);
+    --purple-border: rgba(167, 139, 250, 0.3);
+    --green: #27AE60;
+    --green-dim: rgba(39, 174, 96, 0.1);
+    --green-border: rgba(39, 174, 96, 0.3);
+    --blue: #60a5fa;
+    --blue-dim: rgba(96, 165, 250, 0.1);
+    --blue-border: rgba(96, 165, 250, 0.3);
+    --amber: #E67E22;
+    --amber-dim: rgba(230, 126, 34, 0.08);
+    --amber-border: rgba(230, 126, 34, 0.3);
+    --red: #C0392B;
+    --red-dim: rgba(192, 57, 43, 0.08);
+    --red-border: rgba(192, 57, 43, 0.3);
+    --teal: #2dd4bf;
+    --teal-dim: rgba(45, 212, 191, 0.08);
+    --teal-border: rgba(45, 212, 191, 0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 64px; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 1.25rem;
+    max-width: 900px;
+    margin: 0 auto;
+    -webkit-text-size-adjust: 100%;
+  }
+  @media (min-width: 640px) {
+    body { padding: 2rem; }
+  }
+
+  header.hero {
+    text-align: center;
+    padding: 1.5rem 0 1rem;
+    border-bottom: 2px solid var(--purple);
+    margin-bottom: 1rem;
+  }
+  header.hero h1 { font-size: 1.5rem; color: #fff; margin-bottom: 0.3rem; line-height: 1.3; }
+  @media (min-width: 640px) {
+    header.hero h1 { font-size: 1.7rem; }
+  }
+  header.hero .subtitle { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+  header.hero .badges { margin-top: 0.75rem; display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap; }
+  header.hero .badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge--purple { background: var(--purple-dim); border: 1px solid var(--purple-border); color: var(--purple); }
+  .badge--green { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); }
+  .badge--amber { background: var(--amber-dim); border: 1px solid var(--amber-border); color: var(--amber); }
+  .badge--blue { background: var(--blue-dim); border: 1px solid var(--blue-border); color: var(--blue); }
+  .badge--teal { background: var(--teal-dim); border: 1px solid var(--teal-border); color: var(--teal); }
+
+  /* Sticky story nav */
+  nav.story-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 0.6rem 0;
+    margin: 0 -1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  @media (min-width: 640px) {
+    nav.story-nav { margin: 0 -2rem 1.5rem; }
+  }
+  nav.story-nav a {
+    display: inline-block;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    margin: 0 0.1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+  }
+  nav.story-nav a:first-child { margin-left: 0.75rem; }
+  nav.story-nav a:last-child { margin-right: 0.75rem; }
+  nav.story-nav a:hover, nav.story-nav a:focus { color: var(--purple); background: var(--purple-dim); }
+
+  /* Section headers */
+  h2 {
+    color: var(--purple);
+    font-size: 1.25rem;
+    margin: 2.5rem 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.3;
+  }
+  h2.story-header { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+  h2.story-header .story-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    background: var(--card-alt);
+  }
+  h3 { color: var(--blue); font-size: 1rem; margin: 1.25rem 0 0.5rem; line-height: 1.4; }
+  h4 { color: var(--text); font-size: 0.92rem; margin: 1rem 0 0.4rem; font-weight: 600; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card--purple { border-left: 3px solid var(--purple); }
+  .card--green { border-left: 3px solid var(--green); }
+  .card--blue { border-left: 3px solid var(--blue); }
+  .card--amber { border-left: 3px solid var(--amber); }
+  .card--red { border-left: 3px solid var(--red); }
+  .card--teal { border-left: 3px solid var(--teal); }
+
+  .card .label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .label--purple { color: var(--purple); }
+  .label--green { color: var(--green); }
+  .label--blue { color: var(--blue); }
+  .label--amber { color: var(--amber); }
+  .label--red { color: var(--red); }
+  .label--teal { color: var(--teal); }
+
+  .card p { font-size: 0.9rem; margin-bottom: 0.5rem; line-height: 1.65; }
+  .card p:last-child { margin-bottom: 0; }
+  .card ul { margin: 0.3rem 0 0.3rem 1.2rem; font-size: 0.9rem; line-height: 1.7; }
+  .card ul li { margin-bottom: 0.35rem; }
+  .card strong { color: #fff; font-weight: 600; }
+
+  /* Alert / callout */
+  .alert-box {
+    background: var(--amber-dim);
+    border: 1px solid var(--amber-border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .alert-box h3 { color: var(--amber); font-size: 0.95rem; margin: 0 0 0.5rem; }
+  .alert-box ul { margin: 0.3rem 0 0 1.1rem; font-size: 0.88rem; line-height: 1.7; }
+  .alert-box ul li { margin-bottom: 0.3rem; }
+  .alert-box strong { color: #fff; }
+
+  /* Story containers */
+  .story {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px dashed var(--border);
+  }
+  .story:last-of-type { border-bottom: none; }
+
+  .story-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .story-meta .meta-chip {
+    background: var(--card-alt);
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .story-meta .meta-chip strong { color: var(--text); }
+
+  .triggers {
+    background: var(--blue-dim);
+    border: 1px solid var(--blue-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+  }
+  .triggers .label { color: var(--blue); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 0.4rem; }
+  .triggers .trigger-list { color: var(--text); line-height: 1.6; }
+  .triggers .trigger-list em { color: var(--blue); font-style: italic; }
+
+  /* Bridge frame — internalize cold */
+  .bridge-frame {
+    background: var(--purple-dim);
+    border: 1px solid var(--purple-border);
+    border-radius: 10px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .bridge-frame .label { color: var(--purple); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 0.5rem; }
+  .bridge-frame .frame-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #fff;
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  /* STAR parts */
+  .star-part { margin-bottom: 1.1rem; }
+  .star-label {
+    color: var(--teal);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  /* Spoken copy — the lines to practice */
+  .spoken {
+    background: var(--card-alt);
+    border-left: 4px solid var(--purple);
+    padding: 0.9rem 1.1rem;
+    margin: 0.3rem 0;
+    font-style: italic;
+    font-size: 0.98rem;
+    line-height: 1.7;
+    border-radius: 0 8px 8px 0;
+    color: #d8d2f5;
+  }
+  .spoken strong { color: #fff; font-weight: 600; font-style: normal; }
+  .spoken em { color: var(--teal); font-style: italic; }
+
+  /* Probe answers — collapsible */
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+  details[open] { padding-bottom: 0.5rem; }
+  summary {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--blue);
+    list-style: none;
+    position: relative;
+    user-select: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '+';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: var(--muted);
+    transition: transform 0.15s;
+  }
+  details[open] summary::after { content: '−'; }
+  details > div, details > p { padding: 0 1rem; font-size: 0.88rem; }
+  details > div { padding-top: 0.4rem; }
+
+  /* Probe block inside details */
+  .probe {
+    border-top: 1px solid var(--border);
+    padding-top: 0.85rem;
+    margin-top: 0.85rem;
+  }
+  .probe:first-child { border-top: none; padding-top: 0.4rem; margin-top: 0; }
+  .probe .probe-q {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--amber);
+    font-style: italic;
+    margin-bottom: 0.4rem;
+    line-height: 1.5;
+  }
+  .probe .spoken {
+    font-size: 0.92rem;
+    margin: 0;
+  }
+
+  /* Pacing notes */
+  details.pacing summary { color: var(--teal); }
+  details.pacing ul { margin: 0 0 0.5rem 1.5rem; }
+  details.pacing ul li { font-size: 0.85rem; line-height: 1.7; margin-bottom: 0.4rem; }
+  details.pacing strong { color: #fff; }
+
+  /* Quote blocks for small quotes/references */
+  .quote {
+    background: var(--card-alt);
+    border-left: 3px solid var(--blue);
+    padding: 0.7rem 1rem;
+    margin: 0.75rem 0;
+    font-style: italic;
+    font-size: 0.88rem;
+    border-radius: 0 6px 6px 0;
+    color: #c4d0e8;
+  }
+
+  /* Bottom line */
+  .bottom-line {
+    background: var(--purple-dim);
+    border: 1px solid var(--purple-border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-top: 2rem;
+    text-align: center;
+  }
+  .bottom-line h3 { color: var(--purple); font-size: 1rem; margin-bottom: 0.6rem; margin-top: 0; }
+  .bottom-line p { font-size: 0.92rem; line-height: 1.7; max-width: 700px; margin: 0 auto; }
+
+  /* Back to top */
+  .back-to-top {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--purple);
+    color: var(--dark);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 99;
+  }
+  .back-to-top.visible { opacity: 0.85; pointer-events: auto; }
+  .back-to-top:hover { opacity: 1; }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>May 19 Utah — STAR Prep</h1>
+  <div class="subtitle">Patty Mazerolle (VP HR) + Michael Danielson · In-Person, Utah · <span id="countdown">3 days to gate</span></div>
+  <div class="badges">
+    <span class="badge badge--green">4 stories ready</span>
+    <span class="badge badge--purple">1 precision move staged</span>
+    <span class="badge badge--blue">Verbal-only primary</span>
+  </div>
+</header>
+
+<nav class="story-nav">
+  <a href="#posture">Posture</a>
+  <a href="#t1-1">T1.1 AI</a>
+  <a href="#t1-2">T1.2 Track 1</a>
+  <a href="#t1-3">T1.3 S&amp;C</a>
+  <a href="#t1-4">T1.4 Track 2</a>
+  <a href="#precision">Precision</a>
+  <a href="#closes">Closes</a>
+</nav>
+
+<!-- POSTURE -->
+<div id="posture" class="alert-box">
+  <h3>Posture — read first, every time</h3>
+  <ul>
+    <li><strong>Don't open with a STAR.</strong> Let Patty drive the first 90 seconds. Listen, then drop the matching story.</li>
+    <li><strong>One story per probe.</strong> Don't string two together unless she explicitly asks for another example.</li>
+    <li><strong>End each story with the Council line</strong> when natural — convener narrative is the throughline.</li>
+    <li><strong>Michael is the "yes, this is real" voice on Track 1.</strong> Give him the opening; don't talk over him.</li>
+    <li><strong>Don't oversell.</strong> Honest gaps — Attraction, Recruitment, Offboarding, formal org-wide assessments, LOP — name them out loud. Patty values operational realism.</li>
+    <li><strong>Don't lead with 3-track unprompted</strong> (Apr 7 rule still applies).</li>
+    <li><strong>Comp / scope / title</strong> — anchor with the SLT slides; do not negotiate in the room.</li>
+  </ul>
+</div>
+
+<!-- T1.1 AI LITERACY -->
+<section id="t1-1" class="story">
+  <h2 class="story-header">T1.1 — AI Literacy / Tamie Demo <span class="story-tag">v2 final</span></h2>
+
+  <div class="triggers">
+    <div class="label">When she pulls</div>
+    <div class="trigger-list">
+      <em>"Tell me about AI Literacy in practice"</em> · <em>"How are you using AI in your work today?"</em> · <em>"What would the AI Literacy curriculum look like?"</em> · <em>"Give me an example of cross-functional learning"</em>
+    </div>
+  </div>
+
+  <div class="story-meta">
+    <span class="meta-chip"><strong>~210 words</strong> · ~90 sec</span>
+    <span class="meta-chip">Hook: Apr 30 Tamie demo</span>
+    <span class="meta-chip">Option C hybrid framing</span>
+  </div>
+
+  <div class="bridge-frame">
+    <div class="label">The hook (open with the cross-functional fact)</div>
+    <div class="frame-text">"On Apr 30, I ran a Copilot search live and surfaced — using KB articles as the grounding source — that Sales/SMB had been converting KB articles from FreshService into D365. Cross-functional knowledge transfer happening in parallel that neither of us had seen surface that way before."</div>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">S — Situation</div>
+    <blockquote class="spoken">On Apr 30, in a follow-up with Tammie Wall, I ran a Copilot search live and surfaced — using KB articles as the grounding source — that Sales/SMB had been converting KB articles from FreshService into D365. Cross-functional knowledge transfer happening in parallel that neither of us had seen surface that way before. Tamie confirmed it on her end; the AI tooling is what made it visible to both of us in the same moment.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">T — Task</div>
+    <blockquote class="spoken">That's the priority I'd volunteered ownership of when we walked through the Phase I roadmap on the 29th. AI Literacy is on the Phase I list, and the open question for the function is what AI Literacy actually <em>looks like</em> in practice — beyond "use ChatGPT," beyond a generic prompt-training session.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">A — Action</div>
+    <blockquote class="spoken">The Tamie demo wasn't a one-off. It's one slice of a daily AI workflow I run at PrePass: Claude as the daily working partner for facilitator guides, scripts, and job aids; Copilot integrated into the FG pipeline; AI-assisted authoring inside Articulate; Copilot searches against KB articles driving cross-functional research. The pattern is "AI woven into how I do the work" — not a separate skill, an embedded one.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">R — Result</div>
+    <blockquote class="spoken">Three results, in increasing order of leverage: <strong>One</strong> — practical AI fluency demonstrated to a Council-member peer using the org's actual tools. <strong>Two</strong> — a real cross-functional fact surfaced in real time. Exactly the kind of knowledge transfer Council-level coordination would normally have to chase down; the AI tooling did some of that orchestration for us. <strong>Three</strong> — a working definition of AI Literacy: function-by-function, role-specific, anchored in the org's actual tools rather than abstracted prompt theory.</blockquote>
+  </div>
+
+  <details>
+    <summary>If she pulls further — 5 probe answers</summary>
+    <div>
+      <div class="probe">
+        <div class="probe-q">"What would the AI Literacy curriculum actually look like?"</div>
+        <blockquote class="spoken">Function-by-function, role-specific. Start with the functions that have the highest content velocity — Sales Training, Customer Care, Product Marketing. Run it through the Council so each function sees what the others are doing. Anchor every lesson in a real org tool — Copilot inside Teams, AI-assisted authoring in Articulate, Claude or ChatGPT for content development — not in abstracted prompt theory. The deliverable per function is one practical use case the team can cite back, not a generic AI tour.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"How would you measure AI Literacy progress?"</div>
+        <blockquote class="spoken">Two layers. Practical fluency — measurable by output: are people using AI tools to draft, summarize, search? Are facilitator guides shipping faster? Are KB searches resolving without the agent needing to escalate? That's the leading indicator. Lagging indicator is content velocity — modules built per quarter, KB articles refreshed, time-from-product-change to training-update. AI fluency at the function level should compress those cycles.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"What about the risks — hallucination, content quality, governance?"</div>
+        <blockquote class="spoken">Real, and the curriculum has to address them directly. Three guardrails I'd build in from day one: <strong>One</strong> — ground every AI-generated piece of training content in source documents, not in generic LLM output. The Tamie demo worked because Copilot was grounded in our KB, not making things up. <strong>Two</strong> — human review on anything that lands in front of customers or new hires. AI drafts; humans approve. <strong>Three</strong> — Council-level visibility into what each function is generating so we catch quality drift early.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Is this something you've already done at scale, or is it experimental?"</div>
+        <blockquote class="spoken">Experimental at the org level — that's the honest answer. At the individual workflow level it's daily and load-bearing for me; at the team level it's spreading organically (the Tamie demo is one example; Sales Enablement, Mid-Market, and Revenue Operations adjacencies are pulling on similar threads). The L&D Specialist seat is what would let me move it from organic spread to a structured curriculum — that's the unlock.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Where would Michael fit in this?"</div>
+        <blockquote class="spoken">Michael owns the OD framework — the "what skills should we be building" layer. AI Literacy fits inside that. My read is: Michael identifies the competency map; I build and ship the practical-fluency curriculum against it; the Council distributes function-by-function. We've been operating that way on Track 1 already. <em>(Then pause — let Michael speak if he wants to.)</em></blockquote>
+      </div>
+    </div>
+  </details>
+
+  <details class="pacing">
+    <summary>Pacing &amp; delivery notes</summary>
+    <ul>
+      <li><strong>Word count:</strong> ~210 words / ~90 sec at conversational pace.</li>
+      <li><strong>The S–T transition is the hinge.</strong> Land the surprise (KB conversion fact), then snap back to "this is the priority I'd volunteered." Half-beat pause between S and T — read Patty's reaction, then pivot.</li>
+      <li><strong>Don't list the four bullets in A as a list.</strong> Speak them naturally as a flowing sentence.</li>
+      <li><strong>Pause between the three R points.</strong> They escalate. Let each one land. The third is the bridge to a curriculum question.</li>
+    </ul>
+  </details>
+</section>
+
+<!-- T1.2 TRACK 1 ONBOARDING -->
+<section id="t1-2" class="story">
+  <h2 class="story-header">T1.2 — Track 1 Onboarding (Michael collab) <span class="story-tag">v2 final</span></h2>
+
+  <div class="triggers">
+    <div class="label">When she pulls</div>
+    <div class="trigger-list">
+      <em>"Walk me through Track 1"</em> · <em>"How did you partner with Michael on this?"</em> · <em>"What's the Phase I Onboarding deliverable look like?"</em> · <em>"Tell me about a time you built a program with executive sponsorship"</em>
+    </div>
+  </div>
+
+  <div class="story-meta">
+    <span class="meta-chip"><strong>Primary play:</strong> live walkthrough</span>
+    <span class="meta-chip">Michael is the "yes this is real" voice</span>
+    <span class="meta-chip">STAR as fallback</span>
+  </div>
+
+  <div class="card card--teal">
+    <div class="label label--teal">Ground truth (verified 2026-05-09)</div>
+    <p><strong>Track 1 — Intro to PrePass</strong> · 8 modules, ~90 min, org-wide</p>
+    <p><strong>Live in Reach360 (3):</strong> M1 Mission/Vision/Values · M3 Company History · M4 PrePass Alliance</p>
+    <p><strong>In active build (4):</strong> M2 Foundational Principles/Drivers · M5 Customers/Market/Product · M6 Revenue Model · M7 Market Goals <em>(M7 quarterly refresh owner still open)</em></p>
+    <p><strong>Planned (1):</strong> M8 Departmental Overview</p>
+  </div>
+
+  <div class="bridge-frame">
+    <div class="label">Opening narration (~30 sec, before clicking)</div>
+    <div class="frame-text">"Track 1 is the Phase I Onboarding deliverable — eight modules, about ninety minutes, org-wide audience, designed modular from day one so the same content can power leadership-specific, department-specific, and external/customer-facing versions without rebuilding. Michael had been working an org-wide onboarding framework with you; my tolling Articulate work got shared with SLT and Michael reached out directly. We sized the architecture together. He works the framework and the executive layer; I build the storyboards and Rise modules and run the cadence. Three modules are live in Reach right now — Mission/Vision/Values, Company History, and PrePass Alliance — four more in active build, one in planning. Let me walk you through."</div>
+  </div>
+
+  <details>
+    <summary>Live walkthrough — what to click, what to say</summary>
+    <div>
+      <div class="probe">
+        <div class="probe-q">Open the Track 1 Weekly tracker → wickdhub.com/trackers/track1-weekly/</div>
+        <blockquote class="spoken">"Cadence layer — weekly status, module-by-module. Visible to Michael on his timeline, gets shared up to you when it's useful." — <em>pause; let Michael chime in</em></blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">Open the Content tracker → wickdhub.com/trackers/content/track1-content-intro-prepass/</div>
+        <blockquote class="spoken">"Module status, owners, blocking gaps. Three live, four in build, one planned."</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">Open the architecture diagram (Track1_Modular_Architecture.svg)</div>
+        <blockquote class="spoken">"This is the design fingerprint — the shell is the unit, not the audience. Every module re-skins for leadership, department, and external/customer without rebuilding."</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">Open M3 Company History in Reach (or Rise authoring view)</div>
+        <blockquote class="spoken">"M3 went live Apr 23 — pyramid framing pulled from the NEO deck so it lays alongside what the People Team already delivers live, doesn't compete with it."</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">Open M5 storyboard → wickdhub.com/trackers/content/customers-market-product-storyboard/</div>
+        <blockquote class="spoken">"M5 is the deepest module — product differentiation, mobile-app bypass, day-in-the-life animation. M5/M6/M7 together — Customers, Revenue Model, Market Goals — directly serve the Business Acumen Phase I priority. One onboarding course, two priorities."</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">Closing narration (~25 sec, after the last click)</div>
+        <blockquote class="spoken">"Three live. Four in build. One planned. The honest read on throughput: the iteration's getting faster as my time-in-Articulate compounds — these modules took three months to land, and the next three will land faster. That's the durable part. Phase II is the department-specific skins — that's where the modular system starts paying for itself across the rest of the function."</blockquote>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>STAR fallback (if she stays verbal)</summary>
+    <div>
+      <div class="probe">
+        <div class="probe-q">S — Situation</div>
+        <blockquote class="spoken">When Michael and I started working together in early March, the org-wide onboarding gap was real — there was a People Team welcome session, but no scaled, modular, self-paced onboarding course covering mission, vision, history, product, revenue model, and market goals. Phase I has Onboarding Program as one of its six priorities. Track 1 is what's filling that gap.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">T — Task</div>
+        <blockquote class="spoken">What I owed the partnership was the architecture and the build muscle: take Michael's framework and turn it into eight modules that ship, that hold up at the org-wide level, and that don't have to be rebuilt when we extend to leadership-specific, department-specific, or external-customer audiences down the road.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">A — Action</div>
+        <blockquote class="spoken">Three things were the design fingerprint: <strong>One</strong> — modular from day one. Every module is a storyboard shell that can regenerate against a different audience skin. <strong>Two</strong> — cadence layer that's visible. Weekly tracker with module-level status. <strong>Three</strong> — Phase I priority overlap baked in. M5/M6/M7 directly serve the Business Acumen priority. Michael identified the framework gaps and worked the executive layer. I built the storyboards and the Rise modules and ran the cadence.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">R — Result</div>
+        <blockquote class="spoken">Three of eight modules are live in Reach. Four more in active build. The honest read on throughput is that iteration is accelerating as my time-in-Articulate compounds. The bigger result is the Phase II runway — because the modules are audience-agnostic, every department-specific onboarding ask becomes a re-skin, not a rebuild.</blockquote>
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary>If she pulls further — 7 probe answers</summary>
+    <div>
+      <div class="probe">
+        <div class="probe-q">"How did the partnership with Michael come together?"</div>
+        <blockquote class="spoken">Earlier this year I'd built a tolling Articulate course on the Call Center side. Stephanie shared it with SLT. Michael saw it there and reached out to me directly — he'd been working an org-wide onboarding framework with you and saw an instructional architect and a build engine in the work. First sync was early March. Weekly working sessions through April. The cadence held; the trust built around shipped work, not promises.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"What's modular about it, specifically?"</div>
+        <blockquote class="spoken">The unit is the module, not the audience. Each storyboard is built so the on-screen text, the depth of business detail, and the audience-specific framing can be swapped without rebuilding the structure. M5 in the org-wide version has competitive context, revenue implications, market positioning a new hire needs. The external-customer version strips that, reframes around product value, use cases, getting started. Same structure, different surface.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Where does Track 1 sit relative to what the People Team already does live?"</div>
+        <blockquote class="spoken">It runs alongside, not against. The pyramid framing in M1 was specifically designed to mirror how the People Team presents Mission/Vision/Values live — so when a new hire takes the self-paced course after the live session, it lays in as a natural extension. We didn't try to consolidate; we tried to layer.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"What does Phase II look like for this?"</div>
+        <blockquote class="spoken">Phase II is department-specific skins. The module structure already supports it. The lift is sourcing department content and running it through the same storyboard shells. With the Council mechanic — Tracey and Sanan on Product Marketing, Tammie on Sales Training, Ray on Sales Enablement, Michael on OD — each function brings its own content, the L&amp;D Specialist seat runs the conversion to learning content, and the modular system absorbs it without architectural rework.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Where could this go sideways?"</div>
+        <blockquote class="spoken">Two real risks. <strong>One</strong> — content sourcing on M5 and M6 has cross-functional dependencies (Product, Finance) and those slip if the function isn't owned. The Specialist seat removes that risk. <strong>Two</strong> — quarterly content refresh on M7 (Market Goals) needs an explicit owner and right now doesn't have one. That's an open thread I'd want to close in the first 90 days, ideally with the Council mechanic taking ownership of refresh cadence.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Tell me about a moment this almost didn't work."</div>
+        <blockquote class="spoken">The April 1 scope call — the original framework was 30 minutes, two modules, very narrow. Michael walked into that meeting wanting to expand it to org-wide and add modules. Mid-build expansion is where projects collapse if the architecture can't absorb it. The modular design is what made the expansion to 90 minutes and 8 modules a planning conversation, not a rebuild conversation. That was the moment I knew the architecture choice was load-bearing.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Tell me honestly — three of eight modules live. Did this ship the way you wanted it to?"</div>
+        <blockquote class="spoken">No. The original cadence had Track 1 fully stood up and in polish before May 4 classroom kickoff. We hit three; we didn't hit eight. The honest read is that running a new-hire class concurrently with the build was a real constraint, and module five and six both have cross-functional content gaps that the current scope can't unblock. What I'd point to as the durable signal is throughput acceleration — these first three took three months; M2, M5, M7 will land faster because the time-in-tools is compounding. The architecture is also still right; the bottleneck was bandwidth and content, not design. Both resolve when the function has a dedicated seat.</blockquote>
+      </div>
+    </div>
+  </details>
+
+  <details class="pacing">
+    <summary>Pacing &amp; delivery notes</summary>
+    <ul>
+      <li><strong>Live walkthrough is primary play.</strong> If Patty says any version of "walk me through Track 1" or "show me Track 1," pull it up. Or read the room and offer: <em>"Want me to pull it up?"</em></li>
+      <li><strong>When Michael speaks, stop clicking.</strong> Let him talk. Resume when he hands the floor back. The dynamic Patty wants to see is partnership, not soliloquy.</li>
+      <li><strong>Where Michael chimes in naturally:</strong> the cadence tracker, M2 Drivers, M5/M6/M7 Business Acumen pivot, the architecture conversation.</li>
+      <li><strong>Throughput-acceleration framing replaces "ships before May 4."</strong> Owns the gap; points at the durable signal (iteration getting faster).</li>
+    </ul>
+  </details>
+</section>
+
+<!-- T1.3 S&C BRIDGE -->
+<section id="t1-3" class="story">
+  <h2 class="story-header">T1.3 — Skills &amp; Capability Assessments BRIDGE <span class="story-tag">v3 final</span></h2>
+
+  <div class="triggers">
+    <div class="label">When she pulls</div>
+    <div class="trigger-list">
+      <em>"Tell me about your experience with Skills &amp; Capability Assessments"</em> · <em>"How do you decide what to train?"</em> · <em>"What does needs analysis look like in your work?"</em> · any direct pull on the Workable-form tick (May 9 screener)
+    </div>
+  </div>
+
+  <div class="story-meta">
+    <span class="meta-chip"><strong>~410 words</strong> · ~2.5 min</span>
+    <span class="meta-chip">Verbal-only</span>
+    <span class="meta-chip">Gap-disclosure opens</span>
+  </div>
+
+  <div class="bridge-frame">
+    <div class="label">The bridge — internalize cold</div>
+    <div class="frame-text">"I haven't led a formal org-wide capability assessment — but I've done the diagnostic work that fed every program I've built, and I'd partner with Michael to formalize it at the org level."</div>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">S — Situation</div>
+    <blockquote class="spoken">Skills &amp; Capability Assessments is one of the four Phase I priorities signaled to this seat. On the application screener I ticked "experience with one but not both" — I claimed the upskilling-program side; I disclaimed the formal, org-wide capability-assessment side. That tick was deliberate. The honest read is I haven't owned a formal org-wide skills matrix that every function gets scored against. The bridge to it is real, though, and worth laying down properly.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">T — Task</div>
+    <blockquote class="spoken">Every program I've built — at PrePass and before — has started with the diagnostic work the formal assessment process is built on top of: observed-performance-versus-required-performance, gap diagnosis, where the existing path is breaking down. The question for this seat is whether that diagnostic input layer can scale up to org-wide, and what the partnership with Michael looks like to formalize it.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">A — Action (three examples)</div>
+    <blockquote class="spoken"><strong>1. Track 2 module-build prioritization.</strong> When I took on Track 2 — Call Center modules, from zero — the question wasn't <em>whether</em> to build, it was <em>which</em> gaps to close first. Account Security, Caller Verification, Account Closure, Advanced Agent Assist — those weren't picked by alphabet. They were picked by where new-hire and tenured-agent performance was breaking down on the floor: call-listening evidence, ticket categories trending wrong, supervisor feedback, observed handoff failures. The build sequence <em>was</em> a prioritized capability-gap map. The artifact looks like Articulate modules; the input layer was diagnostic.</blockquote>
+    <blockquote class="spoken"><strong>2. Track 1 audience-content mapping with Michael.</strong> The Track 1 modular architecture — same shells, different audience skins — isn't just a build decision. It's a gap analysis at the audience level. Michael and I worked through which audiences need which information at which depth. The output is the audience-skin framework. The input was systematically mapping capability requirements across audiences.</blockquote>
+    <blockquote class="spoken"><strong>3. Universal Agent program build-out.</strong> The courseware I inherited as Call Center trainer was skeletal — a Word outline and a planner, the existing CS and Billing tracks pasted at the seam. Across subsequent classes I filled in timing, cut duplicates, built bridge content where later modules touched earlier learned material, and extended a five-week merger into a six-week integrated program — nearly four of the six weeks are floor work, not pure classroom. Decisions sourced from my read as a former CS agent, input from agents and TLs and supervisors, six years as a formal trainer at eBay plus twelve more training-adjacent before that. <strong>Honest read:</strong> closest thing in my recent work to a capability assessment for a single role family — without the formal validation layer that would make it one. The validation layer is what Michael and I would build.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">R — Result</div>
+    <blockquote class="spoken">The pattern across all three: I haven't done the formal version, but I've done the diagnostic work the formal version sits on top of. The right place to take this is partnership with Michael on a structured org-wide assessment cadence — function-by-function skill maps, validated through the Council, run on a deliberate cycle. He owns the framework architecture; I own the diagnostic input and the delivery infrastructure. The function gets the formal assessment layer it doesn't have today, and the customer-care lane I've already been working becomes the prototype the other functions can replicate.</blockquote>
+  </div>
+
+  <details>
+    <summary>If she pulls further — 7 probe answers</summary>
+    <div>
+      <div class="probe">
+        <div class="probe-q">"What's the actual difference between what you've done and a formal capability assessment?"</div>
+        <blockquote class="spoken">Two differences. <strong>Scope</strong> — what I've done has been function-local: Track 2 inside Customer Care, Track 1 across audiences within an onboarding program, Universal Agent inside a single role family. A formal org-wide assessment cuts across functions and produces a comparable view of capability at the function level. <strong>Validation</strong> — what I've done has been my read, sometimes pressure-tested with Michael or with a supervisor, but not a structured multi-source input loop. Both differences are addressable. Neither is a different muscle from the one I've been exercising; both are layers on top of it.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"How would you formalize this at the org level?"</div>
+        <blockquote class="spoken">Three pieces, sequenced. <strong>One</strong> — function-by-function skill maps, built with each Council member for their function. <strong>Two</strong> — a cadence — annual full assessment, quarterly check-ins on the priority gaps, tied to the existing performance cycle. <strong>Three</strong> — the Council as the validation layer. Michael and I would build the framework; the Council operates it. The output is the input to L&amp;D programming.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"How do you avoid this becoming theater — capability matrices nobody uses?"</div>
+        <blockquote class="spoken">The risk is real. Two failure modes to design around. <strong>One</strong> — assessments built in HR and handed to function leaders. Those die. The skill maps have to be co-built with each function or they don't survive contact with the work. <strong>Two</strong> — assessments that don't change anything downstream. The skill maps have to feed something real — what we build this quarter, who gets a development plan, where the function is investing. The Council mechanic is what makes it wired — every member sees what the others are doing, so the connection between gap and program is visible.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Walk me through that Universal Agent work in detail."</div>
+        <blockquote class="spoken">Honest reframe first — "Universal Agent" wasn't a diagnostic project I proposed. The courseware I was handed when I assumed the CC trainer role was a Word outline and a planner: the existing three-week Customer Service track and two-week Billing track pasted together into a five-week Universal Agent program. My first class was two weeks out — so v1 was about making it deliverable. The structural work happened across the next several classes. Filled in timing, reordered, cut duplicates, built bridge content where later material affected earlier learned tasks. Extended the program from five weeks to six — but the bigger move was integration. Nearly four of the six weeks are floor work, not pure classroom. The input layer wasn't formal. My own read as a former CS agent, input from agents I worked with, TLs and supervisors once I took the role, and six years as a formal trainer plus twelve training-adjacent before that at eBay — telling me what was needed, what was nice-to-have, what to cut. The reason I don't claim it as a capability assessment is the validation layer was missing — no competency matrix, no calibration, no defensible-on-paper diagnosis. The diagnostic muscle was running. The formal layer wasn't. That's the layer Michael and I would build at the org level.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Where does Michael fit in this specifically?"</div>
+        <blockquote class="spoken">Michael owns the OD framework — the "what skills should we be building" layer at the org level. Skills &amp; Capability Assessments lives inside that. My read of the partnership is: Michael identifies the competency architecture and the maturity model; I run the diagnostic input layer and the delivery side of whatever the gap-closure program looks like; the Council distributes function-by-function. That's the same shape Track 1 has — he frames, I build, the cadence is visible. <em>(Pause; let him speak if he wants to.)</em></blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"What would you ship first if this priority was yours in the first 90 days?"</div>
+        <blockquote class="spoken">Not the full org-wide assessment in 90 days — that would be theater. <strong>One</strong> function done well: pick the function with the highest content velocity and the most visible capability questions — likely Customer Care, where I already have the diagnostic baseline — and run the function-by-function skill map there as a prototype with Michael. Document the method. Then in the next 90 days take that method to a second function through the Council. By the time it's been through two functions, the operating model is real and the rest of the org has a pattern to copy, not a theory to evaluate.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Are you familiar with ADDIE?"</div>
+        <blockquote class="spoken">Yes — ADDIE. Analyze, Design, Develop, Implement, Evaluate. It's the foundational instructional design model. The "analyze" phase is the up-front diagnostic that has to happen before design, development, and implementation. That's the phase my work has lived in, even when I didn't have the formal label for it. I learned this craft by doing it — the formal vocabulary came later. The work I've been describing — agents and TLs and supervisors, my own read, training experience built up at eBay — is ADDIE analyze-phase work that just happens to be informal. The formal validation layer is what Michael and I would build out, with the Council operating it.</blockquote>
+      </div>
+    </div>
+  </details>
+
+  <details class="pacing">
+    <summary>Pacing &amp; delivery notes</summary>
+    <ul>
+      <li><strong>S–T hinge is unusual for STAR.</strong> You're <em>opening</em> with the gap-disclosure. Deliver as factual statement, not apology, not hedge. If you sound like you're caveating, you've lost it.</li>
+      <li><strong>Pause between A examples.</strong> Tactical → architectural → systemic. Let each one land.</li>
+      <li><strong>Example 3 has its own gap-disclosure line.</strong> Don't rush past <em>"not a formal capability assessment."</em> Half-beat pause after "without the formal validation layer that would make it one" — let Patty react before closing with "the validation layer is what Michael and I would build."</li>
+      <li><strong>Do NOT volunteer ADDIE in S/T/Action.</strong> Probe #7 carries it only if Patty pulls.</li>
+      <li><strong>Compression rule if she reads short:</strong> drop example 2 (Track 1 audience mapping) — overlaps with T1.2. Examples 1 and 3 are load-bearing.</li>
+    </ul>
+  </details>
+</section>
+
+<!-- T1.4 TRACK 2 ARTICULATE -->
+<section id="t1-4" class="story">
+  <h2 class="story-header">T1.4 — Track 2 Articulate From Zero <span class="story-tag">v2 final</span></h2>
+
+  <div class="triggers">
+    <div class="label">When she pulls</div>
+    <div class="trigger-list">
+      <em>"Walk me through Track 2"</em> · <em>"How fast did you build the pipeline?"</em> · <em>"What's the measurement plan?"</em> · <em>"What does build-and-deliver muscle look like?"</em>
+    </div>
+  </div>
+
+  <div class="story-meta">
+    <span class="meta-chip"><strong>~490 words</strong> · ~3 min</span>
+    <span class="meta-chip">Verbal-only (AAA backup)</span>
+    <span class="meta-chip">Solo end-to-end story</span>
+  </div>
+
+  <div class="bridge-frame">
+    <div class="label">The bridge — internalize cold</div>
+    <div class="frame-text">"Track 2 is what I built solo in the Call Center function from zero — four self-paced modules live in Reach360, six more in active build, an AI-aided authoring loop that ships modules quickly without compromising KB accuracy."</div>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">S — Situation</div>
+    <blockquote class="spoken">When I came into PrePass as the Call Center trainer, the function had a live classroom program, KB articles, and floor coaching — but no self-paced Articulate pipeline. No way to push updated content at scale, no way for an agent to revisit material asynchronously after class, no consistent self-paced asset library for new hires beyond instructor-delivered material. Two of the Phase I priorities — Onboarding Program and Skills &amp; Capability Assessments — need that self-paced layer to scale beyond the classroom. Track 2 is the pipeline that fills that gap on the Call Center side.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">T — Task</div>
+    <blockquote class="spoken">Build the self-paced module pipeline from zero in a function that didn't have one. End-to-end ownership: source-content analysis, storyboarding, build, LMS deployment, post-launch iteration. Has to ship continuously — into the NH class cadence and into tenured-agent upskilling — not a one-time content push.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">A — Action (three things)</div>
+    <blockquote class="spoken"><strong>1. AI-aided authoring loop, KB-grounded.</strong> Working from training outline bits, I use AI to help generate prompts; the prompts produce content drafts; every draft gets cross-checked against the KB articles for accuracy; then I flesh out or crop based on business importance, frequency of use, and complexity of what's being taught. AI handles velocity; KB grounding keeps it accurate; the editorial pass is where business judgment lives.</blockquote>
+    <blockquote class="spoken"><strong>2. Tool mix matched to content shape.</strong> Storyline for the interactive / long-form modules — Account Closure runs 9 lessons, Account Security / Caller Verification runs 6 lessons. Rise for the shorter, web-responsive modules — AAA mini-module, D365 Adding Contacts walkthrough. The tool selection isn't aesthetic: Storyline costs more authoring time and earns it on interactive scenarios; Rise ships faster and earns it on procedural reference content.</blockquote>
+    <blockquote class="spoken"><strong>3. LMS deployment as a real step, not an afterthought.</strong> Reach360 is the primary; AAA also runs in Cornerstone. Deployment is where most internal-build module pipelines stall — authoring content is half the work; getting it deployed, tracked, and discoverable for agents is the other half. The pipeline I built doesn't stop at the SCORM export.</blockquote>
+  </div>
+
+  <div class="star-part">
+    <div class="star-label">R — Result</div>
+    <blockquote class="spoken">Four modules live in Reach360 today — Advanced Agent Assist (Apr 30), Account Closure/Shutdown (Apr 16, 9 lessons), Account Security / Caller Verification / Device Order Handling (Apr 9, 6 lessons), Step-by-Step Adding Contacts in Dynamics 365 (Dec 2025, 3 lessons). Six more in active build — inForm Safety, Optimizing Commercial Vehicle Toll Mgmt, Commercial Fleet Toll Mgmt, Providing Exceptional Customer Service, Soft Skills, PrePass Essentials.</blockquote>
+    <blockquote class="spoken">Measurement state — honest: completion rates today via Reach360 reporting. Time-to-proficiency data may already exist in the underlying systems but has never been compiled or analyzed for this purpose — that's a partnership build with the reporting/analytics side, bandwidth-constrained not capability-constrained. Support-ticket-trend correlation and Five9 reporting correlation sit further out as deliberate-design future state. I'm not going to claim a wired feedback loop that isn't running.</blockquote>
+    <blockquote class="spoken">The bigger result is what this proves about the function. <strong>The Specialist seat needs both halves — convener and builder.</strong> Track 1 with Michael shows the convener half. Track 2 shows the builder half: end-to-end ownership in a function that previously had no self-paced pipeline, an AI-aided authoring loop that ships modules quickly in the windows between class deliveries, without compromising KB accuracy.</blockquote>
+  </div>
+
+  <details>
+    <summary>If she pulls further — 10 probe answers</summary>
+    <div>
+      <div class="probe">
+        <div class="probe-q">"How fast did you actually build this pipeline?"</div>
+        <blockquote class="spoken">Worth pulling apart how "fast" reads. First module live December 18, 2025 — the D365 Adding Contacts walkthrough. From there the calendar runs about five months, but the actual build time is less — both the February new-hire class and now the May new-hire class have pulled me off the pipeline as the primary gravity. The work happens in the windows between class deliveries. Pace accelerates where the gravity allows — AAA shipped April 30, Account Closure April 16, Account Security April 9. The honest read on throughput: the seat formalizing is what removes the class-versus-build trade-off and lets the pace stay steady.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Walk me through one of these — pick whichever shows the work best."</div>
+        <blockquote class="spoken">AAA — Advanced Agent Assist — is the cleanest to show. Two-lesson Rise mini-module, deployed in Reach360 and Cornerstone, agents using it on the floor right now. <em>(If pulling up live: open Reach360 → AAA → click through the End-of-Call piece, about 60 seconds.)</em> It's the freshest content velocity — built and shipped April 30, the kind of turnaround the function needs the pipeline to sustain at scale.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"What's the measurement plan, and what's actually instrumented today?"</div>
+        <blockquote class="spoken">Honest answer: completion rates today via Reach360 reporting. That's it. Time-to-proficiency data may already be available in the underlying systems but has never been compiled or analyzed for this purpose — that's a partnership build I'd want to kick off with the right reporting/analytics partner; bandwidth has been the constraint, not capability. Support-ticket-trend correlation and Five9 reporting correlation sit further out as deliberate-design future state. I'm not going to claim a wired feedback loop that isn't running. If this priority is mine in 90 days, closing that measurement gap — starting with the time-to-proficiency partnership — is the first 30-day deliverable.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Who specifically would you partner with on the measurement side?"</div>
+        <blockquote class="spoken">Geno on the reporting/analytics side — he reports under Bill and is already gathering agent floor data for other purposes. He's the person who'd have the system access to pull whatever exists for time-to-proficiency analysis. The partnership hasn't kicked off because I've never had the bandwidth to drive it from the training side and the class cadence has been the gravity. The seat formalizing is what opens that bandwidth.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Tell me more about the AI authoring workflow."</div>
+        <blockquote class="spoken">Three layers in the loop itself. <strong>One</strong> — I take bits of the training outline and use AI to help generate the prompts that will produce content drafts. The prompt engineering is where instructional judgment lives. <strong>Two</strong> — every draft gets cross-checked against the KB articles for factual accuracy. AI velocity without KB grounding is how training programs ship hallucinations into the floor; the cross-check is non-negotiable. <strong>Three</strong> — the editorial pass — flesh out or crop based on business importance, frequency of use, and complexity of what's being taught.</blockquote>
+        <blockquote class="spoken">On the tooling — Copilot's the org-approved layer; I work it inside Teams and the FG pipeline. Functionality there is more constrained than the public cloud tools, which is worth knowing. I've also worked across other LLM platforms and run open-source models on my own hardware to keep cross-tool fluency current and understand where each platform's capabilities differ. The fluency I want for the function is cross-tool literacy plus operational judgment about when each tool fits — and the AI Literacy curriculum is going to need to address governance, access, and tool-selection as one of its real jobs, not an afterthought.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Which specific tools have you been using?"</div>
+        <blockquote class="spoken">Public cloud platforms across the board, plus a few open-source models running locally. I'd come back to which-tool questions after we talk about which use cases — the right tool depends on the job.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Is AI fluency widespread here, or mostly you?"</div>
+        <blockquote class="spoken">Spreading informally — practical AI fluency is already happening across functions in different forms. The function would make it deliberate and govern it consistently.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"What's the prioritization logic — why these modules first?"</div>
+        <blockquote class="spoken">Where new-hire and tenured-agent performance was breaking down on the floor, and where the existing KB-only path wasn't enough. Account Security first because verification failures are the highest-stakes error pattern. Account Closure because it's procedurally complex and high-frequency. AAA because the agents had been asking for an end-of-call companion since I came in. The full diagnostic logic behind that ordering is what the Skills &amp; Capability Assessments bridge story covers — capability-gap mapping in informal mode.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"How does Track 2 scale beyond Call Center?"</div>
+        <blockquote class="spoken">The pipeline itself isn't CC-specific. It's an authoring loop plus an LMS deployment pattern. The Council mechanic is where this scales: Tracey and Sanan have product content that needs the same pipeline; Tammie has sales training content that does; Ray has enablement material. The Specialist seat runs the pipeline; each function brings the source content; the Council validates and distributes. Track 2 is the prototype the other functions inherit — not a CC-walled garden.</blockquote>
+      </div>
+      <div class="probe">
+        <div class="probe-q">"Where could this go sideways?"</div>
+        <blockquote class="spoken">Two real risks. <strong>One</strong> — authoring velocity slows if AI tool fluency or KB accuracy degrades. Mitigation is keeping the cross-check tight; as the pipeline scales beyond solo-build I'd want at least one peer reviewer in the loop. <strong>Two</strong> — measurement debt. Six modules in active build and only completion rates wired means I'm shipping ahead of the analytics layer. The time-to-proficiency partnership with the reporting/analytics side is the first piece to wire; bandwidth's been the blocker, and the seat formalizing creates that bandwidth.</blockquote>
+      </div>
+    </div>
+  </details>
+
+  <details class="pacing">
+    <summary>Pacing &amp; delivery notes</summary>
+    <ul>
+      <li><strong>S–T hinge sets up "from zero" precisely.</strong> Function had classroom + KB + floor coaching — what it didn't have was self-paced Articulate infrastructure. Narrow, defensible. Don't say "no training existed."</li>
+      <li><strong>AI workflow connects to T1.1 — don't double-deep in main answer.</strong> Name workflow in Action #1; tooling fluency lives in the probe.</li>
+      <li><strong>Measurement honesty is the operational-realism signal.</strong> Half-beat pause after "not instrumented yet" — let Patty react before closing with the convener+builder line.</li>
+      <li><strong>The convener+builder closing line is load-bearing.</strong> Say it like you're already in the seat. Doesn't work if it reads aspirational.</li>
+      <li><strong>Off-script risk: the direct "have you used outside AI tools with PrePass content" question.</strong> If Patty pulls it, navigate honestly without dwelling. Acknowledge minimally, pivot forward, don't make it bigger than it is. <strong>Deliberately not pre-scripted</strong> — you'll navigate better in the moment than reading a memorized line.</li>
+      <li><strong>Compression rule:</strong> drop Action #3 (LMS deployment). Bullets 1 and 2 are load-bearing. Compressed total ~430 words / ~2.5 min.</li>
+    </ul>
+  </details>
+</section>
+
+<!-- PRECISION MOVES -->
+<section id="precision">
+  <h2>Precision moves — fire only if the opportunity arises</h2>
+
+  <div class="card card--amber">
+    <div class="label label--amber">Attraction stage (disclaimed Apr 29 as Michael / HR Generalist lane)</div>
+    <p><strong>Quiet artifact in the chamber:</strong> PrePass Essentials Introduction — standalone Rise module given to Utah call center candidates pre-hire to introduce them to PrePass. Live in Reach360, 2 lessons.</p>
+    <p><strong>Trigger rule:</strong> only fires if Patty walks the stage-by-stage probe and lands on Attraction. <strong>Do not volunteer unprompted.</strong></p>
+    <p><strong>Posture rule:</strong> own the disclaimer first, the artifact second. The order matters — leading with the artifact reads as a claim-grab on a lane that isn't yours. Leading with the disclaimer and adding the artifact as nuance reads as precision. The phrase <em>"not a primary lane I'd claim"</em> is the load-bearing line; do not soften it.</p>
+
+    <blockquote class="spoken">Worth flagging though — I do have one artifact that touches Attraction: PrePass Essentials Introduction. Standalone Rise module we give Utah call center candidates pre-hire to introduce them to PrePass. Not a primary lane I'd claim — the function's discipline reaches across stages where artifacts make sense.</blockquote>
+
+    <p><strong>Optional Utah-resonance close</strong> (deploy if the moment feels right; skip if it reads forced):</p>
+    <blockquote class="spoken">The candidates seeing it are sitting in this building.</blockquote>
+
+    <p><strong>Short version if she sees it in the Rise library when AAA is pulled up:</strong></p>
+    <blockquote class="spoken">That's a standalone we give Utah call center candidates pre-hire — not part of Track 1 or Track 2.</blockquote>
+  </div>
+</section>
+
+<!-- POCKET QUESTIONS / CLOSES -->
+<section id="closes">
+  <h2>Pocket questions / walk-out closes</h2>
+
+  <div class="card card--blue">
+    <div class="label label--blue">Pick 1–2 to deploy depending on flow</div>
+    <blockquote class="spoken">"If I'm in this seat in 90 days, what's the first observable deliverable that tells you this was the right hire?"</blockquote>
+    <p><em>Opens the first-90-day specifics.</em></p>
+
+    <blockquote class="spoken">"How do you see the Council's operating cadence — monthly, quarterly, content-driven? What rhythm would make it real?"</blockquote>
+    <p><em>Convener-frame; signals you've thought about the orchestration mechanic.</em></p>
+
+    <blockquote class="spoken">"How do you see the title / level evolving as the function matures?"</blockquote>
+    <p><em>Invites the promotional-path conversation without pushing.</em></p>
+
+    <blockquote class="spoken">"What's the timing for moving to a formal offer after May 19?"</blockquote>
+    <p><em>Gates the comp conversation cleanly.</em></p>
+
+    <blockquote class="spoken">"Of the six Phase I priorities, which one would you want shipped first as the proof that the function is real?"</blockquote>
+    <p><em>Patty's deck, reflected back.</em></p>
+  </div>
+
+  <div class="card card--purple">
+    <div class="label label--purple">Walk-out goals</div>
+    <ol style="margin-left: 1.2rem; font-size: 0.9rem; line-height: 1.7;">
+      <li>Concrete read on first-90-day expectations (which Phase I priority lands first)</li>
+      <li>Read on Council operating cadence and your convener authority</li>
+      <li>Clear sense of next steps in the offer process (timing, who else needs to sign off, when comp comes in writing)</li>
+      <li>A signal — explicit or implicit — that the title/level will reflect the scope</li>
+    </ol>
+  </div>
+</section>
+
+<!-- SCOPE / COMP ANCHOR -->
+<section>
+  <h2>If comp / scope / title comes up</h2>
+
+  <div class="card card--red">
+    <div class="label label--red">Anchor with the slides — do not negotiate in the room</div>
+    <p>The frame, ready to deploy:</p>
+    <blockquote class="spoken">"What I want to make sure I'm tracking — slide 3 has the function spanning all six life-cycle stages, slide 6 has six Phase I priorities, slide 9 puts the Specialist in the convener seat for the Council. The scope I heard you describe lines up with that. I want to be sure the title and comp band carry that weight to the rest of the org so the Council partners take the role seriously when I'm convening cross-functional work."</blockquote>
+    <p>The slides do the anchoring. You're not making the case; the slides are. <strong>Listen for:</strong> any phrase that signals scope shrinkage relative to the slides ("we're starting smaller than that," "Phase I will be just X"). Whether Patty volunteers a comp signal unprompted. How she frames the Specialist title — terminal scope or stepping-stone.</p>
+  </div>
+</section>
+
+<!-- BOTTOM LINE -->
+<div class="bottom-line">
+  <h3>The throughline — say it once if it lands naturally</h3>
+  <p><em>"The Council is what makes this scale. My job is convening that capability — running the cadence, making sure each function's training discipline is visible to the others, and packaging the cross-cutting work (AI Literacy, Onboarding, Business Acumen, Skills Assessments) where no single function owns it today. The Articulate POC and Track 1 prove I can build and ship; the Council seat is where I orchestrate."</em></p>
+</div>
+
+<footer>
+  <p>May 19, 2026 · Utah · Patty Mazerolle + Michael Danielson<br>
+  Source: STAR battle plan + per-story drafts in the L&amp;D Specialist project folder<br>
+  Tags: #ld-specialist #may19-utah #STAR-prep #mobile-practice</p>
+</footer>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top">↑</button>
+
+<script>
+  // Countdown to gate
+  (function() {
+    const gate = new Date('2026-05-19T00:00:00');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const days = Math.ceil((gate - today) / (1000*60*60*24));
+    const el = document.getElementById('countdown');
+    if (el) {
+      if (days > 0) el.textContent = days + ' day' + (days === 1 ? '' : 's') + ' to gate';
+      else if (days === 0) el.textContent = 'Gate day — today';
+      else el.textContent = 'Gate passed (' + Math.abs(days) + ' day' + (Math.abs(days) === 1 ? '' : 's') + ' ago)';
+    }
+  })();
+
+  // Back to top button visibility
+  (function() {
+    const btn = document.getElementById('backToTop');
+    if (!btn) return;
+    window.addEventListener('scroll', function() {
+      if (window.scrollY > 400) btn.classList.add('visible');
+      else btn.classList.remove('visible');
+    }, { passive: true });
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+</script>
+
+</body>
+</html>

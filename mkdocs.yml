@@ -60,9 +60,10 @@ nav:
     - Overview: outlines/index.md
   - Trackers:
     - Overview: trackers/index.md
-    - Track 2 Weekly: trackers/track2-weekly.md
-    - Track 1 Weekly: trackers/track1-weekly.md
-    - MCTE 6-Week Plan: trackers/mcte-6week-plan.md
+    - CC Trainer Tracker: trackers/cc-trainer-tracker.md
+    - Track 2 Weekly (frozen): trackers/track2-weekly.md
+    - Track 1 Weekly (frozen): trackers/track1-weekly.md
+    - MCTE 6-Week Plan (frozen): trackers/mcte-6week-plan.md
     - Content:
       - Overview: trackers/content/index.md
       - Track 1 Content - Intro to PrePass: trackers/content/track1-content-intro-prepass.md

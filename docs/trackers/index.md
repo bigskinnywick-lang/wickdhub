@@ -1,17 +1,18 @@
 # Trackers
 
-L&D Specialist proof-of-work portfolio — weekly build progress, content gaps, and implementation status. Gate: May 19, 2026 Utah interview.
+Active focus during the May 4 → Jun 12, 2026 NHUA UA class window. Tracks 1 & 2 frozen for the duration of class delivery; CC Trainer Tracker is the single active build.
 
 ---
 
-## Active Trackers
+## Active Tracker
 
-- **[Track 1 Weekly — Intro to PrePass](track1-weekly.md)** — Internal onboarding framework with Michael Danielson (Org Dev & Effectiveness). Aligns to Phase I "Onboarding Program."
-- **[Track 2 Weekly — Articulate POC](track2-weekly.md)** — Self-paced Call Center modules (Account Closure, Verification, inForm Safety, Mini Modules). Build-and-deliver muscle for the Specialist seat.
+- **[Call Center Trainer Tracker](cc-trainer-tracker.md)** — Three-pillar focus for the May 4 → Jun 12 class window: FG verification, AI automation paths, handoff capability. Replaces Tracks 1 & 2 as the active workstream during class delivery; doubles as L&D Specialist proof-of-work (May 19 Utah gate).
 
 ## Frozen / Historical
 
-- **[MCTE 6-Week Plan](mcte-6week-plan.md)** — MCTE-era artifact (frozen 2026-04-30, no longer updated). URL stays live as historical reference; MCTE role was filled by another candidate Apr 28, with continued relationship-maintenance via Kelsey Butler.
+- **[Track 1 Weekly — Intro to PrePass](track1-weekly.md)** — Internal onboarding framework with Michael Danielson. **Frozen 2026-05-01 for class window** — surfaces as L&D Specialist proof-of-work; resumes post-Jun 12.
+- **[Track 2 Weekly — Articulate POC](track2-weekly.md)** — Self-paced Call Center modules (AAA, Account Closure, End-of-Call, inForm Safety storyboard). **Frozen 2026-05-01 for class window** — modules complete enough to surface; inForm CS Rise build deferred to post-Jun 12.
+- **[MCTE 6-Week Plan](mcte-6week-plan.md)** — MCTE-era artifact (frozen 2026-04-30). MCTE role was filled by another candidate Apr 28; URL stays live as historical reference.
 
 ## Content
 
