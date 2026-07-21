@@ -469,14 +469,27 @@
           tr.querySelector('td').innerHTML=drawerHtml(list,r.dataset.name);
           tr.querySelectorAll('[data-copy]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();copyNav(b.dataset.copy);});
         }catch(e){
-          tr.querySelector('td').innerHTML=`<div class="srcWrap"><div class="errline">Ardent unreachable: ${e.message}. Try Refresh.</div></div>`;
+          tr.querySelector('td').innerHTML=`<div class="srcWrap"><div class="errline">Ardent unreachable: ${e.message}. Try Refresh — or cross-check on ${inaraLink(r.dataset.name)}</div></div>`;
         }
       };
     });
     const rb=$("refreshBtn"); if(rb) rb.onclick=refresh;
   }
+  // ---- Inara cross-check (alternative supplier view) ----
+  // Inara's commodity search keys commodities by numeric id (not name), so we map the
+  // colonisation + common commodity set. Unmapped names fall back to Inara's search
+  // with just the reference system pre-filled. Reference system = the build's system.
+  const INARA_CID={"agronomic treatment":10268,"explosives":3,"hydrogen fuel":4,"hydrogen peroxide":138,"liquid oxygen":137,"mineral oil":5,"nerve agents":96,"pesticides":6,"rockforth fertiliser":10264,"surface stabilisers":97,"synthetic reagents":98,"tritium":10269,"water":139,"clothing":7,"consumer technology":8,"domestic appliances":9,"evacuation shelter":99,"survival equipment":164,"beer":10,"bootleg liquor":95,"liquor":11,"narcotics":12,"tobacco":13,"wine":14,"algae":15,"animal meat":16,"coffee":17,"fish":18,"food cartridges":19,"fruit and vegetables":20,"grain":21,"synthetic meat":23,"tea":22,"ceramic composites":100,"cmm composite":140,"insulating membrane":141,"meta-alloys":101,"micro-weave cooling hoses":185,"neofabric insulation":183,"polymers":26,"semiconductors":28,"superconductors":27,"articulation motors":182,"atmospheric processors":87,"building fabricators":102,"crop harvesters":29,"emergency power cells":158,"energy grid assembly":149,"exhaust manifold":159,"geological equipment":103,"heatsink interlink":151,"hn shock mount":150,"ion distributor":160,"magnetic emitter coil":152,"marine equipment":86,"microbial furnaces":85,"mineral extractors":31,"modular terminals":181,"power converter":153,"power generators":83,"power transfer bus":161,"radiation baffle":162,"reinforced mounting plate":163,"skimmer components":104,"thermal cooling units":105,"water purifiers":82,"advanced medicines":166,"agri-medicines":1,"basic medicines":33,"combat stabilisers":34,"performance enhancers":35,"progenitor cells":36,"aluminium":37,"beryllium":38,"bismuth":106,"cobalt":39,"copper":40,"gallium":41,"gold":42,"indium":43,"lanthanum":107,"lithium":44,"osmium":72,"palladium":45,"platinum":81,"praseodymium":143,"samarium":142,"silver":46,"steel":10487,"tantalum":47,"thallium":108,"thorium":109,"titanium":48,"uranium":50,"advanced catalysers":61,"animal monitors":62,"aquaponic systems":63,"auto-fabricators":65,"bioreducing lichen":66,"computer components":67,"h.e. suits":68,"hardware diagnostic sensor":155,"land enrichment systems":71,"medical diagnostic equipment":154,"micro controllers":156,"muon imager":119,"nanobreakers":167,"resonating separators":69,"robotics":70,"structural regulators":117,"telemetry suite":184,"conductive fabrics":165,"leather":73,"military grade fabrics":157,"natural fabrics":74,"synthetic fabrics":75,"biowaste":76,"chemical waste":32,"scrap":77,"battle weapons":88,"landmines":118,"non-lethal weapons":78,"personal weapons":79,"reactive armour":80};
+  function inaraUrl(name){
+    const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')];
+    const sys=encodeURIComponent((PROJECT&&PROJECT.systemName)||'');
+    return id
+      ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
+      : `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&ps1=${sys}`;
+  }
+  function inaraLink(name){return `<a href="${inaraUrl(name)}" target="_blank" rel="noopener" title="Cross-check ${name} sellers on Inara near ${(PROJECT&&PROJECT.systemName)||'the build'}" style="color:#ff7a12;text-decoration:none;white-space:nowrap">↗ Inara</a>`;}
   function drawerHtml(list,name){
-    if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span></div></div>`;
+    if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span><span>${inaraLink(name)}</span></div></div>`;
     const rows=list.slice(0,7).map((s,i)=>{
       const out=s.stock<=0, low=s.stock>0&&s.stock<2000, padbad=s.maxLandingPadSize<PAD_REQ, carrier=s.stationType==='FleetCarrier';
       const stockCls=out?'out':(low?'low':''); const stockTxt=out?'OUT':fmt(s.stock)+' t';
@@ -492,7 +505,7 @@
     }).join('');
     const allCarr=list.every(s=>s.stationType==='FleetCarrier');
     const carrNote=allCarr?`<div style="padding:8px 10px;margin:2px 0 6px;font-size:11.5px;color:var(--warn);border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 9%,transparent)">⚠ No stations sell ${name} within range — <b>fleet carriers only</b> (mobile · stock &amp; price can shift; grab it while it's there). Nearest sensible carrier shown first.</div>`:'';
-    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent /nearby/exports</span></div>${carrNote}${rows}</div>`;
+    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent · ${inaraLink(name)}</span></div>${carrNote}${rows}</div>`;
   }
 
   function copyNav(sys){const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");

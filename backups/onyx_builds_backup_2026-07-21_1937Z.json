@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "exportedTs": 1784662621418,
+  "exportedBy": "bigskinnywick@gmail.com",
+  "buildCount": 1,
+  "claimCount": 0,
+  "builds": {
+    "47db4699-c5ab-4b38-b8c5-71d1bb829ff6": {
+      "name": "Moy Engineering Silo",
+      "system": "Col 285 Sector BU-O b7-3",
+      "addedBy": "BIGSKINNY",
+      "ts": 1784614827629,
+      "marketId": 4378593795,
+      "via": "registrar",
+      "completedTs": 1784614967000,
+      "tons": 5690,
+      "architect": "Templar57",
+      "architectSource": "raven",
+      "verified": true
+    }
+  },
+  "claims": {},
+  "admins": [],
+  "other": {}
+}
