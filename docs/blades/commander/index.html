@@ -298,6 +298,7 @@
       <input id="buildIdIn" class="bb-in" placeholder="paste RavenColonial build ID or link" autocomplete="off" />
       <button id="buildIdGo" class="bb-go">view ▸</button>
     </span>
+    <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
   </div>
   <div class="controls">
     <div class="dialbox">
@@ -381,7 +382,9 @@
 // ===== Cloudflare Access identity =====
   (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
-    fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
+    fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;
+      const tp=$("testPilotBtn"); if(tp&&CMDR[em])tp.style.display="";  // shakedown crew only
+    }).catch(()=>{});})();
 // ===== theme dial =====
   (function(){
     const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-55},{t:"cyan",n:"FLEET TACTICAL",a:0},{t:"onyx",n:"ONYX BLADE",a:55}];
