@@ -333,13 +333,34 @@
     return [];
   }
   // Resolve which build the board shows: an explicit selection, else the first
-  // registered squad build, else none (idle state). Shared so boot + ticker agree.
+  // ACTIVE (not completion-stamped) squad build, else none (standing-down state).
+  // REGISTRY caches the full list (incl. completedTs/tons/architect from KV).
+  let REGISTRY=[];
   const BUILD_READY=(async function(){
+    REGISTRY=await fetchRegistry();
     if(EXPLICIT_BUILD&&BUILD_ID)return BUILD_ID;
-    const reg=await fetchRegistry();
-    if(reg&&reg.length){BUILD_ID=reg[0].id;return BUILD_ID;}
+    const act=REGISTRY.filter(b=>!b.completedTs);
+    if(act.length){BUILD_ID=act[0].id;return BUILD_ID;}
     BUILD_ID="";return "";
   })();
+  const escH=(s)=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  // Stamp completion + architect back into the KV registry (fire-and-forget) so
+  // finished builds stop costing a live Raven call and attribution reconciles.
+  const STAMPED=new Set();
+  function stampIfNeeded(p){
+    const id=String(p.buildId||BUILD_ID||"").toLowerCase(); if(!id||STAMPED.has(id))return;
+    const rec=REGISTRY.find(b=>b.id.toLowerCase()===id);
+    const needTs=p.complete&&!(rec&&rec.completedTs);
+    const needArch=!!p.architectName&&!(rec&&rec.architect&&rec.verified);
+    if(!needTs&&!needArch)return;
+    STAMPED.add(id);
+    const body={id:id};
+    if(needTs){body.completedTs=Date.parse(p.timeCompleted||p.timestamp)||Date.now();body.tons=p.maxNeed||0;}
+    if(p.buildName)body.name=p.buildName; if(p.systemName)body.system=p.systemName;
+    if(needArch){body.architect=p.architectName;body.architectSource="raven";body.verified=true;}
+    if(rec){if(needTs){rec.completedTs=body.completedTs;rec.tons=body.tons;}if(needArch){rec.architect=p.architectName;rec.verified=true;}}
+    try{fetch("/blades/api/builds",{method:"PATCH",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});}catch(e){}
+  }
   const SHIP_CAP=790, PAD_REQ=3;
   // supplier ranking weights (tunable): distance-dominant; price a tiebreaker; carriers deprioritised (mobile/may vanish); stale market nudged down
   const RANK={distLY:1.0, priceCr:1/400, carrierPenalty:80, stalePenalty:25, staleHrs:72};
@@ -393,7 +414,7 @@
   }
 
   function render(p){
-    PROJECT=p;
+    PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||"";
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
     const carriers=(p.linkedFC||[]).map(f=>`<div class="contrib"><div class="who">${f.displayName||f.name}<small>market ${f.marketId}</small></div><div><div class="amt">${(f.sales||[]).length} sell</div><div class="commit">linked carrier</div></div></div>`).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
@@ -483,16 +504,36 @@
     for(const k in srcCache)delete srcCache[k];
     try{const p=await loadProject();render(p);toast("⟳ refreshed from RavenColonial");}catch(e){toast("refresh failed: "+e.message);if(rb){rb.classList.remove("spin");rb.textContent="⟳ REFRESH";}}}
 
-  function renderEmpty(){
-    const s=$("subline");if(s)s.textContent="no active builds";
+  // Standing-down state + honors board of recent completions (from KV stamps —
+  // no Raven calls needed; completed builds have empty commodity data anyway).
+  function renderIdle(){
+    const s=$("subline");if(s)s.textContent="standing down — no active builds";
     const c=$("cmdrLine");if(c)c.textContent="—";
-    $("view").innerHTML=`<div class="panel"><h2>No active builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction builds right now.<br>Land at a construction site with the Blades Registrar plugin running to add one automatically — or use <b>＋ add ID</b> above to pull one in.</div></div>`;
+    const done=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0)).slice(0,5);
+    const rows=done.map(b=>`<div class="contrib"><div class="who">${escH(b.name||b.id.slice(0,8))}<small>${escH(b.system||"—")} · architect ${escH(b.architect||"—")}</small></div><div><div class="amt">${b.tons?fmt(b.tons)+" t":"✔"}</div><div class="commit">${b.completedTs?"completed "+new Date(b.completedTs).toISOString().slice(0,10):"complete"}</div></div></div>`).join("");
+    $("view").innerHTML=`<div class="grid"><div class="panel"><h2>Standing Down — No Active Builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction right now.<br>Land at a construction site with the Blades Registrar plugin running to open one automatically — or use <b>＋ add ID</b> above. The board re-arms itself the moment a build registers.</div></div><div><div class="panel"><h2>Honors Board — Recent Completions</h2>${rows||'<div style="color:var(--muted);font-size:12px">No completed builds on record yet.</div>'}<div class="sync-line" style="margin-top:12px">Completed builds keep their stats — see MY STATS for career totals.</div></div></div></div>`;
   }
+  // Walk unstamped builds until an active one renders; stamp any found complete.
   async function boot(){
-    const bid=await BUILD_READY;
-    if(!bid){renderEmpty();return;}
-    try{const p=await loadProject();render(p);}
-    catch(e){$("view").innerHTML=`<div class="panel"><h2>Connection Error</h2><div class="errline">Could not reach RavenColonial: ${e.message}<br>The build data lives at the RavenColonial API. If this persists, the API host may have changed.</div></div>`;}
+    await BUILD_READY;
+    if(EXPLICIT_BUILD&&BUILD_ID){
+      try{const p=await loadProject();render(p);stampIfNeeded(p);}
+      catch(e){$("view").innerHTML=`<div class="panel"><h2>Connection Error</h2><div class="errline">Could not reach RavenColonial: ${e.message}<br>The build data lives at the RavenColonial API. If this persists, the API host may have changed.</div></div>`;}
+      return;
+    }
+    let err=null;
+    for(const b of REGISTRY.filter(x=>!x.completedTs)){
+      BUILD_ID=b.id;
+      try{
+        const p=await loadProject();
+        stampIfNeeded(p);
+        if(p.complete){continue;}
+        render(p);return;
+      }catch(e){err=e;continue;}
+    }
+    BUILD_ID="";
+    if(err){$("view").innerHTML=`<div class="panel"><h2>Connection Error</h2><div class="errline">Could not reach RavenColonial: ${err.message}<br>Live build state is unavailable — retrying automatically.</div></div>`;return;}
+    renderIdle();
   }
 
   // ===== theme dial =====
@@ -525,15 +566,20 @@
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
 
-  boot();
-
-  // ===== SQUAD NET ticker (live) =====
+  // ===== SQUAD NET ticker (live; re-runnable — the poll loop calls it on change) =====
   (function(){
-    function cmdrTons(c){ if(c==null)return null; if(typeof c==="number")return c; if(typeof c==="object"){for(const k of ["delivered","total","tons","tonnage","sum","contributed"]){if(typeof c[k]==="number")return c[k];} let s=0,f=false; for(const v of Object.values(c)){if(typeof v==="number"){s+=v;f=true;}else if(v&&typeof v==="object"){for(const v2 of Object.values(v)){if(typeof v2==="number"){s+=v2;f=true;}}}} return f?s:null;} return null; }
+    const NORM=(s)=>String(s||"").replace(/^CMDR\s+/i,"").trim().toUpperCase();
     async function run(){
-      const bid=await BUILD_READY;
-      if(!bid){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — no active builds. Land at a construction site to begin.</span>'; return; }
-      let p; try{ p=await fetch(RAVEN+"/api/project/"+BUILD_ID).then(r=>r.json()); }catch(e){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — live feed resumes when the board reaches RavenColonial</span>'; return; }
+      if(!BUILD_ID){
+        const el=$("tickTrack"); if(!el) return;
+        const last=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0))[0];
+        let h='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — no active builds. Land at a construction site to begin.</span>';
+        if(last) h+='<span class="sep">◆</span><span class="item"><span class="ico">✔</span>LAST COMPLETION: <b>'+escH(last.name||last.id.slice(0,8))+'</b>'+(last.architect?' · architect '+escH(last.architect):'')+'</span>';
+        el.innerHTML=h+'<span class="sep">◆</span>'+h; return;
+      }
+      let p,st=null; try{ p=await fetch(RAVEN+"/api/project/"+BUILD_ID).then(r=>r.json()); }catch(e){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — live feed resumes when the board reaches RavenColonial</span>'; return; }
+      try{ st=await fetch(RAVEN+"/api/project/"+BUILD_ID+"/stats").then(r=>r.ok?r.json():null); }catch(e){}
+      const tonsOf=(n)=>{ if(!st||!st.cmdrs)return null; const N=NORM(n); for(const k in st.cmdrs){ if(NORM(k)===N&&typeof st.cmdrs[k]==="number")return st.cmdrs[k]; } return null; };
       const items=[]; const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
       let hrs=null; if(p.timeDue){const t=Date.parse(p.timeDue); if(!isNaN(t)) hrs=(t-Date.now())/3.6e6;}
       if(hrs!==null&&hrs<48) items.push({c:"emergency",i:"⏱",h:"EMERGENCY: <b>"+name+"</b> window closing — "+Math.max(0,Math.round(hrs))+"h left · "+pct+"% built"});
@@ -541,14 +587,55 @@
       else items.push({c:"",i:"◈",h:"BUILD: <b>"+name+"</b> · "+pct+"% built · "+fmt(p.sumNeed)+" t remaining"});
       const comm=Object.entries(p.commodities||{}).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
       if(comm.length) items.push({c:(hrs!==null&&hrs<120)?"crit":"",i:"◇",h:"MOST NEEDED: <b>"+disp(comm[0][0])+" ×"+fmt(comm[0][1])+"</b>"});
-      const cm=p.commanders||{}; const names=Object.keys(cm);
-      if(names.length) names.forEach(n=>{const t=cmdrTons(cm[n]); items.push({c:"",i:"＋",h:"<b>"+n.toUpperCase()+"</b> synced"+(t!=null?" · "+fmt(t)+" t hauled":"")});});
+      const seen=new Set(); const names=[];
+      Object.keys(p.commanders||{}).forEach(n=>{const N=NORM(n);if(!seen.has(N)){seen.add(N);names.push(n);}});
+      if(st&&st.cmdrs)Object.keys(st.cmdrs).forEach(n=>{const N=NORM(n);if(!seen.has(N)){seen.add(N);names.push(n);}});
+      if(names.length) names.forEach(n=>{const t=tonsOf(n); items.push({c:"",i:"＋",h:"<b>"+NORM(n)+"</b> synced"+(t!=null?" · "+fmt(t)+" t hauled":"")});});
       else items.push({c:"",i:"＋",h:"AWAITING COMMANDER SYNC — deliveries appear here once Blades wire into this build"});
       (p.linkedFC||[]).forEach(fc=>items.push({c:"",i:"⛽",h:"FC <b>"+(fc.displayName||fc.name||"carrier")+"</b> linked · "+(p.systemName||"")}));
       items.push({c:"",i:"✦",h:"COHORT: <b>"+name+"</b> · "+fmt(p.sumNeed)+" / "+fmt(p.maxNeed)+" t outstanding"});
       const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html;
     }
-    run();
+    window._obRunTicker=run;
+  })();
+
+  // ===== live update loop: timer transport, change-detected renders =====
+  // Registry (KV) + active build (Raven eTag) every 60s while the tab is visible;
+  // immediate catch-up when the tab becomes visible again. Re-render only on diff.
+  let LAST_ETAG="", LAST_REGSIG="", POLL_BUSY=false;
+  async function pollTick(){
+    if(document.hidden||POLL_BUSY) return; POLL_BUSY=true;
+    try{
+      try{
+        const reg=await fetchRegistry(); const sig=JSON.stringify(reg);
+        if(sig!==LAST_REGSIG){
+          const first=LAST_REGSIG===""; LAST_REGSIG=sig; REGISTRY=reg;
+          if(!first){
+            if(window._obPickerReload)window._obPickerReload();
+            if(!BUILD_ID){ await boot(); if(window._obRunTicker)window._obRunTicker(); if(BUILD_ID)toast("◈ new build on the wire"); }
+          }
+        }
+      }catch(e){}
+      if(BUILD_ID){
+        try{
+          const p=await loadProject();
+          const tag=p.eTag||p.timestamp||"";
+          if(tag!==LAST_ETAG){
+            render(p); stampIfNeeded(p);
+            if(window._obRunTicker)window._obRunTicker();
+            if(p.complete&&!EXPLICIT_BUILD){ toast("✔ build complete — honors board updated"); await boot(); if(window._obRunTicker)window._obRunTicker(); }
+            else toast("⟳ live update");
+          }
+        }catch(e){}
+      }
+    }finally{ POLL_BUSY=false; }
+  }
+  (async function main(){
+    await boot();
+    LAST_REGSIG=JSON.stringify(REGISTRY);
+    if(window._obRunTicker)window._obRunTicker();
+    setInterval(pollTick,60000);
+    document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pollTick(); });
   })();
 
 
@@ -568,20 +655,45 @@
       try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json()); return (j&&j.builds)||[];}catch(e){}
       return [];
     }
+    let showAllDone=false, lastMerged=null;
     async function load(){
       const reg=await fetchList();
       const seen={},merged=[];
-      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad"});}});
-      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local"});}});
-      if((function(){try{var _x=localStorage.getItem("ob_build");return !!(_x&&/^[0-9a-fA-F-]{36}$/.test(_x));}catch(e){return false;}})()&&!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local"});}
-      await Promise.all(merged.map(async b=>{ try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject()); b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete; }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; } }));
-      const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete);
+      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad",completedTs:b.completedTs||null});}});
+      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local",completedTs:null});}});
+      if((function(){try{var _x=localStorage.getItem("ob_build");return !!(_x&&/^[0-9a-fA-F-]{36}$/.test(_x));}catch(e){return false;}})()&&!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local",completedTs:null});}
+      // Completion-stamped builds skip the live Raven check \u2014 KV already knows.
+      await Promise.all(merged.map(async b=>{
+        if(b.completedTs){ b.complete=true; b.name=b.name||b.id.slice(0,8); return; }
+        try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject());
+          b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete;
+          if(p.complete){ b.completedTs=Date.parse(p.timeCompleted||p.timestamp)||Date.now(); if(typeof stampIfNeeded==="function") stampIfNeeded(p); }
+        }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; }
+      }));
+      lastMerged=merged; renderList();
+    }
+    function renderList(){
+      const merged=lastMerged||[];
+      const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0));
       let html="";
       if(active.length) html+='<optgroup label="Active builds">'+active.map(opt).join("")+'</optgroup>';
       else html+='<option disabled>\u2014 no active builds \u00b7 use \uff0b add ID \u2014</option>';
-      if(done.length) html+='<optgroup label="Completed \u00b7 stats only">'+done.map(opt).join("")+'</optgroup>';
+      if(done.length){
+        let vis=done, hidden=0;
+        if(!showAllDone&&done.length>4){
+          vis=done.slice(0,3);
+          if(BUILD_ID&&done.some(b=>b.id===BUILD_ID)&&!vis.some(b=>b.id===BUILD_ID)) vis=vis.concat([done.find(b=>b.id===BUILD_ID)]);
+          hidden=done.length-vis.length;
+        }
+        html+='<optgroup label="Completed \u00b7 '+done.length+' \u00b7 stats only">'+vis.map(opt).join("");
+        if(hidden>0) html+='<option value="__more__">\u2026 show all '+done.length+' completed</option>';
+        html+='</optgroup>';
+      }
       SEL.innerHTML=html;
-      SEL.onchange=()=>{ if(SEL.value&&SEL.value!==BUILD_ID) setActive(SEL.value); };
+      SEL.onchange=()=>{
+        if(SEL.value==="__more__"){ showAllDone=true; renderList(); SEL.value=BUILD_ID||""; return; }
+        if(SEL.value&&SEL.value!==BUILD_ID) setActive(SEL.value);
+      };
     }
     if(ADD) ADD.onclick=()=>{ROW.style.display=(ROW.style.display==="flex")?"none":"flex";if(IN)IN.focus();};
     async function addBuild(){ const m=(IN.value||"").match(GUID); if(!m){IN.style.borderColor="var(--bad)";return;} const id=m[0].toLowerCase();
@@ -590,6 +702,7 @@
       setActive(id); }
     if(GO) GO.onclick=addBuild;
     if(IN) IN.addEventListener("keydown",e=>{if(e.key==="Enter")addBuild();});
+    window._obPickerReload=load;
     load();
   })();
 </script>

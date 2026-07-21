@@ -258,12 +258,31 @@
     try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json());return (j&&j.builds)||[];}catch(e){}
     return [];
   }
+  // Prefer the first ACTIVE (not completion-stamped) squad build; idle otherwise.
+  let REGISTRY=[];
   const BUILD_READY=(async function(){
+    REGISTRY=await fetchRegistry();
     if(EXPLICIT_BUILD&&BUILD_ID)return BUILD_ID;
-    const reg=await fetchRegistry();
-    if(reg&&reg.length){BUILD_ID=reg[0].id;return BUILD_ID;}
+    const act=REGISTRY.filter(b=>!b.completedTs);
+    if(act.length){BUILD_ID=act[0].id;return BUILD_ID;}
     BUILD_ID="";return "";
   })();
+  const escH=(s)=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const STAMPED=new Set();
+  function stampIfNeeded(p){
+    const id=String(p.buildId||BUILD_ID||"").toLowerCase(); if(!id||STAMPED.has(id))return;
+    const rec=REGISTRY.find(b=>b.id.toLowerCase()===id);
+    const needTs=p.complete&&!(rec&&rec.completedTs);
+    const needArch=!!p.architectName&&!(rec&&rec.architect&&rec.verified);
+    if(!needTs&&!needArch)return;
+    STAMPED.add(id);
+    const body={id:id};
+    if(needTs){body.completedTs=Date.parse(p.timeCompleted||p.timestamp)||Date.now();body.tons=p.maxNeed||0;}
+    if(p.buildName)body.name=p.buildName; if(p.systemName)body.system=p.systemName;
+    if(needArch){body.architect=p.architectName;body.architectSource="raven";body.verified=true;}
+    if(rec){if(needTs){rec.completedTs=body.completedTs;rec.tons=body.tons;}if(needArch){rec.architect=p.architectName;rec.verified=true;}}
+    try{fetch("/blades/api/builds",{method:"PATCH",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});}catch(e){}
+  }
   const SHIP_CAP=790, PAD_REQ=3;
   const $=(id)=>document.getElementById(id);
   const fmt=(n)=>Number(n).toLocaleString("en-US");
@@ -314,7 +333,7 @@
   }
 
   function render(p){
-    PROJECT=p;
+    PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||"";
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
     const carriers=(p.linkedFC||[]).map(f=>`<div class="contrib"><div class="who">${f.displayName||f.name}<small>market ${f.marketId}</small></div><div><div class="amt">${(f.sales||[]).length} sell</div><div class="commit">linked carrier</div></div></div>`).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
@@ -402,16 +421,35 @@
     for(const k in srcCache)delete srcCache[k];
     try{const p=await loadProject();render(p);toast("⟳ refreshed from RavenColonial");}catch(e){toast("refresh failed: "+e.message);if(rb){rb.classList.remove("spin");rb.textContent="⟳ REFRESH";}}}
 
-  function renderEmpty(){
-    const s=$("subline");if(s)s.textContent="no active builds";
+  // Standing-down state + honors board of recent completions (KV stamps only).
+  function renderIdle(){
+    const s=$("subline");if(s)s.textContent="standing down — no active builds";
     const c=$("cmdrLine");if(c)c.textContent="—";
-    $("view").innerHTML=`<div class="panel"><h2>No active builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction builds right now.<br>Land at a construction site with the Blades Registrar plugin running to add one automatically — or use <b>＋ add ID</b> above to pull one in.</div></div>`;
+    const done=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0)).slice(0,5);
+    const rows=done.map(b=>`<div class="contrib"><div class="who">${escH(b.name||b.id.slice(0,8))}<small>${escH(b.system||"—")} · architect ${escH(b.architect||"—")}</small></div><div><div class="amt">${b.tons?fmt(b.tons)+" t":"✔"}</div><div class="commit">${b.completedTs?"completed "+new Date(b.completedTs).toISOString().slice(0,10):"complete"}</div></div></div>`).join("");
+    $("view").innerHTML=`<div class="grid"><div class="panel"><h2>Standing Down — No Active Builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction right now.<br>Land at a construction site with the Blades Registrar plugin running to open one automatically. The board re-arms itself the moment a build registers.</div></div><div><div class="panel"><h2>Honors Board — Recent Completions</h2>${rows||'<div style="color:var(--muted);font-size:12px">No completed builds on record yet.</div>'}<div class="sync-line" style="margin-top:12px">Completed builds keep their stats — see MY STATS for career totals.</div></div></div></div>`;
   }
+  // Walk unstamped builds until an active one renders; stamp any found complete.
   async function boot(){
-    const bid=await BUILD_READY;
-    if(!bid){renderEmpty();return;}
-    try{const p=await loadProject();render(p);}
-    catch(e){$("view").innerHTML=`<div class="panel"><h2>Connection Error</h2><div class="errline">Could not reach RavenColonial: ${e.message}<br>The build data lives at the RavenColonial API. If this persists, the API host may have changed.</div></div>`;}
+    await BUILD_READY;
+    if(EXPLICIT_BUILD&&BUILD_ID){
+      try{const p=await loadProject();render(p);stampIfNeeded(p);}
+      catch(e){$("view").innerHTML=`<div class="panel"><h2>Connection Error</h2><div class="errline">Could not reach RavenColonial: ${e.message}<br>The build data lives at the RavenColonial API. If this persists, the API host may have changed.</div></div>`;}
+      return;
+    }
+    let err=null;
+    for(const b of REGISTRY.filter(x=>!x.completedTs)){
+      BUILD_ID=b.id;
+      try{
+        const p=await loadProject();
+        stampIfNeeded(p);
+        if(p.complete){continue;}
+        render(p);return;
+      }catch(e){err=e;continue;}
+    }
+    BUILD_ID="";
+    if(err){$("view").innerHTML=`<div class="panel"><h2>Connection Error</h2><div class="errline">Could not reach RavenColonial: ${err.message}<br>Live build state is unavailable — retrying automatically.</div></div>`;return;}
+    renderIdle();
   }
 
   // ===== theme dial =====
@@ -420,7 +458,7 @@
     const knob=$("knob"), schemeEl=$("dialScheme"), labels=[...document.querySelectorAll(".dl")];
     let idx=0, dragging=false;
     function paint(i){const s=SCHEMES[i];document.documentElement.dataset.theme=s.t;schemeEl.textContent=s.n;labels.forEach((l,j)=>l.classList.toggle("on",j===i));knob.setAttribute("aria-valuenow",i);}
-    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);}
+    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
     labels.forEach((l,j)=>l.onclick=()=>apply(j));
     function ang(e){const r=knob.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const pt=e.touches?e.touches[0]:e;let d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
     function near(d){let b=0,bd=1e9;SCHEMES.forEach((s,i)=>{const x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}
@@ -430,21 +468,51 @@
     knob.addEventListener("mousedown",dn);knob.addEventListener("touchstart",dn,{passive:false});
     knob.addEventListener("wheel",e=>{e.preventDefault();apply(idx+(e.deltaY>0?1:-1));},{passive:false});
     knob.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowUp"){e.preventDefault();apply(idx+1);}else if(e.key==="ArrowLeft"||e.key==="ArrowDown"){e.preventDefault();apply(idx-1);}});
-    apply(0);
+    var _st=0;try{var _s=localStorage.getItem("ob_theme");var _j=SCHEMES.findIndex(function(x){return x.t===_s;});if(_j>=0)_st=_j;}catch(e){}apply(_st);
   })();
 
   // ===== galactic clock =====
-  (function(){const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let mode="ed";
+  (function(){const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let mode="ed";try{var _cm=localStorage.getItem("ob_clock");if(_cm==="ed"||_cm==="local")mode=_cm;}catch(e){}
     function tz(){try{return new Intl.DateTimeFormat("en-US",{timeZoneName:"short"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "LOCAL";}}
     function tick(){const d=new Date();if(mode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${tz()}`;$("clLab").textContent="LOCAL / RL";}}
-    $("clToggle").onclick=()=>{mode=mode==="ed"?"local":"ed";tick();};tick();setInterval(tick,1000);})();
+    $("clToggle").onclick=()=>{mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};tick();setInterval(tick,1000);})();
 
   // ===== Cloudflare Access identity =====
   (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
 
-  boot();
+  // ===== live update loop: timer transport, change-detected renders =====
+  let LAST_ETAG="", LAST_REGSIG="", POLL_BUSY=false;
+  async function pollTick(){
+    if(document.hidden||POLL_BUSY) return; POLL_BUSY=true;
+    try{
+      try{
+        const reg=await fetchRegistry(); const sig=JSON.stringify(reg);
+        if(sig!==LAST_REGSIG){
+          const first=LAST_REGSIG===""; LAST_REGSIG=sig; REGISTRY=reg;
+          if(!first&&!BUILD_ID){ await boot(); if(BUILD_ID)toast("◈ new build on the wire"); }
+        }
+      }catch(e){}
+      if(BUILD_ID){
+        try{
+          const p=await loadProject();
+          const tag=p.eTag||p.timestamp||"";
+          if(tag!==LAST_ETAG){
+            render(p); stampIfNeeded(p);
+            if(p.complete&&!EXPLICIT_BUILD){ toast("✔ build complete — honors board updated"); await boot(); }
+            else toast("⟳ live update");
+          }
+        }catch(e){}
+      }
+    }finally{ POLL_BUSY=false; }
+  }
+  (async function main(){
+    await boot();
+    LAST_REGSIG=JSON.stringify(REGISTRY);
+    setInterval(pollTick,60000);
+    document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pollTick(); });
+  })();
 </script>
 </body>
 </html>

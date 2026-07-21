@@ -341,14 +341,38 @@
     try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json());return (j&&j.builds)||[];}catch(e){}
     return [];
   }
+  // Prefer the first ACTIVE build; fall back to ANY build so career stats still
+  // render when the registry holds only completed builds (they ARE the record).
+  let REGISTRY=[];
   const BUILD_READY=(async function(){
+    REGISTRY=await fetchRegistry();
     if(EXPLICIT_BUILD&&BUILD_ID)return BUILD_ID;
-    const reg=await fetchRegistry();
-    if(reg&&reg.length){BUILD_ID=reg[0].id;return BUILD_ID;}
+    const act=REGISTRY.filter(b=>!b.completedTs);
+    if(act.length){BUILD_ID=act[0].id;return BUILD_ID;}
+    if(REGISTRY.length){BUILD_ID=REGISTRY[0].id;return BUILD_ID;}
     BUILD_ID="";return "";
   })();
   const fmt=(n)=>Number(n||0).toLocaleString("en-US");
   const disp=(k)=>String(k).replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
+  const escH=(s)=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  // Raven spells commanders differently per endpoint ("BIGSKINNY" in the project
+  // roster, "bigskinny" in /stats) — normalize EVERY key before comparing.
+  const NORM=(s)=>String(s||"").replace(/^CMDR\s+/i,"").trim().toUpperCase();
+  const STAMPED=new Set();
+  function stampIfNeeded(p){
+    const id=String(p.buildId||"").toLowerCase(); if(!id||STAMPED.has(id))return;
+    const rec=REGISTRY.find(b=>b.id.toLowerCase()===id);
+    const needTs=p.complete&&!(rec&&rec.completedTs);
+    const needArch=!!p.architectName&&!(rec&&rec.architect&&rec.verified);
+    if(!needTs&&!needArch)return;
+    STAMPED.add(id);
+    const body={id:id};
+    if(needTs){body.completedTs=Date.parse(p.timeCompleted||p.timestamp)||Date.now();body.tons=p.maxNeed||0;}
+    if(p.buildName)body.name=p.buildName; if(p.systemName)body.system=p.systemName;
+    if(needArch){body.architect=p.architectName;body.architectSource="raven";body.verified=true;}
+    if(rec){if(needTs){rec.completedTs=body.completedTs;rec.tons=body.tons;}if(needArch){rec.architect=p.architectName;rec.verified=true;}}
+    try{fetch("/blades/api/builds",{method:"PATCH",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});}catch(e){}
+  }
 // ===== galactic clock =====
   (function(){const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let mode="ed";try{var _cm=localStorage.getItem("ob_clock");if(_cm==="ed"||_cm==="local")mode=_cm;}catch(e){}
     function tz(){try{return new Intl.DateTimeFormat("en-US",{timeZoneName:"short"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "LOCAL";}}
@@ -377,12 +401,21 @@
     var _st=0;try{var _s=localStorage.getItem("ob_theme");var _j=SCHEMES.findIndex(function(x){return x.t===_s;});if(_j>=0)_st=_j;}catch(e){}apply(_st);
   })();
 
-  let PROJ=null, PROJERR=false;
-  async function getProj(){ if(PROJ) return PROJ; const r=await fetch(RAVEN+"/api/project/"+BUILD_ID); if(!r.ok) throw new Error(r.status); PROJ=await r.json(); return PROJ; }
-  function cmdrTons(c){ if(c==null) return null; if(typeof c==="number") return c;
-    if(typeof c==="object"){ for(const k of ["delivered","total","tons","tonnage","cargo","sum","contributed"]){ if(typeof c[k]==="number") return c[k]; }
-      let s=0,f=false; for(const v of Object.values(c)){ if(typeof v==="number"){s+=v;f=true;} else if(v&&typeof v==="object"){ for(const v2 of Object.values(v)){ if(typeof v2==="number"){s+=v2;f=true;} } } } return f?s:null; }
-    return null; }
+  let PROJ=null;
+  async function getProj(force){ if(PROJ&&!force) return PROJ; const r=await fetch(RAVEN+"/api/project/"+BUILD_ID); if(!r.ok) throw new Error(r.status); PROJ=await r.json(); return PROJ; }
+  // Per-commander tonnage lives in /stats (cmdrs map), NOT in the project's
+  // commanders roster (those arrays are empty). Real shape captured 2026-07-21.
+  async function getStats(id){ try{ const r=await fetch(RAVEN+"/api/project/"+id+"/stats"); if(!r.ok) return null; return await r.json(); }catch(e){ return null; } }
+  const STATCACHE={};
+  // Career data: every registry build's /stats, aggregated per normalized cmdr.
+  async function careerData(force){
+    await Promise.all(REGISTRY.map(async b=>{ if(force||!(b.id in STATCACHE)) STATCACHE[b.id]=await getStats(b.id); }));
+    const career={}; // NORM name -> {tons, builds:{id:tons}}
+    for(const b of REGISTRY){ const st=STATCACHE[b.id]; if(!st||!st.cmdrs) continue;
+      for(const k in st.cmdrs){ const v=st.cmdrs[k]; if(typeof v!=="number") continue; const K=NORM(k);
+        (career[K]=career[K]||{tons:0,builds:{}}); career[K].tons+=v; career[K].builds[b.id]=(career[K].builds[b.id]||0)+v; } }
+    return career;
+  }
   function tickerItems(p){
     const items=[]; const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
     let hrs=null; if(p.timeDue){const t=Date.parse(p.timeDue); if(!isNaN(t)) hrs=(t-Date.now())/3.6e6;}
@@ -391,66 +424,103 @@
     else items.push({c:"",i:"◈",h:"BUILD: <b>"+name+"</b> · "+pct+"% built · "+fmt(p.sumNeed)+" t remaining"});
     const comm=Object.entries(p.commodities||{}).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
     if(comm.length) items.push({c:(hrs!==null&&hrs<120)?"crit":"",i:"◇",h:"MOST NEEDED: <b>"+disp(comm[0][0])+" ×"+fmt(comm[0][1])+"</b>"});
-    const cm=p.commanders||{}; const names=Object.keys(cm);
-    if(names.length) names.forEach(n=>{const t=cmdrTons(cm[n]); items.push({c:"",i:"＋",h:"<b>"+n.toUpperCase()+"</b> synced"+(t!=null?" · "+fmt(t)+" t hauled":"")+" → "+name});});
+    const st=STATCACHE[BUILD_ID]||null;
+    const tonsOf=(n)=>{ if(!st||!st.cmdrs)return null; const N=NORM(n); for(const k in st.cmdrs){ if(NORM(k)===N&&typeof st.cmdrs[k]==="number")return st.cmdrs[k]; } return null; };
+    const seen=new Set(); const names=[];
+    Object.keys(p.commanders||{}).forEach(n=>{const N=NORM(n);if(!seen.has(N)){seen.add(N);names.push(n);}});
+    if(st&&st.cmdrs)Object.keys(st.cmdrs).forEach(n=>{const N=NORM(n);if(!seen.has(N)){seen.add(N);names.push(n);}});
+    if(names.length) names.forEach(n=>{const t=tonsOf(n); items.push({c:"",i:"＋",h:"<b>"+NORM(n)+"</b> synced"+(t!=null?" · "+fmt(t)+" t hauled":"")+" → "+name});});
     else items.push({c:"",i:"＋",h:"AWAITING COMMANDER SYNC — deliveries appear here once Blades wire into this build"});
     (p.linkedFC||[]).forEach(fc=>items.push({c:"",i:"⛽",h:"FC <b>"+(fc.displayName||fc.name||"carrier")+"</b> linked · "+(p.systemName||"")}));
     items.push({c:"",i:"✦",h:"COHORT: <b>"+name+"</b> · "+fmt(p.sumNeed)+" / "+fmt(p.maxNeed)+" t outstanding"});
     return items;
   }
   function renderTicker(items){ const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
-  async function runTicker(){ const bid=await BUILD_READY; if(!bid){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."}]); return; } try{ renderTicker(tickerItems(await getProj())); }catch(e){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}]); } }
+  async function runTicker(){ if(!BUILD_ID){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."}]); return; } try{ renderTicker(tickerItems(await getProj())); }catch(e){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}]); } }
 
 
   const CMDRMAP={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
   function qparam(k){return new URLSearchParams(location.search).get(k);}
   async function whoAmI(){ try{ const d=await fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); const em=(d.email||"").toLowerCase(); return CMDRMAP[em]||(d.name||em||"").toUpperCase(); }catch(e){ return null; } }
-  function matchKey(cm, target){ if(!target) return null; const keys=Object.keys(cm||{}); const T=target.replace(/^CMDR\s+/i,"").toUpperCase();
-    return keys.find(k=>k.toUpperCase()===T) || keys.find(k=>k.toUpperCase().replace(/^CMDR\s+/,"")===T) || null; }
-  function renderStats(p, key, target){
+  // ===== dossier: career across all builds + selected-build highlight =====
+  function renderStats(p, career, key, target){
     const nameEl=$("dossName"), subEl=$("dossSub"), box=$("dossStats");
-    const shown = key? key.toUpperCase() : (target||"COMMANDER");
-    nameEl.textContent = (shown.startsWith("CMDR")?shown:"CMDR "+shown);
-    subEl.innerHTML = "Active build: <b style=\"color:var(--accent-bright)\">"+(p.buildName||"—")+"</b> · "+(p.systemName||"");
-    if(!key){
-      box.innerHTML='<div class="rempty">No synced deliveries for this commander on the active build yet. When '+(target?("<b>"+target+"</b>"):"you")+' set up the uplink and haul to the wired build, tonnage and per-commodity contributions show here automatically.</div>';
+    const shown=key||NORM(target)||"COMMANDER";
+    nameEl.textContent="CMDR "+shown;
+    const selName=p?(p.buildName||"—"):(BUILD_ID?BUILD_ID.slice(0,8)+"…":"—");
+    subEl.innerHTML="Selected build: <b style=\"color:var(--accent-bright)\">"+escH(selName)+"</b>"+(p&&p.systemName?" · "+escH(p.systemName):"")+(p&&p.complete?" · <span style=\"color:var(--muted)\">COMPLETE</span>":"");
+    const me=key?career[key]:null;
+    if(!me){
+      box.innerHTML='<div class="rempty">No tracked deliveries for '+(target?("<b>"+escH(target)+"</b>"):"this commander")+' yet. Haul to a wired build with the uplink running and tonnage appears here automatically. <span style="opacity:.75">(Only hauling done while a build is wired into RavenColonial is tracked.)</span></div>';
       return;
     }
-    const c=p.commanders[key]; const tons=cmdrTons(c);
-    const perComm = (c&&typeof c==="object")? Object.entries(c).filter(e=>typeof e[1]==="number" && !["delivered","total","tons","tonnage","sum","contributed"].includes(e[0])) : [];
-    const totalBuild = p.maxNeed||0; const share = (tons!=null&&totalBuild)? Math.round(tons/totalBuild*100):null;
+    const selStats=STATCACHE[BUILD_ID]||null;
+    const selTons=me.builds[BUILD_ID]||0;
+    const buildsCount=Object.keys(me.builds).length;
     let html='<div class="statgrid">'+
-      '<div class="statbox"><div class="big">'+(tons!=null?fmt(tons):"—")+'</div><div class="lbl">Tonnes Delivered</div></div>'+
-      '<div class="statbox"><div class="big">'+(perComm.length||"—")+'</div><div class="lbl">Commodities</div></div>'+
-      '<div class="statbox"><div class="big">'+(share!=null?share+"%":"—")+'</div><div class="lbl">Share of Build</div></div>'+
+      '<div class="statbox"><div class="big">'+fmt(me.tons)+'</div><div class="lbl">Career Tonnes (tracked)</div></div>'+
+      '<div class="statbox"><div class="big">'+buildsCount+'</div><div class="lbl">Builds Contributed</div></div>'+
+      '<div class="statbox"><div class="big">'+(selTons?fmt(selTons):"—")+'</div><div class="lbl">Selected Build t</div></div>'+
     '</div>';
-    if(perComm.length){ const mx=Math.max.apply(null,perComm.map(e=>e[1]));
-      html+='<div class="commbars">'+perComm.sort((a,b)=>b[1]-a[1]).map(e=>'<div class="cbar"><span class="cn">'+disp(e[0])+'</span><span class="track2"><i style="width:'+Math.round(e[1]/mx*100)+'%"></i></span><span class="cv">'+fmt(e[1])+' t</span></div>').join("")+'</div>'; }
+    // Service record: one row per contributed build, selected highlighted.
+    const rows=REGISTRY.filter(b=>me.builds[b.id]).sort((a,b)=>((me.builds[b.id]||0)-(me.builds[a.id]||0))||((b.completedTs||b.ts||0)-(a.completedTs||a.ts||0))).map(b=>{
+      const st=STATCACHE[b.id]; const tracked=st&&st.totalCargo?st.totalCargo:0; const mine=me.builds[b.id]||0;
+      const share=tracked?Math.round(mine/tracked*100):null; const sel=b.id===BUILD_ID;
+      return '<div class="cbar"'+(sel?' style="border-left:3px solid var(--accent);padding-left:8px"':'')+'><span class="cn">'+escH(b.name||b.id.slice(0,8))+(b.completedTs?' ✔':'')+'<small style="display:block;color:var(--muted)">'+escH(b.system||"")+'</small></span><span class="track2"><i style="width:'+(share||0)+'%"></i></span><span class="cv">'+fmt(mine)+' t'+(share!=null?' · '+share+'%':'')+'</span></div>';
+    }).join("");
+    if(rows) html+='<div style="font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--muted);margin:14px 0 6px">SERVICE RECORD — TRACKED HAULS BY BUILD</div><div class="commbars">'+rows+'</div>';
+    // Honesty note: tracked ≠ total when hauling predates the uplink.
+    if(p&&p.maxNeed&&selStats&&typeof selStats.totalCargo==="number"&&selStats.totalCargo<p.maxNeed){
+      html+='<div class="rempty" style="margin-top:10px">◈ Tracked hauls on '+escH(p.buildName||"this build")+': <b>'+fmt(selStats.totalCargo)+' t</b> of '+fmt(p.maxNeed)+' t total — deliveries made before the build was wired in aren\'t recorded.</div>';
+    }
     box.innerHTML=html;
   }
-  function renderRoster2(p, activeKey){
-    const box=$("rosterList2"); const cm=p.commanders||{}; const names=Object.keys(cm);
+  function renderRoster2(p, career, activeKey){
+    const box=$("rosterList2");
+    const seen=new Set(); const names=[];
+    Object.keys(career).forEach(n=>{if(!seen.has(n)){seen.add(n);names.push(n);}});
+    Object.keys((p&&p.commanders)||{}).forEach(n=>{const N=NORM(n);if(!seen.has(N)){seen.add(N);names.push(N);}});
     if(!names.length){ box.innerHTML='<div class="rempty">No commanders synced yet.</div>'; return; }
-    box.innerHTML=names.map(function(n){ var init=n.replace(/[^A-Za-z0-9]/g,"").slice(0,2).toUpperCase()||"CMDR"; var on=(n===activeKey)?' style="border-color:var(--accent)"':"";
-      return '<a class="rrow"'+on+' href="/blades/commander/?cmdr='+encodeURIComponent(n)+'"><span class="rav">'+init+'</span><span class="rn">'+n.toUpperCase()+'</span><span class="rstat">view ▸</span></a>'; }).join("");
+    box.innerHTML=names.map(function(n){ var init=n.replace(/[^A-Za-z0-9]/g,"").slice(0,2).toUpperCase()||"CM"; var on=(n===activeKey)?' style="border-color:var(--accent)"':"";
+      var t=career[n]?fmt(career[n].tons)+" t ▸":"view ▸";
+      return '<a class="rrow"'+on+' href="/blades/commander/?cmdr='+encodeURIComponent(n)+'"><span class="rav">'+init+'</span><span class="rn">'+n+'</span><span class="rstat">'+t+'</span></a>'; }).join("");
   }
+  let LAST_SIG="";
+  async function renderAll(target, force){
+    let p=null; try{ p=BUILD_ID?await getProj(force):null; }catch(e){ p=null; }
+    if(p) stampIfNeeded(p);
+    const career=await careerData(force);
+    const T=NORM(target);
+    const key=career[T]?T:(Object.keys(career).find(k=>k===T)||(T&&Object.keys((p&&p.commanders)||{}).map(NORM).includes(T)?T:null));
+    renderStats(p, career, key, target||"YOU");
+    renderRoster2(p, career, key);
+    if($("tickTrack")) runTicker();
+    return JSON.stringify([p&&(p.eTag||p.timestamp), STATCACHE[BUILD_ID]&&STATCACHE[BUILD_ID].totalCargo, Object.keys(career).map(k=>career[k].tons)]);
+  }
+  let TARGET=null;
   (async function(){
-    let target=qparam("cmdr"); if(!target) target=await whoAmI();
-    const bid=await BUILD_READY;
-    if(!bid){
-      $("dossSub").textContent="no active builds";
-      $("dossStats").innerHTML='<div class="rempty">No active squadron builds yet. Land at a construction site with the Blades Registrar plugin running to add one — commander stats appear here once deliveries sync.</div>';
+    TARGET=qparam("cmdr"); if(!TARGET) TARGET=await whoAmI();
+    await BUILD_READY;
+    if(!REGISTRY.length&&!BUILD_ID){
+      $("dossSub").textContent="no builds on record";
+      $("dossStats").innerHTML='<div class="rempty">No squadron builds yet. Land at a construction site with the Blades Registrar plugin running to add one — commander stats appear here once deliveries sync.</div>';
       $("rosterList2").innerHTML='<div class="rempty">—</div>';
-      return;
+    } else {
+      LAST_SIG=await renderAll(TARGET,false);
     }
-    try{
-      const p=await getProj(); const key=matchKey(p.commanders||{}, target);
-      renderStats(p, key, target||"YOU"); renderRoster2(p, key);
-    }catch(e){
-      $("dossSub").textContent="Live build unreachable from preview.";
-      $("dossStats").innerHTML='<div class="rempty">Stats load from the live build on wickdhub.com. Target commander: <b>'+(target||"(auto-detect on login)")+'</b>.</div>';
-      $("rosterList2").innerHTML='<div class="rempty">—</div>';
+    // Live update loop: 60s while visible, immediate on tab return; re-render on diff.
+    let busy=false;
+    async function tick(){
+      if(document.hidden||busy) return; busy=true;
+      try{
+        const reg=await fetchRegistry(); const rs=JSON.stringify(reg);
+        if(rs!==JSON.stringify(REGISTRY)){ REGISTRY=reg; if(!EXPLICIT_BUILD){ const act=REGISTRY.filter(b=>!b.completedTs); BUILD_ID=act.length?act[0].id:(REGISTRY.length?REGISTRY[0].id:""); } }
+        const sig=await renderAll(TARGET,true);
+        LAST_SIG=sig;
+      }catch(e){} finally{ busy=false; }
     }
+    setInterval(tick,60000);
+    document.addEventListener("visibilitychange",()=>{ if(!document.hidden) tick(); });
   })();
 
 
@@ -470,20 +540,45 @@
       try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json()); return (j&&j.builds)||[];}catch(e){}
       return [];
     }
+    let showAllDone=false, lastMerged=null;
     async function load(){
       const reg=await fetchList();
       const seen={},merged=[];
-      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad"});}});
-      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local"});}});
-      if((function(){try{var _x=localStorage.getItem("ob_build");return !!(_x&&/^[0-9a-fA-F-]{36}$/.test(_x));}catch(e){return false;}})()&&!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local"});}
-      await Promise.all(merged.map(async b=>{ try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject()); b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete; }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; } }));
-      const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete);
+      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad",completedTs:b.completedTs||null});}});
+      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local",completedTs:null});}});
+      if((function(){try{var _x=localStorage.getItem("ob_build");return !!(_x&&/^[0-9a-fA-F-]{36}$/.test(_x));}catch(e){return false;}})()&&!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local",completedTs:null});}
+      // Completion-stamped builds skip the live Raven check \u2014 KV already knows.
+      await Promise.all(merged.map(async b=>{
+        if(b.completedTs){ b.complete=true; b.name=b.name||b.id.slice(0,8); return; }
+        try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject());
+          b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete;
+          if(p.complete){ b.completedTs=Date.parse(p.timeCompleted||p.timestamp)||Date.now(); if(typeof stampIfNeeded==="function") stampIfNeeded(p); }
+        }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; }
+      }));
+      lastMerged=merged; renderList();
+    }
+    function renderList(){
+      const merged=lastMerged||[];
+      const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0));
       let html="";
       if(active.length) html+='<optgroup label="Active builds">'+active.map(opt).join("")+'</optgroup>';
       else html+='<option disabled>\u2014 no active builds \u00b7 use \uff0b add ID \u2014</option>';
-      if(done.length) html+='<optgroup label="Completed \u00b7 stats only">'+done.map(opt).join("")+'</optgroup>';
+      if(done.length){
+        let vis=done, hidden=0;
+        if(!showAllDone&&done.length>4){
+          vis=done.slice(0,3);
+          if(BUILD_ID&&done.some(b=>b.id===BUILD_ID)&&!vis.some(b=>b.id===BUILD_ID)) vis=vis.concat([done.find(b=>b.id===BUILD_ID)]);
+          hidden=done.length-vis.length;
+        }
+        html+='<optgroup label="Completed \u00b7 '+done.length+' \u00b7 stats only">'+vis.map(opt).join("");
+        if(hidden>0) html+='<option value="__more__">\u2026 show all '+done.length+' completed</option>';
+        html+='</optgroup>';
+      }
       SEL.innerHTML=html;
-      SEL.onchange=()=>{ if(SEL.value&&SEL.value!==BUILD_ID) setActive(SEL.value); };
+      SEL.onchange=()=>{
+        if(SEL.value==="__more__"){ showAllDone=true; renderList(); SEL.value=BUILD_ID||""; return; }
+        if(SEL.value&&SEL.value!==BUILD_ID) setActive(SEL.value);
+      };
     }
     if(ADD) ADD.onclick=()=>{ROW.style.display=(ROW.style.display==="flex")?"none":"flex";if(IN)IN.focus();};
     async function addBuild(){ const m=(IN.value||"").match(GUID); if(!m){IN.style.borderColor="var(--bad)";return;} const id=m[0].toLowerCase();
@@ -492,6 +587,7 @@
       setActive(id); }
     if(GO) GO.onclick=addBuild;
     if(IN) IN.addEventListener("keydown",e=>{if(e.key==="Enter")addBuild();});
+    window._obPickerReload=load;
     load();
   })();
 </script>
