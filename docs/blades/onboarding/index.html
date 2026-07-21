@@ -104,6 +104,12 @@
   footer{margin-top:26px;font-size:10.5px;color:var(--accent-dim);letter-spacing:1px;text-align:center;line-height:1.7}
   #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#0a0705;font-family:var(--font-head);font-size:12px;letter-spacing:1px;padding:9px 16px;border-radius:var(--radius);box-shadow:0 0 20px var(--glow);opacity:0;transition:.25s;z-index:10000;pointer-events:none}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .blades-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .blades-nav .bn{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;text-decoration:none;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:var(--radius);transition:.15s}
+  .blades-nav .bn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
+  .blades-nav .bn.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
+  :root[data-theme="cyan"] .blades-nav .bn.on,:root[data-theme="onyx"] .blades-nav .bn.on{color:#04070a}
+  .secure .right span{margin-left:14px}
 </style>
 </head>
 <body>
@@ -113,6 +119,7 @@
     <div class="clock" id="clock" title="Elite Dangerous runs on real UTC, year +1286. Click to toggle RL local time.">
       <span class="cl-lab" id="clLab">GALACTIC</span><span id="clTime">————</span><span class="cl-toggle" id="clToggle">ED ⇄ LOCAL</span>
     </div>
+    <div class="right"><span>AUTH: <b style="color:var(--accent-bright)" id="authName">CMDR BIGSKINNY</b></span><span id="signOut" style="cursor:pointer">[ SIGN OUT ]</span></div>
   </div>
 
   <header class="hud">
@@ -121,6 +128,7 @@
       <div><h1>COHORT UPLINK PROCEDURES</h1><div class="sub">FIELD MANUAL · GET WIRED INTO THE COLONISATION BOARD</div></div>
     </div>
   </header>
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn on" href="/blades/onboarding/">SETUP GUIDE</a></nav>
 
   <div class="controls">
     <div class="dialbox">
@@ -280,6 +288,11 @@
   function tickClock(){const d=new Date();if(clockMode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${localTZ()}`;$("clLab").textContent="LOCAL / RL";}}
   $("clToggle").onclick=()=>{clockMode=clockMode==="ed"?"local":"ed";tickClock();};
   tickClock();setInterval(tickClock,1000);
+
+  // ===== Cloudflare Access identity =====
+  (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
+    const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
+    fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
 </script>
 </body>
 </html>
