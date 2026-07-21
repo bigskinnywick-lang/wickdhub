@@ -87,6 +87,3 @@ nav:
     - Overview: personal/index.md
     - Personal Tracker: personal/personal-tracker.md
     - Pop!_OS Install: personal/popos-install.md
-  - Blades:
-    - Colonisation Board: blades/index.md
-    - Cohort Uplink Procedures: blades/onboarding.md
