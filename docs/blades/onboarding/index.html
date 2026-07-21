@@ -10,7 +10,7 @@
 <style>
   :root[data-theme="amber"]{--accent:#ff7a12;--accent-bright:#ffb14e;--accent-dim:#a24d08;--glow:rgba(255,122,18,.5);--bg:#0a0705;--panel:#140d07;--panel2:#1c1109;--line:#3a2410;--text:#f6d9b0;--muted:#b98a52;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:.035}
   :root[data-theme="cyan"]{--accent:#39cfe0;--accent-bright:#8ff4ff;--accent-dim:#1b5f6d;--glow:rgba(57,207,224,.45);--bg:#04080b;--panel:#08141a;--panel2:#0b1c25;--line:#123642;--text:#d6ecf2;--muted:#6f9aa8;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:2px;--scan:.02}
-  :root[data-theme="onyx"]{--accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);--bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:0}
+  :root[data-theme="onyx"]{--accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);--bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:0}:root[data-theme="green"]{--accent:#35c46a;--accent-bright:#7df3a6;--accent-dim:#1c6b3e;--glow:rgba(53,196,106,.42);--bg:#040a06;--panel:#08150d;--panel2:#0c2013;--line:#144023;--text:#d6f2e0;--muted:#6fa886;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:2px;--scan:.025;}
   *{box-sizing:border-box}html,body{margin:0;padding:0}
   :root{--good:#57e0a0;--warn:#ffcf5c;--bad:#ff5a4d}
   body{background:radial-gradient(1200px 700px at 72% -12%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%),radial-gradient(900px 600px at -5% 115%,color-mix(in srgb,var(--accent) 8%,transparent),transparent 55%),var(--bg);color:var(--text);font-family:var(--font-body);letter-spacing:.3px;min-height:100vh}
@@ -91,7 +91,7 @@
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
   .dl:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .dl.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on{color:#04070a}
+  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on,:root[data-theme="green"] .dl.on{color:#04070a}
   .dial-knob-row{display:flex;align-items:center;gap:11px}
   .dial-cap{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
   .dial-scheme{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);min-width:112px;text-shadow:0 0 8px var(--glow)}
@@ -132,11 +132,11 @@
       <div class="dial-labels">
         <button class="dl on" data-t="amber">AMBER<small>COCKPIT</small></button>
         <button class="dl" data-t="cyan">FLEET<small>TACTICAL</small></button>
-        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button>
+        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button><button class="dl" data-t="green">JADE<small>CANOPY</small></button>
       </div>
       <div class="dial-knob-row">
         <span class="dial-cap">Turn ►</span>
-        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0"><span class="pointer"></span></div>
+        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span class="pointer"></span></div>
         <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
       </div>
     </div>
@@ -277,12 +277,12 @@
   const $=(id)=>document.getElementById(id);
   // ===== colour-scheme rotary dial (persists via ob_theme) =====
   (function(){
-    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-55},{t:"cyan",n:"FLEET TACTICAL",a:0},{t:"onyx",n:"ONYX BLADE",a:55}];
+    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];
     const knob=$("knob"), schemeEl=$("dialScheme"), labels=[...document.querySelectorAll(".dl")];
     if(!knob) return;
     let idx=0, dragging=false;
     function paint(i){const s=SCHEMES[i];document.documentElement.dataset.theme=s.t;schemeEl.textContent=s.n;labels.forEach((l,j)=>l.classList.toggle("on",j===i));knob.setAttribute("aria-valuenow",i);}
-    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
+    function apply(i){idx=(i%SCHEMES.length+SCHEMES.length)%SCHEMES.length;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
     labels.forEach((l,j)=>l.onclick=()=>apply(j));
     function ang(e){const r=knob.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const pt=e.touches?e.touches[0]:e;let d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
     function near(d){let b=0,bd=1e9;SCHEMES.forEach((s,i)=>{const x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}

@@ -23,7 +23,7 @@
     --accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);
     --bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;
     --font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:0;
-  }
+  }:root[data-theme="green"]{--accent:#35c46a;--accent-bright:#7df3a6;--accent-dim:#1c6b3e;--glow:rgba(53,196,106,.42);--bg:#040a06;--panel:#08150d;--panel2:#0c2013;--line:#144023;--text:#d6f2e0;--muted:#6fa886;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:2px;--scan:.025;}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   :root{--good:#57e0a0;--warn:#ffcf5c;--bad:#ff5a4d}
@@ -177,7 +177,7 @@
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
   .dl:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .dl.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on{color:#04070a}
+  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on,:root[data-theme="green"] .dl.on{color:#04070a}
   .dial-knob-row{display:flex;align-items:center;gap:11px}
   .dial-cap{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
   .dial-scheme{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);min-width:112px;text-shadow:0 0 8px var(--glow)}
@@ -227,7 +227,7 @@
   .blades-nav .bn{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;text-decoration:none;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:var(--radius);transition:.15s}
   .blades-nav .bn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .blades-nav .bn.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-  :root[data-theme="cyan"] .blades-nav .bn.on,:root[data-theme="onyx"] .blades-nav .bn.on{color:#04070a}
+  :root[data-theme="cyan"] .blades-nav .bn.on,:root[data-theme="onyx"] .blades-nav .bn.on,:root[data-theme="green"] .blades-nav .bn.on{color:#04070a}
   /* hub cards */
   .hubwrap{margin-top:16px;display:grid;gap:16px}
   .hubcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -306,11 +306,11 @@
       <div class="dial-labels">
         <button class="dl on" data-t="amber">AMBER<small>COCKPIT</small></button>
         <button class="dl" data-t="cyan">FLEET<small>TACTICAL</small></button>
-        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button>
+        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button><button class="dl" data-t="green">JADE<small>CANOPY</small></button>
       </div>
       <div class="dial-knob-row">
         <span class="dial-cap">Turn ►</span>
-        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0"><span class="pointer"></span></div>
+        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span class="pointer"></span></div>
         <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
       </div>
     </div>
@@ -469,27 +469,14 @@
           tr.querySelector('td').innerHTML=drawerHtml(list,r.dataset.name);
           tr.querySelectorAll('[data-copy]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();copyNav(b.dataset.copy);});
         }catch(e){
-          tr.querySelector('td').innerHTML=`<div class="srcWrap"><div class="errline">Ardent unreachable: ${e.message}. Try Refresh — or cross-check on ${inaraLink(r.dataset.name)}</div></div>`;
+          tr.querySelector('td').innerHTML=`<div class="srcWrap"><div class="errline">Ardent unreachable: ${e.message}. Try Refresh.</div></div>`;
         }
       };
     });
     const rb=$("refreshBtn"); if(rb) rb.onclick=refresh;
   }
-  // ---- Inara cross-check (alternative supplier view) ----
-  // Inara's commodity search keys commodities by numeric id (not name), so we map the
-  // colonisation + common commodity set. Unmapped names fall back to Inara's search
-  // with just the reference system pre-filled. Reference system = the build's system.
-  const INARA_CID={"agronomic treatment":10268,"explosives":3,"hydrogen fuel":4,"hydrogen peroxide":138,"liquid oxygen":137,"mineral oil":5,"nerve agents":96,"pesticides":6,"rockforth fertiliser":10264,"surface stabilisers":97,"synthetic reagents":98,"tritium":10269,"water":139,"clothing":7,"consumer technology":8,"domestic appliances":9,"evacuation shelter":99,"survival equipment":164,"beer":10,"bootleg liquor":95,"liquor":11,"narcotics":12,"tobacco":13,"wine":14,"algae":15,"animal meat":16,"coffee":17,"fish":18,"food cartridges":19,"fruit and vegetables":20,"grain":21,"synthetic meat":23,"tea":22,"ceramic composites":100,"cmm composite":140,"insulating membrane":141,"meta-alloys":101,"micro-weave cooling hoses":185,"neofabric insulation":183,"polymers":26,"semiconductors":28,"superconductors":27,"articulation motors":182,"atmospheric processors":87,"building fabricators":102,"crop harvesters":29,"emergency power cells":158,"energy grid assembly":149,"exhaust manifold":159,"geological equipment":103,"heatsink interlink":151,"hn shock mount":150,"ion distributor":160,"magnetic emitter coil":152,"marine equipment":86,"microbial furnaces":85,"mineral extractors":31,"modular terminals":181,"power converter":153,"power generators":83,"power transfer bus":161,"radiation baffle":162,"reinforced mounting plate":163,"skimmer components":104,"thermal cooling units":105,"water purifiers":82,"advanced medicines":166,"agri-medicines":1,"basic medicines":33,"combat stabilisers":34,"performance enhancers":35,"progenitor cells":36,"aluminium":37,"beryllium":38,"bismuth":106,"cobalt":39,"copper":40,"gallium":41,"gold":42,"indium":43,"lanthanum":107,"lithium":44,"osmium":72,"palladium":45,"platinum":81,"praseodymium":143,"samarium":142,"silver":46,"steel":10487,"tantalum":47,"thallium":108,"thorium":109,"titanium":48,"uranium":50,"advanced catalysers":61,"animal monitors":62,"aquaponic systems":63,"auto-fabricators":65,"bioreducing lichen":66,"computer components":67,"h.e. suits":68,"hardware diagnostic sensor":155,"land enrichment systems":71,"medical diagnostic equipment":154,"micro controllers":156,"muon imager":119,"nanobreakers":167,"resonating separators":69,"robotics":70,"structural regulators":117,"telemetry suite":184,"conductive fabrics":165,"leather":73,"military grade fabrics":157,"natural fabrics":74,"synthetic fabrics":75,"biowaste":76,"chemical waste":32,"scrap":77,"battle weapons":88,"landmines":118,"non-lethal weapons":78,"personal weapons":79,"reactive armour":80};
-  function inaraUrl(name){
-    const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')];
-    const sys=encodeURIComponent((PROJECT&&PROJECT.systemName)||'');
-    return id
-      ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
-      : `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&ps1=${sys}`;
-  }
-  function inaraLink(name){return `<a href="${inaraUrl(name)}" target="_blank" rel="noopener" title="Cross-check ${name} sellers on Inara near ${(PROJECT&&PROJECT.systemName)||'the build'}" style="color:#ff7a12;text-decoration:none;white-space:nowrap">↗ Inara</a>`;}
   function drawerHtml(list,name){
-    if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span><span>${inaraLink(name)}</span></div></div>`;
+    if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span></div></div>`;
     const rows=list.slice(0,7).map((s,i)=>{
       const out=s.stock<=0, low=s.stock>0&&s.stock<2000, padbad=s.maxLandingPadSize<PAD_REQ, carrier=s.stationType==='FleetCarrier';
       const stockCls=out?'out':(low?'low':''); const stockTxt=out?'OUT':fmt(s.stock)+' t';
@@ -505,7 +492,7 @@
     }).join('');
     const allCarr=list.every(s=>s.stationType==='FleetCarrier');
     const carrNote=allCarr?`<div style="padding:8px 10px;margin:2px 0 6px;font-size:11.5px;color:var(--warn);border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 9%,transparent)">⚠ No stations sell ${name} within range — <b>fleet carriers only</b> (mobile · stock &amp; price can shift; grab it while it's there). Nearest sensible carrier shown first.</div>`:'';
-    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent · ${inaraLink(name)}</span></div>${carrNote}${rows}</div>`;
+    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent /nearby/exports</span></div>${carrNote}${rows}</div>`;
   }
 
   function copyNav(sys){const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
@@ -551,11 +538,11 @@
 
   // ===== theme dial =====
   (function(){
-    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-55},{t:"cyan",n:"FLEET TACTICAL",a:0},{t:"onyx",n:"ONYX BLADE",a:55}];
+    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];
     const knob=$("knob"), schemeEl=$("dialScheme"), labels=[...document.querySelectorAll(".dl")];
     let idx=0, dragging=false;
     function paint(i){const s=SCHEMES[i];document.documentElement.dataset.theme=s.t;schemeEl.textContent=s.n;labels.forEach((l,j)=>l.classList.toggle("on",j===i));knob.setAttribute("aria-valuenow",i);}
-    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
+    function apply(i){idx=(i%SCHEMES.length+SCHEMES.length)%SCHEMES.length;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
     labels.forEach((l,j)=>l.onclick=()=>apply(j));
     function ang(e){const r=knob.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const pt=e.touches?e.touches[0]:e;let d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
     function near(d){let b=0,bd=1e9;SCHEMES.forEach((s,i)=>{const x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}

@@ -101,6 +101,7 @@
 
     <div class="nav">
       <a href="#pulse">◈ PULSE</a>
+      <a href="#ticker">◄ TICKER</a>
       <a href="#backup">⤓ BACKUP</a>
       <a href="#builds">▤ BUILDS</a>
       <a href="#claims">◇ CLAIMS</a>
@@ -119,6 +120,13 @@
         <div class="pulse"><span class="dot idle" id="dot-raven"></span><span>RAVENCOLONIAL <span class="subtle" id="ms-raven">—</span></span></div>
         <div class="pulse"><span class="dot idle" id="dot-ardent"></span><span>ARDENT <span class="subtle" id="ms-ardent">—</span></span></div>
       </div>
+    </div>
+
+    <!-- TICKER -->
+    <div class="panel" id="ticker">
+      <h2>◄ SQUAD NET TICKER <button id="tickerRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">Up to four custom messages scroll in the dashboard SQUAD NET ticker alongside the live build feed. Paste an AI summary into <b>GalNet</b> and <b>Community Goals</b>; use the two free slots for squad announcements, birthdays, anything. Leave a slot blank to hide it. Label is editable per slot. Set an <b>expiry</b> so a summary auto-clears itself when it goes stale (e.g. when a Community Goal ends) — no old news lingering between updates.</div>
+      <div id="tickerRows"><div class="empty">loading…</div></div>
     </div>
 
     <!-- BACKUP -->
@@ -234,7 +242,7 @@ let BUILDS=[], CLAIMS=[], ADMINS=[];
   ADMINS=d.admins||[];
   document.body.dataset.state="console";
   renderAdmins();
-  loadBuilds(); loadClaims(); pulse(); loadAccess();
+  loadBuilds(); loadClaims(); pulse(); loadAccess(); loadTicker();
 })();
 $("signOut").onclick=()=>{location.href="https://bigskinnywick.cloudflareaccess.com/cdn-cgi/access/logout";};
 
@@ -410,6 +418,67 @@ $("adAdd").onclick=()=>{
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("invalid email",true);
   api("PUT","/blades/api/admins",{email}).then(d=>{ADMINS=d.admins||[];renderAdmins();$("adEmail").value="";toast("admin added");}).catch(err=>toast(err.message,true));
 };
+
+// ---------- squad net ticker ----------
+let TICKER=[];
+async function loadTicker(){
+  try{ const d=await api("GET","/blades/api/ticker"); TICKER=d.fields||[]; renderTicker(); }
+  catch(e){ $("tickerRows").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
+}
+function expLabel(f){
+  if(!f.expiresTs) return "no expiry";
+  const ms=f.expiresTs-Date.now();
+  if(ms<=0) return "EXPIRED "+ago(f.expiresTs);
+  const h=ms/3.6e6, d=Math.floor(h/24), hh=Math.round(h%24);
+  return "auto-hides in "+(d>0?d+"d ":"")+hh+"h";
+}
+function renderTicker(){
+  if(!TICKER.length){$("tickerRows").innerHTML='<div class="empty">No slots.</div>';return;}
+  const now=Date.now();
+  $("tickerRows").innerHTML=TICKER.map(f=>{
+    const upd=f.updatedTs?('updated '+ago(f.updatedTs)+(f.updatedBy?' · '+esc(String(f.updatedBy).split("@")[0]):'')):'not yet set';
+    const expired=f.expiresTs&&f.expiresTs<now, has=f.text&&f.text.trim();
+    const status=!has?'<span class="pill">hidden</span>':expired?'<span class="pill bad">expired</span>':'<span class="pill ok">live</span>';
+    return `<div data-key="${esc(f.key)}" style="border-bottom:1px dashed var(--line);padding:11px 0">
+      <div class="toolbar" style="margin-bottom:6px">
+        <input data-f="label" value="${esc(f.label)}" style="width:180px" title="ticker label">
+        ${status} <span class="subtle" style="font-size:10.5px">${upd} · ⏱ ${esc(expLabel(f))}</span>
+      </div>
+      <textarea data-f="text" rows="2" placeholder="paste an AI summary or message — leave blank to hide from the ticker" style="width:100%;resize:vertical;font-family:inherit">${esc(f.text)}</textarea>
+      <div class="toolbar" style="margin-top:6px">
+        <select data-f="exp" title="auto-hide this slot from the ticker after the chosen time — so stale news clears itself">
+          <option value="keep">expiry: keep current</option>
+          <option value="0">no expiry — always show</option>
+          <option value="6">expire in 6 hours</option>
+          <option value="12">expire in 12 hours</option>
+          <option value="24">expire in 1 day</option>
+          <option value="48">expire in 2 days</option>
+          <option value="72">expire in 3 days</option>
+          <option value="168">expire in 7 days</option>
+        </select>
+        <button class="go" data-act="save">save</button>
+        <button data-act="clear">clear</button>
+        <span class="subtle" style="font-size:10.5px" data-role="count"></span>
+      </div>
+    </div>`;
+  }).join("");
+  $("tickerRows").querySelectorAll('[data-key]').forEach(row=>{
+    const key=row.dataset.key, ta=row.querySelector('[data-f="text"]'), cnt=row.querySelector('[data-role="count"]');
+    const upd=()=>{cnt.textContent=ta.value.length+" / 500";}; ta.oninput=upd; upd();
+    row.querySelector('[data-act="save"]').onclick=()=>{
+      const payload={key,label:row.querySelector('[data-f="label"]').value.trim(),text:ta.value};
+      const exp=row.querySelector('[data-f="exp"]').value;
+      if(exp!=='keep'){const hrs=Number(exp);payload.expiresTs=hrs>0?(Date.now()+hrs*3600000):null;}
+      api("PUT","/blades/api/ticker",payload)
+        .then(d=>{TICKER=d.fields||TICKER;renderTicker();toast("ticker slot saved");}).catch(err=>toast(err.message,true));
+    };
+    row.querySelector('[data-act="clear"]').onclick=()=>{
+      if(!confirm("Clear this ticker slot?"))return;
+      api("PUT","/blades/api/ticker",{key,text:"",expiresTs:null}).then(d=>{TICKER=d.fields||TICKER;renderTicker();toast("slot cleared");}).catch(err=>toast(err.message,true));
+    };
+  });
+}
+$("tickerRefresh").onclick=loadTicker;
 
 // ---------- squad access (Cloudflare Access allow-list) ----------
 let ACCESS_EMAILS=[];
