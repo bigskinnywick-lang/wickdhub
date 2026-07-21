@@ -106,6 +106,7 @@
       <a href="#claims">◇ CLAIMS</a>
       <a href="#integrity">⚑ INTEGRITY</a>
       <a href="#stale">◷ STALE</a>
+      <a href="#access">⛨ ACCESS</a>
       <a href="#admins">☗ ADMINS</a>
     </div>
 
@@ -175,6 +176,17 @@
       <div id="staleTbl"><div class="empty">—</div></div>
     </div>
 
+    <!-- SQUAD ACCESS -->
+    <div class="panel" id="access">
+      <h2>⛨ SQUAD ACCESS <span class="count" id="accessCount">—</span> <button id="accessRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">Who can log into the Blades site at all (the Cloudflare Access "Allow Blades" allow-list). Add a recruit's email and they can sign in with an email OTP immediately. <span class="subtle">This is site access, not admin powers — grant admin separately in the roster below.</span></div>
+      <div class="toolbar">
+        <input id="acEmail" placeholder="recruit email to grant access" style="width:260px" />
+        <button id="acAdd" class="go">+ grant access</button>
+      </div>
+      <div id="accessTbl"><div class="empty">loading…</div></div>
+    </div>
+
     <!-- ADMINS -->
     <div class="panel" id="admins">
       <h2>☗ ADMIN ROSTER <span class="count" id="adminCount">—</span></h2>
@@ -222,7 +234,7 @@ let BUILDS=[], CLAIMS=[], ADMINS=[];
   ADMINS=d.admins||[];
   document.body.dataset.state="console";
   renderAdmins();
-  loadBuilds(); loadClaims(); pulse();
+  loadBuilds(); loadClaims(); pulse(); loadAccess();
 })();
 $("signOut").onclick=()=>{location.href="https://bigskinnywick.cloudflareaccess.com/cdn-cgi/access/logout";};
 
@@ -398,6 +410,41 @@ $("adAdd").onclick=()=>{
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("invalid email",true);
   api("PUT","/blades/api/admins",{email}).then(d=>{ADMINS=d.admins||[];renderAdmins();$("adEmail").value="";toast("admin added");}).catch(err=>toast(err.message,true));
 };
+
+// ---------- squad access (Cloudflare Access allow-list) ----------
+let ACCESS_EMAILS=[];
+async function loadAccess(){
+  try{
+    const d=await api("GET","/blades/api/access");
+    if(d.configured===false){ $("accessCount").textContent="setup"; renderAccessSetup(); return; }
+    ACCESS_EMAILS=d.emails||[]; $("accessCount").textContent=ACCESS_EMAILS.length; renderAccess(d.other||[]);
+  }catch(e){ $("accessTbl").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; $("accessCount").textContent="!"; }
+}
+function renderAccessSetup(){
+  $("accessTbl").innerHTML='<div class="warnbox"><b>Not configured yet.</b> Add a Cloudflare API token as the Pages secret <code>CF_API_TOKEN</code> (scope: Access → Apps and Policies → Edit), then redeploy. Once set, this panel edits the live "Allow Blades" policy directly.</div>';
+}
+function protectedEmail(e){ return e===OWNER || (ADMINS||[]).includes(e); }
+function renderAccess(other){
+  if(!ACCESS_EMAILS.length){$("accessTbl").innerHTML='<div class="empty">No emails on the policy.</div>';return;}
+  const rows=ACCESS_EMAILS.slice().sort().map(e=>{
+    const prot=protectedEmail(e);
+    const badge=e===OWNER?'<span class="pill ok">owner</span>':((ADMINS||[]).includes(e)?'<span class="pill info">admin</span>':'');
+    return `<tr><td>${esc(e)} ${badge}</td><td>${prot?'<span class="subtle">protected</span>':'<button class="danger" data-e="'+esc(e)+'">revoke</button>'}</td></tr>`;
+  }).join("");
+  const otherNote=(other&&other.length)?`<div class="hint">Plus ${other.length} non-email rule(s) on the policy (${other.map(esc).join(", ")}) — managed in Cloudflare, shown read-only.</div>`:"";
+  $("accessTbl").innerHTML=`<table><thead><tr><th>EMAIL</th><th></th></tr></thead><tbody>${rows}</tbody></table>`+otherNote;
+  $("accessTbl").querySelectorAll("button[data-e]").forEach(btn=>btn.onclick=ev=>{
+    const email=ev.target.dataset.e;
+    if(!confirm("Revoke Blades access for "+email+"?\nThey'll be blocked at the login wall.")) return;
+    api("DELETE","/blades/api/access",{email}).then(d=>{ACCESS_EMAILS=d.emails||[];$("accessCount").textContent=ACCESS_EMAILS.length;renderAccess(d.other||[]);toast("access revoked");}).catch(err=>toast(err.message,true));
+  });
+}
+$("acAdd").onclick=()=>{
+  const email=$("acEmail").value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("invalid email",true);
+  api("PUT","/blades/api/access",{email}).then(d=>{ACCESS_EMAILS=d.emails||[];$("accessCount").textContent=ACCESS_EMAILS.length;renderAccess(d.other||[]);$("acEmail").value="";toast(d.already?"already had access":"access granted");}).catch(err=>toast(err.message,true));
+};
+$("accessRefresh").onclick=loadAccess;
 
 // ---------- backup / restore ----------
 $("btnBackup").onclick=async()=>{
