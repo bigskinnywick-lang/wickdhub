@@ -228,6 +228,7 @@
     <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
   </header>
   <nav class="blades-nav"><a class="bn on" href="/blades/">HOME</a><a class="bn" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
+  <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
   <div class="controls">
     <div class="dialbox">
       <div class="dial-labels">
@@ -333,7 +334,7 @@
   }
 
   function render(p){
-    PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||"";
+    PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||""; if($("tickTrack")) runTicker();
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
     const carriers=(p.linkedFC||[]).map(f=>`<div class="contrib"><div class="who">${f.displayName||f.name}<small>market ${f.marketId}</small></div><div><div class="amt">${(f.sales||[]).length} sell</div><div class="commit">linked carrier</div></div></div>`).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
@@ -422,7 +423,7 @@
     try{const p=await loadProject();render(p);toast("⟳ refreshed from RavenColonial");}catch(e){toast("refresh failed: "+e.message);if(rb){rb.classList.remove("spin");rb.textContent="⟳ REFRESH";}}}
 
   // Standing-down state + honors board of recent completions (KV stamps only).
-  function renderIdle(){
+  function renderIdle(){ if($("tickTrack")) runTicker();
     const s=$("subline");if(s)s.textContent="standing down — no active builds";
     const c=$("cmdrLine");if(c)c.textContent="—";
     const done=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0)).slice(0,5);
@@ -483,6 +484,25 @@
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
 
   // ===== live update loop: timer transport, change-detected renders =====
+  // ===== SQUAD NET ticker (custom slots + build status) =====
+  let TCUSTOM=[];
+  async function tLoadCustom(){ try{ const d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); const now=Date.now(); TCUSTOM=((d&&d.fields)||[]).filter(f=>f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now)); }catch(e){} }
+  function tCustomItems(){ return TCUSTOM.map(f=>({c:"news",i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))})); }
+  function tRender(items){ const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
+  async function runTicker(){ await tLoadCustom(); const items=tCustomItems(); const p=PROJECT;
+    if(p&&BUILD_ID){ const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
+      items.push({c:"",i:"◈",h:"BUILD: <b>"+escH(p.buildName||p.systemName||"BUILD")+"</b> · "+pct+"% built · "+fmt(p.sumNeed)+" t remaining"});
+      const comm=Object.entries(p.commodities||{}).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+      if(comm.length) items.push({c:"",i:"◇",h:"MOST NEEDED: <b>"+disp(comm[0][0])+" ×"+fmt(comm[0][1])+"</b>"});
+      items.push({c:"",i:"✦",h:"COHORT: <b>"+escH(p.buildName||"BUILD")+"</b> · "+fmt(p.sumNeed)+" / "+fmt(p.maxNeed)+" t outstanding"});
+    } else {
+      const last=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0))[0];
+      items.push({c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."});
+      if(last) items.push({c:"",i:"✔",h:"LAST COMPLETION: <b>"+escH(last.name||last.id.slice(0,8))+"</b>"+(last.architect?" · architect "+escH(last.architect):"")});
+    }
+    tRender(items);
+  }
+  window._obRunTicker=runTicker;
   let LAST_ETAG="", LAST_REGSIG="", POLL_BUSY=false;
   async function pollTick(){
     if(document.hidden||POLL_BUSY) return; POLL_BUSY=true;

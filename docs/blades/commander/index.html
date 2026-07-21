@@ -290,6 +290,7 @@
   </header>
 
   <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn on" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
+  <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
   <div class="buildbar">
     <span class="bb-lab">◈ BUILD</span>
     <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
@@ -299,6 +300,7 @@
       <button id="buildIdGo" class="bb-go">view ▸</button>
     </span>
     <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
+    <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
   </div>
   <div class="controls">
     <div class="dialbox">
@@ -385,6 +387,8 @@
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;
       const tp=$("testPilotBtn"); if(tp&&CMDR[em])tp.style.display="";  // shakedown crew only
     }).catch(()=>{});})();
+// ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
+  (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{const ab=$("adminBtn");if(ab&&a&&a.isAdmin)ab.style.display="";}).catch(()=>{});})();
 // ===== theme dial =====
   (function(){
     const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];
@@ -438,8 +442,12 @@
     items.push({c:"",i:"✦",h:"COHORT: <b>"+name+"</b> · "+fmt(p.sumNeed)+" / "+fmt(p.maxNeed)+" t outstanding"});
     return items;
   }
+  let TCUSTOM=[];
+  async function tLoadCustom(){ try{ const d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); const now=Date.now(); TCUSTOM=((d&&d.fields)||[]).filter(f=>f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now)); }catch(e){} }
+  function tCustomItems(){ return TCUSTOM.map(f=>({c:"news",i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))})); }
   function renderTicker(items){ const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
-  async function runTicker(){ if(!BUILD_ID){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."}]); return; } try{ renderTicker(tickerItems(await getProj())); }catch(e){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}]); } }
+  async function runTicker(){ await tLoadCustom(); const cust=tCustomItems(); if(!BUILD_ID){ renderTicker(cust.concat([{c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."}])); return; } try{ renderTicker(cust.concat(tickerItems(await getProj()))); }catch(e){ renderTicker(cust.concat([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}])); } }
+  window._obRunTicker=runTicker; (function(){ const go=()=>{ if($("tickTrack")) runTicker(); }; if(document.readyState!=="loading") go(); else document.addEventListener("DOMContentLoaded",go); setInterval(go,60000); })();
 
 
   const CMDRMAP={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};

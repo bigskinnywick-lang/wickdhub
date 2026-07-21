@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="amber">
 <head>
-<script>try{var _t=localStorage.getItem("ob_theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ONYX BLADES · Live Colonisation Board</title>
@@ -23,7 +22,7 @@
     --accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);
     --bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;
     --font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:0;
-  }:root[data-theme="green"]{--accent:#35c46a;--accent-bright:#7df3a6;--accent-dim:#1c6b3e;--glow:rgba(53,196,106,.42);--bg:#040a06;--panel:#08150d;--panel2:#0c2013;--line:#144023;--text:#d6f2e0;--muted:#6fa886;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:2px;--scan:.025;}
+  }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   :root{--good:#57e0a0;--warn:#ffcf5c;--bad:#ff5a4d}
@@ -177,7 +176,7 @@
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
   .dl:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .dl.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on,:root[data-theme="green"] .dl.on{color:#04070a}
+  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on{color:#04070a}
   .dial-knob-row{display:flex;align-items:center;gap:11px}
   .dial-cap{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
   .dial-scheme{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);min-width:112px;text-shadow:0 0 8px var(--glow)}
@@ -203,74 +202,12 @@
   .srcLoading{padding:12px;color:var(--muted);font-size:11.5px;letter-spacing:.5px}
   .errline{color:var(--bad);font-size:11.5px;padding:10px 2px}
   .rawtype{font-size:9px;color:var(--muted);letter-spacing:1px}
-</style>
-
-<style>
-  /* ticker */
-  .ticker{margin-top:12px;border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 7%,var(--bg));overflow:hidden;position:relative;height:38px;display:flex;align-items:center;border-radius:var(--radius)}
-  .ticker .tag{flex:none;font-family:var(--font-head);font-size:11px;letter-spacing:2px;font-weight:700;background:var(--accent);color:#0a0705;padding:0 14px;height:100%;display:flex;align-items:center;z-index:2;box-shadow:0 0 18px var(--glow)}
-  .ticker .track{display:flex;white-space:nowrap;animation:scroll 46s linear infinite;will-change:transform}
-  .ticker:hover .track{animation-play-state:paused}
-  .ticker .item{font-size:12.5px;padding:0 30px;color:var(--text);letter-spacing:.5px;display:inline-flex;align-items:center;gap:8px}
-  .ticker .item .ico{color:var(--accent-bright);font-size:13px}.ticker .item b{color:var(--accent-bright)}
-  .ticker .sep{color:var(--accent-dim)}
-  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-  @keyframes tickBlink{0%,100%{opacity:1}50%{opacity:.4}}
-  @keyframes emgPulse{0%,100%{background:transparent}50%{background:color-mix(in srgb,var(--bad) 24%,transparent)}}
-  .ticker .item.crit{animation:tickBlink 1.05s ease-in-out infinite}
-  .ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}
-  .ticker .item.emergency{animation:emgPulse .8s steps(1,end) infinite;border-radius:var(--radius);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bad) 45%,transparent)}
-  .ticker .item.emergency .ico,.ticker .item.emergency b{color:var(--bad)}
-  @media(prefers-reduced-motion:reduce){.ticker .item.crit,.ticker .item.emergency{animation:none}.ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}.ticker .item.emergency{background:color-mix(in srgb,var(--bad) 20%,transparent)}}
-  /* nav */
   .blades-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
   .blades-nav .bn{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;text-decoration:none;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:var(--radius);transition:.15s}
   .blades-nav .bn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .blades-nav .bn.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-  :root[data-theme="cyan"] .blades-nav .bn.on,:root[data-theme="onyx"] .blades-nav .bn.on,:root[data-theme="green"] .blades-nav .bn.on{color:#04070a}
-  /* hub cards */
-  .hubwrap{margin-top:16px;display:grid;gap:16px}
-  .hubcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-  @media(max-width:820px){.hubcards{grid-template-columns:1fr}}
-  .hubcard{display:flex;flex-direction:column;gap:8px;text-decoration:none;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:20px 18px;border-radius:var(--radius);transition:.16s}
-  .hubcard:hover{border-color:var(--accent);box-shadow:0 0 18px var(--glow);transform:translateY(-2px)}
-  .hubcard .hc-ico{font-size:26px;color:var(--accent);text-shadow:0 0 12px var(--glow)}
-  .hubcard .hc-t{font-family:var(--font-head);font-size:15px;letter-spacing:2px;color:var(--accent-bright)}
-  .hubcard .hc-s{font-size:12.5px;line-height:1.6;color:var(--muted)}
-  .hubcard .hc-go{margin-top:auto;font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent)}
-  /* roster + dossier */
-  .roster h2 .rcount{color:var(--muted);font-size:12px;font-family:var(--font-body);letter-spacing:1px;margin-left:8px}
-  .rhint,.rempty{color:var(--muted);font-size:12px;line-height:1.65;margin:6px 0 12px}
-  .rempty a,.ilink{color:var(--accent-bright);text-decoration:none;border-bottom:1px dotted var(--accent-dim)}
-  .rrow{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);border:1px solid var(--line);background:var(--panel);padding:11px 14px;border-radius:var(--radius);margin-bottom:9px;transition:.15s}
-  .rrow:hover{border-color:var(--accent-dim);color:var(--accent-bright)}
-  .rrow .rav{width:34px;height:34px;border-radius:50%;border:1px solid var(--accent-dim);display:grid;place-items:center;font-family:var(--font-head);font-size:12px;color:var(--accent-bright);flex:none;background:color-mix(in srgb,var(--accent) 10%,var(--bg))}
-  .rrow .rn{font-family:var(--font-head);letter-spacing:1px}
-  .rrow .rstat{margin-left:auto;color:var(--muted);font-size:11.5px;letter-spacing:.5px}
-  .dossier{display:grid;grid-template-columns:1.4fr .9fr;gap:16px;margin-top:16px}
-  @media(max-width:820px){.dossier{grid-template-columns:1fr}}
-  .statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
-  .statbox{border:1px solid var(--line);background:color-mix(in srgb,var(--accent) 5%,transparent);padding:14px;border-radius:var(--radius);text-align:center}
-  .statbox .big{font-family:var(--font-head);font-size:24px;color:var(--accent-bright);text-shadow:0 0 12px var(--glow)}
-  .statbox .lbl{font-size:9px;letter-spacing:1.2px;color:var(--muted);text-transform:uppercase;margin-top:4px}
-  .commbars{margin-top:6px}
-  .cbar{display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:7px}
-  .cbar .cn{width:150px;color:var(--text)}
-  .cbar .track2{flex:1;height:8px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
-  .cbar .track2 i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-bright))}
-  .cbar .cv{width:74px;text-align:right;color:var(--accent-bright)}
 </style>
-<style>
-  .buildbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:10px 14px;border-radius:var(--radius)}
-  .buildbar .bb-lab{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);text-shadow:0 0 8px var(--glow)}
-  .bb-sel{font-family:var(--font-body);font-size:12.5px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:7px 10px;min-width:240px;cursor:pointer;max-width:100%}
-  .bb-sel:focus{outline:none;border-color:var(--accent)}
-  .bb-add,.bb-go{font-family:var(--font-head);font-size:10.5px;letter-spacing:1px;padding:7px 12px;cursor:pointer;border:1px solid var(--accent-dim);background:var(--panel);color:var(--accent-bright);border-radius:var(--radius);white-space:nowrap}
-  .bb-add:hover,.bb-go:hover{background:color-mix(in srgb,var(--accent) 16%,var(--bg))}
-  .bb-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .bb-in{font-family:var(--font-body);font-size:12px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:7px 10px;min-width:300px;max-width:100%}
-  .bb-in:focus{outline:none;border-color:var(--accent)}
-</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -290,27 +227,17 @@
     </div>
     <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
   </header>
-  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
-  <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
-  <div class="buildbar">
-    <span class="bb-lab">◈ BUILD</span>
-    <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
-    <button id="buildAdd" class="bb-add" title="View any build by its RavenColonial ID">＋ add ID</button>
-    <span class="bb-row" id="buildAddRow" style="display:none">
-      <input id="buildIdIn" class="bb-in" placeholder="paste RavenColonial build ID or link" autocomplete="off" />
-      <button id="buildIdGo" class="bb-go">view ▸</button>
-    </span>
-  </div>
+  <nav class="blades-nav"><a class="bn on" href="/blades/">HOME</a><a class="bn" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
   <div class="controls">
     <div class="dialbox">
       <div class="dial-labels">
         <button class="dl on" data-t="amber">AMBER<small>COCKPIT</small></button>
         <button class="dl" data-t="cyan">FLEET<small>TACTICAL</small></button>
-        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button><button class="dl" data-t="green">JADE<small>CANOPY</small></button>
+        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button>
       </div>
       <div class="dial-knob-row">
         <span class="dial-cap">Turn ►</span>
-        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span class="pointer"></span></div>
+        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0"><span class="pointer"></span></div>
         <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
       </div>
     </div>
@@ -324,7 +251,6 @@
 <script>
   const RAVEN="https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
   const ARDENT="https://api.ardent-insight.com";
-  const DEFAULT_BUILD="47db4699-c5ab-4b38-b8c5-71d1bb829ff6";
   const EXPLICIT_BUILD=(function(){try{var _b=localStorage.getItem("ob_build");return !!(_b&&/^[0-9a-fA-F-]{36}$/.test(_b));}catch(e){return false;}})();
   let BUILD_ID=(function(){try{var _b=localStorage.getItem("ob_build");if(_b&&/^[0-9a-fA-F-]{36}$/.test(_b))return _b;}catch(e){}return "";})();
   async function fetchRegistry(){
@@ -332,9 +258,7 @@
     try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json());return (j&&j.builds)||[];}catch(e){}
     return [];
   }
-  // Resolve which build the board shows: an explicit selection, else the first
-  // ACTIVE (not completion-stamped) squad build, else none (standing-down state).
-  // REGISTRY caches the full list (incl. completedTs/tons/architect from KV).
+  // Prefer the first ACTIVE (not completion-stamped) squad build; idle otherwise.
   let REGISTRY=[];
   const BUILD_READY=(async function(){
     REGISTRY=await fetchRegistry();
@@ -344,8 +268,6 @@
     BUILD_ID="";return "";
   })();
   const escH=(s)=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-  // Stamp completion + architect back into the KV registry (fire-and-forget) so
-  // finished builds stop costing a live Raven call and attribution reconciles.
   const STAMPED=new Set();
   function stampIfNeeded(p){
     const id=String(p.buildId||BUILD_ID||"").toLowerCase(); if(!id||STAMPED.has(id))return;
@@ -362,8 +284,6 @@
     try{fetch("/blades/api/builds",{method:"PATCH",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});}catch(e){}
   }
   const SHIP_CAP=790, PAD_REQ=3;
-  // supplier ranking weights (tunable): distance-dominant; price a tiebreaker; carriers deprioritised (mobile/may vanish); stale market nudged down
-  const RANK={distLY:1.0, priceCr:1/400, carrierPenalty:80, stalePenalty:25, staleHrs:72};
   const $=(id)=>document.getElementById(id);
   const fmt=(n)=>Number(n).toLocaleString("en-US");
   const now=()=>Date.now();
@@ -397,9 +317,8 @@
     const url=ARDENT+"/v2/system/name/"+encodeURIComponent(system)+"/commodity/name/"+encodeURIComponent(commodity)+"/nearby/exports?maxDistance=250&fleetCarriers=true";
     const r=await fetch(url); if(!r.ok) throw new Error("Ardent "+r.status);
     let list=await r.json(); if(!Array.isArray(list)) list=[];
-    const srcScore=(s)=>{let v=RANK.distLY*(s.distance||0)+RANK.priceCr*(s.buyPrice||0);if(s.stationType==='FleetCarrier')v+=RANK.carrierPenalty;const t=Date.parse(s.updatedAt);if(!isNaN(t)&&(Date.now()-t)/3.6e6>RANK.staleHrs)v+=RANK.stalePenalty;return v;};
     list.sort((a,b)=>{const ad=a.stock<=0?1:0,bd=b.stock<=0?1:0;if(ad!==bd)return ad-bd;
-      const ap=a.maxLandingPadSize<PAD_REQ?1:0,bp=b.maxLandingPadSize<PAD_REQ?1:0;if(ap!==bp)return ap-bp;return srcScore(a)-srcScore(b);});
+      const ap=a.maxLandingPadSize<PAD_REQ?1:0,bp=b.maxLandingPadSize<PAD_REQ?1:0;if(ap!==bp)return ap-bp;return a.buyPrice-b.buyPrice;});
     srcCache[key]=list; return list;
   }
 
@@ -469,27 +388,14 @@
           tr.querySelector('td').innerHTML=drawerHtml(list,r.dataset.name);
           tr.querySelectorAll('[data-copy]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();copyNav(b.dataset.copy);});
         }catch(e){
-          tr.querySelector('td').innerHTML=`<div class="srcWrap"><div class="errline">Ardent unreachable: ${e.message}. Try Refresh — or cross-check on ${inaraLink(r.dataset.name)}</div></div>`;
+          tr.querySelector('td').innerHTML=`<div class="srcWrap"><div class="errline">Ardent unreachable: ${e.message}. Try Refresh.</div></div>`;
         }
       };
     });
     const rb=$("refreshBtn"); if(rb) rb.onclick=refresh;
   }
-  // ---- Inara cross-check (alternative supplier view) ----
-  // Inara's commodity search keys commodities by numeric id (not name), so we map the
-  // colonisation + common commodity set. Unmapped names fall back to Inara's search
-  // with just the reference system pre-filled. Reference system = the build's system.
-  const INARA_CID={"agronomic treatment":10268,"explosives":3,"hydrogen fuel":4,"hydrogen peroxide":138,"liquid oxygen":137,"mineral oil":5,"nerve agents":96,"pesticides":6,"rockforth fertiliser":10264,"surface stabilisers":97,"synthetic reagents":98,"tritium":10269,"water":139,"clothing":7,"consumer technology":8,"domestic appliances":9,"evacuation shelter":99,"survival equipment":164,"beer":10,"bootleg liquor":95,"liquor":11,"narcotics":12,"tobacco":13,"wine":14,"algae":15,"animal meat":16,"coffee":17,"fish":18,"food cartridges":19,"fruit and vegetables":20,"grain":21,"synthetic meat":23,"tea":22,"ceramic composites":100,"cmm composite":140,"insulating membrane":141,"meta-alloys":101,"micro-weave cooling hoses":185,"neofabric insulation":183,"polymers":26,"semiconductors":28,"superconductors":27,"articulation motors":182,"atmospheric processors":87,"building fabricators":102,"crop harvesters":29,"emergency power cells":158,"energy grid assembly":149,"exhaust manifold":159,"geological equipment":103,"heatsink interlink":151,"hn shock mount":150,"ion distributor":160,"magnetic emitter coil":152,"marine equipment":86,"microbial furnaces":85,"mineral extractors":31,"modular terminals":181,"power converter":153,"power generators":83,"power transfer bus":161,"radiation baffle":162,"reinforced mounting plate":163,"skimmer components":104,"thermal cooling units":105,"water purifiers":82,"advanced medicines":166,"agri-medicines":1,"basic medicines":33,"combat stabilisers":34,"performance enhancers":35,"progenitor cells":36,"aluminium":37,"beryllium":38,"bismuth":106,"cobalt":39,"copper":40,"gallium":41,"gold":42,"indium":43,"lanthanum":107,"lithium":44,"osmium":72,"palladium":45,"platinum":81,"praseodymium":143,"samarium":142,"silver":46,"steel":10487,"tantalum":47,"thallium":108,"thorium":109,"titanium":48,"uranium":50,"advanced catalysers":61,"animal monitors":62,"aquaponic systems":63,"auto-fabricators":65,"bioreducing lichen":66,"computer components":67,"h.e. suits":68,"hardware diagnostic sensor":155,"land enrichment systems":71,"medical diagnostic equipment":154,"micro controllers":156,"muon imager":119,"nanobreakers":167,"resonating separators":69,"robotics":70,"structural regulators":117,"telemetry suite":184,"conductive fabrics":165,"leather":73,"military grade fabrics":157,"natural fabrics":74,"synthetic fabrics":75,"biowaste":76,"chemical waste":32,"scrap":77,"battle weapons":88,"landmines":118,"non-lethal weapons":78,"personal weapons":79,"reactive armour":80};
-  function inaraUrl(name){
-    const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')];
-    const sys=encodeURIComponent((PROJECT&&PROJECT.systemName)||'');
-    return id
-      ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
-      : `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&ps1=${sys}`;
-  }
-  function inaraLink(name){return `<a href="${inaraUrl(name)}" target="_blank" rel="noopener" title="Cross-check ${name} sellers on Inara near ${(PROJECT&&PROJECT.systemName)||'the build'}" style="color:#ff7a12;text-decoration:none;white-space:nowrap">↗ Inara</a>`;}
   function drawerHtml(list,name){
-    if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span><span>${inaraLink(name)}</span></div></div>`;
+    if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span></div></div>`;
     const rows=list.slice(0,7).map((s,i)=>{
       const out=s.stock<=0, low=s.stock>0&&s.stock<2000, padbad=s.maxLandingPadSize<PAD_REQ, carrier=s.stationType==='FleetCarrier';
       const stockCls=out?'out':(low?'low':''); const stockTxt=out?'OUT':fmt(s.stock)+' t';
@@ -503,9 +409,7 @@
         <div class="col"><span class="lab">Dist / Age</span><span class="val">${Math.round(s.distance)} ly · ${ageStr(s.updatedAt)}</span></div>
         <div style="grid-column:1/-1;text-align:right;margin-top:-2px">${copyBtn}</div></div>`;
     }).join('');
-    const allCarr=list.every(s=>s.stationType==='FleetCarrier');
-    const carrNote=allCarr?`<div style="padding:8px 10px;margin:2px 0 6px;font-size:11.5px;color:var(--warn);border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 9%,transparent)">⚠ No stations sell ${name} within range — <b>fleet carriers only</b> (mobile · stock &amp; price can shift; grab it while it's there). Nearest sensible carrier shown first.</div>`:'';
-    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent · ${inaraLink(name)}</span></div>${carrNote}${rows}</div>`;
+    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · nearest cheap in-stock first · Large pad preferred</span><span>via Ardent /nearby/exports</span></div>${rows}</div>`;
   }
 
   function copyNav(sys){const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
@@ -517,14 +421,13 @@
     for(const k in srcCache)delete srcCache[k];
     try{const p=await loadProject();render(p);toast("⟳ refreshed from RavenColonial");}catch(e){toast("refresh failed: "+e.message);if(rb){rb.classList.remove("spin");rb.textContent="⟳ REFRESH";}}}
 
-  // Standing-down state + honors board of recent completions (from KV stamps —
-  // no Raven calls needed; completed builds have empty commodity data anyway).
+  // Standing-down state + honors board of recent completions (KV stamps only).
   function renderIdle(){
     const s=$("subline");if(s)s.textContent="standing down — no active builds";
     const c=$("cmdrLine");if(c)c.textContent="—";
     const done=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0)).slice(0,5);
     const rows=done.map(b=>`<div class="contrib"><div class="who">${escH(b.name||b.id.slice(0,8))}<small>${escH(b.system||"—")} · architect ${escH(b.architect||"—")}</small></div><div><div class="amt">${b.tons?fmt(b.tons)+" t":"✔"}</div><div class="commit">${b.completedTs?"completed "+new Date(b.completedTs).toISOString().slice(0,10):"complete"}</div></div></div>`).join("");
-    $("view").innerHTML=`<div class="grid"><div class="panel"><h2>Standing Down — No Active Builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction right now.<br>Land at a construction site with the Blades Registrar plugin running to open one automatically — or use <b>＋ add ID</b> above. The board re-arms itself the moment a build registers.</div></div><div><div class="panel"><h2>Honors Board — Recent Completions</h2>${rows||'<div style="color:var(--muted);font-size:12px">No completed builds on record yet.</div>'}<div class="sync-line" style="margin-top:12px">Completed builds keep their stats — see MY STATS for career totals.</div></div></div></div>`;
+    $("view").innerHTML=`<div class="grid"><div class="panel"><h2>Standing Down — No Active Builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction right now.<br>Land at a construction site with the Blades Registrar plugin running to open one automatically. The board re-arms itself the moment a build registers.</div></div><div><div class="panel"><h2>Honors Board — Recent Completions</h2>${rows||'<div style="color:var(--muted);font-size:12px">No completed builds on record yet.</div>'}<div class="sync-line" style="margin-top:12px">Completed builds keep their stats — see MY STATS for career totals.</div></div></div></div>`;
   }
   // Walk unstamped builds until an active one renders; stamp any found complete.
   async function boot(){
@@ -551,11 +454,11 @@
 
   // ===== theme dial =====
   (function(){
-    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];
+    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-55},{t:"cyan",n:"FLEET TACTICAL",a:0},{t:"onyx",n:"ONYX BLADE",a:55}];
     const knob=$("knob"), schemeEl=$("dialScheme"), labels=[...document.querySelectorAll(".dl")];
     let idx=0, dragging=false;
     function paint(i){const s=SCHEMES[i];document.documentElement.dataset.theme=s.t;schemeEl.textContent=s.n;labels.forEach((l,j)=>l.classList.toggle("on",j===i));knob.setAttribute("aria-valuenow",i);}
-    function apply(i){idx=(i%SCHEMES.length+SCHEMES.length)%SCHEMES.length;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
+    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
     labels.forEach((l,j)=>l.onclick=()=>apply(j));
     function ang(e){const r=knob.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const pt=e.touches?e.touches[0]:e;let d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
     function near(d){let b=0,bd=1e9;SCHEMES.forEach((s,i)=>{const x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}
@@ -579,48 +482,7 @@
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
 
-  // ===== SQUAD NET ticker (live; re-runnable — the poll loop calls it on change) =====
-  (function(){
-    const NORM=(s)=>String(s||"").replace(/^CMDR\s+/i,"").trim().toUpperCase();
-    let CUSTOM=[];
-    async function loadCustom(){ try{ const d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); const now=Date.now(); CUSTOM=((d&&d.fields)||[]).filter(f=>f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now)); }catch(e){} }
-    function customItems(){ return CUSTOM.map(f=>({c:"news",i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))})); }
-    function render(items,el){ const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
-    async function run(){
-      await loadCustom();
-      if(!BUILD_ID){
-        const el=$("tickTrack"); if(!el) return;
-        const last=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0))[0];
-        const items=customItems();
-        items.push({c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."});
-        if(last) items.push({c:"",i:"✔",h:"LAST COMPLETION: <b>"+escH(last.name||last.id.slice(0,8))+"</b>"+(last.architect?" · architect "+escH(last.architect):"")});
-        render(items,el); return;
-      }
-      let p,st=null; try{ p=await fetch(RAVEN+"/api/project/"+BUILD_ID).then(r=>r.json()); }catch(e){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — live feed resumes when the board reaches RavenColonial</span>'; return; }
-      try{ st=await fetch(RAVEN+"/api/project/"+BUILD_ID+"/stats").then(r=>r.ok?r.json():null); }catch(e){}
-      const tonsOf=(n)=>{ if(!st||!st.cmdrs)return null; const N=NORM(n); for(const k in st.cmdrs){ if(NORM(k)===N&&typeof st.cmdrs[k]==="number")return st.cmdrs[k]; } return null; };
-      const items=customItems(); const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
-      let hrs=null; if(p.timeDue){const t=Date.parse(p.timeDue); if(!isNaN(t)) hrs=(t-Date.now())/3.6e6;}
-      if(hrs!==null&&hrs<48) items.push({c:"emergency",i:"⏱",h:"EMERGENCY: <b>"+name+"</b> window closing — "+Math.max(0,Math.round(hrs))+"h left · "+pct+"% built"});
-      else if(hrs!==null&&hrs<120) items.push({c:"crit",i:"⏱",h:"TIME-CRITICAL: <b>"+name+"</b> — "+Math.round(hrs)+"h left · "+pct+"% built"});
-      else items.push({c:"",i:"◈",h:"BUILD: <b>"+name+"</b> · "+pct+"% built · "+fmt(p.sumNeed)+" t remaining"});
-      const comm=Object.entries(p.commodities||{}).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
-      if(comm.length) items.push({c:(hrs!==null&&hrs<120)?"crit":"",i:"◇",h:"MOST NEEDED: <b>"+disp(comm[0][0])+" ×"+fmt(comm[0][1])+"</b>"});
-      const seen=new Set(); const names=[];
-      Object.keys(p.commanders||{}).forEach(n=>{const N=NORM(n);if(!seen.has(N)){seen.add(N);names.push(n);}});
-      if(st&&st.cmdrs)Object.keys(st.cmdrs).forEach(n=>{const N=NORM(n);if(!seen.has(N)){seen.add(N);names.push(n);}});
-      if(names.length) names.forEach(n=>{const t=tonsOf(n); items.push({c:"",i:"＋",h:"<b>"+NORM(n)+"</b> synced"+(t!=null?" · "+fmt(t)+" t hauled":"")});});
-      else items.push({c:"",i:"＋",h:"AWAITING COMMANDER SYNC — deliveries appear here once Blades wire into this build"});
-      (p.linkedFC||[]).forEach(fc=>items.push({c:"",i:"⛽",h:"FC <b>"+(fc.displayName||fc.name||"carrier")+"</b> linked · "+(p.systemName||"")}));
-      items.push({c:"",i:"✦",h:"COHORT: <b>"+name+"</b> · "+fmt(p.sumNeed)+" / "+fmt(p.maxNeed)+" t outstanding"});
-      const el=$("tickTrack"); if(!el) return; render(items,el);
-    }
-    window._obRunTicker=run;
-  })();
-
   // ===== live update loop: timer transport, change-detected renders =====
-  // Registry (KV) + active build (Raven eTag) every 60s while the tab is visible;
-  // immediate catch-up when the tab becomes visible again. Re-render only on diff.
   let LAST_ETAG="", LAST_REGSIG="", POLL_BUSY=false;
   async function pollTick(){
     if(document.hidden||POLL_BUSY) return; POLL_BUSY=true;
@@ -629,10 +491,7 @@
         const reg=await fetchRegistry(); const sig=JSON.stringify(reg);
         if(sig!==LAST_REGSIG){
           const first=LAST_REGSIG===""; LAST_REGSIG=sig; REGISTRY=reg;
-          if(!first){
-            if(window._obPickerReload)window._obPickerReload();
-            if(!BUILD_ID){ await boot(); if(window._obRunTicker)window._obRunTicker(); if(BUILD_ID)toast("◈ new build on the wire"); }
-          }
+          if(!first&&!BUILD_ID){ await boot(); if(BUILD_ID)toast("◈ new build on the wire"); }
         }
       }catch(e){}
       if(BUILD_ID){
@@ -641,8 +500,7 @@
           const tag=p.eTag||p.timestamp||"";
           if(tag!==LAST_ETAG){
             render(p); stampIfNeeded(p);
-            if(window._obRunTicker)window._obRunTicker();
-            if(p.complete&&!EXPLICIT_BUILD){ toast("✔ build complete — honors board updated"); await boot(); if(window._obRunTicker)window._obRunTicker(); }
+            if(p.complete&&!EXPLICIT_BUILD){ toast("✔ build complete — honors board updated"); await boot(); }
             else toast("⟳ live update");
           }
         }catch(e){}
@@ -652,77 +510,8 @@
   (async function main(){
     await boot();
     LAST_REGSIG=JSON.stringify(REGISTRY);
-    if(window._obRunTicker)window._obRunTicker();
     setInterval(pollTick,60000);
     document.addEventListener("visibilitychange",()=>{ if(!document.hidden) pollTick(); });
-  })();
-
-
-  // ===== build picker (KV registry + local; live active/completed grouping from Raven) =====
-  (function(){
-    const SEL=$("buildSel"),ADD=$("buildAdd"),ROW=$("buildAddRow"),IN=$("buildIdIn"),GO=$("buildIdGo");
-    if(!SEL) return;
-    const API="/blades/api/builds";
-    const GUID=/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
-    const getLocal=()=>{try{return JSON.parse(localStorage.getItem("ob_local_builds")||"[]");}catch(e){return [];}};
-    const setLocal=(a)=>{try{localStorage.setItem("ob_local_builds",JSON.stringify(a));}catch(e){}};
-    const setActive=(id)=>{try{localStorage.setItem("ob_build",id);}catch(e){} location.reload();};
-    const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-    const opt=(b)=>'<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+esc(b.name||b.id.slice(0,8))+(b.system?" \u00b7 "+esc(b.system):"")+(b.src==="local"?"  \u25e6 local":"")+'</option>';
-    async function fetchList(){
-      try{const j=await fetch(API,{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); if(j&&Array.isArray(j.builds)) return j.builds;}catch(e){}
-      try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json()); return (j&&j.builds)||[];}catch(e){}
-      return [];
-    }
-    let showAllDone=false, lastMerged=null;
-    async function load(){
-      const reg=await fetchList();
-      const seen={},merged=[];
-      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad",completedTs:b.completedTs||null});}});
-      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local",completedTs:null});}});
-      if((function(){try{var _x=localStorage.getItem("ob_build");return !!(_x&&/^[0-9a-fA-F-]{36}$/.test(_x));}catch(e){return false;}})()&&!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local",completedTs:null});}
-      // Completion-stamped builds skip the live Raven check \u2014 KV already knows.
-      await Promise.all(merged.map(async b=>{
-        if(b.completedTs){ b.complete=true; b.name=b.name||b.id.slice(0,8); return; }
-        try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject());
-          b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete;
-          if(p.complete){ b.completedTs=Date.parse(p.timeCompleted||p.timestamp)||Date.now(); if(typeof stampIfNeeded==="function") stampIfNeeded(p); }
-        }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; }
-      }));
-      lastMerged=merged; renderList();
-    }
-    function renderList(){
-      const merged=lastMerged||[];
-      const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0));
-      let html="";
-      if(active.length) html+='<optgroup label="Active builds">'+active.map(opt).join("")+'</optgroup>';
-      else html+='<option disabled>\u2014 no active builds \u00b7 use \uff0b add ID \u2014</option>';
-      if(done.length){
-        let vis=done, hidden=0;
-        if(!showAllDone&&done.length>4){
-          vis=done.slice(0,3);
-          if(BUILD_ID&&done.some(b=>b.id===BUILD_ID)&&!vis.some(b=>b.id===BUILD_ID)) vis=vis.concat([done.find(b=>b.id===BUILD_ID)]);
-          hidden=done.length-vis.length;
-        }
-        html+='<optgroup label="Completed \u00b7 '+done.length+' \u00b7 stats only">'+vis.map(opt).join("");
-        if(hidden>0) html+='<option value="__more__">\u2026 show all '+done.length+' completed</option>';
-        html+='</optgroup>';
-      }
-      SEL.innerHTML=html;
-      SEL.onchange=()=>{
-        if(SEL.value==="__more__"){ showAllDone=true; renderList(); SEL.value=BUILD_ID||""; return; }
-        if(SEL.value&&SEL.value!==BUILD_ID) setActive(SEL.value);
-      };
-    }
-    if(ADD) ADD.onclick=()=>{ROW.style.display=(ROW.style.display==="flex")?"none":"flex";if(IN)IN.focus();};
-    async function addBuild(){ const m=(IN.value||"").match(GUID); if(!m){IN.style.borderColor="var(--bad)";return;} const id=m[0].toLowerCase();
-      let shared=false; try{ const r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({id:id})}); shared=r.ok; }catch(e){}
-      if(!shared){ const loc=getLocal(); if(!loc.some(b=>b.id===id)){loc.push({id:id,name:"",system:""});setLocal(loc);} }
-      setActive(id); }
-    if(GO) GO.onclick=addBuild;
-    if(IN) IN.addEventListener("keydown",e=>{if(e.key==="Enter")addBuild();});
-    window._obPickerReload=load;
-    load();
   })();
 </script>
 </body>

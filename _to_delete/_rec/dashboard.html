@@ -23,7 +23,7 @@
     --accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);
     --bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;
     --font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:0;
-  }:root[data-theme="green"]{--accent:#35c46a;--accent-bright:#7df3a6;--accent-dim:#1c6b3e;--glow:rgba(53,196,106,.42);--bg:#040a06;--panel:#08150d;--panel2:#0c2013;--line:#144023;--text:#d6f2e0;--muted:#6fa886;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:2px;--scan:.025;}
+  }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   :root{--good:#57e0a0;--warn:#ffcf5c;--bad:#ff5a4d}
@@ -177,7 +177,7 @@
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
   .dl:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .dl.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on,:root[data-theme="green"] .dl.on{color:#04070a}
+  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on{color:#04070a}
   .dial-knob-row{display:flex;align-items:center;gap:11px}
   .dial-cap{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
   .dial-scheme{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);min-width:112px;text-shadow:0 0 8px var(--glow)}
@@ -227,7 +227,7 @@
   .blades-nav .bn{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;text-decoration:none;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:var(--radius);transition:.15s}
   .blades-nav .bn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .blades-nav .bn.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
-  :root[data-theme="cyan"] .blades-nav .bn.on,:root[data-theme="onyx"] .blades-nav .bn.on,:root[data-theme="green"] .blades-nav .bn.on{color:#04070a}
+  :root[data-theme="cyan"] .blades-nav .bn.on,:root[data-theme="onyx"] .blades-nav .bn.on{color:#04070a}
   /* hub cards */
   .hubwrap{margin-top:16px;display:grid;gap:16px}
   .hubcards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -291,7 +291,6 @@
     <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
   </header>
   <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
-  <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
   <div class="buildbar">
     <span class="bb-lab">◈ BUILD</span>
     <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
@@ -301,16 +300,17 @@
       <button id="buildIdGo" class="bb-go">view ▸</button>
     </span>
   </div>
+    <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
   <div class="controls">
     <div class="dialbox">
       <div class="dial-labels">
         <button class="dl on" data-t="amber">AMBER<small>COCKPIT</small></button>
         <button class="dl" data-t="cyan">FLEET<small>TACTICAL</small></button>
-        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button><button class="dl" data-t="green">JADE<small>CANOPY</small></button>
+        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button>
       </div>
       <div class="dial-knob-row">
         <span class="dial-cap">Turn ►</span>
-        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span class="pointer"></span></div>
+        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="2" aria-valuenow="0"><span class="pointer"></span></div>
         <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
       </div>
     </div>
@@ -551,11 +551,11 @@
 
   // ===== theme dial =====
   (function(){
-    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];
+    const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-55},{t:"cyan",n:"FLEET TACTICAL",a:0},{t:"onyx",n:"ONYX BLADE",a:55}];
     const knob=$("knob"), schemeEl=$("dialScheme"), labels=[...document.querySelectorAll(".dl")];
     let idx=0, dragging=false;
     function paint(i){const s=SCHEMES[i];document.documentElement.dataset.theme=s.t;schemeEl.textContent=s.n;labels.forEach((l,j)=>l.classList.toggle("on",j===i));knob.setAttribute("aria-valuenow",i);}
-    function apply(i){idx=(i%SCHEMES.length+SCHEMES.length)%SCHEMES.length;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
+    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
     labels.forEach((l,j)=>l.onclick=()=>apply(j));
     function ang(e){const r=knob.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const pt=e.touches?e.touches[0]:e;let d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
     function near(d){let b=0,bd=1e9;SCHEMES.forEach((s,i)=>{const x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}
@@ -582,24 +582,18 @@
   // ===== SQUAD NET ticker (live; re-runnable — the poll loop calls it on change) =====
   (function(){
     const NORM=(s)=>String(s||"").replace(/^CMDR\s+/i,"").trim().toUpperCase();
-    let CUSTOM=[];
-    async function loadCustom(){ try{ const d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); const now=Date.now(); CUSTOM=((d&&d.fields)||[]).filter(f=>f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now)); }catch(e){} }
-    function customItems(){ return CUSTOM.map(f=>({c:"news",i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))})); }
-    function render(items,el){ const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
     async function run(){
-      await loadCustom();
       if(!BUILD_ID){
         const el=$("tickTrack"); if(!el) return;
         const last=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0))[0];
-        const items=customItems();
-        items.push({c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."});
-        if(last) items.push({c:"",i:"✔",h:"LAST COMPLETION: <b>"+escH(last.name||last.id.slice(0,8))+"</b>"+(last.architect?" · architect "+escH(last.architect):"")});
-        render(items,el); return;
+        let h='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — no active builds. Land at a construction site to begin.</span>';
+        if(last) h+='<span class="sep">◆</span><span class="item"><span class="ico">✔</span>LAST COMPLETION: <b>'+escH(last.name||last.id.slice(0,8))+'</b>'+(last.architect?' · architect '+escH(last.architect):'')+'</span>';
+        el.innerHTML=h+'<span class="sep">◆</span>'+h; return;
       }
       let p,st=null; try{ p=await fetch(RAVEN+"/api/project/"+BUILD_ID).then(r=>r.json()); }catch(e){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — live feed resumes when the board reaches RavenColonial</span>'; return; }
       try{ st=await fetch(RAVEN+"/api/project/"+BUILD_ID+"/stats").then(r=>r.ok?r.json():null); }catch(e){}
       const tonsOf=(n)=>{ if(!st||!st.cmdrs)return null; const N=NORM(n); for(const k in st.cmdrs){ if(NORM(k)===N&&typeof st.cmdrs[k]==="number")return st.cmdrs[k]; } return null; };
-      const items=customItems(); const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
+      const items=[]; const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
       let hrs=null; if(p.timeDue){const t=Date.parse(p.timeDue); if(!isNaN(t)) hrs=(t-Date.now())/3.6e6;}
       if(hrs!==null&&hrs<48) items.push({c:"emergency",i:"⏱",h:"EMERGENCY: <b>"+name+"</b> window closing — "+Math.max(0,Math.round(hrs))+"h left · "+pct+"% built"});
       else if(hrs!==null&&hrs<120) items.push({c:"crit",i:"⏱",h:"TIME-CRITICAL: <b>"+name+"</b> — "+Math.round(hrs)+"h left · "+pct+"% built"});
@@ -613,7 +607,7 @@
       else items.push({c:"",i:"＋",h:"AWAITING COMMANDER SYNC — deliveries appear here once Blades wire into this build"});
       (p.linkedFC||[]).forEach(fc=>items.push({c:"",i:"⛽",h:"FC <b>"+(fc.displayName||fc.name||"carrier")+"</b> linked · "+(p.systemName||"")}));
       items.push({c:"",i:"✦",h:"COHORT: <b>"+name+"</b> · "+fmt(p.sumNeed)+" / "+fmt(p.maxNeed)+" t outstanding"});
-      const el=$("tickTrack"); if(!el) return; render(items,el);
+      const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html;
     }
     window._obRunTicker=run;
   })();
