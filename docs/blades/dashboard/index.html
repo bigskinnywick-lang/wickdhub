@@ -324,7 +324,22 @@
 <script>
   const RAVEN="https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
   const ARDENT="https://api.ardent-insight.com";
-  const DEFAULT_BUILD="47db4699-c5ab-4b38-b8c5-71d1bb829ff6"; let BUILD_ID=(function(){try{var _b=localStorage.getItem("ob_build");if(_b&&/^[0-9a-fA-F-]{36}$/.test(_b))return _b;}catch(e){}return DEFAULT_BUILD;})();
+  const DEFAULT_BUILD="47db4699-c5ab-4b38-b8c5-71d1bb829ff6";
+  const EXPLICIT_BUILD=(function(){try{var _b=localStorage.getItem("ob_build");return !!(_b&&/^[0-9a-fA-F-]{36}$/.test(_b));}catch(e){return false;}})();
+  let BUILD_ID=(function(){try{var _b=localStorage.getItem("ob_build");if(_b&&/^[0-9a-fA-F-]{36}$/.test(_b))return _b;}catch(e){}return "";})();
+  async function fetchRegistry(){
+    try{const j=await fetch("/blades/api/builds",{credentials:"same-origin"}).then(r=>r.ok?r.json():null);if(j&&Array.isArray(j.builds)&&j.builds.length)return j.builds;}catch(e){}
+    try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json());return (j&&j.builds)||[];}catch(e){}
+    return [];
+  }
+  // Resolve which build the board shows: an explicit selection, else the first
+  // registered squad build, else none (idle state). Shared so boot + ticker agree.
+  const BUILD_READY=(async function(){
+    if(EXPLICIT_BUILD&&BUILD_ID)return BUILD_ID;
+    const reg=await fetchRegistry();
+    if(reg&&reg.length){BUILD_ID=reg[0].id;return BUILD_ID;}
+    BUILD_ID="";return "";
+  })();
   const SHIP_CAP=790, PAD_REQ=3;
   // supplier ranking weights (tunable): distance-dominant; price a tiebreaker; carriers deprioritised (mobile/may vanish); stale market nudged down
   const RANK={distLY:1.0, priceCr:1/400, carrierPenalty:80, stalePenalty:25, staleHrs:72};
@@ -468,7 +483,14 @@
     for(const k in srcCache)delete srcCache[k];
     try{const p=await loadProject();render(p);toast("⟳ refreshed from RavenColonial");}catch(e){toast("refresh failed: "+e.message);if(rb){rb.classList.remove("spin");rb.textContent="⟳ REFRESH";}}}
 
+  function renderEmpty(){
+    const s=$("subline");if(s)s.textContent="no active builds";
+    const c=$("cmdrLine");if(c)c.textContent="—";
+    $("view").innerHTML=`<div class="panel"><h2>No active builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction builds right now.<br>Land at a construction site with the Blades Registrar plugin running to add one automatically — or use <b>＋ add ID</b> above to pull one in.</div></div>`;
+  }
   async function boot(){
+    const bid=await BUILD_READY;
+    if(!bid){renderEmpty();return;}
     try{const p=await loadProject();render(p);}
     catch(e){$("view").innerHTML=`<div class="panel"><h2>Connection Error</h2><div class="errline">Could not reach RavenColonial: ${e.message}<br>The build data lives at the RavenColonial API. If this persists, the API host may have changed.</div></div>`;}
   }
@@ -509,6 +531,8 @@
   (function(){
     function cmdrTons(c){ if(c==null)return null; if(typeof c==="number")return c; if(typeof c==="object"){for(const k of ["delivered","total","tons","tonnage","sum","contributed"]){if(typeof c[k]==="number")return c[k];} let s=0,f=false; for(const v of Object.values(c)){if(typeof v==="number"){s+=v;f=true;}else if(v&&typeof v==="object"){for(const v2 of Object.values(v)){if(typeof v2==="number"){s+=v2;f=true;}}}} return f?s:null;} return null; }
     async function run(){
+      const bid=await BUILD_READY;
+      if(!bid){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — no active builds. Land at a construction site to begin.</span>'; return; }
       let p; try{ p=await fetch(RAVEN+"/api/project/"+BUILD_ID).then(r=>r.json()); }catch(e){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — live feed resumes when the board reaches RavenColonial</span>'; return; }
       const items=[]; const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
       let hrs=null; if(p.timeDue){const t=Date.parse(p.timeDue); if(!isNaN(t)) hrs=(t-Date.now())/3.6e6;}
@@ -549,7 +573,7 @@
       const seen={},merged=[];
       reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad"});}});
       getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local"});}});
-      if(!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local"});}
+      if((function(){try{var _x=localStorage.getItem("ob_build");return !!(_x&&/^[0-9a-fA-F-]{36}$/.test(_x));}catch(e){return false;}})()&&!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local"});}
       await Promise.all(merged.map(async b=>{ try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject()); b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete; }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; } }));
       const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete);
       let html="";

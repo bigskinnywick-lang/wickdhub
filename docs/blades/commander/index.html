@@ -333,7 +333,20 @@
 <script>
   const $=(id)=>document.getElementById(id);
   const RAVEN="https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
-  const DEFAULT_BUILD="47db4699-c5ab-4b38-b8c5-71d1bb829ff6"; let BUILD_ID=(function(){try{var _b=localStorage.getItem("ob_build");if(_b&&/^[0-9a-fA-F-]{36}$/.test(_b))return _b;}catch(e){}return DEFAULT_BUILD;})();
+  const DEFAULT_BUILD="47db4699-c5ab-4b38-b8c5-71d1bb829ff6";
+  const EXPLICIT_BUILD=(function(){try{var _b=localStorage.getItem("ob_build");return !!(_b&&/^[0-9a-fA-F-]{36}$/.test(_b));}catch(e){return false;}})();
+  let BUILD_ID=(function(){try{var _b=localStorage.getItem("ob_build");if(_b&&/^[0-9a-fA-F-]{36}$/.test(_b))return _b;}catch(e){}return "";})();
+  async function fetchRegistry(){
+    try{const j=await fetch("/blades/api/builds",{credentials:"same-origin"}).then(r=>r.ok?r.json():null);if(j&&Array.isArray(j.builds)&&j.builds.length)return j.builds;}catch(e){}
+    try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json());return (j&&j.builds)||[];}catch(e){}
+    return [];
+  }
+  const BUILD_READY=(async function(){
+    if(EXPLICIT_BUILD&&BUILD_ID)return BUILD_ID;
+    const reg=await fetchRegistry();
+    if(reg&&reg.length){BUILD_ID=reg[0].id;return BUILD_ID;}
+    BUILD_ID="";return "";
+  })();
   const fmt=(n)=>Number(n||0).toLocaleString("en-US");
   const disp=(k)=>String(k).replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
 // ===== galactic clock =====
@@ -386,7 +399,7 @@
     return items;
   }
   function renderTicker(items){ const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
-  async function runTicker(){ try{ renderTicker(tickerItems(await getProj())); }catch(e){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}]); } }
+  async function runTicker(){ const bid=await BUILD_READY; if(!bid){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."}]); return; } try{ renderTicker(tickerItems(await getProj())); }catch(e){ renderTicker([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}]); } }
 
 
   const CMDRMAP={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
@@ -423,6 +436,13 @@
   }
   (async function(){
     let target=qparam("cmdr"); if(!target) target=await whoAmI();
+    const bid=await BUILD_READY;
+    if(!bid){
+      $("dossSub").textContent="no active builds";
+      $("dossStats").innerHTML='<div class="rempty">No active squadron builds yet. Land at a construction site with the Blades Registrar plugin running to add one — commander stats appear here once deliveries sync.</div>';
+      $("rosterList2").innerHTML='<div class="rempty">—</div>';
+      return;
+    }
     try{
       const p=await getProj(); const key=matchKey(p.commanders||{}, target);
       renderStats(p, key, target||"YOU"); renderRoster2(p, key);
@@ -455,7 +475,7 @@
       const seen={},merged=[];
       reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad"});}});
       getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local"});}});
-      if(!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local"});}
+      if((function(){try{var _x=localStorage.getItem("ob_build");return !!(_x&&/^[0-9a-fA-F-]{36}$/.test(_x));}catch(e){return false;}})()&&!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local"});}
       await Promise.all(merged.map(async b=>{ try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject()); b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete; }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; } }));
       const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete);
       let html="";
