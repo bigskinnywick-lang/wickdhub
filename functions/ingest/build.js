@@ -8,6 +8,13 @@
 //
 // Validates the shared key, resolves the RavenColonial buildId from marketId+systemAddress,
 // and upserts it into the same KV (BUILDS). Public route (Access Bypass) — the key is the gate.
+//
+// ARCHITECT ATTRIBUTION (claims-first, added 2026-07-21): auto-create resolves the
+// architect as claims ledger ("claim:{systemAddress}" KV keys fed by /ingest/claim,
+// exact) -> predominant sibling architectName in Raven ("raven-siblings", inferred)
+// -> the plugin's fallback squad name ("fallback"). The KV build record carries
+// architect + architectSource + verified so the board can badge unverified builds
+// and reconcile them later.
 const RAVEN = "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 // A browser-ish UA for outbound Raven calls (harmless; avoids any UA-based filtering).
@@ -28,11 +35,23 @@ async function resolveProject(systemAddress, marketId) {
   return await ravenGet("/api/system/" + encodeURIComponent(systemAddress) + "/" + encodeURIComponent(marketId));
 }
 
+// FIRST-PARTY attribution: the squad claims ledger (see /ingest/claim).
+// ColonisationSystemClaim only ever fires in the architect's own journal, so a
+// ledger hit IS the architect — it outranks sibling inference and the fallback.
+async function claimedArchitect(env, systemAddress) {
+  try {
+    const v = await env.BUILDS.get("claim:" + String(systemAddress));
+    if (!v) return null;
+    const c = JSON.parse(v);
+    return c && c.architect ? c : null;
+  } catch (e) { return null; }
+}
+
 // Best-effort "who is the architect of this system?" — one architect claims a whole
 // system and builds several sites, so any sibling build in the same system reveals them.
 // Returns the most common non-empty architectName across the system's known builds,
-// or the supplied fallback (squad name) when the system has no prior Raven record.
-async function resolveArchitect(systemAddress, fallback) {
+// or "" when the system has no prior Raven record.
+async function resolveSiblingArchitect(systemAddress) {
   const sys = await ravenGet("/api/system/" + encodeURIComponent(systemAddress));
   const list = Array.isArray(sys) ? sys : (sys && Array.isArray(sys.builds) ? sys.builds : []);
   const tally = {};
@@ -42,7 +61,7 @@ async function resolveArchitect(systemAddress, fallback) {
   }
   let best = "", bestN = 0;
   for (const a in tally) { if (tally[a] > bestN) { best = a; bestN = tally[a]; } }
-  return best || fallback;
+  return best;
 }
 
 // Create a project via PUT /api/project/ (the same call Raven's own web app uses).
@@ -85,7 +104,16 @@ export async function onRequestPost({ request, env }) {
     if (!(body.create && body.marketId && body.systemAddress)) {
       return json({ ok: false, error: "no build for that market yet" }, 404);
     }
-    const architect = await resolveArchitect(body.systemAddress, String(body.architect || "Onyx Blades"));
+    // Attribution resolution: claims ledger (exact) -> Raven siblings (inferred) -> fallback.
+    let architect = "", architectSource = "";
+    const claim = await claimedArchitect(env, body.systemAddress);
+    if (claim) {
+      architect = claim.architect; architectSource = "claim";
+    } else {
+      const sib = await resolveSiblingArchitect(body.systemAddress);
+      if (sib) { architect = sib; architectSource = "raven-siblings"; }
+      else { architect = String(body.architect || "Onyx Blades"); architectSource = "fallback"; }
+    }
     const newProject = {
       buildName: String(body.buildName || body.systemName || "New construction").slice(0, 120),
       buildType: "",
@@ -113,18 +141,35 @@ export async function onRequestPost({ request, env }) {
     createdArchitect = created.architectName || architect;
 
     const existed = await env.BUILDS.get(id);
-    const meta = { name, system, architect: createdArchitect, addedBy: cmdr, ts: Date.now(), marketId: body.marketId || null, via: "registrar-auto" };
+    const meta = {
+      name, system, architect: createdArchitect, architectSource,
+      verified: architectSource !== "fallback",
+      addedBy: cmdr, ts: Date.now(), marketId: body.marketId || null, via: "registrar-auto",
+    };
     await env.BUILDS.put(id, JSON.stringify(meta));
-    return json({ ok: true, id, added: !existed, created: true, name, system, architect: createdArchitect });
+    return json({ ok: true, id, added: !existed, created: true, name, system, architect: createdArchitect, architectSource });
   }
 
-  // 3) We have a buildId — register it if new.
+  // 3) We have a buildId — register it if new. Attribution: Raven's own record is
+  // authoritative for existing builds (the architect set it); claims ledger as backup.
   const existing = await env.BUILDS.get(id);
   if (existing) return json({ ok: true, id, added: false });
-  if (!name) { const p = await ravenGet("/api/project/" + id); if (p) { name = p.buildName || ""; system = p.systemName || ""; } }
-  const meta = { name, system, addedBy: cmdr, ts: Date.now(), marketId: body.marketId || null, via: "registrar" };
+  let architect = (proj && proj.architectName ? String(proj.architectName).trim() : "");
+  if (!name) {
+    const p = await ravenGet("/api/project/" + id);
+    if (p) { name = p.buildName || ""; system = p.systemName || ""; architect = architect || (p.architectName ? String(p.architectName).trim() : ""); }
+  }
+  let architectSource = architect ? "raven" : "";
+  if (!architect && body.systemAddress) {
+    const claim = await claimedArchitect(env, body.systemAddress);
+    if (claim) { architect = claim.architect; architectSource = "claim"; }
+  }
+  const meta = {
+    name, system, architect, architectSource, verified: !!architect,
+    addedBy: cmdr, ts: Date.now(), marketId: body.marketId || null, via: "registrar",
+  };
   await env.BUILDS.put(id, JSON.stringify(meta));
-  return json({ ok: true, id, added: true, name, system });
+  return json({ ok: true, id, added: true, name, system, architect, architectSource });
 }
 
 export async function onRequestGet() {

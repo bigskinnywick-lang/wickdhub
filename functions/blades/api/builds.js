@@ -14,9 +14,15 @@ export async function onRequestGet({ env }) {
     const listing = await env.BUILDS.list();
     const builds = [];
     for (const k of listing.keys) {
+      // Build keys are GUIDs. Skip everything else — notably the "claim:{systemAddress}"
+      // claims-ledger keys written by /ingest/claim (architect attribution).
+      if (!GUID.test(k.name)) continue;
       let meta = {};
       try { const v = await env.BUILDS.get(k.name); if (v) meta = JSON.parse(v); } catch (e) {}
-      builds.push({ id: k.name, name: meta.name || "", system: meta.system || "", addedBy: meta.addedBy || "", ts: meta.ts || null });
+      builds.push({
+        id: k.name, name: meta.name || "", system: meta.system || "", addedBy: meta.addedBy || "", ts: meta.ts || null,
+        architect: meta.architect || "", architectSource: meta.architectSource || "", verified: !!meta.verified,
+      });
     }
     return json({ builds });
   } catch (e) {
