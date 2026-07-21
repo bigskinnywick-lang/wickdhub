@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="amber" data-mode="lore">
 <head>
-<script>try{var _t=localStorage.getItem("ob_theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
+<script>try{var _t=localStorage.getItem("ob_theme");if(_t)document.documentElement.setAttribute("data-theme",_t);var _sg=localStorage.getItem("ob_signal");if(_sg==="lore"||_sg==="plain")document.documentElement.setAttribute("data-mode",_sg);}catch(e){}</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ONYX BLADES · Cohort Uplink Procedures</title>
@@ -276,7 +276,7 @@
   })();
   // lore/plain toggle
   function setModeLabel(){const lore=document.documentElement.dataset.mode==="lore";$("modeBtn").innerHTML=lore?`SIGNAL: <b>IN-UNIVERSE</b> <span style="opacity:.55">⇄ plain</span>`:`SIGNAL: <b>PLAIN</b> <span style="opacity:.55">⇄ in-universe</span>`;}
-  $("modeBtn").onclick=()=>{const h=document.documentElement;h.dataset.mode=h.dataset.mode==="lore"?"plain":"lore";setModeLabel();};
+  $("modeBtn").onclick=()=>{const h=document.documentElement;h.dataset.mode=h.dataset.mode==="lore"?"plain":"lore";try{localStorage.setItem("ob_signal",h.dataset.mode);}catch(e){}setModeLabel();};
   setModeLabel();
   // copy
   let toastT;function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("show"),2000);}
@@ -284,10 +284,10 @@
   function fb(t,cb){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);cb();}catch(e){toast("copy blocked");}}
   document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyText(b.dataset.copy));
   // clock
-  const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let clockMode="ed";
+  const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let clockMode="ed";try{var _cm=localStorage.getItem("ob_clock");if(_cm==="ed"||_cm==="local")clockMode=_cm;}catch(e){}
   function localTZ(){try{return new Intl.DateTimeFormat("en-US",{timeZoneName:"short"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "LOCAL";}}
   function tickClock(){const d=new Date();if(clockMode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${localTZ()}`;$("clLab").textContent="LOCAL / RL";}}
-  $("clToggle").onclick=()=>{clockMode=clockMode==="ed"?"local":"ed";tickClock();};
+  $("clToggle").onclick=()=>{clockMode=clockMode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",clockMode);}catch(e){}tickClock();};
   tickClock();setInterval(tickClock,1000);
 
   // ===== Cloudflare Access identity =====
