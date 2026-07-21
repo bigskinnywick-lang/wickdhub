@@ -17,8 +17,16 @@ const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
 });
 
+function b64urlToStr(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return atob(s); }
+// Identity behind Cloudflare Access. Pages Functions do not reliably receive the
+// convenience header, but always get the signed JWT assertion (Access already
+// validated it to let the request reach us) — decode its `email` claim.
 export function callerEmail(request) {
-  return (request.headers.get("Cf-Access-Authenticated-User-Email") || "").toLowerCase().trim();
+  let e = (request.headers.get("Cf-Access-Authenticated-User-Email") || "").toLowerCase().trim();
+  if (e) return e;
+  const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
+  if (jwt) { const p = jwt.split("."); if (p.length === 3) { try { const c = JSON.parse(b64urlToStr(p[1])); if (c && c.email) return String(c.email).toLowerCase().trim(); } catch (_) {} } }
+  return "";
 }
 export async function adminList(env) {
   let admins = [];

@@ -12,7 +12,15 @@ const OWNER = "bigskinnywick@gmail.com";
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
 });
-const callerEmail = (request) => (request.headers.get("Cf-Access-Authenticated-User-Email") || "").toLowerCase().trim();
+function b64urlToStr(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return atob(s); }
+// Behind Access, Pages Functions get the signed JWT assertion reliably (the header not always).
+function callerEmail(request) {
+  let e = (request.headers.get("Cf-Access-Authenticated-User-Email") || "").toLowerCase().trim();
+  if (e) return e;
+  const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
+  if (jwt) { const p = jwt.split("."); if (p.length === 3) { try { const c = JSON.parse(b64urlToStr(p[1])); if (c && c.email) return String(c.email).toLowerCase().trim(); } catch (_) {} } }
+  return "";
+}
 async function adminList(env) {
   let admins = [];
   try { const v = await env.BUILDS.get("admin:emails"); if (v) { const a = JSON.parse(v); if (Array.isArray(a)) admins = a.map(e => String(e).toLowerCase().trim()).filter(Boolean); } } catch (e) {}
