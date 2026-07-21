@@ -30,21 +30,21 @@
   footer{margin-top:26px;font-size:10.5px;letter-spacing:1.5px;color:var(--muted);text-align:center;line-height:1.9}
   .backrow a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:2px;border:1px solid var(--line);padding:5px 10px;border-radius:4px}
   .backrow{margin-bottom:14px}
-  /* identity gating: sections show only for the matching pilot */
-  .p-big,.p-tpl,.locked,.resolving{display:none}
-  body[data-pilot="bigskinny"] .p-big{display:block}
-  body[data-pilot="templar"] .p-tpl{display:block}
-  body[data-pilot="none"] .locked{display:block}
-  body[data-pilot="none"] .crew{display:none}
-  body:not([data-pilot]) .resolving{display:block}
-  body:not([data-pilot]) .crew{display:none}
+  /* identity gating: role sections show only for the matching pilot */
+  .p-arch,.p-wing,.locked,.resolving{display:none}
+  body[data-role="arch"] .p-arch{display:block}
+  body[data-role="wing"] .p-wing{display:block}
+  body[data-role="none"] .locked{display:block}
+  body[data-role="none"] .crew{display:none}
+  body:not([data-role]) .resolving{display:block}
+  body:not([data-role]) .crew{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="backrow"><a href="/blades/commander/">◂ MY STATS</a></div>
   <h1>SHAKEDOWN FLIGHT CHECKLIST</h1>
-  <div class="sub">CLAIMS LEDGER · AUTO-CREATE · LIVE BOARD · 2026-07-21 · TEST PILOT: <b id="pilotName" style="color:var(--amber-b)">—</b></div>
+  <div class="sub">CLAIMS LEDGER · AUTO-CREATE · LIVE BOARD · 2026-07-21 · TEST PILOT: <b id="pilotName" style="color:var(--amber-b)">—</b> · <span id="roleLine">—</span></div>
 
   <div class="resolving phase"><div class="when">Resolving shakedown-crew credentials…</div></div>
   <div class="locked phase" style="border-left-color:var(--bad)"><h2>RESTRICTED · SHAKEDOWN CREW ONLY</h2><div class="when">This procedure is issued to the current test pilots. Fly the released systems — the Setup Guide has everything you need.</div></div>
@@ -53,42 +53,42 @@
   <div class="phase">
     <h2>PHASE 0 · PRE-FLIGHT — AT THE DESK, GAME NOT REQUIRED</h2>
     <div class="when">Do this before launching Elite. ~5 minutes.</div>
+    <div class="note"><b>ORDER MATTERS TONIGHT:</b> the site is in <b>TEMPLAR's</b> system — his claim is the attribution source. <b>Templar's plugin swap + EDMC restart (the backfill) must happen BEFORE anyone docks at the new site</b>, or auto-create can't find the claim and falls back to squad colours.</div>
     <label class="step"><input type="checkbox" /><span>Download the fresh registrar: <code>wickdhub.com/blades/BladesRegistrar.zip</code> (Setup Guide → Stage 03 button).</span></label>
     <label class="step"><input type="checkbox" /><span><b>Delete</b> the old <code>BladesRegistrar</code> folder from the EDMC plugins dir, drop in the new one. Clean swap — don't merge. (Path check: <code>plugins\BladesRegistrar\load.py</code>, not doubled.)</span></label>
-    <span class="p-big"><label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: ☑ Auto-create ON · fallback architect <code>Onyx Blades</code> · grace <code>5</code> min. Save.</span></label></span>
-    <span class="p-tpl"><label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: Auto-create can stay <b>OFF</b> for you — BigSkinny's rig handles creation tonight. Save.</span></label></span>
+    <span class="p-arch"><label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: ☑ Auto-create ON · fallback architect <code>Onyx Blades</code> · grace <code>5</code> min. Save.</span></label></span>
+    <span class="p-wing"><label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: Auto-create <b>ON if you want the interloper test</b> (recommended — see Phase 1), otherwise OFF. Save.</span></label></span>
     <label class="step"><input type="checkbox" /><span>Fully restart EDMC and watch the Blades status line for ~15 seconds.</span></label>
-    <span class="p-big"><div class="watch"><b>EXPECT:</b> ~10s after launch → <code>Blades: claims backfill: N system(s) reported</code>. N should be ≥ 1 (your claimed systems, including tonight's target). This proves the claims-ledger backfill. ✔</div></span>
-    <span class="p-tpl"><div class="watch"><b>EXPECT:</b> ~10s after launch → <code>Blades: claims backfill: N system(s) reported</code> if you've ever claimed a system on this PC. <b>No message at all is also a PASS</b> if you've never paid for a claim — nothing to report, the scan just files a quiet zero.</div></span>
+    <span class="p-arch"><div class="watch"><b>EXPECT:</b> ~10s after launch → <code>Blades: claims backfill: N system(s) reported</code>. N ≥ 1 and it MUST include tonight's system — your claim is the whole attribution test. ✔</div></span>
+    <span class="p-wing"><div class="watch"><b>EXPECT:</b> ~10s after launch → <code>Blades: claims backfill: N system(s) reported</code> for your own past claims. <b>No message at all is also a PASS</b> if you've never paid for a claim on this PC — a quiet zero.</div></span>
     <div class="err"><b>IF:</b> <code>journal folder not found</code> → journals live somewhere custom; set journal dir in EDMC settings, restart. · <code>backfill auth error (bad key)</code> → old zip still installed — re-download and re-swap. · <code>backfill failed (offline?)</code> → network hiccup; retries next EDMC start.</div>
     <label class="step"><input type="checkbox" /><span>Open <code>wickdhub.com/blades/dashboard/</code> in a browser tab and <b>leave it open, untouched</b>. Standing Down + Honors Board (Moy · architect Templar57) is the correct idle picture. No reloading from here on — that's the point.</span></label>
   </div>
 
-  <span class="p-big">
+  <span class="p-arch">
   <div class="phase">
-    <h2>PHASE 1 · AUTO-CREATE — AT YOUR FRESH CONSTRUCTION SITE</h2>
-    <div class="when">You are the architect. Dock at the construction ship.</div>
+    <h2>PHASE 1 · ARCHITECT — YOUR SYSTEM, YOUR PLAQUE</h2>
+    <div class="when">You claimed this system; the ledger should know it from your backfill. Dock at the construction ship.</div>
     <label class="step"><input type="checkbox" /><span>Dock. Watch the EDMC Blades status line — it updates on every ~15s depot ping.</span></label>
-    <div class="watch"><b>EXPECT, in order:</b> <code>waiting — no build in Raven yet</code> → countdown <code>waiting — auto-create in 4m59s</code> → at zero, next ping: <code>created &lt;name&gt; · architect BIGSKINNY (claimed ✓)</code></div>
-    <div class="note"><b>THE SUFFIX IS THE TEST:</b> <code>(claimed ✓)</code> = claims-ledger attribution — the win condition. · <code>(from Raven)</code> = sibling inference (unexpected for the first site in your system — note it). · <code>(fallback — fix later)</code> = ledger missed your claim — report it.</div>
+    <div class="watch"><b>EXPECT, in order:</b> <code>waiting — no build in Raven yet</code> → countdown <code>waiting — auto-create in 4m59s</code> → at zero, next ping: <code>created &lt;name&gt; · architect TEMPLAR57 (claimed ✓)</code></div>
+    <div class="note"><b>THE SUFFIX IS THE TEST:</b> <code>(claimed ✓)</code> = claims-ledger attribution — the win condition. · <code>(from Raven)</code> = sibling inference (only expected if this system already has your builds in Raven). · <code>(fallback — fix later)</code> = the ledger missed your claim — check your backfill ran, and report it.</div>
     <label class="step"><input type="checkbox" /><span>Stay docked through the 5-minute grace (or undock/re-dock after — the clock keeps counting; create fires on first ping back).</span></label>
     <label class="step"><input type="checkbox" /><span>Glance at the board tab — hands off the keyboard.</span></label>
     <div class="watch"><b>EXPECT:</b> within ~60s the board toasts <code>◈ new build on the wire</code>, leaves Standing Down, and renders your build live. Picker gains it under Active builds.</div>
     <div class="err"><b>IF:</b> <code>auto-create needs Raven login — create it in SrvSurvey</code> → Raven's create API wants auth (the one unknown). Fallback: create in SrvSurvey; the plugin registers it next ping. <b>Report this.</b> · <code>auto-create failed (reason) — will retry</code> → note the reason verbatim; countdown restarting = deliberate back-off, not a bug. · stuck on <code>waiting — create the build in Raven first</code> → auto-create toggle is OFF. · <code>auth error (bad key)</code> → zip mismatch.</div>
-    <label class="step"><input type="checkbox" /><span>Optional cross-check: ravencolonial.com build page shows architect <b>BIGSKINNY</b>.</span></label>
+    <label class="step"><input type="checkbox" /><span>Optional cross-check: ravencolonial.com build page shows architect <b>TEMPLAR57</b>.</span></label>
   </div>
   </span>
 
-  <span class="p-tpl">
+  <span class="p-wing">
   <div class="phase">
-    <h2>PHASE 1 · WINGMAN — JOINING THE NEW BUILD</h2>
-    <div class="when">BigSkinny's fresh site. Your test is the co-op side: does it all reach you hands-off?</div>
-    <label class="step"><input type="checkbox" /><span>With your dashboard tab open and untouched, wait for BigSkinny's site to auto-create.</span></label>
-    <div class="watch"><b>EXPECT:</b> within ~60s of his create, <b>your</b> board toasts <code>◈ new build on the wire</code> and renders the build — you did nothing. That's the whole point of the system.</div>
-    <label class="step"><input type="checkbox" /><span>Fly to the site and dock at the construction ship.</span></label>
-    <div class="watch"><b>EXPECT:</b> EDMC Blades line: <code>registered &lt;name&gt;</code> or <code>already listed</code> — your registrar recognizes the existing build and does NOT create a duplicate.</div>
+    <h2>PHASE 1 · INTERLOPER — WORKIN' FOR THE MAN</h2>
+    <div class="when">Templar's system, Templar's claim, your cargo hold. Two ways to fly it:</div>
+    <div class="note"><b>OPTION A — THE INTERLOPER TEST (recommended, auto-create ON):</b> dock at the construction ship <b>before Templar registers it</b>. Your status line should run the countdown, then: <code>created &lt;name&gt; · architect <b>TEMPLAR57</b> (claimed ✓)</code>. Read that twice — <b>you</b> filed the papers, but the ledger put <b>his</b> name on the plaque from his backfilled claim. A non-architect landing and the attribution still landing true is the strongest proof this system can give. <b>Prerequisite: Templar's backfill ran first (Phase 0 order note).</b></div>
+    <div class="note"><b>OPTION B — WINGMAN (auto-create OFF):</b> let Templar's rig create it; with your dashboard tab open and untouched, the build should reach your board within ~60s of his create — <code>◈ new build on the wire</code> — you did nothing. When you dock, your Blades line reads <code>registered &lt;name&gt;</code> or <code>already listed</code> (no duplicate).</div>
+    <label class="step"><input type="checkbox" /><span>Fly whichever option, dock, and watch the EDMC Blades line + the board tab.</span></label>
     <label class="step"><input type="checkbox" /><span>RavenColonial plugin: accept the <b>🚧 join</b> prompt so your deliveries count as a project member.</span></label>
-    <div class="err"><b>IF:</b> your board never updates → note whether a manual reload shows the build (that isolates poll vs registry). · Blades line shows <code>waiting…</code> at his site → the build isn't in Raven yet; give his grace timer time to fire.</div>
+    <div class="err"><b>IF:</b> created line says <code>(fallback — fix later)</code> → the ledger didn't have Templar's claim when you docked — his backfill hadn't run. Note it; the reconcile poll fixes the record once his builds surface in Raven. · your board never updates → note whether a manual reload shows the build (isolates poll vs registry).</div>
   </div>
   </span>
 
@@ -107,34 +107,35 @@
     <h2>PHASE 3 · IF THE BUILD COMPLETES TONIGHT</h2>
     <div class="when">Only if you finish it. Otherwise skip.</div>
     <label class="step"><input type="checkbox" /><span>Deliver the final tonnes and watch the board.</span></label>
-    <div class="watch"><b>EXPECT:</b> toast <code>✔ build complete — honors board updated</code> → board auto-advances → the build joins the Honors Board with its architect → picker moves it to <code>Completed · N · stats only</code>.</div>
+    <div class="watch"><b>EXPECT:</b> toast <code>✔ build complete — honors board updated</code> → board auto-advances → the build joins the Honors Board, architect <b>TEMPLAR57</b> → picker moves it to <code>Completed · N · stats only</code>.</div>
   </div>
 
   <div class="phase">
     <h2>PHASE 4 · DEBRIEF</h2>
     <div class="when">What flips the systems-register lamps green.</div>
     <label class="step"><input type="checkbox" /><span>Backfill count: <code>N = ?</code> (or "no message" for a clean zero)</span></label>
-    <span class="p-big"><label class="step"><input type="checkbox" /><span>The exact <code>created …</code> line — especially the suffix.</span></label></span>
-    <span class="p-tpl"><label class="step"><input type="checkbox" /><span>Did the build reach your board and your EDMC hands-off? What did the Blades line say at the site?</span></label></span>
+    <label class="step"><input type="checkbox" /><span>The exact <code>created …</code> line and <b>whose rig produced it</b> — especially the suffix.</span></label>
+    <span class="p-wing"><label class="step"><input type="checkbox" /><span>If Option A: confirm the plaque read TEMPLAR57 off <b>your</b> ping. If Option B: did the build reach your board and EDMC hands-off?</span></label></span>
     <label class="step"><input type="checkbox" /><span>Any error text, verbatim.</span></label>
     <label class="step"><input type="checkbox" /><span>Did the board go the whole night without a manual reload? (y/n)</span></label>
   </div>
   </div><!-- /crew -->
 
-  <footer>ONYX BLADES · SHAKEDOWN PROCEDURE v1 · issued to the test pilots only<br />checkbox state lives only while this tab is open · o7</footer>
+  <footer>ONYX BLADES · SHAKEDOWN PROCEDURE v1.1 · issued to the test pilots only · tonight: TEMPLAR architect / BIGSKINNY interloper<br />checkbox state lives only while this tab is open · o7</footer>
 </div>
 <script>
-  // Shakedown crew gate: BigSkinny and Templar57 only — everyone else sees the restricted notice.
+  // Shakedown crew gate — tonight's roles: TEMPLAR57 = architect, BIGSKINNY = interloper/wingman.
   (function(){
-    var CREW={"bigskinnywick@gmail.com":["bigskinny","CMDR BIGSKINNY"],"presto575@gmail.com":["templar","CMDR TEMPLAR57"]};
+    var CREW={"presto575@gmail.com":["arch","CMDR TEMPLAR57","ROLE: ARCHITECT"],
+              "bigskinnywick@gmail.com":["wing","CMDR BIGSKINNY","ROLE: INTERLOPER"]};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"})
       .then(function(r){return r.ok?r.json():Promise.reject();})
       .then(function(d){
         var c=CREW[(d.email||"").toLowerCase()];
-        document.body.dataset.pilot=c?c[0]:"none";
-        if(c)document.getElementById("pilotName").textContent=c[1];
+        document.body.dataset.role=c?c[0]:"none";
+        if(c){document.getElementById("pilotName").textContent=c[1];document.getElementById("roleLine").textContent=c[2];}
       })
-      .catch(function(){document.body.dataset.pilot="none";});
+      .catch(function(){document.body.dataset.role="none";});
   })();
 </script>
 </body>
