@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber" data-mode="lore">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ONYX BLADES · Cohort Uplink Procedures</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root[data-theme="amber"]{--accent:#ff7a12;--accent-bright:#ffb14e;--accent-dim:#a24d08;--glow:rgba(255,122,18,.5);--bg:#0a0705;--panel:#140d07;--panel2:#1c1109;--line:#3a2410;--text:#f6d9b0;--muted:#b98a52;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:.035}
+  :root[data-theme="cyan"]{--accent:#39cfe0;--accent-bright:#8ff4ff;--accent-dim:#1b5f6d;--glow:rgba(57,207,224,.45);--bg:#04080b;--panel:#08141a;--panel2:#0b1c25;--line:#123642;--text:#d6ecf2;--muted:#6f9aa8;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:2px;--scan:.02}
+  :root[data-theme="onyx"]{--accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);--bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;--font-body:"Rajdhani",sans-serif;--font-head:"Rajdhani",sans-serif;--radius:0px;--scan:0}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  :root{--good:#57e0a0;--warn:#ffcf5c;--bad:#ff5a4d}
+  body{background:radial-gradient(1200px 700px at 72% -12%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%),radial-gradient(900px 600px at -5% 115%,color-mix(in srgb,var(--accent) 8%,transparent),transparent 55%),var(--bg);color:var(--text);font-family:var(--font-body);letter-spacing:.3px;min-height:100vh}
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(to bottom,rgba(255,255,255,var(--scan)) 0 1px,transparent 1px 3px);mix-blend-mode:screen;opacity:.6}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 18px 70px}
+
+  .secure{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10.5px;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 4px;text-transform:uppercase}
+  .secure .lock{color:var(--accent-bright)}
+  .clock{display:flex;align-items:center;gap:9px;font-family:var(--font-head);font-size:12px;letter-spacing:1.5px;color:var(--accent-bright);text-shadow:0 0 8px var(--glow)}
+  .clock .cl-lab{color:var(--muted);font-size:8.5px;letter-spacing:1.5px;font-family:var(--font-body)}
+  .clock .cl-toggle{cursor:pointer;border:1px solid var(--accent-dim);color:var(--muted);font-size:8.5px;padding:2px 7px;border-radius:var(--radius);letter-spacing:1px;font-family:var(--font-body)}
+  .clock .cl-toggle:hover{color:var(--accent-bright);border-color:var(--accent)}
+  @media(max-width:720px){.clock{display:none}}
+
+  header.hud{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:16px 18px;border-radius:var(--radius)}
+  .brand{display:flex;align-items:center;gap:15px}
+  .logo-slot{width:52px;height:52px;border:2px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-family:var(--font-head);font-weight:900;font-size:19px;box-shadow:0 0 16px var(--glow),inset 0 0 12px color-mix(in srgb,var(--accent) 25%,transparent);flex:none}
+  .brand h1{font-family:var(--font-head);font-weight:800;margin:0;font-size:18px;letter-spacing:2.5px;color:var(--accent-bright);text-shadow:0 0 12px var(--glow)}
+  .brand .sub{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:3px}
+
+  .controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 8px;flex-wrap:wrap}
+  .themebar{display:flex;gap:8px;align-items:center}.themebar .tl{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-right:4px}
+  .theme-btn{font-family:var(--font-head);font-size:10.5px;letter-spacing:1.5px;padding:7px 13px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:var(--radius);transition:.15s}
+  .theme-btn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}.theme-btn.on{color:#0a0705;background:var(--accent);border-color:var(--accent);box-shadow:0 0 14px var(--glow)}
+  .modebtn{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;padding:8px 15px;cursor:pointer;border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 10%,var(--bg));color:var(--accent-bright);border-radius:var(--radius)}
+  .modebtn:hover{background:color-mix(in srgb,var(--accent) 18%,var(--bg))}
+  .modebtn b{color:var(--accent-bright)}
+
+  .intro{border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 6%,var(--bg));padding:16px 18px;margin:14px 0 22px;border-radius:var(--radius);font-size:13px;line-height:1.7}
+  .intro .from{font-family:var(--font-head);font-size:11px;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:8px}
+  [data-mode="lore"] .plain{display:none}
+  [data-mode="plain"] .lore{display:none}
+
+  .step{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+  .step-h{display:flex;align-items:center;gap:15px;padding:14px 18px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--accent) 5%,transparent)}
+  .step-h .num{font-family:var(--font-head);font-size:24px;font-weight:900;color:var(--accent);width:46px;text-align:center;text-shadow:0 0 12px var(--glow);flex:none}
+  .step-h .t{font-family:var(--font-head);font-size:14px;letter-spacing:1.5px;color:var(--accent-bright);text-transform:uppercase}
+  .step-h .s{font-size:10.5px;color:var(--muted);letter-spacing:1px;margin-top:3px}
+  .step-h .chip{margin-left:auto;font-size:9.5px;letter-spacing:1px;color:var(--muted);border:1px solid var(--line);padding:3px 9px;border-radius:var(--radius);white-space:nowrap}
+  .step-body{padding:16px 18px}
+  .lore p{font-size:13px;line-height:1.75;margin:0 0 8px;color:var(--text)}
+  .lore .glyph{color:var(--accent);font-style:normal}
+  .plain ol{margin:2px 0 6px;padding-left:22px}
+  .plain li{font-size:13px;line-height:1.7;margin-bottom:8px}
+  .plain li b{color:var(--accent-bright)}
+  .kv{color:var(--muted);font-size:11.5px}
+
+  .code{display:flex;align-items:center;gap:10px;background:#08050200;border:1px dashed var(--accent-dim);padding:8px 10px;margin:6px 0;border-radius:var(--radius);font-size:12px;color:var(--accent-bright);overflow-x:auto}
+  .code code{font-family:"Share Tech Mono",monospace;white-space:nowrap}
+  .code .copy{margin-left:auto}
+  .copy{font-family:var(--font-head);font-size:9.5px;letter-spacing:.5px;padding:5px 9px;border:1px solid var(--accent-dim);background:var(--panel);color:var(--accent-bright);cursor:pointer;border-radius:var(--radius);white-space:nowrap}
+  .copy:hover{background:color-mix(in srgb,var(--accent) 16%,var(--bg))}
+  a.link{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-head);font-size:11px;letter-spacing:1px;text-decoration:none;color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));padding:8px 14px;border-radius:var(--radius);margin:6px 8px 4px 0;box-shadow:0 0 12px var(--glow)}
+  a.link.ghost{background:none;color:var(--accent-bright);border:1px solid var(--accent-dim);box-shadow:none}
+  a.link:hover{filter:brightness(1.08)}
+
+  .confirm{margin-top:12px;border-left:3px solid var(--good);background:color-mix(in srgb,var(--good) 8%,transparent);padding:9px 12px;font-size:12px;color:var(--text)}
+  .confirm b{color:var(--good)}
+  .note{margin-top:10px;font-size:11.5px;color:var(--muted);border-left:3px solid var(--accent-dim);padding:7px 12px}
+  .note b{color:var(--accent-bright)}
+  .provisioning{opacity:.85}
+  .provisioning .step-h .chip{color:var(--warn);border-color:var(--warn)}
+
+  .flightcheck{border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 7%,var(--bg));border-radius:var(--radius);padding:16px 18px;margin-top:6px}
+  .flightcheck h3{font-family:var(--font-head);font-size:13px;letter-spacing:2px;color:var(--accent);margin:0 0 12px;text-transform:uppercase}
+  .fc{display:flex;gap:10px;font-size:12.5px;padding:7px 0;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent);line-height:1.5}
+  .fc:last-child{border:none}.fc .box{color:var(--good);flex:none}.fc b{color:var(--accent-bright)}
+  .trouble{margin-top:16px}.trouble summary{cursor:pointer;font-family:var(--font-head);font-size:12px;letter-spacing:1.5px;color:var(--accent-bright);padding:6px 0}
+  .trouble li{font-size:12px;line-height:1.6;margin-bottom:7px;color:var(--text)}.trouble li b{color:var(--warn)}
+  footer{margin-top:26px;font-size:10.5px;color:var(--accent-dim);letter-spacing:1px;text-align:center;line-height:1.7}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:#0a0705;font-family:var(--font-head);font-size:12px;letter-spacing:1px;padding:9px 16px;border-radius:var(--radius);box-shadow:0 0 20px var(--glow);opacity:0;transition:.25s;z-index:10000;pointer-events:none}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="secure">
+    <div><span class="lock">🔒</span> ONYX BLADES SECURE CHANNEL · UPLINK PROVISIONING</div>
+    <div class="clock" id="clock" title="Elite Dangerous runs on real UTC, year +1286. Click to toggle RL local time.">
+      <span class="cl-lab" id="clLab">GALACTIC</span><span id="clTime">————</span><span class="cl-toggle" id="clToggle">ED ⇄ LOCAL</span>
+    </div>
+  </div>
+
+  <header class="hud">
+    <div class="brand">
+      <div class="logo-slot"><span>OB</span></div>
+      <div><h1>COHORT UPLINK PROCEDURES</h1><div class="sub">FIELD MANUAL · GET WIRED INTO THE COLONISATION BOARD</div></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="themebar"><span class="tl">Look:</span>
+      <button class="theme-btn on" data-t="amber">AMBER COCKPIT</button>
+      <button class="theme-btn" data-t="cyan">FLEET TACTICAL</button>
+      <button class="theme-btn" data-t="onyx">ONYX BLADE</button>
+    </div>
+    <button class="modebtn" id="modeBtn"></button>
+  </div>
+
+  <div class="intro">
+    <div class="from">▶ Incoming transmission · Southern Draw Actual → new hand</div>
+    <div class="lore"><p>Welcome to the cohort, Commander. Before your hauls count for anything, we need your ship talking to the fleet. Three relays and a channel key — that's the whole checklist. Work the stages in order; each ends with a <span class="glyph">confirmation signal</span> so you know it took. If the lore gets in the way, flip <b>SIGNAL → PLAIN</b> up top for bare instructions.</p></div>
+    <div class="plain"><p>This gets you set up to feed and read the Onyx Blades colonization board. Four stages: install EDMC, add the RavenColonial plugin, link into the build, then log into the board. Each stage has a confirmation check. Toggle <b>SIGNAL → IN-UNIVERSE</b> for the flavored version.</p></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-h"><span class="num">01</span><div><div class="t">Deploy the Market-Connector Relay</div><div class="s">EDMC · the trade-net beacon</div></div><span class="chip">~5 min</span></div>
+    <div class="step-body">
+      <div class="lore"><p>Every Blade runs a Market-Connector relay. Dock anywhere and it quietly broadcasts that station's manifest to the galactic trade net — which is how the board knows where to <span class="glyph">source</span> the cargo your build is screaming for. No relay, and your markets are dark to the fleet. Fit it once and forget it's there.</p></div>
+      <div class="plain">
+        <ol>
+          <li>Download & install <b>EDMC (Elite Dangerous Market Connector)</b> from EDCD. Windows installer is the top asset on the releases page.</li>
+          <li>Launch it and sign in with your <b>Frontier account</b> when asked (same login as the game).</li>
+          <li>Leave <b>“Send to EDDN” ON</b> (it's the default) — that broadcast is exactly what powers the board's supplier search.</li>
+        </ol>
+        <div class="kv">Needs: EDMC 5.0 or newer. Runs alongside the game — start it before you fly.</div>
+      </div>
+      <a class="link" href="https://github.com/EDCD/EDMarketConnector/releases" target="_blank" rel="noopener">⬇ EDMC — Releases</a>
+      <div class="confirm"><b>✔ Confirmation signal:</b> EDMC shows your CMDR name and current system. Dock at any station and the “EDDN” indicator blips — you're on the net.</div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-h"><span class="num">02</span><div><div class="t">Install the Colonial-Survey Uplink</div><div class="s">RavenColonial plugin for EDMC</div></div><span class="chip">~5 min</span></div>
+    <div class="step-body">
+      <div class="lore"><p>The uplink is the clever bit. The instant you unload at a construction ship, it reads the depot's tally — what's required, what's aboard, how close the build is — and relays it to the cohort. That's what fills the board's manifest and keeps everyone's shopping list honest. You'll never hand-file a delivery report again.</p></div>
+      <div class="plain">
+        <ol>
+          <li>Download the latest <b>RavenColonial EDMC plugin</b> release (the <code>.zip</code>) from its GitHub.</li>
+          <li>In EDMC: <b>File → Settings → Plugins</b> tab → click <b>“Open”</b>. That opens your plugins folder:</li>
+        </ol>
+        <div class="code"><code>%LOCALAPPDATA%\EDMarketConnector\plugins</code><button class="copy" data-copy="%LOCALAPPDATA%\EDMarketConnector\plugins">⧉ COPY</button></div>
+        <ol start="3">
+          <li>Extract the zip into that folder so you end up with:
+            <div class="code"><code>plugins\Ravencolonial-EDMC\load.py</code><button class="copy" data-copy="plugins\Ravencolonial-EDMC\load.py">⧉ COPY</button></div>
+          </li>
+          <li><b>Fully close and reopen EDMC</b> (not just the window — quit it).</li>
+        </ol>
+        <div class="kv">macOS: <code>~/Library/Application Support/EDMarketConnector/plugins</code> · Linux: <code>~/.local/share/EDMarketConnector/plugins</code></div>
+      </div>
+      <a class="link" href="https://github.com/EDToolbox/EDMC-Ravencolonial/releases" target="_blank" rel="noopener">⬇ RavenColonial plugin — Releases</a>
+      <a class="link ghost" href="https://ravencolonial.com" target="_blank" rel="noopener">◉ ravencolonial.com</a>
+      <div class="confirm"><b>✔ Confirmation signal:</b> after the restart, EDMC shows a new <b>RavenColonial</b> panel/row (and a 🚧 button that lights up when you're docked at a construction ship).</div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-h"><span class="num">03</span><div><div class="t">Link Into the Cohort Build</div><div class="s">claim or join the construction site</div></div><span class="chip">in-game</span></div>
+    <div class="step-body">
+      <div class="lore"><p>Now fly to the beacon and set down on the construction ship. The uplink wakes on contact. If a Blade already broke ground here, you'll be hailed as <span class="glyph">“not yet a member”</span> — accept, and every ton you drop starts biting into the shared manifest. If <em>you're</em> the architect raising a fresh site, log the project yourself and send the coordinates back to the squad so Actual can pin it to the board.</p></div>
+      <div class="plain">
+        <ol>
+          <li>Fly to your colonization site and <b>dock at the construction ship</b> (the 🚧 button only works while docked there).</li>
+          <li><b>Joining BigSkinny's build:</b> docking at a site already tracked pops a <em>“not a member of this project”</em> prompt → <b>join it</b>. Your deliveries now pool with the cohort automatically.</li>
+          <li><b>Starting your own:</b> click <b>“🚧 Create Project”</b> → set build type + name (architect auto-fills), drop the squad Discord link → submit. The <b>ravencolonial.com</b> project page opens.</li>
+          <li><b>Send the build link</b> (the project page URL — it carries the <code>buildId</code>) into <b>#elite-dangerous</b> so it can be wired onto the board.</li>
+        </ol>
+      </div>
+      <div class="note"><b>Co-op, how it pools:</b> RavenColonial does the math server-side. You and BigSkinny both just run the uplink and be on the <b>same depot</b> — your hauls subtract off each other's remaining list. Followed fleet-carrier holds (Hazard Bedlam, Southern Draw) count too.</div>
+      <div class="confirm"><b>✔ Confirmation signal:</b> your delivery shows on the RavenColonial project page within a dock cycle — and once wired, under your commander tab on the board.</div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step provisioning">
+    <div class="step-h"><span class="num">04</span><div><div class="t">Authenticate to the Cohort Board</div><div class="s">squad channel credentials</div></div><span class="chip">issued by Actual</span></div>
+    <div class="step-body">
+      <div class="lore"><p>Last, your channel key. The board is a closed net — Onyx Blades eyes only. Southern Draw Actual issues your access token; key in once and the board opens: live manifest, supplier routes plotted, and the priority queue telling you where the fleet needs you next.</p></div>
+      <div class="plain">
+        <ol>
+          <li>Open the <b>Onyx Blades board</b> (BigSkinny will send the link — it's a private page on <b>wickdhub.com</b>).</li>
+          <li>Sign in with the <b>squad credentials</b> BigSkinny issues (gated access — likely your email + a one-time code).</li>
+          <li>You're in: cohort queue, per-commander builds, and the copy-to-nav supplier list.</li>
+        </ol>
+      </div>
+      <div class="note"><b>Provisioning:</b> this step goes live once BigSkinny stands up the board's access gate. Until then, Stages 01–03 are the whole job — they're what make your hauls count.</div>
+    </div>
+  </div>
+
+  <!-- FLIGHT CHECK -->
+  <div class="flightcheck">
+    <h3>◇ Flight Check — you're wired if…</h3>
+    <div class="fc"><span class="box">▣</span><div>EDMC is <b>running</b>, shows your CMDR + system, and blips <b>EDDN</b> when you dock. <span class="kv">(→ board can source your supplies)</span></div></div>
+    <div class="fc"><span class="box">▣</span><div>EDMC shows the <b>RavenColonial</b> panel after restart. <span class="kv">(→ uplink installed)</span></div></div>
+    <div class="fc"><span class="box">▣</span><div>Docked at the construction ship, the <b>🚧</b> button is live and you're a <b>project member</b>. <span class="kv">(→ deliveries count)</span></div></div>
+    <div class="fc"><span class="box">▣</span><div>Your delivery appears on the <b>ravencolonial.com</b> project page. <span class="kv">(→ co-op pooling works)</span></div></div>
+
+    <details class="trouble"><summary>▸ TROUBLESHOOT — if a signal won't confirm</summary>
+      <ul style="margin-top:8px">
+        <li><b>No RavenColonial panel in EDMC?</b> Check the path is exactly <code>plugins\Ravencolonial-EDMC\load.py</code> (not a doubled folder), then fully quit + reopen EDMC. Needs EDMC 5.0+.</li>
+        <li><b>🚧 button greyed out?</b> You must be <b>docked at the construction ship itself</b>, not a nearby station.</li>
+        <li><b>Deliveries not counting for the cohort?</b> Make sure you <b>joined the project</b> (accepted the “not a member” prompt) and you're on the <b>same depot</b> as BigSkinny.</li>
+        <li><b>Suppliers look stale on the board?</b> That's market age, not a fault — hit <b>⟳ Refresh</b>. Fresh data appears as Blades visit those markets with EDMC running.</li>
+        <li><b>Stuck?</b> Ping <b>BigSkinny</b> in #elite-dangerous with where the signal stalled — that feedback sharpens this manual.</li>
+      </ul>
+    </details>
+  </div>
+
+  <footer>ONYX BLADES SQUADRON · UPLINK FIELD MANUAL · EDMC (trade net) + RAVENCOLONIAL (build uplink)<br />no Claude required on your end — the relays are self-contained · questions → Southern Draw Actual</footer>
+</div>
+<div id="toast"></div>
+
+<script>
+  const $=(id)=>document.getElementById(id);
+  // theme
+  document.querySelectorAll(".theme-btn").forEach(btn=>btn.onclick=()=>{document.documentElement.dataset.theme=btn.dataset.t;document.querySelectorAll(".theme-btn").forEach(b=>b.classList.toggle("on",b===btn));});
+  // lore/plain toggle
+  function setModeLabel(){const lore=document.documentElement.dataset.mode==="lore";$("modeBtn").innerHTML=lore?`SIGNAL: <b>IN-UNIVERSE</b> <span style="opacity:.55">⇄ plain</span>`:`SIGNAL: <b>PLAIN</b> <span style="opacity:.55">⇄ in-universe</span>`;}
+  $("modeBtn").onclick=()=>{const h=document.documentElement;h.dataset.mode=h.dataset.mode==="lore"?"plain":"lore";setModeLabel();};
+  setModeLabel();
+  // copy
+  let toastT;function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("show"),2000);}
+  function copyText(t){const done=()=>toast("⧉ copied: "+t);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done).catch(()=>fb(t,done));}else fb(t,done);}
+  function fb(t,cb){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);cb();}catch(e){toast("copy blocked");}}
+  document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>copyText(b.dataset.copy));
+  // clock
+  const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let clockMode="ed";
+  function localTZ(){try{return new Intl.DateTimeFormat("en-US",{timeZoneName:"short"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "LOCAL";}}
+  function tickClock(){const d=new Date();if(clockMode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${localTZ()}`;$("clLab").textContent="LOCAL / RL";}}
+  $("clToggle").onclick=()=>{clockMode=clockMode==="ed"?"local":"ed";tickClock();};
+  tickClock();setInterval(tickClock,1000);
+</script>
+</body>
+</html>
