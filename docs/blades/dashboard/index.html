@@ -260,6 +260,17 @@
   .cbar .track2 i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-bright))}
   .cbar .cv{width:74px;text-align:right;color:var(--accent-bright)}
 </style>
+<style>
+  .buildbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:10px 14px;border-radius:var(--radius)}
+  .buildbar .bb-lab{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);text-shadow:0 0 8px var(--glow)}
+  .bb-sel{font-family:var(--font-body);font-size:12.5px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:7px 10px;min-width:240px;cursor:pointer;max-width:100%}
+  .bb-sel:focus{outline:none;border-color:var(--accent)}
+  .bb-add,.bb-go{font-family:var(--font-head);font-size:10.5px;letter-spacing:1px;padding:7px 12px;cursor:pointer;border:1px solid var(--accent-dim);background:var(--panel);color:var(--accent-bright);border-radius:var(--radius);white-space:nowrap}
+  .bb-add:hover,.bb-go:hover{background:color-mix(in srgb,var(--accent) 16%,var(--bg))}
+  .bb-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .bb-in{font-family:var(--font-body);font-size:12px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:7px 10px;min-width:300px;max-width:100%}
+  .bb-in:focus{outline:none;border-color:var(--accent)}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -280,6 +291,15 @@
     <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
   </header>
   <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
+  <div class="buildbar">
+    <span class="bb-lab">◈ BUILD</span>
+    <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
+    <button id="buildAdd" class="bb-add" title="View any build by its RavenColonial ID">＋ add ID</button>
+    <span class="bb-row" id="buildAddRow" style="display:none">
+      <input id="buildIdIn" class="bb-in" placeholder="paste RavenColonial build ID or link" autocomplete="off" />
+      <button id="buildIdGo" class="bb-go">view ▸</button>
+    </span>
+  </div>
     <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
   <div class="controls">
     <div class="dialbox">
@@ -304,7 +324,7 @@
 <script>
   const RAVEN="https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
   const ARDENT="https://api.ardent-insight.com";
-  const BUILD_ID="0031f1db-4a9c-4c6c-a928-a8c62543a409";
+  const DEFAULT_BUILD="47db4699-c5ab-4b38-b8c5-71d1bb829ff6"; let BUILD_ID=(function(){try{var _b=localStorage.getItem("ob_build");if(_b&&/^[0-9a-fA-F-]{36}$/.test(_b))return _b;}catch(e){}return DEFAULT_BUILD;})();
   const SHIP_CAP=790, PAD_REQ=3;
   // supplier ranking weights (tunable): distance-dominant; price a tiebreaker; carriers deprioritised (mobile/may vanish); stale market nudged down
   const RANK={distLY:1.0, priceCr:1/400, carrierPenalty:80, stalePenalty:25, staleHrs:72};
@@ -505,6 +525,38 @@
     run();
   })();
 
+
+  // ===== build picker (squadron registry + local; live active/completed grouping from Raven) =====
+  (function(){
+    const SEL=$("buildSel"),ADD=$("buildAdd"),ROW=$("buildAddRow"),IN=$("buildIdIn"),GO=$("buildIdGo");
+    if(!SEL) return;
+    const GUID=/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+    const getLocal=()=>{try{return JSON.parse(localStorage.getItem("ob_local_builds")||"[]");}catch(e){return [];}};
+    const setLocal=(a)=>{try{localStorage.setItem("ob_local_builds",JSON.stringify(a));}catch(e){}};
+    const setActive=(id)=>{try{localStorage.setItem("ob_build",id);}catch(e){} location.reload();};
+    const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+    const opt=(b)=>'<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+esc(b.name||b.id.slice(0,8))+(b.system?" · "+esc(b.system):"")+(b.src==="local"?"  \u25e6 local":"")+'</option>';
+    async function load(){
+      let reg=[]; try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json());reg=(j&&j.builds)||[];}catch(e){}
+      const seen={},merged=[];
+      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",status:b.status||"",src:"squad"});}});
+      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",status:b.status||"",src:"local"});}});
+      if(!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",status:"",src:"local"});}
+      await Promise.all(merged.map(async b=>{ try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject()); b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete; }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=(b.status==="completed"); } }));
+      const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete);
+      let html="";
+      if(active.length) html+='<optgroup label="Active builds">'+active.map(opt).join("")+'</optgroup>';
+      if(done.length) html+='<optgroup label="Completed \u00b7 stats only">'+done.map(opt).join("")+'</optgroup>';
+      SEL.innerHTML=html||('<option value="'+BUILD_ID+'" selected>'+BUILD_ID.slice(0,8)+'\u2026</option>');
+      SEL.onchange=()=>{ if(SEL.value&&SEL.value!==BUILD_ID) setActive(SEL.value); };
+    }
+    if(ADD) ADD.onclick=()=>{ROW.style.display=(ROW.style.display==="flex")?"none":"flex";if(IN)IN.focus();};
+    function addLocal(){ const m=(IN.value||"").match(GUID); if(!m){IN.style.borderColor="var(--bad)";return;} const id=m[0].toLowerCase();
+      const loc=getLocal(); if(!loc.some(b=>b.id===id)){loc.push({id:id,name:"",system:""});setLocal(loc);} setActive(id); }
+    if(GO) GO.onclick=addLocal;
+    if(IN) IN.addEventListener("keydown",e=>{if(e.key==="Enter")addLocal();});
+    load();
+  })();
 </script>
 </body>
 </html>
