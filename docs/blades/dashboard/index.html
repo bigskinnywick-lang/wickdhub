@@ -306,6 +306,8 @@
   const ARDENT="https://api.ardent-insight.com";
   const BUILD_ID="0031f1db-4a9c-4c6c-a928-a8c62543a409";
   const SHIP_CAP=790, PAD_REQ=3;
+  // supplier ranking weights (tunable): distance-dominant; price a tiebreaker; carriers deprioritised (mobile/may vanish); stale market nudged down
+  const RANK={distLY:1.0, priceCr:1/400, carrierPenalty:80, stalePenalty:25, staleHrs:72};
   const $=(id)=>document.getElementById(id);
   const fmt=(n)=>Number(n).toLocaleString("en-US");
   const now=()=>Date.now();
@@ -339,8 +341,9 @@
     const url=ARDENT+"/v2/system/name/"+encodeURIComponent(system)+"/commodity/name/"+encodeURIComponent(commodity)+"/nearby/exports?maxDistance=250&fleetCarriers=true";
     const r=await fetch(url); if(!r.ok) throw new Error("Ardent "+r.status);
     let list=await r.json(); if(!Array.isArray(list)) list=[];
+    const srcScore=(s)=>{let v=RANK.distLY*(s.distance||0)+RANK.priceCr*(s.buyPrice||0);if(s.stationType==='FleetCarrier')v+=RANK.carrierPenalty;const t=Date.parse(s.updatedAt);if(!isNaN(t)&&(Date.now()-t)/3.6e6>RANK.staleHrs)v+=RANK.stalePenalty;return v;};
     list.sort((a,b)=>{const ad=a.stock<=0?1:0,bd=b.stock<=0?1:0;if(ad!==bd)return ad-bd;
-      const ap=a.maxLandingPadSize<PAD_REQ?1:0,bp=b.maxLandingPadSize<PAD_REQ?1:0;if(ap!==bp)return ap-bp;return a.buyPrice-b.buyPrice;});
+      const ap=a.maxLandingPadSize<PAD_REQ?1:0,bp=b.maxLandingPadSize<PAD_REQ?1:0;if(ap!==bp)return ap-bp;return srcScore(a)-srcScore(b);});
     srcCache[key]=list; return list;
   }
 
@@ -431,7 +434,7 @@
         <div class="col"><span class="lab">Dist / Age</span><span class="val">${Math.round(s.distance)} ly · ${ageStr(s.updatedAt)}</span></div>
         <div style="grid-column:1/-1;text-align:right;margin-top:-2px">${copyBtn}</div></div>`;
     }).join('');
-    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · nearest cheap in-stock first · Large pad preferred</span><span>via Ardent /nearby/exports</span></div>${rows}</div>`;
+    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent /nearby/exports</span></div>${rows}</div>`;
   }
 
   function copyNav(sys){const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
