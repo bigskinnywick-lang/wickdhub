@@ -454,7 +454,9 @@
         <div class="col"><span class="lab">Dist / Age</span><span class="val">${Math.round(s.distance)} ly · ${ageStr(s.updatedAt)}</span></div>
         <div style="grid-column:1/-1;text-align:right;margin-top:-2px">${copyBtn}</div></div>`;
     }).join('');
-    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent /nearby/exports</span></div>${rows}</div>`;
+    const allCarr=list.every(s=>s.stationType==='FleetCarrier');
+    const carrNote=allCarr?`<div style="padding:8px 10px;margin:2px 0 6px;font-size:11.5px;color:var(--warn);border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 9%,transparent)">⚠ No stations sell ${name} within range — <b>fleet carriers only</b> (mobile · stock &amp; price can shift; grab it while it's there). Nearest sensible carrier shown first.</div>`:'';
+    return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent /nearby/exports</span></div>${carrNote}${rows}</div>`;
   }
 
   function copyNav(sys){const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
@@ -526,35 +528,44 @@
   })();
 
 
-  // ===== build picker (squadron registry + local; live active/completed grouping from Raven) =====
+  // ===== build picker (KV registry + local; live active/completed grouping from Raven) =====
   (function(){
     const SEL=$("buildSel"),ADD=$("buildAdd"),ROW=$("buildAddRow"),IN=$("buildIdIn"),GO=$("buildIdGo");
     if(!SEL) return;
+    const API="/blades/api/builds";
     const GUID=/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
     const getLocal=()=>{try{return JSON.parse(localStorage.getItem("ob_local_builds")||"[]");}catch(e){return [];}};
     const setLocal=(a)=>{try{localStorage.setItem("ob_local_builds",JSON.stringify(a));}catch(e){}};
     const setActive=(id)=>{try{localStorage.setItem("ob_build",id);}catch(e){} location.reload();};
-    const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
-    const opt=(b)=>'<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+esc(b.name||b.id.slice(0,8))+(b.system?" · "+esc(b.system):"")+(b.src==="local"?"  \u25e6 local":"")+'</option>';
+    const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+    const opt=(b)=>'<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+esc(b.name||b.id.slice(0,8))+(b.system?" \u00b7 "+esc(b.system):"")+(b.src==="local"?"  \u25e6 local":"")+'</option>';
+    async function fetchList(){
+      try{const j=await fetch(API,{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); if(j&&Array.isArray(j.builds)) return j.builds;}catch(e){}
+      try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json()); return (j&&j.builds)||[];}catch(e){}
+      return [];
+    }
     async function load(){
-      let reg=[]; try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json());reg=(j&&j.builds)||[];}catch(e){}
+      const reg=await fetchList();
       const seen={},merged=[];
-      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",status:b.status||"",src:"squad"});}});
-      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",status:b.status||"",src:"local"});}});
-      if(!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",status:"",src:"local"});}
-      await Promise.all(merged.map(async b=>{ try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject()); b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete; }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=(b.status==="completed"); } }));
+      reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad"});}});
+      getLocal().forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"local"});}});
+      if(!seen[BUILD_ID]){merged.push({id:BUILD_ID,name:"",system:"",src:"local"});}
+      await Promise.all(merged.map(async b=>{ try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject()); b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete; }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; } }));
       const active=merged.filter(b=>!b.complete), done=merged.filter(b=>b.complete);
       let html="";
       if(active.length) html+='<optgroup label="Active builds">'+active.map(opt).join("")+'</optgroup>';
+      else html+='<option disabled>\u2014 no active builds \u00b7 use \uff0b add ID \u2014</option>';
       if(done.length) html+='<optgroup label="Completed \u00b7 stats only">'+done.map(opt).join("")+'</optgroup>';
-      SEL.innerHTML=html||('<option value="'+BUILD_ID+'" selected>'+BUILD_ID.slice(0,8)+'\u2026</option>');
+      SEL.innerHTML=html;
       SEL.onchange=()=>{ if(SEL.value&&SEL.value!==BUILD_ID) setActive(SEL.value); };
     }
     if(ADD) ADD.onclick=()=>{ROW.style.display=(ROW.style.display==="flex")?"none":"flex";if(IN)IN.focus();};
-    function addLocal(){ const m=(IN.value||"").match(GUID); if(!m){IN.style.borderColor="var(--bad)";return;} const id=m[0].toLowerCase();
-      const loc=getLocal(); if(!loc.some(b=>b.id===id)){loc.push({id:id,name:"",system:""});setLocal(loc);} setActive(id); }
-    if(GO) GO.onclick=addLocal;
-    if(IN) IN.addEventListener("keydown",e=>{if(e.key==="Enter")addLocal();});
+    async function addBuild(){ const m=(IN.value||"").match(GUID); if(!m){IN.style.borderColor="var(--bad)";return;} const id=m[0].toLowerCase();
+      let shared=false; try{ const r=await fetch(API,{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({id:id})}); shared=r.ok; }catch(e){}
+      if(!shared){ const loc=getLocal(); if(!loc.some(b=>b.id===id)){loc.push({id:id,name:"",system:""});setLocal(loc);} }
+      setActive(id); }
+    if(GO) GO.onclick=addBuild;
+    if(IN) IN.addEventListener("keydown",e=>{if(e.key==="Enter")addBuild();});
     load();
   })();
 </script>
