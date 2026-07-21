@@ -414,7 +414,7 @@
   }
 
   function render(p){
-    PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||"";
+    PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||""; window.LAST_REFRESH_TS=Date.now();
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
     const carriers=(p.linkedFC||[]).map(f=>`<div class="contrib"><div class="who">${f.displayName||f.name}<small>market ${f.marketId}</small></div><div><div class="amt">${(f.sales||[]).length} sell</div><div class="commit">linked carrier</div></div></div>`).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
@@ -433,7 +433,7 @@
         </div>
         <div class="prog-top"><span>CONSTRUCTION PROGRESS</span><b>${pct}%</b></div>
         <div class="bar"><i style="width:${pct}%"></i></div>
-        <h2 style="margin-top:22px">Shopping List — Remaining Haul<span class="h2r"><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
+        <h2 style="margin-top:22px">Shopping List — Remaining Haul<span class="h2r"><span class="last-refresh" id="lastRefresh" style="font-size:10px;letter-spacing:.5px;color:var(--muted);margin-right:10px;font-variant-numeric:tabular-nums"></span><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
         <div style="font-size:10.5px;color:var(--muted);margin:-8px 0 8px">Live from RavenColonial. Click a commodity → live Ardent suppliers near ${p.systemName}. ⧉ copies the system to your nav computer.</div>
         <table><thead><tr><th>Commodity</th><th class="num">Remaining</th><th class="num">Trips*</th></tr></thead><tbody id="clBody">${commodityRows(p)}</tbody></table>
       </div>
@@ -571,7 +571,10 @@
   // ===== galactic clock =====
   (function(){const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let mode="ed";try{var _cm=localStorage.getItem("ob_clock");if(_cm==="ed"||_cm==="local")mode=_cm;}catch(e){}
     function tz(){try{return new Intl.DateTimeFormat("en-US",{timeZoneName:"short"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "LOCAL";}}
-    function tick(){const d=new Date();if(mode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${tz()}`;$("clLab").textContent="LOCAL / RL";}}
+    function fmtStamp(d){return mode==="ed"?`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`:`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${tz()}`;}
+    function paintRefresh(){var el=$("lastRefresh");if(el)el.textContent=window.LAST_REFRESH_TS?("↻ synced "+fmtStamp(new Date(window.LAST_REFRESH_TS))):"";}
+    window._obPaintRefresh=paintRefresh;
+    function tick(){const d=new Date();$("clTime").textContent=fmtStamp(d);$("clLab").textContent=mode==="ed"?"GALACTIC":"LOCAL / RL";paintRefresh();}
     $("clToggle").onclick=()=>{mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};tick();setInterval(tick,1000);})();
 
   // ===== Cloudflare Access identity =====
@@ -637,7 +640,7 @@
       }catch(e){}
       if(BUILD_ID){
         try{
-          const p=await loadProject();
+          const p=await loadProject(); window.LAST_REFRESH_TS=Date.now();
           const tag=p.eTag||p.timestamp||"";
           if(tag!==LAST_ETAG){
             render(p); stampIfNeeded(p);
