@@ -299,6 +299,7 @@
       <button id="buildIdGo" class="bb-go">view ▸</button>
     </span>
     <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
+    <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
   </div>
   <div class="controls">
     <div class="dialbox">
@@ -385,6 +386,8 @@
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;
       const tp=$("testPilotBtn"); if(tp&&CMDR[em])tp.style.display="";  // shakedown crew only
     }).catch(()=>{});})();
+// ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
+  (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{const ab=$("adminBtn");if(ab&&a&&a.isAdmin)ab.style.display="";}).catch(()=>{});})();
 // ===== theme dial =====
   (function(){
     const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-55},{t:"cyan",n:"FLEET TACTICAL",a:0},{t:"onyx",n:"ONYX BLADE",a:55}];

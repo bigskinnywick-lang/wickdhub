@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ONYX BLADES · Admin Console</title>
+<style>
+  :root{--bg:#0d0906;--panel:#161009;--panel2:#1d1509;--line:#3a2a17;--text:#e8dcc8;--muted:#9c8a6e;--amber:#f0a828;--amber-b:#ffc95e;--ok:#39d353;--bad:#ff5c5c;--violet:#b06bff;--cyan:#4fd6e0}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.6 "Share Tech Mono","Consolas",monospace;padding:20px 16px 90px}
+  .wrap{max-width:1180px;margin:0 auto}
+  a{color:var(--cyan)}
+  .topstrip{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;letter-spacing:1.5px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:14px;background:var(--panel)}
+  .topstrip .sep{color:var(--line)}
+  .topstrip b{color:var(--amber-b)}
+  .topstrip a.chip{color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:4px 9px;border-radius:4px}
+  .topstrip a.chip:hover{border-color:var(--amber);color:var(--amber-b)}
+  #signOut{margin-left:auto;cursor:pointer;color:var(--muted);border:1px solid var(--line);padding:4px 9px;border-radius:4px}
+  h1{font-size:19px;letter-spacing:3px;color:var(--amber-b);margin:0 0 2px}
+  .sub{font-size:11px;letter-spacing:2px;color:var(--muted);margin-bottom:18px}
+  .nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .nav a{font-size:10.5px;letter-spacing:1.5px;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:5px 10px;border-radius:4px}
+  .nav a:hover{border-color:var(--amber);color:var(--amber-b)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:6px;margin:0 0 16px;padding:14px 18px}
+  .panel h2{font-size:13px;letter-spacing:2.5px;color:var(--amber-b);margin:0 0 3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .panel .desc{font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:12px}
+  .panel h2 .count{font-size:10.5px;color:var(--muted);letter-spacing:1px;border:1px solid var(--line);border-radius:10px;padding:1px 8px}
+  button,.btn{font-family:inherit;font-size:11.5px;letter-spacing:1px;color:var(--amber-b);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:6px 12px;cursor:pointer}
+  button:hover,.btn:hover{border-color:var(--amber)}
+  button.danger{color:var(--bad);border-color:#5a2020}
+  button.danger:hover{border-color:var(--bad)}
+  button.go{color:#0d0906;background:var(--amber);border-color:var(--amber)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  input,select{font-family:inherit;font-size:12px;color:var(--text);background:#0f0b06;border:1px solid var(--line);border-radius:4px;padding:5px 8px}
+  input:focus,select:focus{outline:none;border-color:var(--amber)}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+  th{text-align:left;color:var(--muted);font-weight:normal;letter-spacing:1px;border-bottom:1px solid var(--line);padding:6px 8px;font-size:10.5px}
+  td{padding:6px 8px;border-bottom:1px dashed var(--line);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .mono{font-size:11px;color:var(--muted)}
+  .id{font-size:10.5px;color:var(--muted)}
+  .pill{display:inline-block;font-size:10px;letter-spacing:.5px;padding:1px 7px;border-radius:9px;border:1px solid var(--line)}
+  .pill.ok{color:var(--ok);border-color:#1f5a2a}
+  .pill.warn{color:var(--amber-b);border-color:#5a4420}
+  .pill.bad{color:var(--bad);border-color:#5a2020}
+  .pill.info{color:var(--cyan);border-color:#20505a}
+  .rowbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .empty{color:var(--muted);font-size:11.5px;padding:8px 0}
+  .warnbox{border-left:3px solid var(--bad);background:rgba(255,92,92,.05);padding:8px 12px;margin:8px 0;font-size:12px;color:var(--muted)}
+  .warnbox b{color:var(--bad)}
+  .okbox{border-left:3px solid var(--ok);background:rgba(57,211,83,.06);padding:8px 12px;margin:8px 0;font-size:12px;color:var(--muted)}
+  .okbox b{color:var(--ok)}
+  .pulse-row{display:flex;gap:18px;flex-wrap:wrap}
+  .pulse{display:flex;align-items:center;gap:8px;font-size:12px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+  .dot.ok{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+  .dot.bad{background:var(--bad);box-shadow:0 0 6px var(--bad)}
+  .dot.idle{background:var(--muted)}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--amber);color:var(--amber-b);padding:10px 18px;border-radius:6px;font-size:12px;letter-spacing:1px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;max-width:90vw}
+  #toast.show{opacity:1}
+  #toast.bad{border-color:var(--bad);color:var(--bad)}
+  .hint{font-size:10.5px;color:var(--muted);margin-top:6px}
+  /* gate states */
+  #resolving,#restricted,#console{display:none}
+  body[data-state="resolving"] #resolving{display:block}
+  body[data-state="restricted"] #restricted{display:block}
+  body[data-state="console"] #console{display:block}
+  .restricted-panel{border-left-color:var(--bad)}
+  .restricted-panel h2{color:var(--bad)}
+  code{color:var(--amber-b);background:rgba(240,168,40,.08);padding:1px 5px;border-radius:3px}
+  .subtle{color:var(--muted)}
+</style>
+</head>
+<body data-state="resolving">
+<div class="wrap">
+
+  <!-- shared-ish chrome -->
+  <div class="topstrip">
+    <a class="chip" href="/blades/commander/">◂ MY STATS</a>
+    <span>⚙ ADMIN CONSOLE</span>
+    <span class="sep">·</span>
+    <span>ADMIN: <b id="meEmail">—</b></span>
+    <span id="signOut">SIGN OUT</span>
+  </div>
+
+  <!-- RESOLVING -->
+  <div id="resolving" class="panel"><div class="desc">Resolving admin credentials…</div></div>
+
+  <!-- RESTRICTED -->
+  <div id="restricted" class="panel restricted-panel">
+    <h2>RESTRICTED · ADMIN ONLY</h2>
+    <div class="desc">This console manages the squadron registry backend. Your account (<b id="restrictedEmail" class="subtle">—</b>) is authenticated to the Blades site but is not on the admin roster. If you need access, ask an existing admin to add you.</div>
+    <a class="btn" href="/blades/dashboard/" style="text-decoration:none">◂ BACK TO THE BOARD</a>
+  </div>
+
+  <!-- CONSOLE -->
+  <div id="console">
+    <h1>ADMIN CONSOLE</h1>
+    <div class="sub">ONYX BLADES REGISTRY · KV NAMESPACE <code>onyx_builds</code> · for when things go sideways</div>
+
+    <div class="nav">
+      <a href="#pulse">◈ PULSE</a>
+      <a href="#backup">⤓ BACKUP</a>
+      <a href="#builds">▤ BUILDS</a>
+      <a href="#claims">◇ CLAIMS</a>
+      <a href="#integrity">⚑ INTEGRITY</a>
+      <a href="#stale">◷ STALE</a>
+      <a href="#admins">☗ ADMINS</a>
+    </div>
+
+    <!-- PULSE -->
+    <div class="panel" id="pulse">
+      <h2>◈ LIVE PULSE <button id="pulseRefresh" style="margin-left:auto">↻ ping</button></h2>
+      <div class="desc">Reachability of the data sources the board depends on.</div>
+      <div class="pulse-row" id="pulseRow">
+        <div class="pulse"><span class="dot idle" id="dot-reg"></span><span>REGISTRY <span class="subtle" id="ms-reg">—</span></span></div>
+        <div class="pulse"><span class="dot idle" id="dot-raven"></span><span>RAVENCOLONIAL <span class="subtle" id="ms-raven">—</span></span></div>
+        <div class="pulse"><span class="dot idle" id="dot-ardent"></span><span>ARDENT <span class="subtle" id="ms-ardent">—</span></span></div>
+      </div>
+    </div>
+
+    <!-- BACKUP -->
+    <div class="panel" id="backup">
+      <h2>⤓ BACKUP &amp; RECOVERY</h2>
+      <div class="desc">The whole namespace is a few kilobytes. Download a snapshot, drop the JSON into the repo <code>backups/</code> folder, and push via GitHub Desktop — git becomes the versioned, diffable, offsite backup. A weekly scheduled task does this automatically; this button is the on-demand version.</div>
+      <div class="toolbar">
+        <button class="go" id="btnBackup">⤓ DOWNLOAD BACKUP</button>
+        <span class="subtle" id="backupInfo"></span>
+      </div>
+      <div style="border-top:1px dashed var(--line);margin:14px 0 12px"></div>
+      <div class="desc"><b class="subtle">RESTORE</b> — load a backup JSON to recover. <b>Merge</b> writes only the keys in the file (safe). <b>Replace</b> wipes the namespace first, then restores (disaster recovery only — requires typing to confirm).</div>
+      <div class="toolbar">
+        <input type="file" id="restoreFile" accept="application/json,.json" />
+        <select id="restoreMode"><option value="merge">merge (safe)</option><option value="replace">replace (wipe first)</option></select>
+        <button id="btnRestore" disabled>RESTORE</button>
+      </div>
+      <div id="restorePreview"></div>
+    </div>
+
+    <!-- BUILDS -->
+    <div class="panel" id="builds">
+      <h2>▤ BUILD REGISTRY <span class="count" id="buildCount">—</span> <button id="buildsRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">Raw KV build records. Edit stamps &amp; attribution inline, or delete a record. <span class="subtle">Un-check "done" and save to un-stamp a build completed in error.</span></div>
+      <div id="buildsTbl"><div class="empty">loading…</div></div>
+    </div>
+
+    <!-- CLAIMS -->
+    <div class="panel" id="claims">
+      <h2>◇ CLAIMS LEDGER <span class="count" id="claimCount">—</span> <button id="claimsRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">Architect attribution ledger (<code>claim:{systemAddress}</code>). Correct a bad attribution or remove a stale claim.</div>
+      <div class="toolbar">
+        <input id="clSys" placeholder="systemAddress (digits)" style="width:180px" />
+        <input id="clArch" placeholder="architect CMDR" style="width:150px" />
+        <input id="clName" placeholder="system name (optional)" style="width:160px" />
+        <button id="clAdd" class="go">+ upsert claim</button>
+      </div>
+      <div id="claimsTbl"><div class="empty">loading…</div></div>
+    </div>
+
+    <!-- INTEGRITY -->
+    <div class="panel" id="integrity">
+      <h2>⚑ INTEGRITY SCAN <button id="btnIntegrity" style="margin-left:auto">▷ run scan</button></h2>
+      <div class="desc">On-demand cross-check against RavenColonial (one call per build — not run automatically). Flags orphan builds (Raven 404), unresolved fallback attribution, claims with no matching active build, and non-standard junk keys.</div>
+      <div id="integrityOut"><div class="empty subtle">Not yet run.</div></div>
+    </div>
+
+    <!-- STALE -->
+    <div class="panel" id="stale">
+      <h2>◷ STALE INGEST <button id="staleRefresh" style="margin-left:auto">↻ recompute</button></h2>
+      <div class="desc">Active (un-completed) builds whose registry record hasn't been touched in a while — something may have stopped reporting.</div>
+      <div class="toolbar">older than
+        <select id="staleDays"><option value="7">7 days</option><option value="14" selected>14 days</option><option value="30">30 days</option><option value="60">60 days</option></select>
+      </div>
+      <div id="staleTbl"><div class="empty">—</div></div>
+    </div>
+
+    <!-- ADMINS -->
+    <div class="panel" id="admins">
+      <h2>☗ ADMIN ROSTER <span class="count" id="adminCount">—</span></h2>
+      <div class="desc">Who can see the ⚙ ADMIN chip and use these routes. The owner is permanent and can never be removed or locked out. Adding the first admin here creates the <code>admin:emails</code> KV key.</div>
+      <div class="toolbar">
+        <input id="adEmail" placeholder="email to grant admin" style="width:240px" />
+        <button id="adAdd" class="go">+ add admin</button>
+      </div>
+      <div id="adminsTbl"><div class="empty">loading…</div></div>
+    </div>
+
+    <div class="sub" style="margin-top:20px;text-align:center">ONYX BLADES · ADMIN CONSOLE v1.0 · admin-gated over the Access-gated /blades surface · o7</div>
+  </div><!-- /console -->
+</div>
+
+<div id="toast"></div>
+
+<script>
+const RAVEN="https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
+const ARDENT="https://api.ardent-insight.com";
+const OWNER="bigskinnywick@gmail.com";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let TOASTT;
+function toast(msg,bad){const t=$("toast");t.textContent=msg;t.className="show"+(bad?" bad":"");clearTimeout(TOASTT);TOASTT=setTimeout(()=>t.className="",3200);}
+function fmtTs(ts){if(!ts)return "—";const d=new Date(Number(ts));const p=n=>String(n).padStart(2,"0");return d.getUTCFullYear()+"-"+p(d.getUTCMonth()+1)+"-"+p(d.getUTCDate())+" "+p(d.getUTCHours())+":"+p(d.getUTCMinutes())+"Z";}
+function ago(ts){if(!ts)return "";const s=(Date.now()-Number(ts))/1000;if(s<3600)return Math.round(s/60)+"m ago";if(s<86400)return Math.round(s/3600)+"h ago";return Math.round(s/86400)+"d ago";}
+async function api(method,url,body){
+  const opt={method,credentials:"same-origin",headers:{}};
+  if(body!==undefined){opt.headers["content-type"]="application/json";opt.body=JSON.stringify(body);}
+  const r=await fetch(url,opt);
+  let d=null; try{d=await r.json();}catch(e){}
+  if(!r.ok||(d&&d.ok===false)){throw new Error((d&&d.error)||("HTTP "+r.status));}
+  return d;
+}
+
+// ---------- boot / gate ----------
+let BUILDS=[], CLAIMS=[], ADMINS=[];
+(async function boot(){
+  let d;
+  try{ d=await fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject(new Error("HTTP "+r.status))); }
+  catch(e){ document.body.dataset.state="restricted"; $("restrictedEmail").textContent="unknown — "+e.message; return; }
+  $("meEmail").textContent=d.me||"—";
+  if(!d.isAdmin){ $("restrictedEmail").textContent=d.me||"unknown"; document.body.dataset.state="restricted"; return; }
+  ADMINS=d.admins||[];
+  document.body.dataset.state="console";
+  renderAdmins();
+  loadBuilds(); loadClaims(); pulse();
+})();
+$("signOut").onclick=()=>{location.href="https://bigskinnywick.cloudflareaccess.com/cdn-cgi/access/logout";};
+
+// ---------- pulse ----------
+async function timedFetch(url,opt){const t0=Date.now();try{const r=await fetch(url,opt);return {ok:r.ok,ms:Date.now()-t0,status:r.status};}catch(e){return {ok:false,ms:Date.now()-t0,err:e.message};}}
+function setDot(id,msId,res,idleNote){const dot=$(id),ms=$(msId);if(!res){dot.className="dot idle";ms.textContent=idleNote||"idle";return;}dot.className="dot "+(res.ok?"ok":"bad");ms.textContent=(res.ok?res.ms+"ms":(res.err?"unreachable":"HTTP "+res.status));}
+async function pulse(){
+  $("pulseRefresh").disabled=true;
+  setDot("dot-reg","ms-reg",await timedFetch("/blades/api/builds",{credentials:"same-origin"}));
+  const probe=BUILDS.find(b=>b.id);
+  if(probe) setDot("dot-raven","ms-raven",await timedFetch(RAVEN+"/api/project/"+probe.id));
+  else setDot("dot-raven","ms-raven",null,"no build to probe");
+  setDot("dot-ardent","ms-ardent",await timedFetch(ARDENT+"/v2/system/name/Sol/commodity/name/Gold/nearby/exports?maxDistance=20&fleetCarriers=false"));
+  $("pulseRefresh").disabled=false;
+}
+$("pulseRefresh").onclick=pulse;
+
+// ---------- builds ----------
+async function loadBuilds(){
+  try{ const d=await api("GET","/blades/api/builds"); BUILDS=d.builds||[]; }
+  catch(e){ $("buildsTbl").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; return; }
+  $("buildCount").textContent=BUILDS.length;
+  renderBuilds(); renderStale();
+}
+function renderBuilds(){
+  if(!BUILDS.length){$("buildsTbl").innerHTML='<div class="empty">No builds in the registry.</div>';return;}
+  const rows=BUILDS.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).map(b=>{
+    const done=b.completedTs?'<span class="pill ok">done</span>':'<span class="pill info">active</span>';
+    const src=b.architectSource?('<span class="pill '+(b.architectSource==='fallback'?'bad':'ok')+'">'+esc(b.architectSource)+'</span>'):'';
+    return `<tr data-id="${esc(b.id)}">
+      <td><div>${esc(b.name)||'<span class="subtle">(unnamed)</span>'}</div><div class="id">${esc(b.id)}</div></td>
+      <td>${esc(b.system)}</td>
+      <td>${esc(b.architect)||'<span class="subtle">—</span>'} ${src}</td>
+      <td>${done}</td>
+      <td class="mono">${b.tons!=null?esc(b.tons)+' t':'—'}</td>
+      <td class="mono" title="${fmtTs(b.ts)}">${b.ts?ago(b.ts):'—'}</td>
+      <td><div class="rowbtns"><button data-act="edit">edit</button><button class="danger" data-act="del">del</button></div></td>
+    </tr>`;
+  }).join("");
+  $("buildsTbl").innerHTML=`<table><thead><tr><th>NAME / ID</th><th>SYSTEM</th><th>ARCHITECT</th><th>STATE</th><th>TONS</th><th>UPDATED</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  $("buildsTbl").querySelectorAll("button").forEach(btn=>btn.onclick=onBuildAct);
+}
+function onBuildAct(e){
+  const tr=e.target.closest("tr"), id=tr.dataset.id, act=e.target.dataset.act;
+  const b=BUILDS.find(x=>x.id===id); if(!b)return;
+  if(act==="del"){ if(!confirm("Delete build record?\n"+(b.name||id)+"\n\nThis removes it from the registry (Raven still holds the project).")) return; api("DELETE","/blades/api/builds",{id}).then(()=>{toast("build deleted");loadBuilds();}).catch(err=>toast(err.message,true)); return; }
+  if(act==="edit"){ openBuildEdit(tr,b); }
+}
+function openBuildEdit(tr,b){
+  tr.innerHTML=`<td colspan="7">
+    <div class="toolbar" style="margin-bottom:6px">
+      <label class="subtle">name <input data-f="name" value="${esc(b.name)}" style="width:150px"></label>
+      <label class="subtle">system <input data-f="system" value="${esc(b.system)}" style="width:150px"></label>
+      <label class="subtle">architect <input data-f="architect" value="${esc(b.architect)}" style="width:140px"></label>
+      <label class="subtle">src <input data-f="architectSource" value="${esc(b.architectSource)}" style="width:90px"></label>
+      <label class="subtle">tons <input data-f="tons" value="${b.tons!=null?esc(b.tons):''}" style="width:70px"></label>
+    </div>
+    <div class="toolbar">
+      <label class="subtle"><input type="checkbox" data-f="verified" ${b.verified?'checked':''}> verified</label>
+      <label class="subtle"><input type="checkbox" data-f="done" ${b.completedTs?'checked':''}> done (completed)</label>
+      <span class="id">${esc(b.id)}</span>
+      <button class="go" data-act="save">save</button>
+      <button data-act="cancel">cancel</button>
+    </div></td>`;
+  tr.querySelector('[data-act="cancel"]').onclick=renderBuilds;
+  tr.querySelector('[data-act="save"]').onclick=()=>{
+    const g=f=>tr.querySelector('[data-f="'+f+'"]');
+    const patch={id:b.id}, unset=[];
+    const name=g("name").value.trim(), system=g("system").value.trim(), arch=g("architect").value.trim();
+    if(name)patch.name=name; if(system)patch.system=system;
+    if(arch){patch.architect=arch;patch.architectSource=g("architectSource").value.trim()||"admin";patch.verified=g("verified").checked;}
+    else if(b.architect){unset.push("architect","architectSource","verified");}
+    const tonsRaw=g("tons").value.trim();
+    if(tonsRaw!==""){patch.tons=Number(tonsRaw);} else if(b.tons!=null){unset.push("tons");}
+    const done=g("done").checked;
+    if(done&&!b.completedTs){patch.completedTs=Date.now();}
+    else if(!done&&b.completedTs){unset.push("completedTs");}
+    if(unset.length)patch.unset=unset;
+    api("PATCH","/blades/api/builds",patch).then(()=>{toast("build saved");loadBuilds();}).catch(err=>toast(err.message,true));
+  };
+}
+$("buildsRefresh").onclick=loadBuilds;
+
+// ---------- claims ----------
+async function loadClaims(){
+  try{ const d=await api("GET","/blades/api/claims"); CLAIMS=d.claims||[]; }
+  catch(e){ $("claimsTbl").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; return; }
+  $("claimCount").textContent=CLAIMS.length;
+  renderClaims();
+}
+function renderClaims(){
+  if(!CLAIMS.length){$("claimsTbl").innerHTML='<div class="empty">No claims in the ledger.</div>';return;}
+  const rows=CLAIMS.slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).map(c=>`<tr data-sa="${esc(c.systemAddress)}">
+    <td class="mono">${esc(c.systemAddress)}</td>
+    <td>${esc(c.architect)}</td>
+    <td>${esc(c.system)||'<span class="subtle">—</span>'}</td>
+    <td><span class="pill info">${esc(c.via)||'—'}</span></td>
+    <td class="mono" title="${fmtTs(c.ts)}">${c.ts?ago(c.ts):'—'}</td>
+    <td><button class="danger" data-act="del">del</button></td></tr>`).join("");
+  $("claimsTbl").innerHTML=`<table><thead><tr><th>SYSTEMADDRESS</th><th>ARCHITECT</th><th>SYSTEM</th><th>VIA</th><th>SET</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  $("claimsTbl").querySelectorAll('[data-act="del"]').forEach(btn=>btn.onclick=e=>{
+    const sa=e.target.closest("tr").dataset.sa;
+    if(!confirm("Delete claim for systemAddress "+sa+"?")) return;
+    api("DELETE","/blades/api/claims",{systemAddress:sa}).then(()=>{toast("claim deleted");loadClaims();}).catch(err=>toast(err.message,true));
+  });
+}
+$("clAdd").onclick=()=>{
+  const systemAddress=$("clSys").value.trim(), architect=$("clArch").value.trim(), system=$("clName").value.trim();
+  if(!/^\d{1,20}$/.test(systemAddress))return toast("systemAddress must be digits",true);
+  if(!architect)return toast("architect required",true);
+  api("PUT","/blades/api/claims",{systemAddress,architect,system}).then(()=>{toast("claim upserted");$("clSys").value=$("clArch").value=$("clName").value="";loadClaims();}).catch(err=>toast(err.message,true));
+};
+$("claimsRefresh").onclick=loadClaims;
+
+// ---------- integrity ----------
+async function pool(items,n,fn){const out=[];let i=0;const workers=Array.from({length:Math.min(n,items.length)},async()=>{while(i<items.length){const idx=i++;out[idx]=await fn(items[idx],idx);}});await Promise.all(workers);return out;}
+$("btnIntegrity").onclick=async()=>{
+  $("btnIntegrity").disabled=true;
+  $("integrityOut").innerHTML='<div class="empty subtle">Scanning '+BUILDS.length+' builds against RavenColonial…</div>';
+  const results=await pool(BUILDS,4,async b=>{
+    const r=await fetch(RAVEN+"/api/project/"+b.id).catch(()=>null);
+    let sysAddr=null, exists=false;
+    if(r&&r.ok){exists=true;try{const j=await r.json();sysAddr=j.systemAddress!=null?String(j.systemAddress):null;}catch(e){}}
+    else if(r&&r.status===404){exists=false;}
+    else {exists=null;} // network/other — unknown
+    return {b,exists,sysAddr};
+  });
+  const orphans=results.filter(x=>x.exists===false);
+  const unknown=results.filter(x=>x.exists===null);
+  const fallback=BUILDS.filter(b=>b.architectSource==="fallback");
+  const activeSA=new Set(results.filter(x=>x.exists&&x.sysAddr).map(x=>x.sysAddr));
+  const staleClaims=CLAIMS.filter(c=>!activeSA.has(String(c.systemAddress)));
+  // junk keys via export other{}
+  let junk=[];
+  try{const ex=await api("GET","/blades/api/export");junk=Object.keys(ex.other||{});}catch(e){}
+
+  const sec=(title,cls,items,render)=>items.length?`<div class="${cls}"><b>${title} (${items.length})</b><div style="margin-top:6px">${items.map(render).join("")}</div></div>`:"";
+  const clean=!orphans.length&&!fallback.length&&!staleClaims.length&&!junk.length;
+  $("integrityOut").innerHTML=
+    (clean?'<div class="okbox"><b>All clear.</b> No orphan builds, all attributions resolved, no stray claims or junk keys.</div>':"")+
+    sec("ORPHAN BUILDS — Raven project 404s","warnbox",orphans,x=>`<div>· ${esc(x.b.name||x.b.id)} <span class="id">${esc(x.b.id)}</span> — delete from registry? (edit row above)</div>`)+
+    sec("UNRESOLVED FALLBACK ATTRIBUTION","warnbox",fallback,b=>`<div>· ${esc(b.name||b.id)} — architect <code>${esc(b.architect)}</code> is a fallback; fix via claims or the build editor</div>`)+
+    sec("STRAY CLAIMS — no matching active build","warnbox",staleClaims,c=>`<div>· sysAddr <span class="mono">${esc(c.systemAddress)}</span> → ${esc(c.architect)} (${esc(c.system)||'?'}) — stale if that system is no longer active</div>`)+
+    sec("NON-STANDARD KEYS","warnbox",junk,k=>`<div>· <span class="mono">${esc(k)}</span></div>`)+
+    (unknown.length?`<div class="hint">Note: ${unknown.length} build(s) couldn't be checked (Raven unreachable / network) — re-run when the pulse is green.</div>`:"");
+  $("btnIntegrity").disabled=false;
+};
+
+// ---------- stale ----------
+function renderStale(){
+  const days=Number($("staleDays").value), cut=Date.now()-days*86400000;
+  const stale=BUILDS.filter(b=>!b.completedTs&&b.ts&&b.ts<cut).sort((a,b)=>(a.ts||0)-(b.ts||0));
+  if(!stale.length){$("staleTbl").innerHTML='<div class="empty">No active builds older than '+days+' days. ✔</div>';return;}
+  const rows=stale.map(b=>`<tr><td>${esc(b.name||b.id)}<div class="id">${esc(b.id)}</div></td><td>${esc(b.system)}</td><td>${esc(b.architect)||'<span class="subtle">—</span>'}</td><td class="mono" title="${fmtTs(b.ts)}">${ago(b.ts)}</td></tr>`).join("");
+  $("staleTbl").innerHTML=`<table><thead><tr><th>NAME / ID</th><th>SYSTEM</th><th>ARCHITECT</th><th>LAST UPDATE</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+$("staleRefresh").onclick=renderStale;
+$("staleDays").onchange=renderStale;
+
+// ---------- admins ----------
+function renderAdmins(){
+  $("adminCount").textContent=ADMINS.length;
+  const rows=ADMINS.map(e=>{const owner=e===OWNER;return `<tr><td>${esc(e)} ${owner?'<span class="pill ok">owner</span>':''}</td><td>${owner?'<span class="subtle">permanent</span>':'<button class="danger" data-e="'+esc(e)+'">remove</button>'}</td></tr>`;}).join("");
+  $("adminsTbl").innerHTML=`<table><thead><tr><th>EMAIL</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  $("adminsTbl").querySelectorAll("button[data-e]").forEach(btn=>btn.onclick=e=>{
+    const email=e.target.dataset.e;
+    if(!confirm("Remove admin "+email+"?")) return;
+    api("DELETE","/blades/api/admins",{email}).then(d=>{ADMINS=d.admins||[];renderAdmins();toast("admin removed");}).catch(err=>toast(err.message,true));
+  });
+}
+$("adAdd").onclick=()=>{
+  const email=$("adEmail").value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("invalid email",true);
+  api("PUT","/blades/api/admins",{email}).then(d=>{ADMINS=d.admins||[];renderAdmins();$("adEmail").value="";toast("admin added");}).catch(err=>toast(err.message,true));
+};
+
+// ---------- backup / restore ----------
+$("btnBackup").onclick=async()=>{
+  $("btnBackup").disabled=true;
+  try{
+    const data=await api("GET","/blades/api/export");
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const d=new Date(data.exportedTs||Date.now()),p=n=>String(n).padStart(2,"0");
+    const fname=`onyx_builds_backup_${d.getUTCFullYear()}-${p(d.getUTCMonth()+1)}-${p(d.getUTCDate())}_${p(d.getUTCHours())}${p(d.getUTCMinutes())}Z.json`;
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
+    $("backupInfo").textContent=`${data.buildCount} builds · ${data.claimCount} claims · saved ${fname}`;
+    toast("backup downloaded — drop it in repo backups/ and push");
+  }catch(e){toast("export failed: "+e.message,true);}
+  $("btnBackup").disabled=false;
+};
+let RESTORE_BLOB=null;
+$("restoreFile").onchange=e=>{
+  const f=e.target.files[0]; RESTORE_BLOB=null; $("btnRestore").disabled=true; $("restorePreview").innerHTML="";
+  if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const j=JSON.parse(rd.result);
+      const nb=Object.keys(j.builds||{}).length, nc=Object.keys(j.claims||{}).length, na=(j.admins||[]).length, no=Object.keys(j.other||{}).length;
+      RESTORE_BLOB=j;
+      $("restorePreview").innerHTML=`<div class="okbox">Loaded <b>${esc(f.name)}</b> · exported ${j.exportedTs?fmtTs(j.exportedTs):'?'} · ${nb} builds, ${nc} claims, ${na} admins, ${no} other.</div>`;
+      $("btnRestore").disabled=false;
+    }catch(err){$("restorePreview").innerHTML='<div class="warnbox"><b>Not a valid backup file:</b> '+esc(err.message)+'</div>';}
+  };
+  rd.readAsText(f);
+};
+$("btnRestore").onclick=async()=>{
+  if(!RESTORE_BLOB)return;
+  const mode=$("restoreMode").value;
+  const payload={mode,builds:RESTORE_BLOB.builds,claims:RESTORE_BLOB.claims,admins:RESTORE_BLOB.admins,other:RESTORE_BLOB.other};
+  if(mode==="replace"){
+    const c=prompt('REPLACE wipes the entire namespace, then restores from this file.\nType REPLACE to confirm:');
+    if(c!=="REPLACE")return toast("restore cancelled",true);
+    payload.confirm=true;
+  }
+  $("btnRestore").disabled=true;
+  try{
+    const d=await api("POST","/blades/api/import",payload);
+    toast(`restored: ${d.builds} builds, ${d.claims} claims${d.deleted?" ("+d.deleted+" wiped)":""}`);
+    loadBuilds();loadClaims();
+    try{const a=await api("GET","/blades/api/admins");ADMINS=a.admins||[];renderAdmins();}catch(e){}
+  }catch(e){toast("restore failed: "+e.message,true);}
+  $("btnRestore").disabled=false;
+};
+</script>
+</body>
+</html>

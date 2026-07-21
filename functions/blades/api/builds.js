@@ -1,10 +1,12 @@
 // Cloudflare Pages Function — squadron build registry (KV-backed)
 // GET   /blades/api/builds       -> { builds: [{id,name,system,addedBy,ts,architect,architectSource,verified,completedTs,tons}] }
 // POST  /blades/api/builds  {id,name?,system?} -> add a build to the shared list
-// PATCH /blades/api/builds  {id, completedTs?, tons?, name?, system?, architect?, architectSource?, verified?}
+// PATCH /blades/api/builds  {id, completedTs?, tons?, name?, system?, architect?, architectSource?, verified?, unset?:[...] }
 //       -> field-whitelisted merge into the KV record. Used by the board to stamp
 //          completion (so old builds stop costing a live Raven call per page load)
 //          and to backfill architect attribution discovered from Raven/claims.
+//          `unset` (admin console) removes whitelisted fields — e.g. un-stamp a build
+//          completed in error, or strip a bad attribution.
 // KV binding: BUILDS (namespace onyx_builds). Gated to Blades by the /blades Cloudflare Access app.
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 const json = (obj, status) => new Response(JSON.stringify(obj), {
@@ -52,7 +54,9 @@ export async function onRequestPost({ request, env }) {
   return json({ ok: true, id, name: meta.name, system: meta.system, addedBy });
 }
 
-// Board-driven metadata merge: completion stamp + architect backfill.
+// Board-driven metadata merge: completion stamp + architect backfill. Admin console
+// additionally uses `unset` to remove whitelisted fields.
+const UNSETTABLE = new Set(["completedTs", "tons", "architect", "architectSource", "verified"]);
 export async function onRequestPatch({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
@@ -73,13 +77,15 @@ export async function onRequestPatch({ request, env }) {
     set.architectSource = typeof body.architectSource === "string" && body.architectSource ? body.architectSource.slice(0, 20) : "board";
     set.verified = body.verified !== undefined ? !!body.verified : true;
   }
-  if (!Object.keys(set).length) return json({ ok: false, error: "nothing to update" }, 400);
+  const unset = Array.isArray(body.unset) ? body.unset.filter(f => UNSETTABLE.has(f)) : [];
+  if (!Object.keys(set).length && !unset.length) return json({ ok: false, error: "nothing to update" }, 400);
   const merged = { ...meta, ...set };
+  for (const f of unset) delete merged[f];
   await env.BUILDS.put(id, JSON.stringify(merged));
   return json({ ok: true, id, meta: merged });
 }
 
-// Optional: remove a build from the shared list (not wired in UI yet)
+// Remove a build from the shared list.
 export async function onRequestDelete({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
