@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="amber" data-mode="lore">
 <head>
+<script>try{var _t=localStorage.getItem("ob_theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ONYX BLADES · Cohort Uplink Procedures</title>
@@ -10,7 +11,7 @@
 <style>
   :root[data-theme="amber"]{--accent:#ff7a12;--accent-bright:#ffb14e;--accent-dim:#a24d08;--glow:rgba(255,122,18,.5);--bg:#0a0705;--panel:#140d07;--panel2:#1c1109;--line:#3a2410;--text:#f6d9b0;--muted:#b98a52;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:.035}
   :root[data-theme="cyan"]{--accent:#39cfe0;--accent-bright:#8ff4ff;--accent-dim:#1b5f6d;--glow:rgba(57,207,224,.45);--bg:#04080b;--panel:#08141a;--panel2:#0b1c25;--line:#123642;--text:#d6ecf2;--muted:#6f9aa8;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:2px;--scan:.02}
-  :root[data-theme="onyx"]{--accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);--bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;--font-body:"Rajdhani",sans-serif;--font-head:"Rajdhani",sans-serif;--radius:0px;--scan:0}
+  :root[data-theme="onyx"]{--accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);--bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;--font-body:"Share Tech Mono",monospace;--font-head:"Orbitron",sans-serif;--radius:0px;--scan:0}
   *{box-sizing:border-box}html,body{margin:0;padding:0}
   :root{--good:#57e0a0;--warn:#ffcf5c;--bad:#ff5a4d}
   body{background:radial-gradient(1200px 700px at 72% -12%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%),radial-gradient(900px 600px at -5% 115%,color-mix(in srgb,var(--accent) 8%,transparent),transparent 55%),var(--bg);color:var(--text);font-family:var(--font-body);letter-spacing:.3px;min-height:100vh}
@@ -261,7 +262,7 @@
     const knob=$("knob"), schemeEl=$("dialScheme"), labels=[...document.querySelectorAll(".dl")];
     let idx=0, dragging=false;
     function paint(i){const s=SCHEMES[i];document.documentElement.dataset.theme=s.t;schemeEl.textContent=s.n;labels.forEach((l,j)=>l.classList.toggle("on",j===i));knob.setAttribute("aria-valuenow",i);}
-    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);}
+    function apply(i){idx=(i%3+3)%3;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
     labels.forEach((l,j)=>l.onclick=()=>apply(j));
     function ang(e){const r=knob.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const pt=e.touches?e.touches[0]:e;let d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
     function near(d){let b=0,bd=1e9;SCHEMES.forEach((s,i)=>{const x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}
@@ -271,7 +272,7 @@
     knob.addEventListener("mousedown",dn);knob.addEventListener("touchstart",dn,{passive:false});
     knob.addEventListener("wheel",e=>{e.preventDefault();apply(idx+(e.deltaY>0?1:-1));},{passive:false});
     knob.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowUp"){e.preventDefault();apply(idx+1);}else if(e.key==="ArrowLeft"||e.key==="ArrowDown"){e.preventDefault();apply(idx-1);}});
-    apply(0);
+    var _st=0;try{var _s=localStorage.getItem("ob_theme");var _j=SCHEMES.findIndex(function(x){return x.t===_s;});if(_j>=0)_st=_j;}catch(e){}apply(_st);
   })();
   // lore/plain toggle
   function setModeLabel(){const lore=document.documentElement.dataset.mode==="lore";$("modeBtn").innerHTML=lore?`SIGNAL: <b>IN-UNIVERSE</b> <span style="opacity:.55">⇄ plain</span>`:`SIGNAL: <b>PLAIN</b> <span style="opacity:.55">⇄ in-universe</span>`;}
