@@ -2,18 +2,16 @@
 // Reads/edits the "Allow Blades" Cloudflare Access policy's allowed-email list via
 // the Cloudflare API, so admins can grant/revoke SITE access (OTP login) for recruits
 // without opening the Cloudflare dashboard. This is the ONLY layer that controls who
-// can reach /blades at all — our KV/app code runs only after Access has already let a
-// request through — so the grant must happen on the Access policy itself.
+// can reach /blades at all (our KV/app code runs only after Access lets a request
+// through), so the grant must happen on the Access policy itself.
 //
 // GET    /blades/api/access                 -> { ok, configured, emails:[...], other:[...], appId, policyId, policyName }
 // PUT    /blades/api/access  { email }       -> add email to the policy include list
 // DELETE /blades/api/access  { email }        -> remove email (owner + admins are protected)
 //
-// Admin-gated (same JWT-assertion identity check as the other routes). Requires a
-// Pages secret CF_API_TOKEN scoped to Access: Apps and Policies -> Edit. Account id,
-// app name and policy name have sensible defaults and can be overridden by env vars
-// CF_ACCOUNT_ID / ACCESS_APP_NAME / ACCESS_POLICY_NAME (or hard IDs ACCESS_APP_ID /
-// ACCESS_POLICY_ID to skip name discovery).
+// Admin-gated. Requires Pages secret CF_API_TOKEN (Access: Apps and Policies -> Edit).
+// Every handler is wrapped so a failure ALWAYS returns JSON with the real cause,
+// never a platform crash page.
 const OWNER = "bigskinnywick@gmail.com";
 const DEFAULT_ACCT = "d8ad5e450a31c4fdeb32f635f2041e8f";
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
@@ -39,16 +37,17 @@ async function adminList(env) {
 }
 async function isAdmin(request, env) { const e = callerEmail(request); return !!e && (await adminList(env)).includes(e); }
 
-// --- Cloudflare API helpers ---
+// --- Cloudflare API helper: reads text, surfaces the real error (status + code + body). ---
 async function cf(env, path, opt) {
-  const r = await fetch(CF + path, {
-    ...opt,
-    headers: { "Authorization": "Bearer " + env.CF_API_TOKEN, "content-type": "application/json", ...(opt && opt.headers) }
-  });
-  let d = {}; try { d = await r.json(); } catch (e) {}
-  if (!d || d.success !== true) {
-    const msg = (d && d.errors && d.errors[0] && d.errors[0].message) || ("Cloudflare API HTTP " + r.status);
-    throw new Error(msg);
+  let r;
+  try { r = await fetch(CF + path, { ...opt, headers: { "Authorization": "Bearer " + env.CF_API_TOKEN, "content-type": "application/json", ...(opt && opt.headers) } }); }
+  catch (e) { throw new Error("subrequest failed: " + (e && e.message || e)); }
+  const text = await r.text();
+  let d = null; try { d = JSON.parse(text); } catch (e) {}
+  if (!d) throw new Error("CF " + r.status + " non-JSON: " + text.slice(0, 160));
+  if (d.success !== true) {
+    const e0 = d.errors && d.errors[0];
+    throw new Error(e0 ? (e0.message + (e0.code ? " (code " + e0.code + ")" : "")) : ("CF API HTTP " + r.status));
   }
   return d.result;
 }
@@ -77,10 +76,28 @@ async function resolveIds(env) {
 async function getPolicy(env, ids) {
   return cf(env, `/accounts/${ids.acct}/access/apps/${ids.appId}/policies/${ids.policyId}`);
 }
-async function putPolicy(env, ids, policy) {
-  const body = { ...policy };
-  delete body.id; delete body.uid; delete body.created_at; delete body.updated_at; // read-only
-  return cf(env, `/accounts/${ids.acct}/access/apps/${ids.appId}/policies/${ids.policyId}`, { method: "PUT", body: JSON.stringify(body) });
+// Write the include list back with a MINIMAL documented body (name/decision/include/
+// exclude/require). Tries the app-scoped policy endpoint, then falls back to the
+// account-level reusable-policy endpoint if the first path 404s / rejects.
+async function writeInclude(env, ids, policy, include) {
+  const body = {
+    name: policy.name,
+    decision: policy.decision || "allow",
+    include,
+    exclude: policy.exclude || [],
+    require: policy.require || [],
+  };
+  if (policy.precedence != null) body.precedence = policy.precedence;
+  const payload = JSON.stringify(body);
+  try {
+    return await cf(env, `/accounts/${ids.acct}/access/apps/${ids.appId}/policies/${ids.policyId}`, { method: "PUT", body: payload });
+  } catch (e1) {
+    try {
+      return await cf(env, `/accounts/${ids.acct}/access/policies/${ids.policyId}`, { method: "PUT", body: payload });
+    } catch (e2) {
+      throw new Error("app-scoped: " + (e1 && e1.message || e1) + " | reusable: " + (e2 && e2.message || e2));
+    }
+  }
 }
 // include rule shape for an allowed email: { email: { email: "x@y.com" } }
 const emailsFrom = (include) => (include || []).filter(r => r && r.email && r.email.email).map(r => String(r.email.email).toLowerCase());
@@ -88,53 +105,58 @@ const otherFrom = (include) => (include || []).filter(r => !(r && r.email && r.e
 
 function notConfigured(extra) { return json({ ok: true, configured: false, emails: [], other: [], note: "CF_API_TOKEN not set — see setup steps", ...extra }); }
 
+async function guard(request, env) {
+  if (!env || !env.BUILDS) return { stop: json({ ok: false, error: "KV not bound" }, 500) };
+  if (!(await isAdmin(request, env))) return { stop: json({ ok: false, error: "forbidden" }, 403) };
+  return {};
+}
+
 export async function onRequestGet({ request, env }) {
-  if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
-  if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
-  if (!env.CF_API_TOKEN) return notConfigured();
   try {
+    const g = await guard(request, env); if (g.stop) return g.stop;
+    if (!env.CF_API_TOKEN) return notConfigured();
     const ids = await resolveIds(env);
     const policy = await getPolicy(env, ids);
     return json({ ok: true, configured: true, emails: emailsFrom(policy.include), other: otherFrom(policy.include), appId: ids.appId, policyId: ids.policyId, policyName: ids.policyName });
-  } catch (e) { return json({ ok: false, configured: true, error: String(e.message || e) }, 502); }
+  } catch (e) { return json({ ok: false, configured: true, error: String(e && e.message || e), step: "get" }, 502); }
 }
 
 export async function onRequestPut({ request, env }) {
-  if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
-  if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
-  if (!env.CF_API_TOKEN) return json({ ok: false, error: "CF_API_TOKEN not configured" }, 400);
-  let body = {}; try { body = await request.json(); } catch (e) {}
-  const email = String(body.email || "").toLowerCase().trim();
-  if (!EMAIL.test(email)) return json({ ok: false, error: "invalid email" }, 400);
   try {
+    const g = await guard(request, env); if (g.stop) return g.stop;
+    if (!env.CF_API_TOKEN) return json({ ok: false, error: "CF_API_TOKEN not configured" }, 400);
+    let body = {}; try { body = await request.json(); } catch (e) {}
+    const email = String(body.email || "").toLowerCase().trim();
+    if (!EMAIL.test(email)) return json({ ok: false, error: "invalid email" }, 400);
     const ids = await resolveIds(env);
     const policy = await getPolicy(env, ids);
     const current = emailsFrom(policy.include);
-    if (current.includes(email)) return json({ ok: true, added: false, already: true, emails: current });
-    policy.include = [...(policy.include || []), { email: { email } }];
-    const updated = await putPolicy(env, ids, policy);
-    return json({ ok: true, added: true, emails: emailsFrom(updated.include), other: otherFrom(updated.include) });
-  } catch (e) { return json({ ok: false, error: String(e.message || e) }, 502); }
+    if (current.includes(email)) return json({ ok: true, added: false, already: true, emails: current, other: otherFrom(policy.include) });
+    const include = [...(policy.include || []), { email: { email } }];
+    const updated = await writeInclude(env, ids, policy, include);
+    const inc = (updated && updated.include) || include;
+    return json({ ok: true, added: true, emails: emailsFrom(inc), other: otherFrom(inc) });
+  } catch (e) { return json({ ok: false, error: String(e && e.message || e), step: "put" }, 502); }
 }
 
 export async function onRequestDelete({ request, env }) {
-  if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
-  if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
-  if (!env.CF_API_TOKEN) return json({ ok: false, error: "CF_API_TOKEN not configured" }, 400);
-  let body = {}; try { body = await request.json(); } catch (e) {}
-  const email = String(body.email || "").toLowerCase().trim();
-  if (!EMAIL.test(email)) return json({ ok: false, error: "invalid email" }, 400);
-  if (email === OWNER) return json({ ok: false, error: "owner access cannot be revoked" }, 400);
-  const admins = await adminList(env);
-  if (admins.includes(email)) return json({ ok: false, error: "this email is an admin — remove them from the admin roster first" }, 400);
   try {
+    const g = await guard(request, env); if (g.stop) return g.stop;
+    if (!env.CF_API_TOKEN) return json({ ok: false, error: "CF_API_TOKEN not configured" }, 400);
+    let body = {}; try { body = await request.json(); } catch (e) {}
+    const email = String(body.email || "").toLowerCase().trim();
+    if (!EMAIL.test(email)) return json({ ok: false, error: "invalid email" }, 400);
+    if (email === OWNER) return json({ ok: false, error: "owner access cannot be revoked" }, 400);
+    const admins = await adminList(env);
+    if (admins.includes(email)) return json({ ok: false, error: "this email is an admin — remove them from the admin roster first" }, 400);
     const ids = await resolveIds(env);
     const policy = await getPolicy(env, ids);
     const current = emailsFrom(policy.include);
-    if (!current.includes(email)) return json({ ok: true, removed: false, emails: current });
+    if (!current.includes(email)) return json({ ok: true, removed: false, emails: current, other: otherFrom(policy.include) });
     if (current.length <= 1) return json({ ok: false, error: "refusing to remove the last allowed email" }, 400);
-    policy.include = (policy.include || []).filter(r => !(r && r.email && r.email.email && String(r.email.email).toLowerCase() === email));
-    const updated = await putPolicy(env, ids, policy);
-    return json({ ok: true, removed: true, emails: emailsFrom(updated.include), other: otherFrom(updated.include) });
-  } catch (e) { return json({ ok: false, error: String(e.message || e) }, 502); }
+    const include = (policy.include || []).filter(r => !(r && r.email && r.email.email && String(r.email.email).toLowerCase() === email));
+    const updated = await writeInclude(env, ids, policy, include);
+    const inc = (updated && updated.include) || include;
+    return json({ ok: true, removed: true, emails: emailsFrom(inc), other: otherFrom(inc) });
+  } catch (e) { return json({ ok: false, error: String(e && e.message || e), step: "delete" }, 502); }
 }
