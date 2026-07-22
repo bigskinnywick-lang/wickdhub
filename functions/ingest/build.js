@@ -15,16 +15,34 @@
 // -> the plugin's fallback squad name ("fallback"). The KV build record carries
 // architect + architectSource + verified so the board can badge unverified builds
 // and reconcile them later.
+//
+// HARDENING (2026-07-22): every outbound Raven call is time-boxed (AbortController) and
+// the whole handler is wrapped so a slow/hanging/throwing Raven request can NEVER stall
+// the function into a bare Cloudflare 502 — it always returns a structured reason the
+// plugin can display and retry on. Also: create path is "/api/project" (no trailing
+// slash — the documented contract; the trailing slash was redirecting/hanging on Azure).
 const RAVEN = "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 // A browser-ish UA for outbound Raven calls (harmless; avoids any UA-based filtering).
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+const RAVEN_TIMEOUT_MS = 6000; // per-call ceiling so nothing hangs the whole function
 const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 
 // --- Raven helpers ----------------------------------------------------------
+// Time-boxed fetch: aborts after RAVEN_TIMEOUT_MS instead of hanging indefinitely.
+async function ravenFetch(path, init) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), RAVEN_TIMEOUT_MS);
+  try {
+    return await fetch(RAVEN + path, Object.assign({}, init || {}, { signal: ctrl.signal }));
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function ravenGet(path) {
   try {
-    const r = await fetch(RAVEN + path, { headers: { "User-Agent": UA, "Accept": "application/json" } });
+    const r = await ravenFetch(path, { headers: { "User-Agent": UA, "Accept": "application/json" } });
     if (!r.ok) return null;
     return await r.json();
   } catch (e) { return null; }
@@ -64,25 +82,37 @@ async function resolveSiblingArchitect(systemAddress) {
   return best;
 }
 
-// Create a project via PUT /api/project/ (the same call Raven's own web app uses).
-// We deliberately pass marketId + systemAddress (which we know for certain) rather than
-// the /api/project/from/{sysAddr}/{siteId} route, whose 2nd segment is a Raven site id,
-// not the game MarketID. buildType is left blank: the correct commodity template gets set
-// by the architect in Raven, and live per-delivery quantities flow in via the Raven plugin.
+// Create a project via PUT /api/project (the same call Raven's own web app uses; no auth
+// required per the published OpenAPI). We deliberately pass marketId + systemAddress (which
+// we know for certain) rather than the /api/project/from/{sysAddr}/{siteId} route, whose 2nd
+// segment is a Raven site id, not the game MarketID. buildType is left blank: the correct
+// commodity template gets set by the architect in Raven, and live per-delivery quantities
+// flow in via the Raven plugin. Time-boxed so a hang becomes a clean "raven_timeout", not a 502.
 async function createProject(body) {
   try {
-    const r = await fetch(RAVEN + "/api/project/", {
+    const r = await ravenFetch("/api/project", {
       method: "PUT",
       headers: { "User-Agent": UA, "Accept": "application/json", "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     return { status: r.status, ok: r.ok, data: await r.json().catch(() => null) };
   } catch (e) {
-    return { status: 0, ok: false, data: null, err: String(e) };
+    // AbortError (our timeout) or a network failure — reported, never raw-502'd.
+    return { status: 0, ok: false, data: null, err: String(e), timedOut: !!(e && e.name === "AbortError") };
   }
 }
 
-export async function onRequestPost({ request, env }) {
+// Top-level guard: no matter what throws below, the plugin gets a structured 502 with a
+// reason instead of a bare Cloudflare gateway error (which the plugin can't parse or retry cleanly).
+export async function onRequestPost(ctx) {
+  try {
+    return await handlePost(ctx);
+  } catch (e) {
+    return json({ ok: false, error: "handler_error", detail: String((e && e.message) || e) }, 502);
+  }
+}
+
+async function handlePost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
@@ -130,7 +160,9 @@ export async function onRequestPost({ request, env }) {
     // Whatever the response shape, re-resolve authoritatively from Raven for the buildId.
     let created = (res.data && res.data.buildId) ? res.data : await resolveProject(body.systemAddress, body.marketId);
     if (!created || !created.buildId) {
-      const reason = res.status === 401 || res.status === 403 ? "raven_auth"
+      const reason = res.timedOut ? "raven_timeout"
+        : res.status === 0 ? "raven_unreachable"
+        : (res.status === 401 || res.status === 403) ? "raven_auth"
         : res.status === 409 ? "conflict"
         : ("raven_" + (res.status || "error"));
       return json({ ok: false, error: "create_failed", reason, status: res.status || 0 }, 502);
