@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ONYX BLADES · Architect Deck</title>
+<style>
+  :root{--bg:#0d0906;--panel:#161009;--panel2:#1d1509;--line:#3a2a17;--text:#e8dcc8;--muted:#9c8a6e;--amber:#f0a828;--amber-b:#ffc95e;--ok:#39d353;--bad:#ff5c5c;--violet:#b06bff;--cyan:#4fd6e0}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:13.5px/1.6 "Share Tech Mono","Consolas",monospace;padding:20px 16px 90px}
+  .wrap{max-width:1080px;margin:0 auto}
+  a{color:var(--cyan)}
+  .topstrip{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;letter-spacing:1.5px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin-bottom:14px;background:var(--panel)}
+  .topstrip .sep{color:var(--line)}
+  .topstrip b{color:var(--amber-b)}
+  .topstrip a.chip{color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:4px 9px;border-radius:4px}
+  .topstrip a.chip:hover{border-color:var(--amber);color:var(--amber-b)}
+  h1{font-size:19px;letter-spacing:3px;color:var(--amber-b);margin:0 0 2px}
+  .sub{font-size:11px;letter-spacing:2px;color:var(--muted);margin-bottom:18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:6px;margin:0 0 16px;padding:14px 18px}
+  .panel h2{font-size:13px;letter-spacing:2.5px;color:var(--amber-b);margin:0 0 3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .panel .desc{font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:12px}
+  .panel h2 .count{font-size:10.5px;color:var(--muted);letter-spacing:1px;border:1px solid var(--line);border-radius:10px;padding:1px 8px}
+  button,.btn{font-family:inherit;font-size:11.5px;letter-spacing:1px;color:var(--amber-b);background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:6px 12px;cursor:pointer}
+  button:hover,.btn:hover{border-color:var(--amber)}
+  button.danger{color:var(--bad);border-color:#5a2020}
+  button.danger:hover{border-color:var(--bad)}
+  button.go{color:#0d0906;background:var(--amber);border-color:var(--amber)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  input{font-family:inherit;font-size:12px;color:var(--text);background:#0f0b06;border:1px solid var(--line);border-radius:4px;padding:5px 8px}
+  input:focus{outline:none;border-color:var(--amber)}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+  th{text-align:left;color:var(--muted);font-weight:normal;letter-spacing:1px;border-bottom:1px solid var(--line);padding:6px 8px;font-size:10.5px}
+  td{padding:8px 8px;border-bottom:1px dashed var(--line);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .id{font-size:10.5px;color:var(--muted)}
+  .pill{display:inline-block;font-size:10px;letter-spacing:.5px;padding:1px 7px;border-radius:9px;border:1px solid var(--line);white-space:nowrap}
+  .pill.ok{color:var(--ok);border-color:#1f5a2a}
+  .pill.warn{color:var(--amber-b);border-color:#5a4420}
+  .pill.bad{color:var(--bad);border-color:#5a2020}
+  .pill.info{color:var(--cyan);border-color:#20505a}
+  .rowbtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+  .empty{color:var(--muted);font-size:11.5px;padding:8px 0}
+  .okbox{border-left:3px solid var(--ok);background:rgba(57,211,83,.06);padding:8px 12px;margin:8px 0;font-size:12px;color:var(--muted)}
+  .okbox b{color:var(--ok)}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--amber);color:var(--amber-b);padding:10px 18px;border-radius:6px;font-size:12px;letter-spacing:1px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50;max-width:90vw}
+  #toast.show{opacity:1}
+  #toast.bad{border-color:var(--bad);color:var(--bad)}
+  .hint{font-size:10.5px;color:var(--muted);margin-top:6px}
+  code{color:var(--amber-b);background:rgba(240,168,40,.08);padding:1px 5px;border-radius:3px}
+  .subtle{color:var(--muted)}
+  #resolving,#bind,#deck{display:none}
+  body[data-state="resolving"] #resolving{display:block}
+  body[data-state="bind"] #bind{display:block}
+  body[data-state="deck"] #deck{display:block}
+</style>
+</head>
+<body data-state="resolving">
+<div class="wrap">
+
+  <div class="topstrip">
+    <a class="chip" href="/blades/commander/">◂ MY STATS</a>
+    <a class="chip" href="/blades/dashboard/">◈ COHORT BOARD</a>
+    <span class="sep">·</span>
+    <span>◆ ARCHITECT DECK</span>
+    <span>CMDR: <b id="meCmdr">—</b></span>
+  </div>
+
+  <!-- RESOLVING -->
+  <div id="resolving" class="panel"><div class="desc">Resolving your commander…</div></div>
+
+  <!-- BIND CMDR -->
+  <div id="bind" class="panel">
+    <h1>ARCHITECT DECK</h1>
+    <div class="sub">TELL THE BOARD WHO YOU FLY AS</div>
+    <div class="desc">The board signs you in by account, but your claims are filed under your in-game CMDR name. Bind them once and this deck will show the systems you've claimed, with their build-window countdown.</div>
+    <div class="toolbar">
+      <input id="cmdrIn" placeholder="your CMDR name (exactly as in Elite)" style="width:280px" />
+      <button id="cmdrBind" class="go">◆ bind my commander</button>
+    </div>
+    <div class="hint">Only you can set this — it maps your signed-in account to your CMDR. You can change it later from here.</div>
+  </div>
+
+  <!-- DECK -->
+  <div id="deck">
+    <h1>ARCHITECT DECK</h1>
+    <div class="sub">YOUR CLAIMS · PRIMARY-PORT WINDOWS · CLEANUP</div>
+
+    <div class="panel">
+      <h2>◇ MY CLAIMS <span class="count" id="claimCount">—</span> <button id="reload" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">Every system filed under <b id="deckCmdr" class="subtle">—</b>. A claim gives you ~<b id="winDays">28</b> days to deploy the primary port or it's revoked. Fix a mistyped name, mark a primary you've already deployed (clears it off the squad hot list), or release one you've let go. <span class="subtle">Architect attribution lives on the Blades board only — RavenColonial has no set-architect call — so these edits stay here. Linking a fleet carrier to a build is over on <a href="/blades/commander/">your stats deck</a>.</span></div>
+      <div id="claimsTbl"><div class="empty">loading…</div></div>
+    </div>
+
+    <div class="panel" style="border-left-color:var(--muted)">
+      <div class="desc" style="margin:0">Flying as the wrong CMDR? <button id="rebind">↺ re-bind commander</button></div>
+    </div>
+  </div>
+
+</div>
+<div id="toast"></div>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var ST={me:"",cmdr:"",claims:[],windowDays:28};
+  function setState(s){document.body.setAttribute("data-state",s);}
+  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  var toastT=null;
+  function toast(msg,bad){var el=$("toast");el.textContent=msg;el.className=(bad?"bad ":"")+"show";clearTimeout(toastT);toastT=setTimeout(function(){el.className=el.className.replace("show","").trim();},2600);}
+  async function api(method,url,body){
+    var opt={method:method,credentials:"same-origin",headers:{}};
+    if(body!==undefined){opt.headers["content-type"]="application/json";opt.body=JSON.stringify(body);}
+    var r=await fetch(url,opt);var j=null;try{j=await r.json();}catch(e){}
+    if(!r.ok||(j&&j.ok===false))throw new Error((j&&(j.error||j.reason))||("http "+r.status));
+    return j;
+  }
+
+  function pill(c){
+    if(c.status==="primary_done")return '<span class="pill ok">PRIMARY DEPLOYED</span>';
+    if(c.status==="building")return '<span class="pill warn">BUILDING</span>';
+    if(c.status==="window_passed")return '<span class="pill info">WINDOW PASSED</span>';
+    // not_started
+    if(c.daysLeft!=null&&c.daysLeft<=0)return '<span class="pill bad">OVERDUE</span>';
+    return '<span class="pill bad">AT RISK · '+(c.daysLeft==null?"?":c.daysLeft)+'d</span>';
+  }
+  function render(){
+    $("claimCount").textContent=ST.claims.length;
+    $("winDays").textContent=ST.windowDays;
+    $("deckCmdr").textContent=ST.cmdr;
+    var el=$("claimsTbl");
+    if(!ST.claims.length){el.innerHTML='<div class="okbox"><b>No claims on record for you yet.</b> Claim a system in-game with the Blades Registrar running and it lands here.</div>';return;}
+    var rows=ST.claims.map(function(c){
+      var pd=c.status==="primary_done";
+      return '<tr data-sa="'+esc(c.systemAddress)+'">'
+        +'<td><input class="sysIn" value="'+esc(c.system||"")+'" placeholder="system name" style="width:170px"><div class="id">'+esc(c.systemAddress)+'</div></td>'
+        +'<td>'+pill(c)+'</td>'
+        +'<td class="rowbtns">'
+          +'<button data-act="save">save name</button>'
+          +'<button data-act="primary">'+(pd?"↺ unmark primary":"✓ primary deployed")+'</button>'
+          +'<button class="danger" data-act="release">release</button>'
+        +'</td></tr>';
+    }).join("");
+    el.innerHTML='<table><thead><tr><th>SYSTEM</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    el.querySelectorAll("tr[data-sa]").forEach(function(tr){
+      var sa=tr.getAttribute("data-sa");
+      tr.querySelector('[data-act="save"]').onclick=function(){saveName(sa,tr.querySelector(".sysIn").value);};
+      tr.querySelector('[data-act="primary"]').onclick=function(){var c=find(sa);togglePrimary(sa,!(c&&c.status==="primary_done"));};
+      tr.querySelector('[data-act="release"]').onclick=function(){release(sa);};
+    });
+  }
+  function find(sa){for(var i=0;i<ST.claims.length;i++){if(ST.claims[i].systemAddress===sa)return ST.claims[i];}return null;}
+
+  async function load(){
+    try{
+      var j=await api("GET","/blades/api/my-claims");
+      ST.me=j.me||"";ST.cmdr=j.cmdr||"";ST.claims=j.claims||[];ST.windowDays=j.windowDays||28;
+      $("meCmdr").textContent=ST.cmdr||"unbound";
+      if(!j.bound){setState("bind");return;}
+      render();setState("deck");
+    }catch(e){toast(e.message||"load failed",true);setState("bind");}
+  }
+  async function bind(name){
+    name=(name||"").trim();if(!name){toast("enter your CMDR name",true);return;}
+    try{await api("PUT","/blades/api/whoami-cmdr",{cmdr:name});toast("bound as CMDR "+name);await load();}
+    catch(e){toast(e.message||"bind failed",true);}
+  }
+  async function saveName(sa,name){
+    try{await api("PATCH","/blades/api/my-claims",{systemAddress:sa,system:(name||"").trim()});toast("name saved");await load();}
+    catch(e){toast(e.message||"save failed",true);}
+  }
+  async function togglePrimary(sa,done){
+    try{await api("PATCH","/blades/api/my-claims",{systemAddress:sa,primaryDone:done});toast(done?"marked primary deployed":"primary unmarked");await load();}
+    catch(e){toast(e.message||"update failed",true);}
+  }
+  async function release(sa){
+    if(!confirm("Release your claim on "+sa+"? This removes your architect attribution for that system."))return;
+    try{await api("DELETE","/blades/api/my-claims",{systemAddress:sa});toast("claim released");await load();}
+    catch(e){toast(e.message||"release failed",true);}
+  }
+
+  $("cmdrBind").onclick=function(){bind($("cmdrIn").value);};
+  $("cmdrIn").addEventListener("keydown",function(e){if(e.key==="Enter")bind($("cmdrIn").value);});
+  $("reload").onclick=load;
+  $("rebind").onclick=function(){$("cmdrIn").value=ST.cmdr||"";setState("bind");};
+  load();
+})();
+</script>
+</body>
+</html>

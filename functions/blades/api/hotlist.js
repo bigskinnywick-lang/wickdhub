@@ -39,7 +39,7 @@ export async function onRequestGet({ env }) {
       if (name.startsWith("claim:")) {
         let m = null;
         try { const v = await env.BUILDS.get(name); if (v) m = JSON.parse(v); } catch (e) {}
-        if (m) claims.push({ systemAddress: name.slice(6), system: m.system || "", architect: m.architect || "", ts: Number(m.ts) || 0 });
+        if (m && !m.primaryDone) claims.push({ systemAddress: name.slice(6), system: m.system || "", architect: m.architect || "", ts: Number(m.ts) || 0 });
       } else if (GUID.test(name)) {
         let m = null;
         try { const v = await env.BUILDS.get(name); if (v) m = JSON.parse(v); } catch (e) {}
