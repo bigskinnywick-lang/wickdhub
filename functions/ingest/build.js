@@ -27,6 +27,7 @@ const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 const RAVEN_TIMEOUT_MS = 6000; // per-call ceiling so nothing hangs the whole function
 const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // --- Raven helpers ----------------------------------------------------------
 // Time-boxed fetch: aborts after RAVEN_TIMEOUT_MS instead of hanging indefinitely.
@@ -146,7 +147,11 @@ async function handlePost({ request, env }) {
     if (!(body.create && body.marketId && body.systemAddress)) {
       return json({ ok: false, error: "no build for that market yet" }, 404);
     }
-    // Attribution resolution: claims ledger (exact) -> Raven siblings (inferred) -> fallback.
+    // Attribution: claims ledger (exact) -> Raven sibling builds (inferred) -> fallback squad name.
+    // Sibling inference is the co-op win here: a build already in this system (e.g. one manually
+    // created with the real architect set) lets a NEW auto-created site INHERIT that architect ->
+    // status suffix "(from Raven)". Raven reads are fast/healthy; the cold-start risk is on the
+    // create PUT below, which the retry/backoff absorbs — so this lookup stays on the path.
     let architect = "", architectSource = "";
     const claim = await claimedArchitect(env, body.systemAddress);
     if (claim) {
@@ -168,9 +173,24 @@ async function handlePost({ request, env }) {
       isPrimaryPort: false,
       prepBuilds: {},
     };
-    const res = await createProject(newProject);
-    // Whatever the response shape, re-resolve authoritatively from Raven for the buildId.
-    let created = (res.data && res.data.buildId) ? res.data : await resolveProject(body.systemAddress, body.marketId);
+    // Create with retry/backoff. RavenColonial's Azure host cold-starts, so the first PUT can
+    // time out while the app spins up; a second attempt usually lands once it's warm. After any
+    // failed attempt we RE-RESOLVE first — the create may have completed server-side right as our
+    // AbortController fired, in which case the buildId already exists and we must not double-create.
+    const MAX_CREATE_ATTEMPTS = 2;
+    let res = null, created = null;
+    for (let attempt = 1; attempt <= MAX_CREATE_ATTEMPTS; attempt++) {
+      res = await createProject(newProject);
+      created = (res.data && res.data.buildId) ? res.data : await resolveProject(body.systemAddress, body.marketId);
+      if (created && created.buildId) break;
+      const retryable = res.timedOut || res.status === 0 || res.status >= 500;
+      if (attempt < MAX_CREATE_ATTEMPTS && retryable) {
+        console.log("[ingest] create attempt " + attempt + "/" + MAX_CREATE_ATTEMPTS + " failed (status=" + (res.status || 0) + ", retryable) — backing off 1.2s");
+        await sleep(1200);
+        continue;
+      }
+      break;
+    }
     if (!created || !created.buildId) {
       const reason = res.timedOut ? "raven_timeout"
         : res.status === 0 ? "raven_unreachable"
@@ -180,8 +200,8 @@ async function handlePost({ request, env }) {
       // Carry the actual Raven error body/exception back so the plugin can log it — this is
       // what turns a blind 502 into an actionable cause on the very next dock.
       const detail = res.err || (res.data ? JSON.stringify(res.data).slice(0, 400) : "no raven body");
-      console.log("[ingest] create_failed reason=" + reason + " status=" + (res.status || 0) + " detail=" + detail);
-      return json({ ok: false, error: "create_failed", reason, status: res.status || 0, detail }, 502);
+      console.log("[ingest] create_failed reason=" + reason + " status=" + (res.status || 0) + " after " + MAX_CREATE_ATTEMPTS + " attempt(s) detail=" + detail);
+      return json({ ok: false, error: "create_failed", reason, status: res.status || 0, detail, attempts: MAX_CREATE_ATTEMPTS }, 502);
     }
     id = String(created.buildId).toLowerCase();
     name = created.buildName || newProject.buildName;

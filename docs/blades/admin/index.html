@@ -104,6 +104,7 @@
       <a href="#ticker">◄ TICKER</a>
       <a href="#backup">⤓ BACKUP</a>
       <a href="#builds">▤ BUILDS</a>
+      <a href="#fixarch">◆ FIX ARCHITECT</a>
       <a href="#claims">◇ CLAIMS</a>
       <a href="#integrity">⚑ INTEGRITY</a>
       <a href="#stale">◷ STALE</a>
@@ -152,6 +153,13 @@
       <h2>▤ BUILD REGISTRY <span class="count" id="buildCount">—</span> <button id="buildsRefresh" style="margin-left:auto">↻ reload</button></h2>
       <div class="desc">Raw KV build records. Edit stamps &amp; attribution inline, or delete a record. <span class="subtle">Un-check "done" and save to un-stamp a build completed in error.</span></div>
       <div id="buildsTbl"><div class="empty">loading…</div></div>
+    </div>
+
+    <!-- FIX ARCHITECT -->
+    <div class="panel" id="fixarch" style="border-left-color:var(--violet)">
+      <h2 style="color:var(--violet)">◆ FIX ARCHITECT <span class="count" id="fixCount">—</span> <button id="fixRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">Builds sitting on the <code>Onyx Blades</code> fallback — the registrar auto-created them but couldn't detect the real architect. Type the true CMDR and hit <b>set</b>; it stamps <code>architect</code>, <code>architectSource: admin</code>, <code>verified</code> and drops the build off this list. <span class="subtle">Frontier doesn't journal the architect the way we'd hoped, so expect these until detection improves — this is the manual correction path.</span></div>
+      <div id="fixTbl"><div class="empty">loading…</div></div>
     </div>
 
     <!-- CLAIMS -->
@@ -206,7 +214,7 @@
       <div id="adminsTbl"><div class="empty">loading…</div></div>
     </div>
 
-    <div class="sub" style="margin-top:20px;text-align:center">ONYX BLADES · ADMIN CONSOLE v1.0 · admin-gated over the Access-gated /blades surface · o7</div>
+    <div class="sub" style="margin-top:20px;text-align:center">ONYX BLADES · ADMIN CONSOLE v1.1 · admin-gated over the Access-gated /blades surface · o7</div>
   </div><!-- /console -->
 </div>
 
@@ -265,7 +273,7 @@ async function loadBuilds(){
   try{ const d=await api("GET","/blades/api/builds"); BUILDS=d.builds||[]; }
   catch(e){ $("buildsTbl").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; return; }
   $("buildCount").textContent=BUILDS.length;
-  renderBuilds(); renderStale();
+  renderBuilds(); renderStale(); renderFixArch();
 }
 function renderBuilds(){
   if(!BUILDS.length){$("buildsTbl").innerHTML='<div class="empty">No builds in the registry.</div>';return;}
@@ -325,6 +333,38 @@ function openBuildEdit(tr,b){
   };
 }
 $("buildsRefresh").onclick=loadBuilds;
+
+// ---------- fix architect (fallback attribution) ----------
+function needsArchFix(b){
+  const src=(b.architectSource||"").toLowerCase();
+  const arch=(b.architect||"").trim().toLowerCase();
+  return src==="fallback" || arch==="onyx blades" || arch==="";
+}
+function renderFixArch(){
+  const list=BUILDS.filter(needsArchFix).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  $("fixCount").textContent=list.length;
+  if(!list.length){$("fixTbl").innerHTML='<div class="okbox"><b>All attributed.</b> No builds are sitting on the Onyx Blades fallback. ✔</div>';return;}
+  const rows=list.map(b=>`<tr data-id="${esc(b.id)}">
+    <td><div>${esc(b.name)||'<span class="subtle">(unnamed)</span>'}</div><div class="id">${esc(b.id)}</div></td>
+    <td>${esc(b.system)||'<span class="subtle">—</span>'}</td>
+    <td>${esc(b.architect)||'<span class="subtle">—</span>'} <span class="pill bad">${esc(b.architectSource||'fallback')}</span></td>
+    <td class="mono" title="${fmtTs(b.ts)}">${b.ts?ago(b.ts):'—'}</td>
+    <td><div class="toolbar" style="margin:0"><input data-f="arch" placeholder="real CMDR" style="width:150px"><button class="go" data-act="fix">✓ set</button></div></td>
+  </tr>`).join("");
+  $("fixTbl").innerHTML=`<table><thead><tr><th>NAME / ID</th><th>SYSTEM</th><th>CURRENT</th><th>UPDATED</th><th>REAL ARCHITECT</th></tr></thead><tbody>${rows}</tbody></table>`;
+  $("fixTbl").querySelectorAll('tr[data-id]').forEach(tr=>{
+    const id=tr.dataset.id, inp=tr.querySelector('[data-f="arch"]');
+    const doFix=()=>{
+      const arch=inp.value.trim();
+      if(!arch)return toast("enter the real architect CMDR",true);
+      api("PATCH","/blades/api/builds",{id,architect:arch,architectSource:"admin",verified:true})
+        .then(()=>{toast("architect set → "+arch);loadBuilds();}).catch(err=>toast(err.message,true));
+    };
+    tr.querySelector('[data-act="fix"]').onclick=doFix;
+    inp.addEventListener("keydown",e=>{if(e.key==="Enter")doFix();});
+  });
+}
+$("fixRefresh").onclick=loadBuilds;
 
 // ---------- claims ----------
 async function loadClaims(){

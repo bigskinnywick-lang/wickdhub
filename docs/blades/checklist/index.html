@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ONYX BLADES · Shakedown Flight Checklist</title>
+<title>ONYX BLADES · Auto-Create &amp; Co-op Checklist</title>
 <style>
   :root{--bg:#0d0906;--panel:#161009;--line:#3a2a17;--text:#e8dcc8;--muted:#9c8a6e;--amber:#f0a828;--amber-b:#ffc95e;--ok:#39d353;--bad:#ff5c5c;--violet:#b06bff}
   *{box-sizing:border-box}
@@ -43,92 +43,92 @@
 <body>
 <div class="wrap">
   <div class="backrow"><a href="/blades/commander/">◂ MY STATS</a></div>
-  <h1>SHAKEDOWN FLIGHT CHECKLIST</h1>
-  <div class="sub">CLAIMS LEDGER · AUTO-CREATE · LIVE BOARD · 2026-07-21 · TEST PILOT: <b id="pilotName" style="color:var(--amber-b)">—</b> · <span id="roleLine">—</span></div>
+  <h1>AUTO-CREATE &amp; CO-OP CHECKLIST</h1>
+  <div class="sub">DETECT · AUTO-CREATE · REGISTER · CO-OP HAUL · v1.2 · TEST PILOT: <b id="pilotName" style="color:var(--amber-b)">—</b> · <span id="roleLine">—</span></div>
 
   <div class="resolving phase"><div class="when">Resolving shakedown-crew credentials…</div></div>
   <div class="locked phase" style="border-left-color:var(--bad)"><h2>RESTRICTED · SHAKEDOWN CREW ONLY</h2><div class="when">This procedure is issued to the current test pilots. Fly the released systems — the Setup Guide has everything you need.</div></div>
 
   <div class="crew">
+  <div class="note"><b>WHAT WE'RE PROVING THIS RUN:</b> the auto-create chain — <b>land at an unregistered construction site → the registrar detects there's no Raven build → it creates one → registers it to the board</b> — and then <b>co-op hauling</b> pools both our tonnages. The 502 that used to kill auto-create is fixed: it now self-heals on a cold Raven, and any real failure shows a plain-English reason instead of a blind error.</div>
+
   <div class="phase">
     <h2>PHASE 0 · PRE-FLIGHT — AT THE DESK, GAME NOT REQUIRED</h2>
-    <div class="when">Do this before launching Elite. ~5 minutes.</div>
-    <div class="note"><b>ORDER MATTERS TONIGHT:</b> the site is in <b>TEMPLAR's</b> system — his claim is the attribution source. <b>Templar's plugin swap + EDMC restart (the backfill) must happen BEFORE anyone docks at the new site</b>, or auto-create can't find the claim and falls back to squad colours.</div>
-    <label class="step"><input type="checkbox" /><span>Download the fresh registrar: <code>wickdhub.com/blades/BladesRegistrar.zip</code> (Setup Guide → Stage 03 button).</span></label>
-    <label class="step"><input type="checkbox" /><span><b>Delete</b> the old <code>BladesRegistrar</code> folder from the EDMC plugins dir, drop in the new one. Clean swap — don't merge. (Path check: <code>plugins\BladesRegistrar\load.py</code>, not doubled.)</span></label>
-    <span class="p-arch"><label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: ☑ Auto-create ON · fallback architect <code>Onyx Blades</code> · grace <code>5</code> min. Save.</span></label></span>
-    <span class="p-wing"><label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: Auto-create <b>ON if you want the interloper test</b> (recommended — see Phase 1), otherwise OFF. Save.</span></label></span>
-    <label class="step"><input type="checkbox" /><span>Fully restart EDMC and watch the Blades status line for ~15 seconds.</span></label>
-    <span class="p-arch"><div class="watch"><b>EXPECT:</b> ~10s after launch → <code>Blades: claims backfill: N system(s) reported</code>. N ≥ 1 and it MUST include tonight's system — your claim is the whole attribution test. ✔</div></span>
-    <span class="p-wing"><div class="watch"><b>EXPECT:</b> ~10s after launch → <code>Blades: claims backfill: N system(s) reported</code> for your own past claims. <b>No message at all is also a PASS</b> if you've never paid for a claim on this PC — a quiet zero.</div></span>
-    <div class="err"><b>IF:</b> <code>journal folder not found</code> → journals live somewhere custom; set journal dir in EDMC settings, restart. · <code>backfill auth error (bad key)</code> → old zip still installed — re-download and re-swap. · <code>backfill failed (offline?)</code> → network hiccup; retries next EDMC start.</div>
-    <label class="step"><input type="checkbox" /><span>Open <code>wickdhub.com/blades/dashboard/</code> in a browser tab and <b>leave it open, untouched</b>. Standing Down + Honors Board (Moy · architect Templar57) is the correct idle picture. No reloading from here on — that's the point.</span></label>
+    <div class="when">Before launching Elite. ~5 minutes.</div>
+    <span class="p-wing"><label class="step"><input type="checkbox" /><span>Download the fresh registrar: <code>wickdhub.com/blades/onboarding/</code> → Stage 03 button (<code>BladesRegistrar.zip</code>).</span></label>
+    <label class="step"><input type="checkbox" /><span><b>Delete</b> the old <code>BladesRegistrar</code> folder from the EDMC plugins dir, drop in the new one — clean swap, don't merge. (Path check: <code>plugins\BladesRegistrar\load.py</code>, not doubled.)</span></label>
+    <label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: ☑ Auto-create ON · fallback architect <code>Onyx Blades</code> · grace <code>1</code> min (short for testing). Save.</span></label>
+    <label class="step"><input type="checkbox" /><span>Fully restart EDMC. The Blades status label should read <code>Blades: idle (v1.2)</code> — that confirms the new plugin loaded.</span></label>
+    <div class="watch"><b>NEW SAFETY NET:</b> if anything fails at create, the status line now names the cause (e.g. <code>auto-create failed (raven_timeout) — logged</code>) and writes the full detail to <code>BladesRegistrar\last_error.json</code>. No more blind <code>ingest error 502</code>.</div>
+    </span>
+    <span class="p-arch"><label class="step"><input type="checkbox" /><span>Confirm your <b>RavenColonial</b> plugin is running (you're already set up) — this is what makes co-op deliveries pool.</span></label>
+    <label class="step"><input type="checkbox" /><span>Sanity-check on ravencolonial.com: the <b>test station you already finished in this system</b> shows architect <b>TEMPLAR57</b>. That existing build is the attribution seed for what auto-create does next (see Phase 1).</span></label>
+    <div class="note"><b>YOUR ROLE:</b> this is your system and your claim. You don't need the registrar plugin — BigSkinny's rig drives the auto-create. You're here to confirm the new site lands under <b>your</b> name and to co-op the haul.</div>
+    </span>
+    <label class="step"><input type="checkbox" /><span>Open <code>wickdhub.com/blades/dashboard/</code> in a browser tab and <b>leave it open, untouched</b>. No reloading from here — hands-off is the whole point.</span></label>
   </div>
-
-  <span class="p-arch">
-  <div class="phase">
-    <h2>PHASE 1 · ARCHITECT — YOUR SYSTEM, YOUR PLAQUE</h2>
-    <div class="when">You claimed this system; the ledger should know it from your backfill. Dock at the construction ship.</div>
-    <label class="step"><input type="checkbox" /><span>Dock. Watch the EDMC Blades status line — it updates on every ~15s depot ping.</span></label>
-    <div class="watch"><b>EXPECT, in order:</b> <code>waiting — no build in Raven yet</code> → countdown <code>waiting — auto-create in 4m59s</code> → at zero, next ping: <code>created &lt;name&gt; · architect TEMPLAR57 (claimed ✓)</code></div>
-    <div class="note"><b>THE SUFFIX IS THE TEST:</b> <code>(claimed ✓)</code> = claims-ledger attribution — the win condition. · <code>(from Raven)</code> = sibling inference (only expected if this system already has your builds in Raven). · <code>(fallback — fix later)</code> = the ledger missed your claim — check your backfill ran, and report it.</div>
-    <label class="step"><input type="checkbox" /><span>Stay docked through the 5-minute grace (or undock/re-dock after — the clock keeps counting; create fires on first ping back).</span></label>
-    <label class="step"><input type="checkbox" /><span>Glance at the board tab — hands off the keyboard.</span></label>
-    <div class="watch"><b>EXPECT:</b> within ~60s the board toasts <code>◈ new build on the wire</code>, leaves Standing Down, and renders your build live. Picker gains it under Active builds.</div>
-    <div class="err"><b>IF:</b> <code>auto-create needs Raven login — create it in SrvSurvey</code> → Raven's create API wants auth (the one unknown). Fallback: create in SrvSurvey; the plugin registers it next ping. <b>Report this.</b> · <code>auto-create failed (reason) — will retry</code> → note the reason verbatim; countdown restarting = deliberate back-off, not a bug. · stuck on <code>waiting — create the build in Raven first</code> → auto-create toggle is OFF. · <code>auth error (bad key)</code> → zip mismatch.</div>
-    <label class="step"><input type="checkbox" /><span>Optional cross-check: ravencolonial.com build page shows architect <b>TEMPLAR57</b>.</span></label>
-  </div>
-  </span>
 
   <span class="p-wing">
   <div class="phase">
-    <h2>PHASE 1 · INTERLOPER — WORKIN' FOR THE MAN</h2>
-    <div class="when">Templar's system, Templar's claim, your cargo hold. Two ways to fly it:</div>
-    <div class="note"><b>OPTION A — THE INTERLOPER TEST (recommended, auto-create ON):</b> dock at the construction ship <b>before Templar registers it</b>. Your status line should run the countdown, then: <code>created &lt;name&gt; · architect <b>TEMPLAR57</b> (claimed ✓)</code>. Read that twice — <b>you</b> filed the papers, but the ledger put <b>his</b> name on the plaque from his backfilled claim. A non-architect landing and the attribution still landing true is the strongest proof this system can give. <b>Prerequisite: Templar's backfill ran first (Phase 0 order note).</b></div>
-    <div class="note"><b>OPTION B — WINGMAN (auto-create OFF):</b> let Templar's rig create it; with your dashboard tab open and untouched, the build should reach your board within ~60s of his create — <code>◈ new build on the wire</code> — you did nothing. When you dock, your Blades line reads <code>registered &lt;name&gt;</code> or <code>already listed</code> (no duplicate).</div>
-    <label class="step"><input type="checkbox" /><span>Fly whichever option, dock, and watch the EDMC Blades line + the board tab.</span></label>
-    <label class="step"><input type="checkbox" /><span>RavenColonial plugin: accept the <b>🚧 join</b> prompt so your deliveries count as a project member.</span></label>
-    <div class="err"><b>IF:</b> created line says <code>(fallback — fix later)</code> → the ledger didn't have Templar's claim when you docked — his backfill hadn't run. Note it; the reconcile poll fixes the record once his builds surface in Raven. · your board never updates → note whether a manual reload shows the build (isolates poll vs registry).</div>
+    <h2>PHASE 1 · AUTO-CREATE — YOU FILE THE PAPERS</h2>
+    <div class="when">Dock at an <b>unregistered</b> construction site in Templar's system (a NEW one — not the station already finished/registered).</div>
+    <label class="step"><input type="checkbox" /><span>Dock. Watch the EDMC Blades status line — it updates on every ~15s depot ping.</span></label>
+    <div class="watch"><b>EXPECT, in order:</b> <code>waiting — no build in Raven yet</code> → countdown <code>waiting — auto-create in 0m59s</code> → at zero, next ping: <code>created &lt;name&gt; · architect TEMPLAR57 (from Raven)</code></div>
+    <div class="note"><b>THE SUFFIX IS THE TEST — and this run it should be <code>(from Raven)</code>:</b> the registrar looks at the other build already in this system (your finished station, architect Templar57) and inherits that name. That's the sibling-detection win we're watching for. · <code>(claimed ✓)</code> = would mean Templar's claim was in a journal (Frontier usually doesn't log it, so don't expect this). · <code>(fallback — fix later)</code> = it saw no sibling and stamped <code>Onyx Blades</code> — note it; that's exactly what the new <b>admin fix-architect</b> panel is for.</div>
+    <div class="note"><b>COLD-START IS NORMAL:</b> RavenColonial's server naps. You may briefly see <code>create attempt 1/2 failed (raven_timeout) — backing off 1.2s</code> then success on the retry. That's the self-heal working, not a bug.</div>
+    <label class="step"><input type="checkbox" /><span>Glance at the board tab — hands off the keyboard.</span></label>
+    <div class="watch"><b>EXPECT:</b> within ~60s the board toasts <code>◈ new build on the wire</code>, leaves Standing Down, and renders the new build live. Picker gains it under Active builds.</div>
+    <div class="err"><b>IF you get a failure line:</b> note the reason verbatim <b>and grab <code>BladesRegistrar\last_error.json</code></b> — that pair tells us exactly what to fix. Countdown restarting = deliberate back-off, not a loop. <code>auth error (bad key)</code> = old zip still installed, re-swap.</div>
+  </div>
+  </span>
+
+  <span class="p-arch">
+  <div class="phase">
+    <h2>PHASE 1 · ATTRIBUTION — YOUR NAME ON THE NEW PLAQUE</h2>
+    <div class="when">BigSkinny docks the new site and auto-creates it. You watch that it lands under YOU.</div>
+    <label class="step"><input type="checkbox" /><span>When BigSkinny reports <code>created &lt;name&gt;</code>, check the board: the new build should show architect <b>TEMPLAR57</b>, inherited from your existing station in this system.</span></label>
+    <div class="watch"><b>EXPECT:</b> suffix <code>(from Raven)</code> on his status line, and the board build attributed to <b>TEMPLAR57</b> — a site <b>he</b> filed, landing under <b>your</b> name. That's the co-op attribution proof.</div>
+    <div class="err"><b>IF it says <code>(fallback — fix later)</code>:</b> the sibling lookup didn't find your station (wrong system, or Raven hadn't surfaced it). Not fatal — flag it and we correct it in the admin fix-architect panel; the board build still works for hauling.</div>
+    <label class="step"><input type="checkbox" /><span>Optional cross-check: ravencolonial.com shows the new build with architect <b>TEMPLAR57</b>.</span></label>
   </div>
   </span>
 
   <div class="phase">
-    <h2>PHASE 2 · LIVE BOARD — WHILE HAULING</h2>
-    <div class="when">Normal hauling loop. The board should follow you around without being touched.</div>
-    <label class="step"><input type="checkbox" /><span>On the dashboard, tap a commodity → supplier drawer opens; try the <code>⧉ NAV</code> copy button.</span></label>
-    <label class="step"><input type="checkbox" /><span><b>Verify (pending):</b> in that drawer tap <code>↗ Inara</code> (top-right of the supplier list) → a new tab opens Inara's commodity search for that same cargo, near this build's system. If it lands right, the Inara cross-check is proven → flip its systems-register lamp green.</span></label>
-    <label class="step"><input type="checkbox" /><span>Buy mats, fly back, deliver at the construction ship.</span></label>
-    <div class="watch"><b>EXPECT:</b> within ~60s of the drop: toast <code>⟳ live update</code>, progress % and shopping list shrink, ticker shows <code>&lt;YOU&gt; synced · X t hauled</code>. Switch away from the tab and back → instant catch-up, no reload.</div>
-    <label class="step"><input type="checkbox" /><span>Check MY STATS once mid-session: career tonnes ticked up, the new build in your Service Record, selected-build tonnes counting.</span></label>
-    <div class="err"><b>QUIRKS THAT ARE NOT BUGS:</b> up to a minute of lag (60s pulse). · An open supplier drawer snapping shut when data changes — the re-render did its job. · Tracked tonnage &lt; total on a build hauled before tonight — pre-uplink deliveries are invisible by design.</div>
-    <div class="err"><b>REAL PROBLEM:</b> deliveries never appearing in stats → you're probably not a project member — accept the 🚧 join prompt (Setup Guide troubleshoot list).</div>
+    <h2>PHASE 2 · CO-OP HAUL — POOL THE CARGO</h2>
+    <div class="when">The real payoff: both of us haul the same site and the board sums both holds. Requires <b>both</b> on the RavenColonial plugin, delivering to the <b>same</b> construction depot.</div>
+    <label class="step"><input type="checkbox" /><span><b>Both:</b> in the RavenColonial plugin, accept the <b>🚧 join</b> prompt on the site so your deliveries count as a project member.</span></label>
+    <label class="step"><input type="checkbox" /><span>On the dashboard, tap a commodity → supplier drawer opens; try the <code>⧉ NAV</code> copy button. Buy mats, fly back, deliver at the construction ship.</span></label>
+    <div class="watch"><b>EXPECT:</b> within ~60s of a drop → toast <code>⟳ live update</code>, progress % and shopping list shrink, ticker shows <code>&lt;YOU&gt; synced · X t hauled</code>. <b>Co-op check:</b> the remaining list nets out BOTH pilots' deliveries — when Templar drops, BigSkinny's shopping list shrinks too, and vice-versa. That's Raven pooling us server-side.</div>
+    <label class="step"><input type="checkbox" /><span>Check MY STATS once mid-session: career tonnes ticked up, the new build in your Service Record, and <b>both</b> commanders showing tonnage on the build.</span></label>
+    <div class="err"><b>NOT BUGS:</b> up to ~60s lag (poll pulse). · A supplier drawer snapping shut when data changes (re-render did its job). · Tracked tonnage &lt; total on a build hauled before you joined — pre-join deliveries are invisible by design.</div>
+    <div class="err"><b>REAL PROBLEM:</b> your deliveries never appearing → you're likely not a project member — accept the 🚧 join prompt.</div>
   </div>
 
   <div class="phase">
-    <h2>PHASE 3 · IF THE BUILD COMPLETES TONIGHT</h2>
-    <div class="when">Only if you finish it. Otherwise skip.</div>
+    <h2>PHASE 3 · IF THE BUILD COMPLETES</h2>
+    <div class="when">Only if you finish it this session. Otherwise skip.</div>
     <label class="step"><input type="checkbox" /><span>Deliver the final tonnes and watch the board.</span></label>
     <div class="watch"><b>EXPECT:</b> toast <code>✔ build complete — honors board updated</code> → board auto-advances → the build joins the Honors Board, architect <b>TEMPLAR57</b> → picker moves it to <code>Completed · N · stats only</code>.</div>
   </div>
 
   <div class="phase">
     <h2>PHASE 4 · DEBRIEF</h2>
-    <div class="when">What flips the systems-register lamps green.</div>
-    <label class="step"><input type="checkbox" /><span>Backfill count: <code>N = ?</code> (or "no message" for a clean zero)</span></label>
-    <label class="step"><input type="checkbox" /><span>The exact <code>created …</code> line and <b>whose rig produced it</b> — especially the suffix.</span></label>
-    <span class="p-wing"><label class="step"><input type="checkbox" /><span>If Option A: confirm the plaque read TEMPLAR57 off <b>your</b> ping. If Option B: did the build reach your board and EDMC hands-off?</span></label></span>
-    <label class="step"><input type="checkbox" /><span>Any error text, verbatim.</span></label>
-    <label class="step"><input type="checkbox" /><span>Did the board go the whole night without a manual reload? (y/n)</span></label>
+    <div class="when">What to report back so we can close this out.</div>
+    <label class="step"><input type="checkbox" /><span>The exact <code>created …</code> line and its <b>suffix</b> — did it read <code>(from Raven)</code>?</span></label>
+    <label class="step"><input type="checkbox" /><span>Did a retry fire (<code>create attempt 1/2 … backing off</code>)? Did it recover on its own?</span></label>
+    <label class="step"><input type="checkbox" /><span>Any failure line + the contents of <code>last_error.json</code>, verbatim.</span></label>
+    <label class="step"><input type="checkbox" /><span>Co-op: did each pilot's drop shrink the OTHER's shopping list, and did both show tonnage in MY STATS?</span></label>
+    <label class="step"><input type="checkbox" /><span>Did the board run the whole session with no manual reload? (y/n)</span></label>
   </div>
   </div><!-- /crew -->
 
-  <footer>ONYX BLADES · SHAKEDOWN PROCEDURE v1.1 · issued to the test pilots only · tonight: TEMPLAR architect / BIGSKINNY interloper<br />checkbox state lives only while this tab is open · o7</footer>
+  <footer>ONYX BLADES · AUTO-CREATE &amp; CO-OP PROCEDURE v1.2 · issued to the test pilots only · this run: TEMPLAR architect (system owner) / BIGSKINNY registrar + interloper<br />checkbox state lives only while this tab is open · o7</footer>
 </div>
 <script>
-  // Shakedown crew gate — tonight's roles: TEMPLAR57 = architect, BIGSKINNY = interloper/wingman.
+  // Shakedown crew gate — roles: TEMPLAR57 = architect/system owner, BIGSKINNY = registrar/interloper.
   (function(){
     var CREW={"presto575@gmail.com":["arch","CMDR TEMPLAR57","ROLE: ARCHITECT"],
-              "bigskinnywick@gmail.com":["wing","CMDR BIGSKINNY","ROLE: INTERLOPER"]};
+              "bigskinnywick@gmail.com":["wing","CMDR BIGSKINNY","ROLE: REGISTRAR / INTERLOPER"]};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"})
       .then(function(r){return r.ok?r.json():Promise.reject();})
       .then(function(d){
