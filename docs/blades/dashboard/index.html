@@ -588,13 +588,17 @@
     let CUSTOM=[];
     async function loadCustom(){ try{ const d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); const now=Date.now(); CUSTOM=((d&&d.fields)||[]).filter(f=>f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now)); }catch(e){} }
     function customItems(){ return CUSTOM.map(f=>({c:"news",i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))})); }
+    let HOT=[];
+    async function loadHot(){ try{ const d=await fetch('/blades/api/hotlist',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); HOT=(d&&Array.isArray(d.hotlist))?d.hotlist:[]; }catch(e){ HOT=[]; } }
+    function completedSystems(){ const s=new Set(); try{ (REGISTRY||[]).forEach(function(b){ if(b&&b.completedTs&&b.system) s.add(String(b.system).toLowerCase().trim()); }); }catch(e){} return s; }
+    function hotItems(){ const done=completedSystems(); return HOT.filter(function(h){ return !(h.system&&done.has(String(h.system).toLowerCase().trim())); }).slice(0,8).map(function(h){ const d=h.daysLeft; const c=d<=3?"emergency":(d<=7?"crit":"news"); const verb=h.tier==="not_started"?"CLAIM EXPIRING":"PRIMARY PORT DUE"; const who=h.architect?" · "+escH(h.architect):""; return {c:c,i:"⏳",h:"<b>"+escH(h.system||h.systemAddress)+"</b> — "+verb+who+" · "+d+"d to deploy primary port"}; }); }
     function render(items,el){ const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
     async function run(){
-      await loadCustom();
+      await loadCustom(); await loadHot();
       if(!BUILD_ID){
         const el=$("tickTrack"); if(!el) return;
         const last=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0))[0];
-        const items=customItems();
+        const items=hotItems().concat(customItems());
         items.push({c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."});
         if(last) items.push({c:"",i:"✔",h:"LAST COMPLETION: <b>"+escH(last.name||last.id.slice(0,8))+"</b>"+(last.architect?" · architect "+escH(last.architect):"")});
         render(items,el); return;
@@ -602,7 +606,7 @@
       let p,st=null; try{ p=await fetch(RAVEN+"/api/project/"+BUILD_ID).then(r=>r.json()); }catch(e){ const el=$("tickTrack"); if(el) el.innerHTML='<span class="item"><span class="ico">◈</span>SQUAD NET standing by — live feed resumes when the board reaches RavenColonial</span>'; return; }
       try{ st=await fetch(RAVEN+"/api/project/"+BUILD_ID+"/stats").then(r=>r.ok?r.json():null); }catch(e){}
       const tonsOf=(n)=>{ if(!st||!st.cmdrs)return null; const N=NORM(n); for(const k in st.cmdrs){ if(NORM(k)===N&&typeof st.cmdrs[k]==="number")return st.cmdrs[k]; } return null; };
-      const items=customItems(); const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
+      const items=hotItems().concat(customItems()); const name=p.buildName||"BUILD"; const pct=p.maxNeed?Math.round((p.maxNeed-p.sumNeed)/p.maxNeed*100):0;
       let hrs=null; if(p.timeDue){const t=Date.parse(p.timeDue); if(!isNaN(t)) hrs=(t-Date.now())/3.6e6;}
       if(hrs!==null&&hrs<48) items.push({c:"emergency",i:"⏱",h:"EMERGENCY: <b>"+name+"</b> window closing — "+Math.max(0,Math.round(hrs))+"h left · "+pct+"% built"});
       else if(hrs!==null&&hrs<120) items.push({c:"crit",i:"⏱",h:"TIME-CRITICAL: <b>"+name+"</b> — "+Math.round(hrs)+"h left · "+pct+"% built"});

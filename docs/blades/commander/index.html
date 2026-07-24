@@ -299,6 +299,7 @@
       <input id="buildIdIn" class="bb-in" placeholder="paste RavenColonial build ID or link" autocomplete="off" />
       <button id="buildIdGo" class="bb-go">view ▸</button>
     </span>
+    <button id="carrierLinkBtn" class="bb-add" style="display:none" title="Link your fleet carrier to the build you are viewing"></button>
     <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
     <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
   </div>
@@ -601,6 +602,69 @@
     window._obPickerReload=load;
     load();
   })();
+</script>
+<script>
+(function(){
+  var btn=document.getElementById("carrierLinkBtn");
+  if(!btn) return;
+  function curBuild(){try{var b=localStorage.getItem("ob_build");return (b&&/^[0-9a-fA-F-]{36}$/.test(b))?b:"";}catch(e){return "";}}
+  function short(s,n){s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s;}
+  function toast(msg,bad){
+    var d=document.createElement("div");
+    d.textContent=msg;
+    d.style.cssText="position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;padding:9px 16px;border-radius:6px;font-size:12px;letter-spacing:1px;font-family:var(--font-body,monospace);background:#12100c;border:1px solid "+(bad?"#f0a828":"#39d353")+";color:"+(bad?"#f0a828":"#7df3a6")+";opacity:0;transition:opacity .25s;max-width:90vw";
+    document.body.appendChild(d);
+    requestAnimationFrame(function(){d.style.opacity="1";});
+    setTimeout(function(){d.style.opacity="0";setTimeout(function(){try{d.remove();}catch(e){}},300);},2600);
+  }
+  var st={bound:false,cmdr:"",carrier:null};
+  function render(){
+    var b=curBuild();
+    if(!st.bound){
+      btn.textContent="⛽ BIND CMDR";
+      btn.title="Tell the board your in-game CMDR name so it can find your carrier";
+      btn.disabled=false; btn.style.display=""; return;
+    }
+    if(st.carrier&&st.carrier.marketId){
+      var nm=short(st.carrier.name||st.carrier.callsign||("market "+st.carrier.marketId),18);
+      if(b){ btn.textContent="⛽ LINK "+nm+" → BUILD"; btn.title="Link your carrier "+nm+" to the build you're viewing (pushed to RavenColonial)"; btn.disabled=false; }
+      else { btn.textContent="⛽ LINK CARRIER — open a build"; btn.title="View a build first (its ID is remembered), then link your carrier to it"; btn.disabled=true; }
+      btn.style.display=""; return;
+    }
+    btn.textContent="⛽ NO CARRIER DETECTED";
+    btn.title="Open Carrier Management in-game once with the Blades Registrar plugin running, then reload";
+    btn.disabled=true; btn.style.display="";
+  }
+  async function load(){
+    try{ var r=await fetch("/blades/api/carrier",{credentials:"same-origin"}); if(r.ok){var j=await r.json(); st.bound=!!j.bound; st.cmdr=j.cmdr||""; st.carrier=j.carrier||null;} }catch(e){}
+    render();
+  }
+  async function bind(){
+    var v=prompt("Your in-game CMDR name (exactly as it appears in Elite):",st.cmdr||"");
+    if(v==null) return; v=v.trim(); if(!v) return;
+    try{
+      var r=await fetch("/blades/api/whoami-cmdr",{method:"PUT",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({cmdr:v})});
+      var j=await r.json();
+      if(j&&j.ok){ toast("bound as CMDR "+j.cmdr); await load(); }
+      else { toast((j&&j.error)||"bind failed",true); }
+    }catch(e){ toast("bind failed (offline?)",true); }
+  }
+  async function link(){
+    var b=curBuild(); if(!b){ toast("view a build first",true); return; }
+    btn.disabled=true; var old=btn.textContent; btn.textContent="⛽ linking…";
+    try{
+      var r=await fetch("/blades/api/carrier",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({action:"link",buildId:b})});
+      var j=await r.json();
+      if(j&&j.ok){ toast("carrier linked to build ✓"); } else { toast((j&&(j.reason||j.error))||"link failed",true); }
+    }catch(e){ toast("link failed (offline?)",true); }
+    btn.textContent=old; render();
+  }
+  btn.addEventListener("click",function(){
+    if(!st.bound) return bind();
+    if(st.carrier&&st.carrier.marketId) return link();
+  });
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",load); else load();
+})();
 </script>
 </body>
 </html>
