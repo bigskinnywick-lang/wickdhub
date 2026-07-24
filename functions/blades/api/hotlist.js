@@ -10,25 +10,30 @@
 // We window OUT claims older than the deadline so long-finished colonies (whose build
 // record we may simply be missing) don't spam the feed as fake "expired".
 //
-// Cheap + KV-only so the ticker can poll it: no per-claim Raven calls. Completion
-// can't be seen from KV (it lives in Raven), so we only distinguish "not_started"
-// (no build record for the system) from "building" (a build exists). The dashboard,
-// which already holds live Raven progress per build, drops any "building" row it can
-// see is actually complete. Access-gated at the network layer -> any logged-in pilot
-// may read it (NOT admin-only), because pilots need to see their own at-risk claims.
+// SCALE — CACHED. The ticker polls this ~once a minute PER OPEN TAB, and computing it
+// means scanning the whole KV namespace (builds are bare GUID keys with no prefix, so
+// "list builds" can't be narrowed). To keep read volume flat as builds + squadmates
+// pile in, the computed result is cached in "hot:cache" with a short self-expiring TTL:
+// a hit serves ONE read; only the first poll after expiry re-scans. Claim mutations bust
+// the cache (see my-claims.js) so pilot actions reflect immediately; everything else is at
+// most CACHE_TTL_S stale, which is nothing against a day-granularity countdown.
+//
+// Completion can't be seen from KV (it lives in Raven), so we only distinguish
+// "not_started" (no build record for the system) from "building" (a build exists). The
+// dashboard, which already holds live Raven progress per build, drops any "building" row
+// it can see is complete. Access-gated at the network layer -> any logged-in pilot reads it.
 const WINDOW_DAYS = 28;
 const WINDOW_MS = WINDOW_DAYS * 24 * 60 * 60 * 1000;
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-const json = (o, s) => new Response(JSON.stringify(o), {
-  status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
-});
+const CACHE_KEY = "hot:cache";
+const CACHE_TTL_S = 180;               // 3 min — well under the day-level granularity of the countdown
+const JHEAD = { "content-type": "application/json", "cache-control": "no-store" };
+const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: JHEAD });
 const norm = (s) => String(s || "").toLowerCase().trim();
 
-export async function onRequestGet({ env }) {
-  if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
+// Full namespace scan -> the hot list. Only runs on a cache miss.
+async function compute(env) {
   const now = Date.now();
-
-  // One pass over the namespace: collect claims and the set of systems that have a build.
   const claims = [];
   const builtSystems = new Set();
   let cursor;
@@ -56,18 +61,22 @@ export async function onRequestGet({ env }) {
     if (age < 0 || age > WINDOW_MS) continue;  // window OUT stale/old claims (fake-expired guard)
     const hasBuild = c.system && builtSystems.has(norm(c.system));
     const daysLeft = Math.max(0, Math.ceil((c.ts + WINDOW_MS - now) / 86400000));
-    hot.push({
-      systemAddress: c.systemAddress,
-      system: c.system,
-      architect: c.architect,
-      claimTs: c.ts,
-      daysLeft,
-      tier: hasBuild ? "building" : "not_started",
-    });
+    hot.push({ systemAddress: c.systemAddress, system: c.system, architect: c.architect, claimTs: c.ts, daysLeft, tier: hasBuild ? "building" : "not_started" });
   }
-
-  // Most urgent first: fewest days left, and not-started ahead of building on a tie.
   hot.sort((a, b) => (a.daysLeft - b.daysLeft) || ((a.tier === "not_started" ? 0 : 1) - (b.tier === "not_started" ? 0 : 1)));
+  return { ok: true, now, windowDays: WINDOW_DAYS, hotlist: hot };
+}
 
-  return json({ ok: true, now, windowDays: WINDOW_DAYS, hotlist: hot });
+export async function onRequestGet({ env }) {
+  if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
+
+  // Cache hit = one read. The key self-expires, so presence implies freshness.
+  try {
+    const cached = await env.BUILDS.get(CACHE_KEY);
+    if (cached) return new Response(cached, { status: 200, headers: JHEAD });
+  } catch (e) {}
+
+  const body = JSON.stringify(await compute(env));
+  try { await env.BUILDS.put(CACHE_KEY, body, { expirationTtl: CACHE_TTL_S }); } catch (e) {}
+  return new Response(body, { status: 200, headers: JHEAD });
 }

@@ -106,6 +106,7 @@ export async function onRequestPatch({ request, env }) {
   if (typeof body.primaryDone === "boolean") rec.primaryDone = body.primaryDone;
   rec.architect = cmdr;            // keep attribution pinned to the owner
   await env.BUILDS.put("claim:" + sa, JSON.stringify(rec));
+  try { await env.BUILDS.delete("hot:cache"); } catch (e) {}   // bust hot-list cache so the ticker reflects this now
   return json({ ok: true, systemAddress: sa, system: rec.system || "", primaryDone: !!rec.primaryDone });
 }
 
@@ -120,5 +121,6 @@ export async function onRequestDelete({ request, env }) {
   const owned = await ownedClaim(env, sa, cmdr);
   if (owned.error) return json({ ok: false, error: owned.error }, owned.status);
   await env.BUILDS.delete("claim:" + sa);
+  try { await env.BUILDS.delete("hot:cache"); } catch (e) {}   // bust hot-list cache so the ticker reflects this now
   return json({ ok: true, systemAddress: sa, released: true });
 }
