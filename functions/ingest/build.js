@@ -95,20 +95,32 @@ async function createProject(body) {
       headers: { "User-Agent": UA, "Accept": "application/json", "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    return { status: r.status, ok: r.ok, data: await r.json().catch(() => null) };
+    const data = await r.json().catch(() => null);
+    console.log("[ingest] createProject PUT /api/project -> status=" + r.status + " ok=" + r.ok);
+    return { status: r.status, ok: r.ok, data };
   } catch (e) {
     // AbortError (our timeout) or a network failure — reported, never raw-502'd.
+    console.log("[ingest] createProject threw: " + String(e));
     return { status: 0, ok: false, data: null, err: String(e), timedOut: !!(e && e.name === "AbortError") };
   }
 }
 
-// Top-level guard: no matter what throws below, the plugin gets a structured 502 with a
-// reason instead of a bare Cloudflare gateway error (which the plugin can't parse or retry cleanly).
+// Hard overall deadline. Our per-call AbortController bounds each Raven request, but if one
+// truly hangs past that (or several stack up), Cloudflare can still kill the whole request and
+// return a BARE gateway 502 the plugin can't parse. This race guarantees we ALWAYS resolve a
+// structured JSON reason first — routed through the "create_failed" shape so even an un-updated
+// plugin surfaces it (its 502 branch only decodes error=="create_failed").
+const OVERALL_DEADLINE_MS = 22000;
+
 export async function onRequestPost(ctx) {
+  const deadline = new Promise((resolve) =>
+    setTimeout(() => resolve(json({ ok: false, error: "create_failed", reason: "deadline",
+      detail: "handler exceeded " + OVERALL_DEADLINE_MS + "ms" }, 502)), OVERALL_DEADLINE_MS));
   try {
-    return await handlePost(ctx);
+    return await Promise.race([handlePost(ctx), deadline]);
   } catch (e) {
-    return json({ ok: false, error: "handler_error", detail: String((e && e.message) || e) }, 502);
+    console.log("[ingest] handler_error: " + String((e && e.stack) || e));
+    return json({ ok: false, error: "create_failed", reason: "handler_error", detail: String((e && e.message) || e) }, 502);
   }
 }
 
@@ -165,7 +177,11 @@ async function handlePost({ request, env }) {
         : (res.status === 401 || res.status === 403) ? "raven_auth"
         : res.status === 409 ? "conflict"
         : ("raven_" + (res.status || "error"));
-      return json({ ok: false, error: "create_failed", reason, status: res.status || 0 }, 502);
+      // Carry the actual Raven error body/exception back so the plugin can log it — this is
+      // what turns a blind 502 into an actionable cause on the very next dock.
+      const detail = res.err || (res.data ? JSON.stringify(res.data).slice(0, 400) : "no raven body");
+      console.log("[ingest] create_failed reason=" + reason + " status=" + (res.status || 0) + " detail=" + detail);
+      return json({ ok: false, error: "create_failed", reason, status: res.status || 0, detail }, 502);
     }
     id = String(created.buildId).toLowerCase();
     name = created.buildName || newProject.buildName;
@@ -179,6 +195,7 @@ async function handlePost({ request, env }) {
       addedBy: cmdr, ts: Date.now(), marketId: body.marketId || null, via: "registrar-auto",
     };
     await env.BUILDS.put(id, JSON.stringify(meta));
+    console.log("[ingest] created+registered buildId=" + id + " name=\"" + name + "\" architect=" + createdArchitect + " src=" + architectSource);
     return json({ ok: true, id, added: !existed, created: true, name, system, architect: createdArchitect, architectSource });
   }
 
