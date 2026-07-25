@@ -5,16 +5,43 @@
 //       -> field-whitelisted merge into the KV record. Used by the board to stamp
 //          completion (so old builds stop costing a live Raven call per page load)
 //          and to backfill architect attribution discovered from Raven/claims.
-//          `unset` (admin console) removes whitelisted fields — e.g. un-stamp a build
-//          completed in error, or strip a bad attribution.
+//       `unset` (admin console) removes whitelisted fields.
 // KV binding: BUILDS (namespace onyx_builds). Gated to Blades by the /blades Cloudflare Access app.
+//
+// SCALE — EDGE-CACHED. The board + dashboard GET this on every load and auto-refresh,
+// and the GET scans the whole KV namespace (list + one read per GUID) — the single most
+// expensive read path in the app. We cache the GET response in the colo edge cache
+// (caches.default) for EDGE_TTL_S: a hit costs ZERO KV operations (unlike a KV-backed
+// cache, which still spends one read). Only requests that already passed Cloudflare
+// Access ever reach this Function, so the cache is never served to the public. Any
+// write (POST/PATCH/DELETE) purges the cached GET so the writer sees fresh data
+// immediately; ingest-driven writes fall in under EDGE_TTL_S, which is nothing against
+// the board's own refresh cadence.
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+const EDGE_TTL_S = 30;
 const json = (obj, status) => new Response(JSON.stringify(obj), {
   status: status || 200,
   headers: { "content-type": "application/json", "cache-control": "no-store" }
 });
+// One shared cache entry for all members: key is the bare URL (no auth headers).
+const cacheKeyFor = (request) => new Request(new URL(request.url).origin + new URL(request.url).pathname);
+async function edgeMatch(request) { try { return await caches.default.match(cacheKeyFor(request)); } catch (e) { return null; } }
+function edgePut(request, resp, ttl, waitUntil) {
+  try {
+    const r = resp.clone();
+    r.headers.set("Cache-Control", "public, max-age=" + ttl);
+    const p = caches.default.put(cacheKeyFor(request), r);
+    if (waitUntil) waitUntil(p);
+  } catch (e) {}
+}
+function edgeBust(request, waitUntil) {
+  try { const p = caches.default.delete(cacheKeyFor(request)); if (waitUntil) waitUntil(p); } catch (e) {}
+}
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet(context) {
+  const { request, env, waitUntil } = context;
+  const hit = await edgeMatch(request);
+  if (hit) return hit;
   if (!env || !env.BUILDS) return json({ builds: [], error: "KV not bound" });
   try {
     const listing = await env.BUILDS.list();
@@ -31,13 +58,17 @@ export async function onRequestGet({ env }) {
         completedTs: meta.completedTs || null, tons: meta.tons || null,
       });
     }
-    return json({ builds });
+    const resp = json({ builds });
+    resp.headers.set("Cache-Control", "public, max-age=" + EDGE_TTL_S);
+    edgePut(request, resp, EDGE_TTL_S, waitUntil);
+    return resp;
   } catch (e) {
     return json({ builds: [], error: String(e) });
   }
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env, waitUntil } = context;
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
@@ -51,13 +82,15 @@ export async function onRequestPost({ request, env }) {
     ts: Date.now()
   };
   await env.BUILDS.put(id, JSON.stringify(meta));
+  edgeBust(request, waitUntil);
   return json({ ok: true, id, name: meta.name, system: meta.system, addedBy });
 }
 
 // Board-driven metadata merge: completion stamp + architect backfill. Admin console
 // additionally uses `unset` to remove whitelisted fields.
 const UNSETTABLE = new Set(["completedTs", "tons", "architect", "architectSource", "verified"]);
-export async function onRequestPatch({ request, env }) {
+export async function onRequestPatch(context) {
+  const { request, env, waitUntil } = context;
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
@@ -82,16 +115,19 @@ export async function onRequestPatch({ request, env }) {
   const merged = { ...meta, ...set };
   for (const f of unset) delete merged[f];
   await env.BUILDS.put(id, JSON.stringify(merged));
+  edgeBust(request, waitUntil);
   return json({ ok: true, id, meta: merged });
 }
 
 // Remove a build from the shared list.
-export async function onRequestDelete({ request, env }) {
+export async function onRequestDelete(context) {
+  const { request, env, waitUntil } = context;
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
   const id = String(body.id || "").toLowerCase().trim();
   if (!GUID.test(id)) return json({ ok: false, error: "invalid build id" }, 400);
   await env.BUILDS.delete(id);
+  edgeBust(request, waitUntil);
   return json({ ok: true, id });
 }

@@ -10,7 +10,13 @@
 // Storage: BUILDS KV, key "ticker:custom" -> { fields:[...], updatedTs, updatedBy }.
 // Non-GUID key, so it's ignored by the build list and rides along in export "other{}"
 // (backed up + restorable).
+//
+// SCALE — EDGE-CACHED GET. The dashboard ticker polls this on a timer per open tab.
+// The response is identical for everyone, so we serve it from the colo edge cache for
+// EDGE_TTL_S (a hit = zero KV ops). An admin PUT purges the cache so edits show up at
+// once; otherwise readers are at most EDGE_TTL_S stale, fine for a news ticker.
 const OWNER = "bigskinnywick@gmail.com";
+const EDGE_TTL_S = 60;
 const SLOTS = [
   { key: "galnet", label: "GALNET", text: "10 Jun 3312 — Radicoida Unica ruled 'cultivated, not created': researchers say the Guardians farmed the rare bloom rather than engineering it, with archive data hinting they used it to sharpen their warriors. Also on the wire — Frontline Solutions expands rapid-response anti-piracy ops as an unidentified criminal fleet bearing strange insignia is sighted across several systems." },
   { key: "cg", label: "COMMUNITY GOALS", text: "Colonia Council Anniversary Celebrations — haul commodities & rare goods to Peters Base (Facece) for Colonia's 10th. Tier 2/5, ~21% in with 10k+ commanders, ~3 days left. Credit + cosmetic payouts scale with your contribution tier." },
@@ -22,6 +28,19 @@ const LABEL_MAX = 32, TEXT_MAX = 500;
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
 });
+const cacheKeyFor = (request) => new Request(new URL(request.url).origin + new URL(request.url).pathname);
+async function edgeMatch(request) { try { return await caches.default.match(cacheKeyFor(request)); } catch (e) { return null; } }
+function edgePut(request, resp, ttl, waitUntil) {
+  try {
+    const r = resp.clone();
+    r.headers.set("Cache-Control", "public, max-age=" + ttl);
+    const p = caches.default.put(cacheKeyFor(request), r);
+    if (waitUntil) waitUntil(p);
+  } catch (e) {}
+}
+function edgeBust(request, waitUntil) {
+  try { const p = caches.default.delete(cacheKeyFor(request)); if (waitUntil) waitUntil(p); } catch (e) {}
+}
 // admin gate (JWT assertion; header not reliable in Pages behind Access)
 function b64urlToStr(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return atob(s); }
 function callerEmail(request) {
@@ -52,12 +71,19 @@ async function load(env) {
   });
 }
 
-export async function onRequestGet({ request, env }) {
+export async function onRequestGet(context) {
+  const { request, env, waitUntil } = context;
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound", fields: [] }, 500);
-  return json({ ok: true, fields: await load(env) });
+  const hit = await edgeMatch(request);
+  if (hit) return hit;
+  const resp = json({ ok: true, fields: await load(env) });
+  resp.headers.set("Cache-Control", "public, max-age=" + EDGE_TTL_S);
+  edgePut(request, resp, EDGE_TTL_S, waitUntil);
+  return resp;
 }
 
-export async function onRequestPut({ request, env }) {
+export async function onRequestPut(context) {
+  const { request, env, waitUntil } = context;
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
   let body = {}; try { body = await request.json(); } catch (e) {}
@@ -71,5 +97,6 @@ export async function onRequestPut({ request, env }) {
   slot.updatedTs = Date.now();
   slot.updatedBy = callerEmail(request);
   await env.BUILDS.put("ticker:custom", JSON.stringify({ fields, updatedTs: Date.now(), updatedBy: callerEmail(request) }));
+  edgeBust(request, waitUntil);
   return json({ ok: true, fields });
 }
