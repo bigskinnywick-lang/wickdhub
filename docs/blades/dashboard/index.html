@@ -394,7 +394,7 @@
   async function ardentSources(system,commodity){
     const key=system+"|"+commodity;
     if(srcCache[key]) return srcCache[key];
-    const url=ARDENT+"/v2/system/name/"+encodeURIComponent(system)+"/commodity/name/"+encodeURIComponent(commodity)+"/nearby/exports?maxDistance=250&fleetCarriers=true";
+    const url=ARDENT+"/v2/system/name/"+encodeURIComponent(system)+"/commodity/name/"+encodeURIComponent(commodity)+"/nearby/exports?maxDistance=250";
     const r=await fetch(url); if(!r.ok) throw new Error("Ardent "+r.status);
     let list=await r.json(); if(!Array.isArray(list)) list=[];
     const srcScore=(s)=>{let v=RANK.distLY*(s.distance||0)+RANK.priceCr*(s.buyPrice||0);if(s.stationType==='FleetCarrier')v+=RANK.carrierPenalty;const t=Date.parse(s.updatedAt);if(!isNaN(t)&&(Date.now()-t)/3.6e6>RANK.staleHrs)v+=RANK.stalePenalty;return v;};
