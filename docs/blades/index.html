@@ -42,6 +42,8 @@
   .clock{display:flex;align-items:center;gap:9px;font-family:var(--font-head);font-size:12px;letter-spacing:1.5px;color:var(--accent-bright);text-shadow:0 0 8px var(--glow)}
   .clock .cl-lab{color:var(--muted);font-size:8.5px;letter-spacing:1.5px;font-family:var(--font-body)}
   .clock #clTime{font-variant-numeric:tabular-nums}
+  .clock .cl-toggle{cursor:pointer;border:1px solid var(--accent-dim);color:var(--muted);font-size:8.5px;padding:2px 7px;border-radius:var(--radius);letter-spacing:1px;font-family:var(--font-body)}
+  .clock .cl-toggle:hover{color:var(--accent-bright);border-color:var(--accent)}
   @media(max-width:720px){.clock{display:none}}
 
   header.hud{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:14px;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:14px 18px;border-radius:var(--radius)}
@@ -208,7 +210,11 @@
 
   <div class="secure">
     <div class="left"><span class="lock">◈</span> SECURE UPLINK · ONYX BLADES NETWORK</div>
-    <div class="clock"><span class="cl-lab">GALACTIC</span> <span id="clTime">----</span></div>
+    <div class="clock" id="clock" title="Elite Dangerous runs on real UTC, year +1286. Click to toggle RL local time.">
+      <span class="cl-lab" id="clLab">GALACTIC</span>
+      <span id="clTime">————</span>
+      <span class="cl-toggle" id="clToggle">ED ⇄ LOCAL</span>
+    </div>
     <div class="right online"><span>◉ <b id="secOnline">—</b> FLYING NOW</span></div>
   </div>
 
@@ -229,7 +235,6 @@
   <nav class="blades-nav">
     <a class="bn on" href="/blades/">HOME</a>
     <a class="bn" href="/blades/colonization/">COLONIZATION</a>
-    <a class="bn" href="/blades/dashboard/">COHORT DASHBOARD</a>
     <a class="bn" href="/blades/commander/">MY STATS</a>
     <a class="bn" href="/blades/onboarding/">SETUP GUIDE</a>
   </nav>
@@ -425,14 +430,12 @@ function ago(ts){ if(!ts) return ""; const s=Math.max(0,(Date.now()-ts)/1000);
   var _st=0;try{var _s=localStorage.getItem("ob_theme");var _j=SCHEMES.findIndex(function(x){return x.t===_s;});if(_j>=0)_st=_j;}catch(e){}apply(_st);
 })();
 
-/* ---------- galactic clock (ED time = UTC + 1286 years) ---------- */
-(function(){
-  const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const pad=(n)=>String(n).padStart(2,"0");
-  function tick(){ const d=new Date(); const t=$("clTime"); if(!t) return;
-    t.textContent=(d.getUTCFullYear()+1286)+" "+MON[d.getUTCMonth()]+" "+pad(d.getUTCDate())+" "+pad(d.getUTCHours())+":"+pad(d.getUTCMinutes()); }
-  tick(); setInterval(tick,15000);
-})();
+/* ---------- galactic clock with ED ⇄ LOCAL toggle (matches the rest of the site) ---------- */
+(function(){const pad2=(n)=>String(n).padStart(2,"0");const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];let mode="ed";try{var _cm=localStorage.getItem("ob_clock");if(_cm==="ed"||_cm==="local")mode=_cm;}catch(e){}
+  function tz(){try{return new Intl.DateTimeFormat("en-US",{timeZoneName:"short"}).formatToParts(new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "LOCAL";}}
+  function tick(){const d=new Date();if(mode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${tz()}`;$("clLab").textContent="LOCAL / RL";}}
+  var _tg=$("clToggle"); if(_tg) _tg.onclick=()=>{mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};
+  tick();setInterval(tick,1000);})();
 
 /* ---------- static config paint ---------- */
 (function(){
