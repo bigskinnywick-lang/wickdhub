@@ -727,5 +727,42 @@
     load();
   })();
 </script>
+
+<div id="visitorGate" class="hidden">
+  <div class="vg-card">
+    <div class="vg-lock">🔒</div>
+    <div class="vg-h">ENLISTED COMMANDERS ONLY</div>
+    <div class="vg-sub">This is the Onyx Blades flight deck — the live board is for enlisted pilots. New here? See exactly what it does, then apply. We run colonisation now, with mining, combat, trade, BGS and exploration on the way.</div>
+    <div class="vg-cta">
+      <a class="vg-btn primary" href="https://discord.gg/T3jFgGB9N" target="_blank" rel="noopener">⟢ APPLY VIA DISCORD</a>
+      <a class="vg-btn" href="/blades/onboarding/features/">▸ SEE THE CAPABILITY MANIFEST</a>
+      <a class="vg-btn" href="/blades/signin/">SIGN IN</a>
+    </div>
+    <a class="vg-back" href="/blades/">◂ back to the front door</a>
+  </div>
+</div>
+<style>
+  #visitorGate{position:fixed;inset:0;z-index:99998;background:rgba(5,5,6,.94);display:grid;place-items:center;padding:20px}
+  #visitorGate.hidden{display:none}
+  .vg-card{max-width:520px;text-align:center;border:1px solid var(--accent-dim,#a24d08);background:linear-gradient(180deg,var(--panel2,#1c1109),var(--panel,#140d07));padding:34px 30px;border-radius:var(--radius,0)}
+  .vg-lock{font-size:34px;filter:drop-shadow(0 0 8px var(--glow,rgba(255,122,18,.5)))}
+  .vg-h{font-family:var(--font-head,sans-serif);font-size:18px;letter-spacing:3px;color:var(--accent-bright,#ffb14e);margin-top:12px;text-shadow:0 0 12px var(--glow,rgba(255,122,18,.5))}
+  .vg-sub{font-size:13px;line-height:1.7;color:var(--muted,#b98a52);margin-top:12px}
+  .vg-cta{display:flex;flex-direction:column;gap:10px;margin-top:22px}
+  .vg-btn{font-family:var(--font-head,sans-serif);font-size:12px;letter-spacing:1.5px;padding:12px 18px;border-radius:var(--radius,0);text-decoration:none;border:1px solid var(--accent-dim,#a24d08);color:var(--accent-bright,#ffb14e)}
+  .vg-btn.primary{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright,#ffb14e),var(--accent,#ff7a12));border-color:var(--accent,#ff7a12);box-shadow:0 0 18px var(--glow,rgba(255,122,18,.5))}
+  .vg-btn:hover{background:color-mix(in srgb,var(--accent,#ff7a12) 16%,var(--bg,#0a0705))}
+  .vg-back{display:inline-block;margin-top:18px;font-size:11px;letter-spacing:1px;color:var(--muted,#b98a52);text-decoration:none}
+</style>
+<script>
+(async function(){
+  try{
+    var r=await fetch("/blades/api/whoami-cmdr",{headers:{accept:"application/json"},credentials:"include"});
+    if(r.ok){var ct=r.headers.get("content-type")||"";if(ct.indexOf("json")>=0){var j=await r.json();if(j&&j.ok&&j.me)return;}}
+  }catch(e){}
+  var g=document.getElementById("visitorGate");if(g)g.classList.remove("hidden");
+})();
+</script>
+
 </body>
 </html>
