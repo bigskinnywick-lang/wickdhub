@@ -290,17 +290,8 @@
     </div>
     <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
   </header>
-  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn on" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/dashboard/">COHORT DASHBOARD</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
   <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
-  <div class="buildbar">
-    <span class="bb-lab">◈ BUILD</span>
-    <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
-    <button id="buildAdd" class="bb-add" title="View any build by its RavenColonial ID">＋ add ID</button>
-    <span class="bb-row" id="buildAddRow" style="display:none">
-      <input id="buildIdIn" class="bb-in" placeholder="paste RavenColonial build ID or link" autocomplete="off" />
-      <button id="buildIdGo" class="bb-go">view ▸</button>
-    </span>
-  </div>
   <div class="controls">
     <div class="dialbox">
       <div class="dial-labels">
@@ -315,6 +306,15 @@
       </div>
     </div>
     <div class="mockbadge" style="color:var(--good);border-color:var(--good)">◆ LIVE — RavenColonial build + Ardent market, fetched in your browser</div>
+  </div>
+  <div class="buildbar">
+    <span class="bb-lab">◈ BUILD</span>
+    <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
+    <button id="buildAdd" class="bb-add" title="View any build by its RavenColonial ID">＋ add ID</button>
+    <span class="bb-row" id="buildAddRow" style="display:none">
+      <input id="buildIdIn" class="bb-in" placeholder="paste RavenColonial build ID or link" autocomplete="off" />
+      <button id="buildIdGo" class="bb-go">view ▸</button>
+    </span>
   </div>
   <div id="view"><div class="panel"><h2>Connecting…</h2><div class="srcLoading">Fetching live build data from RavenColonial…</div></div></div>
   <footer>ONYX BLADES SQUADRON · LIVE FEED · DATA: RAVENCOLONIAL (build) + ARDENT (market)<br />build progress via RavenColonial · market via Ardent (EDDN) · updatedAt = last commander to visit that market</footer>

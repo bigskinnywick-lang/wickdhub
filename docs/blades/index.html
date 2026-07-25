@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="onyx">
+<html lang="en" data-theme="amber">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -61,11 +61,30 @@
   .blades-nav .bn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
   .blades-nav .bn.on{color:var(--ink);background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
 
-  .themebar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:14px 0 4px}
-  .themebar .tl{font-size:10px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-right:4px}
-  .theme-btn{font-family:var(--font-head);font-size:10.5px;letter-spacing:1.5px;padding:6px 12px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:var(--radius);transition:.15s}
-  .theme-btn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
-  .theme-btn.on{color:var(--ink);background:var(--accent);border-color:var(--accent);box-shadow:0 0 14px var(--glow)}
+  .controls{display:flex;align-items:center;gap:12px;margin:16px 0 4px;flex-wrap:wrap}
+  /* ===== colour-scheme rotary dial (matches the rest of the site) ===== */
+  .dialbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .dial-labels{display:flex;gap:7px}
+  .dl{font-family:var(--font-head);font-size:10px;letter-spacing:1.2px;line-height:1.12;text-align:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:6px 11px;cursor:pointer;border-radius:var(--radius);transition:.15s}
+  .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
+  .dl:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
+  .dl.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
+  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on,:root[data-theme="green"] .dl.on{color:#04070a}
+  .dial-knob-row{display:flex;align-items:center;gap:11px}
+  .dial-cap{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+  .dial-scheme{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);min-width:112px;text-shadow:0 0 8px var(--glow)}
+  .knob{position:relative;width:58px;height:58px;border-radius:50%;cursor:grab;flex:none;
+    background:radial-gradient(circle at 50% 36%, color-mix(in srgb,var(--accent) 24%,#000) 0%, #0c0906 58%, #050403 100%);
+    border:2px solid var(--accent-dim);
+    box-shadow:0 0 16px var(--glow), inset 0 2px 6px rgba(255,255,255,.08), inset 0 -3px 8px rgba(0,0,0,.75);
+    transform:rotate(0deg);transition:transform .38s cubic-bezier(.25,1.35,.5,1);touch-action:none;user-select:none}
+  .knob:active{cursor:grabbing}
+  .knob::before{content:"";position:absolute;inset:8px;border-radius:50%;border:1px dashed color-mix(in srgb,var(--accent) 42%,transparent);opacity:.55}
+  .knob .pointer{position:absolute;left:50%;top:3px;width:3px;height:19px;margin-left:-1.5px;border-radius:2px;background:linear-gradient(var(--accent-bright),var(--accent));box-shadow:0 0 9px var(--glow)}
+  .knob:focus{outline:none;box-shadow:0 0 0 2px var(--accent),0 0 16px var(--glow)}
+  .knob.turning{transition:none}
+  @media(prefers-reduced-motion:reduce){.knob{transition:none}}
+  @media(max-width:720px){.dial-scheme{display:none}}
 
   /* ===== HERO ===== */
   .hero{position:relative;margin-top:16px;border:1px solid var(--line);background:
@@ -215,12 +234,19 @@
     <a class="bn" href="/blades/onboarding/">SETUP GUIDE</a>
   </nav>
 
-  <div class="themebar">
-    <span class="tl">Scheme</span>
-    <button class="theme-btn" data-t="amber">AMBER</button>
-    <button class="theme-btn" data-t="cyan">CYAN</button>
-    <button class="theme-btn" data-t="onyx">ONYX</button>
-    <button class="theme-btn" data-t="green">GREEN</button>
+  <div class="controls">
+    <div class="dialbox">
+      <div class="dial-labels">
+        <button class="dl on" data-t="amber">AMBER<small>COCKPIT</small></button>
+        <button class="dl" data-t="cyan">FLEET<small>TACTICAL</small></button>
+        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button><button class="dl" data-t="green">JADE<small>CANOPY</small></button>
+      </div>
+      <div class="dial-knob-row">
+        <span class="dial-cap">Turn ►</span>
+        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span class="pointer"></span></div>
+        <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
+      </div>
+    </div>
   </div>
 
   <!-- HERO -->
@@ -380,15 +406,23 @@ function ago(ts){ if(!ts) return ""; const s=Math.max(0,(Date.now()-ts)/1000);
   if(s<60) return Math.floor(s)+"s"; if(s<3600) return Math.floor(s/60)+"m";
   if(s<86400) return Math.floor(s/3600)+"h"; return Math.floor(s/86400)+"d"; }
 
-/* ---------- theme ---------- */
+/* ---------- colour-scheme rotary dial (matches the rest of the site) ---------- */
 (function(){
-  const btns=[...document.querySelectorAll(".theme-btn")];
-  function set(t,save){ document.documentElement.setAttribute("data-theme",t);
-    btns.forEach(b=>b.classList.toggle("on",b.dataset.t===t));
-    if(save){ try{ localStorage.setItem("ob_theme",t);}catch(e){} } }
-  let init="onyx"; try{ const s=localStorage.getItem("ob_theme"); if(s) init=s; }catch(e){}
-  set(init,false);
-  btns.forEach(b=>b.onclick=()=>set(b.dataset.t,true));
+  const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];
+  const knob=$("knob"), schemeEl=$("dialScheme"), labels=[...document.querySelectorAll(".dl")];
+  let idx=0, dragging=false;
+  function paint(i){const s=SCHEMES[i];document.documentElement.dataset.theme=s.t;schemeEl.textContent=s.n;labels.forEach((l,j)=>l.classList.toggle("on",j===i));knob.setAttribute("aria-valuenow",i);}
+  function apply(i){idx=(i%SCHEMES.length+SCHEMES.length)%SCHEMES.length;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
+  labels.forEach((l,j)=>l.onclick=()=>apply(j));
+  function ang(e){const r=knob.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height/2;const pt=e.touches?e.touches[0]:e;let d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
+  function near(d){let b=0,bd=1e9;SCHEMES.forEach((s,i)=>{const x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}
+  function mv(e){if(!dragging)return;if(e.cancelable)e.preventDefault();const d=ang(e);knob.classList.add("turning");knob.style.transform="rotate("+d+"deg)";const n=near(d);if(n!==idx){idx=n;paint(idx);}}
+  function up(){if(!dragging)return;dragging=false;apply(idx);window.removeEventListener("mousemove",mv);window.removeEventListener("mouseup",up);window.removeEventListener("touchmove",mv);window.removeEventListener("touchend",up);}
+  function dn(e){dragging=true;if(e.cancelable)e.preventDefault();knob.focus();window.addEventListener("mousemove",mv);window.addEventListener("mouseup",up);window.addEventListener("touchmove",mv,{passive:false});window.addEventListener("touchend",up);}
+  knob.addEventListener("mousedown",dn);knob.addEventListener("touchstart",dn,{passive:false});
+  knob.addEventListener("wheel",e=>{e.preventDefault();apply(idx+(e.deltaY>0?1:-1));},{passive:false});
+  knob.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowUp"){e.preventDefault();apply(idx+1);}else if(e.key==="ArrowLeft"||e.key==="ArrowDown"){e.preventDefault();apply(idx-1);}});
+  var _st=0;try{var _s=localStorage.getItem("ob_theme");var _j=SCHEMES.findIndex(function(x){return x.t===_s;});if(_j>=0)_st=_j;}catch(e){}apply(_st);
 })();
 
 /* ---------- galactic clock (ED time = UTC + 1286 years) ---------- */
