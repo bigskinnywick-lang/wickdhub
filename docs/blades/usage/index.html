@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>ONYX BLADES · Squad Net Usage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<style>
+  :root[data-theme="amber"]{--accent:#ff7a12;--accent-bright:#ffb14e;--accent-dim:#a24d08;--glow:rgba(255,122,18,.5);--bg:#0a0705;--panel:#140d07;--panel2:#1c1109;--line:#3a2410;--text:#f6d9b0;--muted:#b98a52;--radius:0px}
+  :root[data-theme="cyan"]{--accent:#39cfe0;--accent-bright:#8ff4ff;--accent-dim:#1b5f6d;--glow:rgba(57,207,224,.45);--bg:#04080b;--panel:#08141a;--panel2:#0b1c25;--line:#123642;--text:#d6ecf2;--muted:#6f9aa8;--radius:2px}
+  :root[data-theme="onyx"]{--accent:#5b8cff;--accent-bright:#a9c2ff;--accent-dim:#2c3f6b;--glow:rgba(91,140,255,.4);--bg:#050506;--panel:#0d0e12;--panel2:#131520;--line:#242734;--text:#e8eaf2;--muted:#868b9c;--radius:0px}
+  :root[data-theme="green"]{--accent:#35c46a;--accent-bright:#7df3a6;--accent-dim:#1c6b3e;--glow:rgba(53,196,106,.42);--bg:#040a06;--panel:#08150d;--panel2:#0c2013;--line:#144023;--text:#d6f2e0;--muted:#6fa886;--radius:2px}
+  *{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{background:radial-gradient(1000px 600px at 78% -12%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 60%),var(--bg);color:var(--text);font-family:"Share Tech Mono",monospace;letter-spacing:.3px;min-height:100vh}
+  .wrap{max-width:920px;margin:0 auto;padding:0 18px 60px}a{color:inherit}
+  header.hud{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px;border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:16px 20px;border-radius:var(--radius)}
+  .brand{display:flex;align-items:center;gap:15px}
+  .ic{width:54px;height:54px;border:1px solid var(--accent);border-radius:12px;display:grid;place-items:center;font-size:24px;color:var(--accent-bright);box-shadow:0 0 18px var(--glow);flex:none}
+  .brand h1{font-family:"Orbitron",sans-serif;font-weight:800;margin:0;font-size:18px;letter-spacing:3px;color:var(--accent-bright);text-shadow:0 0 12px var(--glow)}
+  .brand .sub{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:3px}
+  .hlinks{display:flex;gap:8px}
+  .hlinks a{font-family:"Orbitron",sans-serif;font-size:10px;letter-spacing:1.5px;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:8px 12px;border-radius:var(--radius);white-space:nowrap}
+  .hlinks a:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}@media(max-width:640px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  .tile{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:16px 14px;text-align:center;border-radius:var(--radius)}
+  .tile .big{font-family:"Orbitron",sans-serif;font-size:26px;color:var(--accent-bright);text-shadow:0 0 10px var(--glow);font-variant-numeric:tabular-nums}
+  .tile .lbl{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-top:6px}
+  .panel{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px 20px;border-radius:var(--radius);margin-top:16px}
+  .panel h2{font-family:"Orbitron",sans-serif;font-size:12px;letter-spacing:2.2px;color:var(--accent);margin:0 0 14px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .panel h2::before{content:"▸";color:var(--accent-dim)}.panel h2 .r{margin-left:auto;font-family:"Share Tech Mono",monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:none}
+  .bars{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:6px}
+  .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;height:100%}
+  .bar .fill{width:100%;background:repeating-linear-gradient(90deg,var(--accent) 0 8px,var(--accent-bright) 8px 10px);box-shadow:0 0 10px var(--glow);min-height:2px;border-radius:2px 2px 0 0}
+  .bar .v{font-size:9.5px;color:var(--accent-bright);font-variant-numeric:tabular-nums}
+  .bar .d{font-size:8.5px;color:var(--muted)}
+  .kv{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:640px){.kv{grid-template-columns:repeat(2,1fr)}}
+  .kvc{border:1px solid var(--line);background:var(--panel);padding:12px;border-radius:var(--radius);text-align:center}
+  .kvc .n{font-family:"Orbitron",sans-serif;font-size:19px;color:var(--text);font-variant-numeric:tabular-nums}
+  .kvc .t{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-top:4px}
+  .kvc .cap{font-size:9px;color:var(--muted);margin-top:5px}
+  .note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px}
+  .err{border:1px dashed var(--accent-dim);background:color-mix(in srgb,var(--accent) 6%,var(--bg));padding:12px 14px;border-radius:var(--radius);margin-top:16px;font-size:11.5px;color:var(--muted);line-height:1.6}
+  .err b{color:var(--warn,#ffcf5c)}.err code{color:var(--accent-bright)}
+  .gate{text-align:center;padding:44px 20px;color:var(--muted)}.gate .lk{font-size:30px;color:var(--accent-dim)}.gate .t{font-family:"Orbitron",sans-serif;letter-spacing:2px;margin-top:10px}
+  .refresh{font-family:"Orbitron",sans-serif;font-size:10px;letter-spacing:1px;padding:6px 12px;border:1px solid var(--accent-dim);background:var(--panel);color:var(--accent-bright);cursor:pointer;border-radius:var(--radius)}
+  footer{margin-top:26px;font-size:10px;color:var(--accent-dim);letter-spacing:1px;text-align:center}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hud">
+    <div class="brand"><div class="ic">⚡</div><div><h1>SQUAD NET USAGE</h1><div class="sub" id="sub">TRAFFIC & KV · LAST 7 DAYS</div></div></div>
+    <div class="hlinks"><button class="refresh" id="refreshBtn">⟳ REFRESH</button><a href="/blades/commander/">◂ MY STATS</a></div>
+  </header>
+
+  <div id="gate" class="panel hidden"><div class="gate"><div class="lk">📊</div><div class="t">ADMINS ONLY</div><div style="font-size:11.5px;margin-top:10px">The usage glance is limited to squadron admins.</div></div></div>
+
+  <div id="body" class="hidden">
+    <div class="tiles">
+      <div class="tile"><div class="big" id="tReq">—</div><div class="lbl">Requests · 7d</div></div>
+      <div class="tile"><div class="big" id="tViz">—</div><div class="lbl">Unique Visitors · 7d</div></div>
+      <div class="tile"><div class="big" id="tPv">—</div><div class="lbl">Page Views · 7d</div></div>
+      <div class="tile"><div class="big" id="tCache">—</div><div class="lbl">Cache Hit</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Requests per day <span class="r" id="httpRange">—</span></h2>
+      <div class="bars" id="bars"></div>
+    </div>
+
+    <div class="panel">
+      <h2>KV Operations · 7d <span class="r">monthly included: 10M read · 1M write/list/delete</span></h2>
+      <div class="kv">
+        <div class="kvc"><div class="n" id="kvRead">—</div><div class="t">Reads</div><div class="cap" id="kvReadPct"></div></div>
+        <div class="kvc"><div class="n" id="kvWrite">—</div><div class="t">Writes</div><div class="cap" id="kvWritePct"></div></div>
+        <div class="kvc"><div class="n" id="kvList">—</div><div class="t">Lists</div><div class="cap" id="kvListPct"></div></div>
+        <div class="kvc"><div class="n" id="kvDelete">—</div><div class="t">Deletes</div><div class="cap" id="kvDeletePct"></div></div>
+      </div>
+      <div class="note">Percentages are the 7-day total against the monthly included allowance — a rough "are we anywhere close?" gauge. On the $5 Workers Paid plan you'd have to be moving serious traffic to touch these.</div>
+    </div>
+
+    <div class="err hidden" id="errBox"></div>
+  </div>
+
+  <footer>ONYX BLADES SQUADRON · SQUAD NET USAGE · data from Cloudflare Analytics (GraphQL)</footer>
+</div>
+<script>
+  const $=(id)=>document.getElementById(id);
+  (function(){try{var t=localStorage.getItem("ob_theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}})();
+  const fmt=(n)=>{n=Number(n)||0; if(n>=1e6)return (n/1e6).toFixed(n>=1e7?0:1)+"M"; if(n>=1e3)return (n/1e3).toFixed(n>=1e4?0:1)+"k"; return String(n);};
+  const sum=(a,k)=>a.reduce((t,x)=>t+(Number(x[k])||0),0);
+
+  async function load(){
+    let j=null, status=0;
+    try{ const r=await fetch("/blades/api/usage",{credentials:"same-origin"}); status=r.status; j=await r.json().catch(()=>null); }catch(e){}
+    if(status===403){ $("gate").classList.remove("hidden"); $("body").classList.add("hidden"); return; }
+    $("gate").classList.add("hidden"); $("body").classList.remove("hidden");
+    if(!j){ $("errBox").classList.remove("hidden"); $("errBox").innerHTML="<b>Couldn't reach the usage API.</b>"; return; }
+
+    const days=j.days||[], kv=j.kv||[];
+    // tiles
+    const req=sum(days,"requests"), cached=sum(days,"cached"), pv=sum(days,"pageViews"), viz=sum(days,"uniques");
+    $("tReq").textContent=fmt(req); $("tViz").textContent=fmt(viz); $("tPv").textContent=fmt(pv);
+    $("tCache").textContent= req? Math.round(cached/req*100)+"%" : "—";
+    $("httpRange").textContent=(j.since||"")+" → "+(j.until||"");
+    // bars
+    const max=Math.max(1,...days.map(d=>d.requests||0));
+    $("bars").innerHTML = days.length ? days.map(d=>{
+      const h=Math.round((d.requests||0)/max*100);
+      return '<div class="bar"><span class="v">'+fmt(d.requests)+'</span><div class="fill" style="height:'+h+'%"></div><span class="d">'+String(d.date).slice(5)+'</span></div>';
+    }).join("") : '<div class="note">No request data yet — either brand-new or the token can\'t read zone analytics (see below).</div>';
+    // kv
+    const kvSum=(t)=>kv.filter(x=>(x.actionType||"").toLowerCase()===t).reduce((s,x)=>s+(Number(x.requests)||0),0);
+    const reads=kvSum("read"), writes=kvSum("write"), lists=kvSum("list"), dels=kvSum("delete");
+    $("kvRead").textContent=fmt(reads); $("kvWrite").textContent=fmt(writes); $("kvList").textContent=fmt(lists); $("kvDelete").textContent=fmt(dels);
+    const pct=(n,cap)=>cap?("~"+(n/cap*100).toFixed(n/cap*100<1?2:1)+"% of mo"):"";
+    $("kvReadPct").textContent=pct(reads,10e6); $("kvWritePct").textContent=pct(writes,1e6); $("kvListPct").textContent=pct(lists,1e6); $("kvDeletePct").textContent=pct(dels,1e6);
+    // errors / hints
+    if(j.errors && j.errors.length){
+      $("errBox").classList.remove("hidden");
+      $("errBox").innerHTML="<b>Some data couldn't be pulled</b> — usually a token-permission gap. Give the <code>CF_API_TOKEN</code> Pages secret <b>Account Analytics: Read</b> + <b>Zone: Read</b>.<br><span style='opacity:.7'>"+j.errors.map(e=>String(e).replace(/[<>]/g,"")).join("<br>")+"</span>";
+    } else $("errBox").classList.add("hidden");
+  }
+  $("refreshBtn").onclick=load;
+  load();
+</script>
+</body>
+</html>

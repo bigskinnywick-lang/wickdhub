@@ -299,6 +299,7 @@
     <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
     <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
     <a href="/blades/admiral/" id="admiralBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admiral's Desk — squadron leader">⚓ ADMIRAL'S DESK</a>
+    <a href="/blades/usage/" id="usageBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Squad Net Usage — traffic & KV glance (admins only)">◷ NET USAGE</a>
   </div>
   <div class="controls">
     <div class="dialbox">
@@ -386,7 +387,7 @@
       const tp=$("testPilotBtn"); if(tp&&CMDR[em])tp.style.display="";  // shakedown crew only
     }).catch(()=>{});})();
 // ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
-  (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{const ab=$("adminBtn");if(ab&&a&&a.isAdmin)ab.style.display="";}).catch(()=>{});})();
+  (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{if(a&&a.isAdmin){const ab=$("adminBtn");if(ab)ab.style.display="";const ub=$("usageBtn");if(ub)ub.style.display="";}}).catch(()=>{});})();
 // ===== Admiral's Desk reveal — WIRED, NOT ACTIVATED. Set ADMIRAL_DESK_ACTIVE=true to expose it (leadership only for now). =====
   (function(){var ADMIRAL_DESK_ACTIVE=false;if(!ADMIRAL_DESK_ACTIVE)return;fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{const ab=$("admiralBtn");if(ab&&a&&a.isAdmin)ab.style.display="";}).catch(()=>{});})();
 // ===== theme dial =====
