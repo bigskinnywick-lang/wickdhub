@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="onyx">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ONYX BLADES · Signing in…</title>
+<meta name="robots" content="noindex" />
+<!-- This page sits BEHIND Cloudflare Access. Hitting it triggers the Access login
+     for anyone not signed in; once authenticated it drops the commander back on the
+     public home page, where the deck now recognises them as enlisted. -->
+<meta http-equiv="refresh" content="0;url=/blades/" />
+<style>
+  html,body{margin:0;height:100%;background:#050506;color:#a9c2ff;font-family:"Share Tech Mono",monospace;display:grid;place-items:center;text-align:center}
+  .b{font-family:"Orbitron",sans-serif;letter-spacing:3px;font-size:14px;color:#a9c2ff;text-shadow:0 0 12px rgba(91,140,255,.4)}
+  .s{color:#868b9c;font-size:12px;letter-spacing:1.5px;margin-top:10px}
+  a{color:#a9c2ff}
+</style>
+<script>location.replace("/blades/");</script>
+</head>
+<body>
+  <div>
+    <div class="b">ONYX BLADES</div>
+    <div class="s">UPLINK VERIFIED · RETURNING TO COMMAND…</div>
+    <div class="s" style="margin-top:14px"><a href="/blades/">Continue ▸</a></div>
+  </div>
+</body>
+</html>
