@@ -209,13 +209,13 @@
 <div class="wrap">
 
   <div class="secure">
-    <div class="left"><span class="lock">◈</span> SECURE UPLINK · ONYX BLADES NETWORK</div>
+    <div class="left" id="secLeft"><span class="lock">◈</span> PUBLIC UPLINK · ONYX BLADES NETWORK</div>
     <div class="clock" id="clock" title="Elite Dangerous runs on real UTC, year +1286. Click to toggle RL local time.">
       <span class="cl-lab" id="clLab">GALACTIC</span>
       <span id="clTime">————</span>
       <span class="cl-toggle" id="clToggle">ED ⇄ LOCAL</span>
     </div>
-    <div class="right online"><span>◉ <b id="secOnline">—</b> FLYING NOW</span></div>
+    <div class="right online" id="secRight"><span>◉ <b>—</b> FLYING NOW</span></div>
   </div>
 
   <header class="hud">
@@ -470,7 +470,7 @@ function ago(ts){ if(!ts) return ""; const s=Math.max(0,(Date.now()-ts)/1000);
 })();
 
 /* ---------- member detection + presence ---------- */
-let IS_MEMBER=false, MY_CMDR="", GAME_COUNT=null, DISCORD_COUNT=null;
+let IS_MEMBER=false, MY_CMDR="", GAME_COUNT=null, DISCORD_COUNT=null, LAST_SEEN_TS=null;
 async function probeIdentity(){
   try{
     const r=await fetch("/blades/api/whoami-cmdr",{headers:{accept:"application/json"},credentials:"include"});
@@ -505,11 +505,25 @@ function lockPanel(el,title,sub){
   el.classList.add("locked");
   el.innerHTML='<div class="lockwrap"><div class="li">⬗</div><div class="lt">'+escH(title)+'</div><div class="ls">'+sub+'</div></div>';
 }
+function paintSecLeft(){
+  var el=$("secLeft"); if(!el) return;
+  el.innerHTML='<span class="lock">◈</span> '+(IS_MEMBER?"SECURE UPLINK":"PUBLIC UPLINK")+' · ONYX BLADES NETWORK';
+}
 function paintFlying(){
-  // hero + secure bar "flying now": in-game count for members, Discord online for the public
-  const n = IS_MEMBER ? (GAME_COUNT!=null?GAME_COUNT:0) : DISCORD_COUNT;
-  $("stOnline").textContent = (n!=null)?n:"—";
-  $("secOnline").textContent = (n!=null)?n:"—";
+  // hero tile = raw count (in-game/on-deck for members, Discord for public)
+  const heroN = IS_MEMBER ? (GAME_COUNT!=null?GAME_COUNT:null) : DISCORD_COUNT;
+  $("stOnline").textContent = (heroN!=null)?heroN:"—";
+  // secure-bar right: how many are around, or how long it's been quiet
+  const sr=$("secRight"); if(!sr) return;
+  const muted='color:var(--muted)', warn='color:var(--warn)';
+  if(IS_MEMBER){
+    if(GAME_COUNT>0) sr.innerHTML='<span>◉ <b>'+GAME_COUNT+'</b> FLYING NOW</span>';
+    else if(LAST_SEEN_TS) sr.innerHTML='<span style="'+muted+'">◷ IDLE FOR <b style="'+warn+'">'+ago(LAST_SEEN_TS)+'</b></span>';
+    else sr.innerHTML='<span style="'+muted+'">◷ QUIET ON THE WIRE</span>';
+  } else {
+    if(DISCORD_COUNT>0) sr.innerHTML='<span>◉ <b>'+DISCORD_COUNT+'</b> ON DISCORD</span>';
+    else sr.innerHTML='<span style="'+muted+'">◷ QUIET ON THE WIRE</span>';
+  }
 }
 async function heartbeat(){
   if(!IS_MEMBER) return;
@@ -551,7 +565,9 @@ async function loadPresence(){
   try{
     const r=await fetch("/blades/api/presence",{headers:{accept:"application/json"},credentials:"include"});
     if(!r.ok) throw 0; const ct=r.headers.get("content-type")||""; if(!ct.includes("json")) throw 0;
-    const j=await r.json(); renderGame((j&&j.online)||[]);
+    const j=await r.json();
+    if(j&&j.lastSeen&&j.lastSeen.ts) LAST_SEEN_TS=j.lastSeen.ts;
+    renderGame((j&&j.online)||[]);
   }catch(e){ renderGame([]); }
 }
 function renderGame(list){
@@ -591,6 +607,8 @@ async function loadActivity(){
 (async function(){
   await probeIdentity();
   paintMemberChip();
+  paintSecLeft();
+  paintFlying();
   $("onlineR").textContent = IS_MEMBER ? "live" : "discord live";
   await Promise.all([loadDiscord(), loadPresence(), loadActivity()]);
   heartbeat();

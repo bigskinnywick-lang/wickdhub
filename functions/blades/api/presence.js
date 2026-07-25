@@ -78,7 +78,11 @@ export async function onRequestGet(context) {
   const online = [...best.values()]
     .sort((a, b) => b.ts - a.ts)
     .map(r => ({ cmdr: r.cmdr, source: r.source, ts: r.ts, ageSec: Math.max(0, Math.round((now - r.ts) / 1000)) }));
-  const resp = json({ ok: true, online, windowMin: WINDOW_MIN, ts: now });
+  // Last-seen survives the online window (own key, long TTL) so the deck can show
+  // "idle for X" when no one is currently on the wire.
+  let lastSeen = null;
+  try { const v = await env.BUILDS.get("lastseen"); if (v) lastSeen = JSON.parse(v); } catch (e) {}
+  const resp = json({ ok: true, online, lastSeen, windowMin: WINDOW_MIN, ts: now });
   resp.headers.set("Cache-Control", "public, max-age=" + EDGE_TTL_S);
   edgePut(request, resp, EDGE_TTL_S, waitUntil);
   return resp;
@@ -101,5 +105,7 @@ export async function onRequestPost(context) {
   try { await env.BUILDS.put(key, JSON.stringify(rec), { expirationTtl: WINDOW_MIN * 60 }); } catch (e) {
     return json({ ok: false, error: "write failed" }, 500);
   }
+  // Persist last-seen beyond the online window (90d) for the "idle for X" readout.
+  try { await env.BUILDS.put("lastseen", JSON.stringify({ cmdr: label, ts: rec.ts }), { expirationTtl: 60 * 60 * 24 * 90 }); } catch (e) {}
   return json({ ok: true, cmdr: label, source, ts: rec.ts });
 }
