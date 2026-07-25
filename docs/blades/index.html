@@ -446,12 +446,23 @@ async function probeIdentity(){
 }
 function paintMemberChip(){
   if(!IS_MEMBER) return;
-  // Signed-in commander: identity chip + sign-out. Access logout clears the session
-  // and returns to the public home page (configure the post-logout URL in Access).
+  // Signed-in commander: identity chip + sign-out.
   $("whoami").innerHTML=
     '<div class="cmdrbox"><span class="dot"></span>CMDR <b>'+escH(MY_CMDR||"—")+'</b>'+
     '<br><span style="font-size:10px;color:var(--muted);letter-spacing:1px">ENLISTED · BLADES</span></div>'+
-    '<a class="txtlnk" href="/cdn-cgi/access/logout">SIGN OUT</a>';
+    '<a class="txtlnk" href="/cdn-cgi/access/logout" id="signOutLnk">SIGN OUT</a>';
+  var so=document.getElementById("signOutLnk");
+  if(so) so.addEventListener("click", function(e){ e.preventDefault(); doSignOut(); });
+}
+// Cloudflare Access has no post-logout redirect for self-hosted apps, so we do it
+// ourselves: hit the logout endpoint (clears the CF_Authorization cookie on this
+// origin) then bounce to the public home, where the pilot now reads as logged-out.
+// The href stays as a no-JS fallback (lands on CF's logout page, still logged out).
+function doSignOut(){
+  var go=function(){ try{ location.replace("/blades/"); }catch(e){ location.href="/blades/"; } };
+  try{ fetch("/cdn-cgi/access/logout",{credentials:"include",mode:"no-cors",cache:"no-store"}).then(go,go); }
+  catch(e){ go(); }
+  setTimeout(go, 1500); // safety net if the fetch stalls
 }
 function lockPanel(el,title,sub){
   el.classList.add("locked");
