@@ -369,16 +369,23 @@
   // Trips reflect YOUR real ship (reported live by the Blades Registrar plugin),
   // not a fixed Type-9. Falls back to a 790t Type-9 until your loadout is known.
   let MY_CAP=790, MY_SHIP_LABEL="Type-9 (default)", SQUAD_CARRIERS={};
+  var SITE_NAMES={};
   function escFC(v){return String(v==null?"":v).replace(/[&<>\"]/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"})[c];});}
   function shipPretty(t){ t=String(t||""); if(!t) return ""; return t.split(/[_ ]/).map(function(w){return w?w.charAt(0).toUpperCase()+w.slice(1):w;}).join(" "); }
   async function refreshSelfData(){
     let changed=false;
     try{
-      const [who,lo,cs]=await Promise.all([
+      const [who,lo,cs,snm]=await Promise.all([
         fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
         fetch("/blades/api/loadouts",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
-        fetch("/blades/api/carriers",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null)
+        fetch("/blades/api/carriers",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
+        fetch("/blades/api/sitenames",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null)
       ]);
+      if(snm&&snm.names){
+        var _before=JSON.stringify(SITE_NAMES);
+        SITE_NAMES=snm.names||{};
+        if(JSON.stringify(SITE_NAMES)!==_before) changed=true;
+      }
       if(who&&who.cmdr&&lo&&lo.haulers){
         const me=String(who.cmdr).toLowerCase();
         const mine=lo.haulers.filter(h=>String(h.cmdr).toLowerCase()===me)[0];
@@ -395,7 +402,7 @@
     }catch(e){}
     return changed;
   }
-  function reRenderIfLoaded(){ try{ if(typeof PROJECT!=="undefined"&&PROJECT) render(PROJECT); }catch(e){} }
+  function reRenderIfLoaded(){ try{ if(typeof PROJECT!=="undefined"&&PROJECT) render(PROJECT); }catch(e){} try{ if(typeof renderList==="function") renderList(); }catch(e){} }
   refreshSelfData().then(function(){ reRenderIfLoaded(); });
   setInterval(function(){ refreshSelfData().then(function(ch){ if(ch) reRenderIfLoaded(); }); }, 30000);
   // supplier ranking weights (tunable): distance-dominant; price a tiebreaker; carriers deprioritised (mobile/may vanish); stale market nudged down
@@ -453,8 +460,9 @@
     PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||""; window.LAST_REFRESH_TS=Date.now();
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
+    var _ov=(SITE_NAMES&&(SITE_NAMES[p.buildId]||SITE_NAMES[BUILD_ID]))||"";
     var _gen=p.buildName&&/construction site\s*$/i.test(p.buildName);
-    var facLabel=(p.buildName&&!_gen)?p.buildName:(TYPE[p.buildType]||p.buildType||"Construction Site");
+    var facLabel=_ov||((p.buildName&&!_gen)?p.buildName:(TYPE[p.buildType]||p.buildType||"Construction Site"));
     var facBody=p.bodyName||p.systemName||"";
     const carriers=(p.linkedFC||[]).map(function(f){var mid=String(f.marketId||"");var ours=SQUAD_CARRIERS[mid];var nm=escFC((ours&&ours.name)||f.displayName||f.name||"Fleet Carrier");var cs=escFC((ours&&ours.callsign)||f.callsign||f.callSign||"");var idline=cs?(cs+(mid?" · market "+escFC(mid):"")):(mid?"market "+escFC(mid):"");var tag=ours?('<div class="commit" style="color:var(--good)">\u25c6 '+escFC(ours.owner||"Blades")+'</div>'):'<div class="commit" style="color:var(--muted)">unaffiliated</div>';return '<div class="contrib"><div class="who">'+nm+'<small>'+idline+'</small></div><div><div class="amt">'+((f.sales||[]).length)+' sell</div>'+tag+'</div></div>';}).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
     $("subline").textContent=(p.systemName||"—")+" · "+(TYPE[p.buildType]||p.buildType||"construction");
@@ -714,7 +722,7 @@
     const setLocal=(a)=>{try{localStorage.setItem("ob_local_builds",JSON.stringify(a));}catch(e){}};
     const setActive=(id)=>{try{localStorage.setItem("ob_build",id);}catch(e){} location.reload();};
     const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-    const opt=(b)=>{var sysp=b.system||b.name||b.id.slice(0,8);var bs=(b.body&&b.system&&b.body.indexOf(b.system)===0)?b.body.slice(b.system.length).replace(/^[\s\u00b7\u2014-]+/,"").trim():(b.body||"");var nm=(b.siteName&&b.siteName.trim())?b.siteName.trim():((b.name&&!/construction site\s*$/i.test(b.name))?b.name:"");var lab=esc(sysp)+(bs?" \u00b7 "+esc(bs):"")+(nm?" \u2014 "+esc(nm):"")+(b.src==="local"?"  \u25e6 local":"");return '<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+lab+'</option>';};
+    const opt=(b)=>{var sysp=b.system||b.name||b.id.slice(0,8);var bs=(b.body&&b.system&&b.body.indexOf(b.system)===0)?b.body.slice(b.system.length).replace(/^[\s\u00b7\u2014-]+/,"").trim():(b.body||"");var nm=(SITE_NAMES&&SITE_NAMES[b.id])?SITE_NAMES[b.id]:((b.siteName&&b.siteName.trim())?b.siteName.trim():((b.name&&!/construction site\s*$/i.test(b.name))?b.name:""));var lab=esc(sysp)+(bs?" \u00b7 "+esc(bs):"")+(nm?" \u2014 "+esc(nm):"")+(b.src==="local"?"  \u25e6 local":"");return '<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+lab+'</option>';};
     async function fetchList(){
       try{const j=await fetch(API,{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); if(j&&Array.isArray(j.builds)) return j.builds;}catch(e){}
       try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json()); return (j&&j.builds)||[];}catch(e){}
