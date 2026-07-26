@@ -40,7 +40,7 @@
     color:var(--text);font-family:var(--font-body);letter-spacing:.3px;min-height:100vh}
   body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
     background:repeating-linear-gradient(to bottom,rgba(255,255,255,var(--scan)) 0 1px,transparent 1px 3px);mix-blend-mode:screen;opacity:.6}
-  .wrap{max-width:1600px;margin:0 auto;padding:0 18px 60px}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 18px 60px}
 
   .secure{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10.5px;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 4px;text-transform:uppercase}
   .secure .lock{color:var(--accent-bright)}.secure .right span{margin-left:14px}.online b{color:var(--good)}
@@ -315,8 +315,8 @@
     <div class="mockbadge" style="color:var(--good);border-color:var(--good)">◆ LIVE — RavenColonial build + Ardent market, fetched in your browser</div>
   </div>
   <div class="buildbar">
-    <span class="bb-lab">◈ BUILD</span>
-    <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
+    <span class="bb-lab">◈ SITE</span>
+    <select id="buildSel" class="bb-sel"><option>loading sites…</option></select>
   </div>
   <div id="view"><div class="panel"><h2>Connecting…</h2><div class="srcLoading">Fetching live build data from RavenColonial…</div></div></div>
   <div id="haulersPanel" class="panel" style="margin-top:16px;display:none"><h2>SQUAD HAULERS<span class="rcount" id="haulCount" style="color:var(--muted);font-size:12px;font-family:var(--font-body);letter-spacing:1px;margin-left:8px"></span></h2><div id="haulBody"></div><div class="sync-line" id="haulNote" style="margin-top:12px"></div></div>
@@ -453,12 +453,15 @@
     PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||""; window.LAST_REFRESH_TS=Date.now();
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
+    var _gen=p.buildName&&/construction site\s*$/i.test(p.buildName);
+    var facLabel=(p.buildName&&!_gen)?p.buildName:(TYPE[p.buildType]||p.buildType||"Construction Site");
+    var facBody=p.bodyName||p.systemName||"";
     const carriers=(p.linkedFC||[]).map(function(f){var mid=String(f.marketId||"");var ours=SQUAD_CARRIERS[mid];var nm=escFC((ours&&ours.name)||f.displayName||f.name||"Fleet Carrier");var cs=escFC((ours&&ours.callsign)||f.callsign||f.callSign||"");var idline=cs?(cs+(mid?" · market "+escFC(mid):"")):(mid?"market "+escFC(mid):"");var tag=ours?('<div class="commit" style="color:var(--good)">\u25c6 '+escFC(ours.owner||"Blades")+'</div>'):'<div class="commit" style="color:var(--muted)">unaffiliated</div>';return '<div class="contrib"><div class="who">'+nm+'<small>'+idline+'</small></div><div><div class="amt">'+((f.sales||[]).length)+' sell</div>'+tag+'</div></div>';}).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
     $("subline").textContent=(p.systemName||"—")+" · "+(TYPE[p.buildType]||p.buildType||"construction");
-    $("cmdrLine").textContent="build: "+BUILD_ID.slice(0,8)+"… · architect "+(p.architectName||"—");
+    $("cmdrLine").textContent="architect "+(p.architectName||"—");
     $("view").innerHTML=`<div class="grid">
       <div class="panel">
-        <h2>${p.buildName||"Construction Site"}</h2>
+        <h2 style="margin-bottom:2px">${escFC(facLabel)}</h2><div style="color:var(--muted);font-size:12px;letter-spacing:.5px;margin-bottom:8px">\u25c8 ${escFC(facBody)}</div>
         <div class="meta">
           <div><div class="k">System</div><div class="v"><b>${p.systemName||"—"}</b></div></div>
           <div><div class="k">Station Type</div><div class="v">${TYPE[p.buildType]||p.buildType||"—"} <span class="rawtype">${p.buildType||""}</span></div></div>
@@ -469,7 +472,7 @@
         </div>
         <div class="prog-top"><span>CONSTRUCTION PROGRESS</span><b>${pct}%</b></div>
         <div class="bar"><i style="width:${pct}%"></i></div>
-        <h2 style="margin-top:22px">Shopping List — Remaining Haul<span class="h2r"><span class="last-refresh" id="lastRefresh" style="font-size:10px;letter-spacing:.5px;color:var(--muted);margin-right:10px;font-variant-numeric:tabular-nums"></span><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
+        <div style="margin-top:22px;color:var(--accent-bright);font-family:var(--font-head);letter-spacing:1px;font-size:13px">\u25c8 ${escFC(facLabel)} <span style="color:var(--muted);font-weight:normal">\u00b7 ${escFC(facBody)}</span></div><h2 style="margin-top:6px">Shipping Manifest — Remaining Haul<span class="h2r"><span class="last-refresh" id="lastRefresh" style="font-size:10px;letter-spacing:.5px;color:var(--muted);margin-right:10px;font-variant-numeric:tabular-nums"></span><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
         <div style="font-size:10.5px;color:var(--muted);margin:-8px 0 8px">Live from RavenColonial. Click a commodity → live Ardent suppliers near ${p.systemName}. ⧉ copies the system to your nav computer.</div>
         <table><thead><tr><th>Commodity</th><th class="num">Remaining</th><th class="num">Trips*</th></tr></thead><tbody id="clBody">${commodityRows(p)}</tbody></table>
       </div>
@@ -711,7 +714,7 @@
     const setLocal=(a)=>{try{localStorage.setItem("ob_local_builds",JSON.stringify(a));}catch(e){}};
     const setActive=(id)=>{try{localStorage.setItem("ob_build",id);}catch(e){} location.reload();};
     const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-    const opt=(b)=>'<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+esc(b.name||b.id.slice(0,8))+(b.system?" \u00b7 "+esc(b.system):"")+(b.src==="local"?"  \u25e6 local":"")+'</option>';
+    const opt=(b)=>{var sysp=b.system||b.name||b.id.slice(0,8);var bs=(b.body&&b.system&&b.body.indexOf(b.system)===0)?b.body.slice(b.system.length).replace(/^[\s\u00b7\u2014-]+/,"").trim():(b.body||"");var nm=(b.siteName&&b.siteName.trim())?b.siteName.trim():((b.name&&!/construction site\s*$/i.test(b.name))?b.name:"");var lab=esc(sysp)+(bs?" \u00b7 "+esc(bs):"")+(nm?" \u2014 "+esc(nm):"")+(b.src==="local"?"  \u25e6 local":"");return '<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+lab+'</option>';};
     async function fetchList(){
       try{const j=await fetch(API,{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); if(j&&Array.isArray(j.builds)) return j.builds;}catch(e){}
       try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json()); return (j&&j.builds)||[];}catch(e){}
@@ -728,7 +731,7 @@
       await Promise.all(merged.map(async b=>{
         if(b.completedTs){ b.complete=true; b.name=b.name||b.id.slice(0,8); return; }
         try{ const p=await fetch(RAVEN+"/api/project/"+b.id).then(r=>r.ok?r.json():Promise.reject());
-          b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.complete=!!p.complete;
+          b.name=p.buildName||b.name||b.id.slice(0,8); b.system=p.systemName||b.system; b.body=p.bodyName||b.body; b.buildType=p.buildType||b.buildType; b.complete=!!p.complete;
           if(p.complete){ b.completedTs=Date.parse(p.timeCompleted||p.timestamp)||Date.now(); if(typeof stampIfNeeded==="function") stampIfNeeded(p); }
         }catch(e){ b.name=b.name||b.id.slice(0,8); b.complete=false; }
       }));
