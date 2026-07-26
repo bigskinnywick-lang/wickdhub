@@ -432,7 +432,7 @@
     nonlethalweapons:"Non-Lethal Weapons",reactivearmour:"Reactive Armour",basicmedicines:"Basic Medicines",
     hydrogenfuel:"Hydrogen Fuel",robotics:"Robotics",geologicalequipment:"Geological Equipment"};
   const disp=(k)=>NAMES[k]||k.replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
-  const TYPE={consus:"Agricultural Outpost (Consus)",coriolis:"Coriolis Starport",orbis:"Orbis Starport",ocellus:"Ocellus Starport",asteroid:"Asteroid Base",outpost:"Outpost"};
+  const TYPE={consus:"Colonisation Construction Site",coriolis:"Coriolis Starport",orbis:"Orbis Starport",ocellus:"Ocellus Starport",asteroid:"Asteroid Base",outpost:"Outpost"};
 
   let PROJECT=null;
   const srcCache={}; // "system|commodity" -> ranked array
@@ -792,7 +792,7 @@
     var KEY="ob_inaraTx", BASE="⧉ TRANSMIT SYSTEM → PC";
     var btn=document.createElement("button");
     btn.id="inaraTxBtn"; btn.type="button"; btn.textContent=BASE;
-    btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Vanishes after two refreshes.";
+    btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Clears once you send it, or after two refreshes if you do not.";
     btn.style.cssText="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;font-family:var(--font-head,inherit);font-size:12.5px;letter-spacing:1px;font-weight:700;color:#0a0705;background:#ff7a12;border:1px solid #ffb066;border-radius:8px;padding:11px 16px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(255,122,18,.45)";
     var mounted=false;
     function mount(){ if(!mounted && document.body){ document.body.appendChild(btn); mounted=true; } }
@@ -816,7 +816,7 @@
       try{
         var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})});
         var d=null; try{ d=await r.json(); }catch(_){}
-        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; setTimeout(function(){ btn.textContent=BASE; },1600); }
+        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; try{localStorage.removeItem(KEY);}catch(e){} setTimeout(function(){ hide(); btn.textContent=BASE; },1200); }
         else if(r.status===409){ toast("Bind your CMDR first (MY STATS) so we know whose PC to reach."); btn.textContent=BASE; }
         else { toast("Could not transmit "+sys+" — "+((d&&d.error)||("HTTP "+r.status))); btn.textContent=BASE; }
       }catch(e){ toast("Transmit failed — network error."); btn.textContent=BASE; }
