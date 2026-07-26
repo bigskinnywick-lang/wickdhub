@@ -149,6 +149,18 @@
       <div id="rolesRows" style="margin-top:8px"><div class="empty">loading…</div></div>
     </div>
 
+    <!-- STATION TYPE -->
+    <div class="panel" id="btype">
+      <h2>◆ STATION TYPE <button id="btypeRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">The plugin can only tell Raven a generic <code>consus</code> construction type, so the board shows "Colonisation Construction Site" for every site. Set the <b>real</b> facility type per build here (e.g. "Large Industrial Outpost — Gia pattern") and the board displays it in place of the generic label. Leave one blank / clear it to fall back to generic.</div>
+      <div class="toolbar" style="margin-top:8px">
+        <select id="btypeBuild" style="min-width:240px"><option value="">loading builds…</option></select>
+        <input id="btypeVal" type="text" maxlength="60" placeholder="e.g. Large Industrial Outpost — Gia pattern" style="flex:1;min-width:220px" />
+        <button class="go" id="btypeSet">set type</button>
+      </div>
+      <div id="btypeRows" style="margin-top:8px"><div class="empty">loading…</div></div>
+    </div>
+
     <!-- BACKUP -->
     <div class="panel" id="backup">
       <h2>⤓ BACKUP &amp; RECOVERY</h2>
@@ -282,7 +294,7 @@ let BUILDS=[], CLAIMS=[], ADMINS=[], ADMIRALS=[];
   document.body.dataset.state="console";
   renderAdmins();
   renderAdmirals();
-  loadBuilds(); loadClaims(); pulse(); loadAccess(); loadTicker(); loadRegistrar(); loadRoles();
+  loadBuilds(); loadClaims(); pulse(); loadAccess(); loadTicker(); loadRegistrar(); loadRoles(); loadBtype();
 })();
 $("signOut").onclick=()=>{location.href="https://bigskinnywick.cloudflareaccess.com/cdn-cgi/access/logout";};
 
@@ -306,6 +318,8 @@ async function loadBuilds(){
   catch(e){ $("buildsTbl").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; return; }
   $("buildCount").textContent=BUILDS.length;
   renderBuilds(); renderStale(); renderFixArch();
+  if(typeof populateBtypeBuilds==="function") populateBtypeBuilds();
+  if(typeof renderBtype==="function"&&Object.keys(BTYPE_OV||{}).length) renderBtype();
 }
 function renderBuilds(){
   if(!BUILDS.length){$("buildsTbl").innerHTML='<div class="empty">No builds in the registry.</div>';return;}
@@ -652,6 +666,45 @@ if($("roleAdd")) $("roleAdd").onclick=()=>{
   if(!EXTRA_CMDRS.includes(c)) EXTRA_CMDRS.push(c);
   renderRoles();
   toast("added "+c+" — tick a role to save");
+};
+
+// ---------- station type overrides ----------
+let BTYPE_OV={};
+async function loadBtype(){
+  try{ const d=await api("GET","/blades/api/build-type"); BTYPE_OV=d.overrides||{}; renderBtype(); populateBtypeBuilds(); }
+  catch(e){ $("btypeRows").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
+}
+function buildLabel(b){ return (b.name||"(unnamed)")+" · "+(b.system||"?"); }
+function populateBtypeBuilds(){
+  const sel=$("btypeBuild"); if(!sel) return;
+  const prev=sel.value;
+  const opts=BUILDS.slice().sort((a,b)=>(a.name||"").toLowerCase().localeCompare((b.name||"").toLowerCase()))
+    .map(b=>'<option value="'+esc(b.id)+'">'+esc(buildLabel(b))+(BTYPE_OV[b.id]?' ✓':'')+'</option>').join('');
+  sel.innerHTML='<option value="">'+(BUILDS.length?'choose a build…':'no builds yet')+'</option>'+opts;
+  if(prev) sel.value=prev;
+}
+function renderBtype(){
+  const ids=Object.keys(BTYPE_OV);
+  if(!ids.length){ $("btypeRows").innerHTML='<div class="empty">No overrides — every build shows the generic "Colonisation Construction Site".</div>'; return; }
+  const nameFor=id=>{ const b=BUILDS.find(x=>x.id===id); return b?buildLabel(b):id; };
+  $("btypeRows").innerHTML=ids.sort((a,b)=>nameFor(a).toLowerCase().localeCompare(nameFor(b).toLowerCase())).map(id=>
+    '<div style="border-bottom:1px dashed var(--line);padding:9px 0"><div class="toolbar" style="justify-content:space-between;gap:8px">'
+    +'<div><b>'+esc(BTYPE_OV[id])+'</b><div class="id">'+esc(nameFor(id))+'</div></div>'
+    +'<button class="danger" data-clear="'+esc(id)+'">clear</button></div></div>'
+  ).join("");
+  $("btypeRows").querySelectorAll("button[data-clear]").forEach(btn=>btn.onclick=()=>{
+    const id=btn.dataset.clear;
+    if(!confirm("Clear the station-type override?\nThis build falls back to the generic label.")) return;
+    api("DELETE","/blades/api/build-type",{buildId:id}).then(()=>{delete BTYPE_OV[id];toast("override cleared");renderBtype();populateBtypeBuilds();}).catch(err=>toast(err.message,true));
+  });
+}
+if($("btypeRefresh")) $("btypeRefresh").onclick=loadBtype;
+if($("btypeSet")) $("btypeSet").onclick=()=>{
+  const id=($("btypeBuild").value||"").trim(); const type=($("btypeVal").value||"").trim();
+  if(!id){toast("choose a build",true);return;}
+  if(!type){toast("enter a type",true);return;}
+  $("btypeSet").disabled=true;
+  api("PUT","/blades/api/build-type",{buildId:id,type}).then(d=>{BTYPE_OV[id]=d.type;$("btypeVal").value="";toast("type set");renderBtype();populateBtypeBuilds();}).catch(err=>toast(err.message,true)).finally(()=>{$("btypeSet").disabled=false;});
 };
 
 // ---------- squad access (Cloudflare Access allow-list) ----------

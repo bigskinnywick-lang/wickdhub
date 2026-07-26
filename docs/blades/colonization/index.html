@@ -124,8 +124,6 @@
   thead th.num{text-align:right}
   tbody td{padding:8px;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
   tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
-  .msort{font-family:var(--font-head,inherit);font-size:9.5px;letter-spacing:1px;color:var(--accent-bright);background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid var(--accent-dim);border-radius:4px;padding:2px 7px;margin-left:8px;cursor:pointer;vertical-align:middle}
-  .msort:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
   tr.commRow{cursor:pointer}tr.commRow:hover{background:color-mix(in srgb,var(--accent) 6%,transparent)}
   tr.commRow .caret{color:var(--accent-dim);font-size:10px;margin-right:6px;display:inline-block;width:9px}
   tr.commRow.open .caret{color:var(--accent-bright)}
@@ -181,14 +179,6 @@
 
   /* ===== colour-scheme rotary dial ===== */
   .dialbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  /* ---- urgent ticker item: amber<->fleet hazard flash (reusable for any urgent message) ---- */
-  @keyframes obUrgent{0%,49%{color:#ffb000}50%,100%{color:#2fe0ff}}
-  @keyframes obUrgentBg{0%,49%{background:color-mix(in srgb,#ffb000 15%,transparent)}50%,100%{background:color-mix(in srgb,#2fe0ff 15%,transparent)}}
-  .ticker .item.urgent{font-weight:700;letter-spacing:.6px;border-radius:var(--radius,6px);animation:obUrgent .66s steps(1,end) infinite,obUrgentBg .66s steps(1,end) infinite}
-  .ticker .item.urgent .ico,.ticker .item.urgent b{color:inherit!important;animation:obUrgent .66s steps(1,end) infinite}
-  @keyframes obUrgentTag{0%,49%{background:#ffb000;box-shadow:0 0 16px rgba(255,176,0,.55)}50%,100%{background:#2fe0ff;box-shadow:0 0 16px rgba(47,224,255,.55)}}
-  .ticker.obUrgentOn .tag{animation:obUrgentTag .66s steps(1,end) infinite}
-  @media(prefers-reduced-motion:reduce){.ticker .item.urgent{animation:none;color:#ffb000;background:color-mix(in srgb,#ffb000 18%,transparent)}.ticker .item.urgent .ico,.ticker .item.urgent b{animation:none;color:#ffb000!important}.ticker.obUrgentOn .tag{animation:none;background:#ffb000}}
   .dial-labels{display:flex;gap:7px}
   .dl{font-family:var(--font-head);font-size:10px;letter-spacing:1.2px;line-height:1.12;text-align:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:6px 11px;cursor:pointer;border-radius:var(--radius);transition:.15s}
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
@@ -307,7 +297,7 @@
     </div>
     <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
   </header>
-  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY STATS</a></nav>
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
   <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
   <div class="controls">
     <div class="dialbox">
@@ -385,16 +375,22 @@
   async function refreshSelfData(){
     let changed=false;
     try{
-      const [who,lo,cs,snm]=await Promise.all([
+      const [who,lo,cs,snm,bt]=await Promise.all([
         fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
         fetch("/blades/api/loadouts",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
         fetch("/blades/api/carriers",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
-        fetch("/blades/api/sitenames",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null)
+        fetch("/blades/api/sitenames",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
+        fetch("/blades/api/build-type",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null)
       ]);
       if(snm&&snm.names){
         var _before=JSON.stringify(SITE_NAMES);
         SITE_NAMES=snm.names||{};
         if(JSON.stringify(SITE_NAMES)!==_before) changed=true;
+      }
+      if(bt&&bt.overrides){
+        var _btb=JSON.stringify(TYPE_OV);
+        TYPE_OV=bt.overrides||{};
+        if(JSON.stringify(TYPE_OV)!==_btb) changed=true;
       }
       if(who&&who.cmdr&&lo&&lo.haulers){
         const me=String(who.cmdr).toLowerCase();
@@ -432,9 +428,11 @@
     buildingfabricators:"Building Fabricators",powergenerators:"Power Generators",microcontrollers:"Micro Controllers",
     medicaldiagnosticequipment:"Medical Diagnostic Equipment",cropraisers:"Crop Harvesters",militarygradefabrics:"Military Grade Fabrics",
     nonlethalweapons:"Non-Lethal Weapons",reactivearmour:"Reactive Armour",basicmedicines:"Basic Medicines",
-    hydrogenfuel:"Hydrogen Fuel",robotics:"Robotics",geologicalequipment:"Geological Equipment"};
-  const disp=(k)=>NAMES[k]||DISP_N[_strip(k)]||k.replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
+    hydrogenfuel:"Hydrogen Fuel",robotics:"Robotics",geologicalequipment:"Geological Equipment",heliostaticfurnaces:"Microbial Furnaces",hazardousenvironmentsuits:"H.E. Suits",hazardousenvironmensuits:"H.E. Suits"};
+  const disp=(k)=>NAMES[k]||k.replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
   const TYPE={consus:"Colonisation Construction Site",coriolis:"Coriolis Starport",orbis:"Orbis Starport",ocellus:"Ocellus Starport",asteroid:"Asteroid Base",outpost:"Outpost"};
+  var TYPE_OV={}; // admin per-build real facility-type overrides (from /blades/api/build-type)
+  function _tOv(p){ return TYPE_OV[BUILD_ID]||(p&&p.buildId&&TYPE_OV[p.buildId])||""; }
 
   let PROJECT=null;
   const srcCache={}; // "system|commodity" -> ranked array
@@ -456,39 +454,8 @@
     srcCache[key]=list; return list;
   }
 
-  // ---- manifest sort cycle (Templar: match the in-game screen orderings) ----
-  let MANIFEST_SORT="need"; try{ MANIFEST_SORT=localStorage.getItem("ob_msort")||"need"; }catch(e){}
-  const MSORT_ORDER=["need","az","market"];
-  const MSORT_LBL={need:"NEED",az:"A–Z",market:"MARKET"};
-  const _CATIDX=(function(){
-    const groups=[
-      ["agronomic treatment","explosives","hydrogen fuel","hydrogen peroxide","liquid oxygen","mineral oil","nerve agents","pesticides","rockforth fertiliser","surface stabilisers","synthetic reagents","tritium","water"],
-      ["clothing","consumer technology","domestic appliances","evacuation shelter","survival equipment"],
-      ["algae","animal meat","coffee","fish","food cartridges","fruit and vegetables","grain","synthetic meat","tea"],
-      ["ceramic composites","cmm composite","insulating membrane","meta-alloys","micro-weave cooling hoses","neofabric insulation","polymers","semiconductors","superconductors"],
-      ["beer","bootleg liquor","liquor","narcotics","tobacco","wine"],
-      ["articulation motors","atmospheric processors","building fabricators","crop harvesters","emergency power cells","energy grid assembly","exhaust manifold","geological equipment","heatsink interlink","hn shock mount","ion distributor","magnetic emitter coil","marine equipment","microbial furnaces","mineral extractors","modular terminals","power converter","power generators","power transfer bus","radiation baffle","reinforced mounting plate","skimmer components","thermal cooling units","water purifiers"],
-      ["advanced medicines","agri-medicines","basic medicines","combat stabilisers","performance enhancers","progenitor cells"],
-      ["aluminium","beryllium","bismuth","cobalt","copper","gallium","gold","indium","lanthanum","lithium","osmium","palladium","platinum","praseodymium","samarium","silver","steel","tantalum","thallium","thorium","titanium","uranium"],
-      ["advanced catalysers","animal monitors","aquaponic systems","auto-fabricators","bioreducing lichen","computer components","h.e. suits","hardware diagnostic sensor","land enrichment systems","medical diagnostic equipment","micro controllers","muon imager","nanobreakers","resonating separators","robotics","structural regulators","telemetry suite"],
-      ["conductive fabrics","leather","military grade fabrics","natural fabrics","synthetic fabrics"],
-      ["biowaste","chemical waste","scrap"],
-      ["battle weapons","landmines","non-lethal weapons","personal weapons","reactive armour"]
-    ];
-    const m={}; for(let i=0;i<groups.length;i++){ for(const n of groups[i]) m[n]=i; } return m;
-  })();
-  function _cnm(k){ return String((typeof disp==="function"?disp(k):k)||k||"").toLowerCase(); }
-  function _catRank(k){ const n=_cnm(k); return (n in _CATIDX)?_CATIDX[n]:99; }
-  function sortEntries(entries){
-    const e=entries.slice();
-    if(MANIFEST_SORT==="az") return e.sort((a,b)=>_cnm(a[0]).localeCompare(_cnm(b[0])));
-    if(MANIFEST_SORT==="market") return e.sort((a,b)=>{const ca=_catRank(a[0]),cb=_catRank(b[0]);return ca!==cb?ca-cb:_cnm(a[0]).localeCompare(_cnm(b[0]));});
-    return e.sort((a,b)=>b[1]-a[1]); // need (default)
-  }
-  function applyMsort(){ var l=document.getElementById("msortLbl"); if(l)l.textContent=MSORT_LBL[MANIFEST_SORT]||"NEED"; var b=document.getElementById("clBody"); if(b&&typeof PROJECT!=="undefined"&&PROJECT){ b.innerHTML=commodityRows(PROJECT); wire(); } }
-
   function commodityRows(p){
-    const entries=sortEntries(Object.entries(p.commodities||{}).filter(([k,v])=>v>0));
+    const entries=Object.entries(p.commodities||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
     if(!entries.length) return '<tr><td colspan="3" class="done" style="padding:14px">✔ All commodities delivered — build complete.</td></tr>';
     return entries.map(([k,v])=>{
       return `<tr class="commRow" data-comm="${k}" data-name="${disp(k)}"><td><span class="caret">▶</span>${disp(k)}</td>
@@ -503,17 +470,17 @@
     const total=p.sumNeed||0;
     var _ov=(SITE_NAMES&&(SITE_NAMES[p.buildId]||SITE_NAMES[BUILD_ID]))||"";
     var _gen=p.buildName&&/construction site\s*$/i.test(p.buildName);
-    var facLabel=_ov||((p.buildName&&!_gen)?p.buildName:(TYPE[p.buildType]||p.buildType||"Construction Site"));
+    var facLabel=_ov||((p.buildName&&!_gen)?p.buildName:(_tOv(p)||TYPE[p.buildType]||p.buildType||"Construction Site"));
     var facBody=p.bodyName||p.systemName||"";
     const carriers=(p.linkedFC||[]).map(function(f){var mid=String(f.marketId||"");var ours=SQUAD_CARRIERS[mid];var nm=escFC((ours&&ours.name)||f.displayName||f.name||"Fleet Carrier");var cs=escFC((ours&&ours.callsign)||f.callsign||f.callSign||"");var idline=cs?(cs+(mid?" · market "+escFC(mid):"")):(mid?"market "+escFC(mid):"");var tag=ours?('<div class="commit" style="color:var(--good)">\u25c6 '+escFC(ours.owner||"Blades")+'</div>'):'<div class="commit" style="color:var(--muted)">unaffiliated</div>';return '<div class="contrib"><div class="who">'+nm+'<small>'+idline+'</small></div><div><div class="amt">'+((f.sales||[]).length)+' sell</div>'+tag+'</div></div>';}).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
-    $("subline").textContent=(p.systemName||"—")+" · "+(TYPE[p.buildType]||p.buildType||"construction");
+    $("subline").textContent=(p.systemName||"—")+" · "+(_tOv(p)||TYPE[p.buildType]||p.buildType||"construction");
     $("cmdrLine").textContent="architect "+(p.architectName||"—");
     $("view").innerHTML=`<div class="grid">
       <div class="panel">
         <h2 style="margin-bottom:2px">${escFC(facLabel)}</h2><div style="color:var(--muted);font-size:12px;letter-spacing:.5px;margin-bottom:8px">\u25c8 ${escFC(facBody)}</div>
         <div class="meta">
           <div><div class="k">System</div><div class="v"><b>${p.systemName||"—"}</b></div></div>
-          <div><div class="k">Station Type</div><div class="v">${TYPE[p.buildType]||p.buildType||"—"} <span class="rawtype">${p.buildType||""}</span></div></div>
+          <div><div class="k">Station Type</div><div class="v">${_tOv(p)||TYPE[p.buildType]||p.buildType||"—"} <span class="rawtype">${p.buildType||""}</span></div></div>
           <div><div class="k">Architect</div><div class="v">${p.architectName||"—"}</div></div>
           <div><div class="k">Status</div><div class="v"><span class="status-pill ${p.complete?'st-hauling':'st-progress'}">${p.complete?'COMPLETE':'IN PROGRESS'}</span></div></div>
           <div><div class="k">Market ID</div><div class="v">${p.marketId||"—"}</div></div>
@@ -523,7 +490,7 @@
         <div class="bar"><i style="width:${pct}%"></i></div>
         <div style="margin-top:22px;color:var(--accent-bright);font-family:var(--font-head);letter-spacing:1px;font-size:13px">\u25c8 ${escFC(facLabel)} <span style="color:var(--muted);font-weight:normal">\u00b7 ${escFC(facBody)}</span></div><h2 style="margin-top:6px">Shipping Manifest — Remaining Haul<span class="h2r"><span class="last-refresh" id="lastRefresh" style="font-size:10px;letter-spacing:.5px;color:var(--muted);margin-right:10px;font-variant-numeric:tabular-nums"></span><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
         <div style="font-size:10.5px;color:var(--muted);margin:-8px 0 8px">Live from RavenColonial. Click a commodity → live Ardent suppliers near ${p.systemName}. ⧉ copies the system to your nav computer.</div>
-        <table><thead><tr><th>Commodity <button type="button" id="msort" class="msort" title="Cycle sort: need / A–Z / market order">⇅ <span id="msortLbl">NEED</span></button></th><th class="num">Remaining</th><th class="num">Trips*</th></tr></thead><tbody id="clBody">${commodityRows(p)}</tbody></table>
+        <table><thead><tr><th>Commodity</th><th class="num">Remaining</th><th class="num">Trips*</th></tr></thead><tbody id="clBody">${commodityRows(p)}</tbody></table>
       </div>
       <div>
         <div class="panel" style="margin-bottom:16px"><h2>At a Glance</h2>
@@ -562,22 +529,14 @@
       };
     });
     const rb=$("refreshBtn"); if(rb) rb.onclick=refresh;
-    var _mb=document.getElementById("msort"); if(_mb){ var _ml=document.getElementById("msortLbl"); if(_ml)_ml.textContent=MSORT_LBL[MANIFEST_SORT]||"NEED"; _mb.onclick=function(e){ e.stopPropagation(); var i=MSORT_ORDER.indexOf(MANIFEST_SORT); MANIFEST_SORT=MSORT_ORDER[(i+1)%MSORT_ORDER.length]; try{localStorage.setItem("ob_msort",MANIFEST_SORT);}catch(_){} applyMsort(); }; }
   }
   // ---- Inara cross-check (alternative supplier view) ----
   // Inara's commodity search keys commodities by numeric id (not name), so we map the
   // colonisation + common commodity set. Unmapped names fall back to Inara's search
   // with just the reference system pre-filled. Reference system = the build's system.
   const INARA_CID={"agronomic treatment":10268,"explosives":3,"hydrogen fuel":4,"hydrogen peroxide":138,"liquid oxygen":137,"mineral oil":5,"nerve agents":96,"pesticides":6,"rockforth fertiliser":10264,"surface stabilisers":97,"synthetic reagents":98,"tritium":10269,"water":139,"clothing":7,"consumer technology":8,"domestic appliances":9,"evacuation shelter":99,"survival equipment":164,"beer":10,"bootleg liquor":95,"liquor":11,"narcotics":12,"tobacco":13,"wine":14,"algae":15,"animal meat":16,"coffee":17,"fish":18,"food cartridges":19,"fruit and vegetables":20,"grain":21,"synthetic meat":23,"tea":22,"ceramic composites":100,"cmm composite":140,"insulating membrane":141,"meta-alloys":101,"micro-weave cooling hoses":185,"neofabric insulation":183,"polymers":26,"semiconductors":28,"superconductors":27,"articulation motors":182,"atmospheric processors":87,"building fabricators":102,"crop harvesters":29,"emergency power cells":158,"energy grid assembly":149,"exhaust manifold":159,"geological equipment":103,"heatsink interlink":151,"hn shock mount":150,"ion distributor":160,"magnetic emitter coil":152,"marine equipment":86,"microbial furnaces":85,"mineral extractors":31,"modular terminals":181,"power converter":153,"power generators":83,"power transfer bus":161,"radiation baffle":162,"reinforced mounting plate":163,"skimmer components":104,"thermal cooling units":105,"water purifiers":82,"advanced medicines":166,"agri-medicines":1,"basic medicines":33,"combat stabilisers":34,"performance enhancers":35,"progenitor cells":36,"aluminium":37,"beryllium":38,"bismuth":106,"cobalt":39,"copper":40,"gallium":41,"gold":42,"indium":43,"lanthanum":107,"lithium":44,"osmium":72,"palladium":45,"platinum":81,"praseodymium":143,"samarium":142,"silver":46,"steel":10487,"tantalum":47,"thallium":108,"thorium":109,"titanium":48,"uranium":50,"advanced catalysers":61,"animal monitors":62,"aquaponic systems":63,"auto-fabricators":65,"bioreducing lichen":66,"computer components":67,"h.e. suits":68,"hardware diagnostic sensor":155,"land enrichment systems":71,"medical diagnostic equipment":154,"micro controllers":156,"muon imager":119,"nanobreakers":167,"resonating separators":69,"robotics":70,"structural regulators":117,"telemetry suite":184,"conductive fabrics":165,"leather":73,"military grade fabrics":157,"natural fabrics":74,"synthetic fabrics":75,"biowaste":76,"chemical waste":32,"scrap":77,"battle weapons":88,"landmines":118,"non-lethal weapons":78,"personal weapons":79,"reactive armour":80};
-  // ---- commodity name normalisation (plugin sends game-internal run-together keys) ----
-  const _strip=(x)=>String(x||"").toLowerCase().replace(/[^a-z0-9]/g,"");
-  const INARA_CID_N={}, DISP_N={};
-  for(const _k in INARA_CID){ INARA_CID_N[_strip(_k)]=INARA_CID[_k]; DISP_N[_strip(_k)]=_k.replace(/\b\w/g,function(c){return c.toUpperCase();}); }
-  // Elite internal-name quirks: the plugin's internal name differs from Inara's spelling.
-  const _INARA_ALIAS={terrainenrichmentsystems:71,cropraisers:29,agriculturalmedicines:1,marinesupplies:86};
-  for(const _a in _INARA_ALIAS){ if(INARA_CID_N[_a]==null) INARA_CID_N[_a]=_INARA_ALIAS[_a]; }
   function inaraUrl(name){
-    const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')]||INARA_CID_N[_strip(name)];
+    const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')];
     const sys=encodeURIComponent((PROJECT&&PROJECT.systemName)||'');
     return id
       ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
@@ -688,7 +647,7 @@
     async function loadHot(){ try{ const d=await fetch('/blades/api/hotlist',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); HOT=(d&&Array.isArray(d.hotlist))?d.hotlist:[]; }catch(e){ HOT=[]; } }
     function completedSystems(){ const s=new Set(); try{ (REGISTRY||[]).forEach(function(b){ if(b&&b.completedTs&&b.system) s.add(String(b.system).toLowerCase().trim()); }); }catch(e){} return s; }
     function hotItems(){ const done=completedSystems(); return HOT.filter(function(h){ return !(h.system&&done.has(String(h.system).toLowerCase().trim())); }).slice(0,8).map(function(h){ const d=h.daysLeft; const c=d<=3?"emergency":(d<=7?"crit":"news"); const verb=h.tier==="not_started"?"CLAIM EXPIRING":"PRIMARY PORT DUE"; const who=h.architect?" · "+escH(h.architect):""; return {c:c,i:"⏳",h:"<b>"+escH(h.system||h.systemAddress)+"</b> — "+verb+who+" · "+d+"d to deploy primary port"}; }); }
-    function render(items,el){ const html=(window._obUrgentItems&&window._obUrgentItems.length?window._obUrgentItems.concat(window._obUrgentItems,window._obUrgentItems):items).map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; var _bar=el.closest?el.closest(".ticker"):null; if(_bar)_bar.classList.toggle("obUrgentOn", !!(window._obUrgentItems&&window._obUrgentItems.length)); }
+    function render(items,el){ const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
     async function run(){
       await loadCustom(); await loadHot();
       if(!BUILD_ID){
@@ -833,7 +792,7 @@
     var KEY="ob_inaraTx", BASE="⧉ TRANSMIT SYSTEM → PC";
     var btn=document.createElement("button");
     btn.id="inaraTxBtn"; btn.type="button"; btn.textContent=BASE;
-    btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Clears once you send it, or after two refreshes if you do not.";
+    btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Vanishes after two refreshes.";
     btn.style.cssText="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;font-family:var(--font-head,inherit);font-size:12.5px;letter-spacing:1px;font-weight:700;color:#0a0705;background:#ff7a12;border:1px solid #ffb066;border-radius:8px;padding:11px 16px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(255,122,18,.45)";
     var mounted=false;
     function mount(){ if(!mounted && document.body){ document.body.appendChild(btn); mounted=true; } }
@@ -857,7 +816,7 @@
       try{
         var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})});
         var d=null; try{ d=await r.json(); }catch(_){}
-        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; try{localStorage.removeItem(KEY);}catch(e){} setTimeout(function(){ hide(); btn.textContent=BASE; },1200); }
+        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; setTimeout(function(){ btn.textContent=BASE; },1600); }
         else if(r.status===409){ toast("Bind your CMDR first (MY STATS) so we know whose PC to reach."); btn.textContent=BASE; }
         else { toast("Could not transmit "+sys+" — "+((d&&d.error)||("HTTP "+r.status))); btn.textContent=BASE; }
       }catch(e){ toast("Transmit failed — network error."); btn.textContent=BASE; }
@@ -1002,41 +961,6 @@
       .catch(function(){});
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",gate);else gate();
-})();
-</script>
-<script>
-/* Registrar update takeover — blares an urgent RESTART EDMC ticker item until the
-   pilot's plugin reports the new version. Per-pilot via /blades/api/plugin-status. */
-(function(){
-  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-  async function chk(){
-    try{
-      var r=await fetch('/blades/api/plugin-status',{headers:{accept:'application/json'},credentials:'same-origin'});
-      if(!r.ok) return;
-      var d=await r.json(); var had=(window._obUrgentItems||[]).length;
-      if(d&&d.ok&&d.needsRestart&&d.latest){
-        window._obUrgentItems=[{c:"urgent",i:"\u26a0",h:'<b>RESTART EDMC</b> \u2014 Blades Registrar '+esc(String(d.latest.version))+' staged \u00b7 restart to apply'}];
-      } else if(d&&d.ok&&d.needsSetup){
-        window._obUrgentItems=[{c:"urgent",i:"⚠",h:'<b><a href="/blades/onboarding/" style="color:inherit;text-decoration:underline">COMPLETE SETUP</a></b> — install the Blades Registrar plugin to sync with the board'}];
-      } else { window._obUrgentItems=[]; }
-      try{
-        var _nav=document.querySelector(".blades-nav");
-        if(_nav){
-          var _sg=document.getElementById("setupGuideBtn");
-          if(d&&d.ok&&d.needsSetup && location.pathname.indexOf("/blades/onboarding")!==0){ if(!_sg){ _sg=document.createElement("a"); _sg.id="setupGuideBtn"; _sg.className="bn"; _sg.href="/blades/onboarding/"; _sg.textContent="SETUP GUIDE"; _nav.appendChild(_sg); } }
-          else if(_sg){ _sg.remove(); }
-          var _tpx=document.getElementById("testPilotBtn");
-          if(_tpx){ _tpx.style.display=(d&&d.ok&&d.testPilot)?"":"none"; }
-          else { var _tp=document.getElementById("testPilotNavBtn");
-            if(d&&d.ok&&d.testPilot){ if(!_tp){ _tp=document.createElement("a"); _tp.id="testPilotNavBtn"; _tp.className="bn"; _tp.href="/blades/checklist/"; _tp.textContent="⚑ TEST PILOT"; _nav.appendChild(_tp); } }
-            else if(_tp){ _tp.remove(); } }
-        }
-      }catch(e){}
-      if((window._obUrgentItems||[]).length!==had && typeof window._obRunTicker==="function") window._obRunTicker();
-    }catch(e){}
-  }
-  if(document.readyState!=="loading") chk(); else document.addEventListener("DOMContentLoaded",chk);
-  setInterval(chk,15000);
 })();
 </script>
 </body>
