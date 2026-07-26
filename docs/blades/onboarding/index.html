@@ -375,9 +375,11 @@
           var _sg=document.getElementById("setupGuideBtn");
           if(d&&d.ok&&d.needsSetup && location.pathname.indexOf("/blades/onboarding")!==0){ if(!_sg){ _sg=document.createElement("a"); _sg.id="setupGuideBtn"; _sg.className="bn"; _sg.href="/blades/onboarding/"; _sg.textContent="SETUP GUIDE"; _nav.appendChild(_sg); } }
           else if(_sg){ _sg.remove(); }
-          var _tp=document.getElementById("testPilotNavBtn");
-          if(d&&d.ok&&d.testPilot){ if(!_tp){ _tp=document.createElement("a"); _tp.id="testPilotNavBtn"; _tp.className="bn"; _tp.href="/blades/checklist/"; _tp.textContent="⚑ TEST PILOT"; _nav.appendChild(_tp); } }
-          else if(_tp){ _tp.remove(); }
+          var _tpx=document.getElementById("testPilotBtn");
+          if(_tpx){ _tpx.style.display=(d&&d.ok&&d.testPilot)?"":"none"; }
+          else { var _tp=document.getElementById("testPilotNavBtn");
+            if(d&&d.ok&&d.testPilot){ if(!_tp){ _tp=document.createElement("a"); _tp.id="testPilotNavBtn"; _tp.className="bn"; _tp.href="/blades/checklist/"; _tp.textContent="⚑ TEST PILOT"; _nav.appendChild(_tp); } }
+            else if(_tp){ _tp.remove(); } }
         }
       }catch(e){}
       if((window._obUrgentItems||[]).length!==had && typeof window._obRunTicker==="function") window._obRunTicker();
