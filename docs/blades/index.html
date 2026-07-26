@@ -464,6 +464,14 @@ function ago(ts){ if(!ts) return ""; const s=Math.max(0,(Date.now()-ts)/1000);
   $("wisdomText").textContent=CFG.WISDOM.text;
   $("wisdomSig").textContent=CFG.WISDOM.author;
   $("wisdomRole").textContent=CFG.WISDOM.role;
+  // Live override: the Admiral's Desk edit (KV) supersedes the CONFIG default above.
+  // Public mirror at /blades/welcome — works for signed-out visitors and members alike.
+  fetch("/blades/welcome",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(w=>{
+    if(!w||!w.text)return;
+    $("wisdomText").textContent=w.text;
+    if(w.author)$("wisdomSig").textContent=w.author;
+    if(w.role)$("wisdomRole").textContent=w.role;
+  }).catch(()=>{});
   const inv=CFG.DISCORD_INVITE||"#";
   ["applyBtn","applyBtn2","whoLnk"].forEach(id=>{ const el=$(id); if(el) el.href=inv; });
   $("stCmdrs").textContent=CFG.HERO.commanders!=null?CFG.HERO.commanders:"—";
