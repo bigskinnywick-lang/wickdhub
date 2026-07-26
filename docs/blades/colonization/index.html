@@ -428,7 +428,7 @@
     buildingfabricators:"Building Fabricators",powergenerators:"Power Generators",microcontrollers:"Micro Controllers",
     medicaldiagnosticequipment:"Medical Diagnostic Equipment",cropraisers:"Crop Harvesters",militarygradefabrics:"Military Grade Fabrics",
     nonlethalweapons:"Non-Lethal Weapons",reactivearmour:"Reactive Armour",basicmedicines:"Basic Medicines",
-    hydrogenfuel:"Hydrogen Fuel",robotics:"Robotics",geologicalequipment:"Geological Equipment",heliostaticfurnaces:"Microbial Furnaces",hazardousenvironmentsuits:"H.E. Suits",hazardousenvironmensuits:"H.E. Suits"};
+    hydrogenfuel:"Hydrogen Fuel",robotics:"Robotics",geologicalequipment:"Geological Equipment",heliostaticfurnaces:"Microbial Furnaces",hazardousenvironmentsuits:"H.E. Suits",hazardousenvironmensuits:"H.E. Suits",mineralextractors:"Mineral Extractors"};
   const disp=(k)=>NAMES[k]||k.replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
   const TYPE={consus:"Colonisation Construction Site",coriolis:"Coriolis Starport",orbis:"Orbis Starport",ocellus:"Ocellus Starport",asteroid:"Asteroid Base",outpost:"Outpost"};
   var TYPE_OV={}; // admin per-build real facility-type overrides (from /blades/api/build-type)
@@ -454,8 +454,37 @@
     srcCache[key]=list; return list;
   }
 
+  // ---- manifest sort cycle (default = highest need) ----
+  const MSORT=[
+    {id:"need",lab:"NEED",cmp:(a,b)=>b[1]-a[1]},
+    {id:"az",lab:"A–Z",cmp:(a,b)=>disp(a[0]).toLowerCase().localeCompare(disp(b[0]).toLowerCase())},
+    {id:"cat",lab:"CATEGORY",cmp:(a,b)=>{const ca=_catRank(a[0]),cb=_catRank(b[0]);return ca!==cb?ca-cb:disp(a[0]).toLowerCase().localeCompare(disp(b[0]).toLowerCase());}}
+  ];
+  let MANIFEST_SORT=(function(){try{var v=localStorage.getItem("ob_msort");return (v&&MSORT.some(m=>m.id===v))?v:"need";}catch(e){return "need";}})();
+  const _CATORD=["chemicals","consumer items","foods","industrial materials","machinery","medicines","metals","minerals","salvage","technology","textiles","waste","weapons"];
+  const _CATOF=(function(){
+    const g={
+      "chemicals":["explosives","hydrogenfuel","hydrogenperoxide","liquidoxygen","mineraloil","nerveagents","pesticides","rockforthfertiliser","surfacestabilisers","syntheticreagents","tritium","water","agronomictreatment"],
+      "consumer items":["clothing","consumertechnology","domesticappliances","evacuationshelter","survivalequipment"],
+      "foods":["algae","animalmeat","coffee","fish","foodcartridges","fruitandvegetables","grain","syntheticmeat","tea"],
+      "industrial materials":["ceramiccomposites","cmmcomposite","insulatingmembrane","metaalloys","microweavecoolinghoses","neofabricinsulation","polymers","semiconductors","superconductors"],
+      "machinery":["articulationmotors","atmosphericprocessors","buildingfabricators","cropharvesters","cropraisers","emergencypowercells","energygridassembly","exhaustmanifold","geologicalequipment","heatsinkinterlink","hnshockmount","heliostaticfurnaces","iondistributor","magneticemittercoil","marineequipment","mineralextractors","modularterminals","powerconverter","powergenerators","powertransferbus","radiationbaffle","reinforcedmountingplate","skimmercomponents","thermalcoolingunits","waterpurifiers"],
+      "medicines":["advancedmedicines","agriculturalmedicines","agrimedicines","basicmedicines","combatstabilisers","performanceenhancers","progenitorcells"],
+      "metals":["aluminium","beryllium","bismuth","cobalt","copper","gallium","gold","indium","lanthanum","lithium","osmium","palladium","platinum","praseodymium","samarium","silver","steel","tantalum","thallium","thorium","titanium","uranium"],
+      "technology":["advancedcatalysers","animalmonitors","aquaponicsystems","autofabricators","bioreducinglichen","computercomponents","hazardousenvironmentsuits","hazardousenvironmensuits","hardwarediagnosticsensor","landenrichmentsystems","terrainenrichmentsystems","medicaldiagnosticequipment","microcontrollers","muonimager","nanobreakers","resonatingseparators","robotics","structuralregulators","telemetrysuite"],
+      "textiles":["conductivefabrics","leather","militarygradefabrics","naturalfabrics","syntheticfabrics"],
+      "waste":["biowaste","chemicalwaste","scrap"],
+      "weapons":["battleweapons","landmines","nonlethalweapons","personalweapons","reactivearmour"]
+    };
+    const o={}; Object.keys(g).forEach(cat=>{const idx=_CATORD.indexOf(cat); g[cat].forEach(k=>o[k]=idx);}); return o;
+  })();
+  function _catRank(k){ var i=_CATOF[String(k||"").toLowerCase()]; return (i==null||i<0)?_CATORD.length:i; }
+  function _msort(){ return MSORT.find(m=>m.id===MANIFEST_SORT)||MSORT[0]; }
+  function cycleMsort(){ const i=MSORT.findIndex(m=>m.id===MANIFEST_SORT); MANIFEST_SORT=MSORT[(i+1)%MSORT.length].id; try{localStorage.setItem("ob_msort",MANIFEST_SORT);}catch(e){} }
+  function _msortLabel(){ return "↕ SORT: "+_msort().lab; }
+
   function commodityRows(p){
-    const entries=Object.entries(p.commodities||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    const entries=Object.entries(p.commodities||{}).filter(([k,v])=>v>0).sort(_msort().cmp);
     if(!entries.length) return '<tr><td colspan="3" class="done" style="padding:14px">✔ All commodities delivered — build complete.</td></tr>';
     return entries.map(([k,v])=>{
       return `<tr class="commRow" data-comm="${k}" data-name="${disp(k)}"><td><span class="caret">▶</span>${disp(k)}</td>
@@ -488,7 +517,7 @@
         </div>
         <div class="prog-top"><span>CONSTRUCTION PROGRESS</span><b>${pct}%</b></div>
         <div class="bar"><i style="width:${pct}%"></i></div>
-        <div style="margin-top:22px;color:var(--accent-bright);font-family:var(--font-head);letter-spacing:1px;font-size:13px">\u25c8 ${escFC(facLabel)} <span style="color:var(--muted);font-weight:normal">\u00b7 ${escFC(facBody)}</span></div><h2 style="margin-top:6px">Shipping Manifest — Remaining Haul<span class="h2r"><span class="last-refresh" id="lastRefresh" style="font-size:10px;letter-spacing:.5px;color:var(--muted);margin-right:10px;font-variant-numeric:tabular-nums"></span><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
+        <div style="margin-top:22px;color:var(--accent-bright);font-family:var(--font-head);letter-spacing:1px;font-size:13px">\u25c8 ${escFC(facLabel)} <span style="color:var(--muted);font-weight:normal">\u00b7 ${escFC(facBody)}</span></div><h2 style="margin-top:6px">Shipping Manifest — Remaining Haul<span class="h2r"><button class="refresh-btn" id="msortBtn" style="margin-right:8px" title="Cycle manifest sort — highest need, A–Z, or in-game category grouping">↕ SORT: NEED</button><span class="last-refresh" id="lastRefresh" style="font-size:10px;letter-spacing:.5px;color:var(--muted);margin-right:10px;font-variant-numeric:tabular-nums"></span><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
         <div style="font-size:10.5px;color:var(--muted);margin:-8px 0 8px">Live from RavenColonial. Click a commodity → live Ardent suppliers near ${p.systemName}. ⧉ copies the system to your nav computer.</div>
         <table><thead><tr><th>Commodity</th><th class="num">Remaining</th><th class="num">Trips*</th></tr></thead><tbody id="clBody">${commodityRows(p)}</tbody></table>
       </div>
@@ -529,6 +558,7 @@
       };
     });
     const rb=$("refreshBtn"); if(rb) rb.onclick=refresh;
+    const ms=$("msortBtn"); if(ms){ ms.textContent=_msortLabel(); ms.onclick=()=>{ cycleMsort(); const tb=$("clBody"); if(tb&&PROJECT) tb.innerHTML=commodityRows(PROJECT); document.querySelectorAll('.srcRow').forEach(x=>x.remove()); wire(); }; }
   }
   // ---- Inara cross-check (alternative supplier view) ----
   // Inara's commodity search keys commodities by numeric id (not name), so we map the

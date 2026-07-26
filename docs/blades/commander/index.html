@@ -172,14 +172,6 @@
 
   /* ===== colour-scheme rotary dial ===== */
   .dialbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-  /* ---- urgent ticker item: amber<->fleet hazard flash (reusable for any urgent message) ---- */
-  @keyframes obUrgent{0%,49%{color:#ffb000}50%,100%{color:#2fe0ff}}
-  @keyframes obUrgentBg{0%,49%{background:color-mix(in srgb,#ffb000 15%,transparent)}50%,100%{background:color-mix(in srgb,#2fe0ff 15%,transparent)}}
-  .ticker .item.urgent{font-weight:700;letter-spacing:.6px;border-radius:var(--radius,6px);animation:obUrgent .66s steps(1,end) infinite,obUrgentBg .66s steps(1,end) infinite}
-  .ticker .item.urgent .ico,.ticker .item.urgent b{color:inherit!important;animation:obUrgent .66s steps(1,end) infinite}
-  @keyframes obUrgentTag{0%,49%{background:#ffb000;box-shadow:0 0 16px rgba(255,176,0,.55)}50%,100%{background:#2fe0ff;box-shadow:0 0 16px rgba(47,224,255,.55)}}
-  .ticker.obUrgentOn .tag{animation:obUrgentTag .66s steps(1,end) infinite}
-  @media(prefers-reduced-motion:reduce){.ticker .item.urgent{animation:none;color:#ffb000;background:color-mix(in srgb,#ffb000 18%,transparent)}.ticker .item.urgent .ico,.ticker .item.urgent b{animation:none;color:#ffb000!important}.ticker.obUrgentOn .tag{animation:none;background:#ffb000}}
   .dial-labels{display:flex;gap:7px}
   .dl{font-family:var(--font-head);font-size:10px;letter-spacing:1.2px;line-height:1.12;text-align:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:6px 11px;cursor:pointer;border-radius:var(--radius);transition:.15s}
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
@@ -297,8 +289,19 @@
     </div>
   </header>
 
-  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn on" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/flight/">FLIGHT RIG</a></nav>
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn on" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a><a class="bn" href="/blades/flight/">FLIGHT RIG</a></nav>
   <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
+  <div id="curShip" style="display:none;margin-top:12px;border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 7%,var(--bg));border-radius:var(--radius);padding:10px 14px;font-size:12.5px;line-height:1.5"></div>
+  <div class="buildbar">
+    <span class="bb-lab">◈ SITE</span>
+    <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
+    <button id="carrierLinkBtn" class="bb-add" style="display:none" title="Link your fleet carrier to the build you are viewing"></button>
+    <a href="/blades/architect/" id="architectBtn" class="bb-add" style="text-decoration:none" title="Your architect deck — claims, primary-port windows, cleanup">◆ ARCHITECT</a>
+    <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
+    <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
+    <a href="/blades/admiral/" id="admiralBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admiral's Desk — squadron leader">⚓ ADMIRAL'S DESK</a>
+    <a href="/blades/usage/" id="usageBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Squad Net Usage — traffic & KV glance (admins only)">◷ NET USAGE</a>
+  </div>
   <div class="controls">
     <div class="dialbox">
       <div class="dial-labels">
@@ -312,18 +315,6 @@
         <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
       </div>
     </div>
-  </div>
-
-  <div id="curShip" style="display:none;margin-top:12px;border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 7%,var(--bg));border-radius:var(--radius);padding:10px 14px;font-size:12.5px;line-height:1.5"></div>
-  <div class="buildbar">
-    <span class="bb-lab">◈ BUILD</span>
-    <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
-    <button id="carrierLinkBtn" class="bb-add" style="display:none" title="Link your fleet carrier to the build you are viewing"></button>
-    <a href="/blades/architect/" id="architectBtn" class="bb-add" style="text-decoration:none" title="Your architect deck — claims, primary-port windows, cleanup">◆ ARCHITECT</a>
-    <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
-    <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
-    <a href="/blades/admiral/" id="admiralBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admiral's Desk — squadron leader">⚓ ADMIRAL'S DESK</a>
-    <a href="/blades/usage/" id="usageBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Squad Net Usage — traffic & KV glance (admins only)">◷ NET USAGE</a>
   </div>
 
   <div class="dossier">
@@ -394,7 +385,7 @@
   (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;
-      // TEST PILOT button visibility is driven by plugin-status (test-pilot role) in the SQUAD NET poller
+      const tp=$("testPilotBtn"); if(tp&&CMDR[em])tp.style.display="";  // shakedown crew only
     }).catch(()=>{});})();
 // ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
   (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{if(a&&a.isAdmin){const ab=$("adminBtn");if(ab)ab.style.display="";const ub=$("usageBtn");if(ub)ub.style.display="";}}).catch(()=>{});})();
@@ -456,7 +447,7 @@
   let TCUSTOM=[];
   async function tLoadCustom(){ try{ const d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); const now=Date.now(); TCUSTOM=((d&&d.fields)||[]).filter(f=>f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now)); }catch(e){} }
   function tCustomItems(){ return TCUSTOM.map(f=>({c:"news",i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))})); }
-  function renderTicker(items){ const el=$("tickTrack"); if(!el) return; const html=(window._obUrgentItems&&window._obUrgentItems.length?window._obUrgentItems.concat(window._obUrgentItems,window._obUrgentItems):items).map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; var _bar=el.closest?el.closest(".ticker"):null; if(_bar)_bar.classList.toggle("obUrgentOn", !!(window._obUrgentItems&&window._obUrgentItems.length)); }
+  function renderTicker(items){ const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
   async function runTicker(){ await tLoadCustom(); const cust=tCustomItems(); if(!BUILD_ID){ renderTicker(cust.concat([{c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."}])); return; } try{ renderTicker(cust.concat(tickerItems(await getProj()))); }catch(e){ renderTicker(cust.concat([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}])); } }
   window._obRunTicker=runTicker; (function(){ const go=()=>{ if($("tickTrack")) runTicker(); }; if(document.readyState!=="loading") go(); else document.addEventListener("DOMContentLoaded",go); setInterval(go,60000); })();
 
@@ -551,12 +542,13 @@
     const SEL=$("buildSel"),ADD=$("buildAdd"),ROW=$("buildAddRow"),IN=$("buildIdIn"),GO=$("buildIdGo");
     if(!SEL) return;
     const API="/blades/api/builds";
+    let SITE_NAMES={};
     const GUID=/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
     const getLocal=()=>{try{return JSON.parse(localStorage.getItem("ob_local_builds")||"[]");}catch(e){return [];}};
     const setLocal=(a)=>{try{localStorage.setItem("ob_local_builds",JSON.stringify(a));}catch(e){}};
     const setActive=(id)=>{try{localStorage.setItem("ob_build",id);}catch(e){} location.reload();};
     const esc=(s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-    const opt=(b)=>'<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+esc(b.name||b.id.slice(0,8))+(b.system?" \u00b7 "+esc(b.system):"")+(b.src==="local"?"  \u25e6 local":"")+'</option>';
+    const opt=(b)=>{var nm=(SITE_NAMES&&SITE_NAMES[b.id])||b.name||b.id.slice(0,8);return '<option value="'+b.id+'"'+(b.id===BUILD_ID?" selected":"")+'>'+esc(nm)+(b.system?" \u00b7 "+esc(b.system):"")+(b.src==="local"?"  \u25e6 local":"")+'</option>';};
     async function fetchList(){
       try{const j=await fetch(API,{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); if(j&&Array.isArray(j.builds)) return j.builds;}catch(e){}
       try{const j=await fetch("/blades/builds.json",{credentials:"same-origin"}).then(r=>r.json()); return (j&&j.builds)||[];}catch(e){}
@@ -564,6 +556,7 @@
     }
     let showAllDone=false, lastMerged=null;
     async function load(){
+      try{ const snm=await fetch("/blades/api/sitenames",{credentials:"same-origin"}).then(r=>r.ok?r.json():null); if(snm&&snm.names) SITE_NAMES=snm.names; }catch(e){}
       const reg=await fetchList();
       const seen={},merged=[];
       reg.forEach(b=>{if(b&&b.id&&!seen[b.id]){seen[b.id]=1;merged.push({id:b.id,name:b.name||"",system:b.system||"",src:"squad",completedTs:b.completedTs||null});}});
@@ -806,41 +799,6 @@
       .catch(function(){});
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",gate);else gate();
-})();
-</script>
-<script>
-/* Registrar update takeover — blares an urgent RESTART EDMC ticker item until the
-   pilot's plugin reports the new version. Per-pilot via /blades/api/plugin-status. */
-(function(){
-  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-  async function chk(){
-    try{
-      var r=await fetch('/blades/api/plugin-status',{headers:{accept:'application/json'},credentials:'same-origin'});
-      if(!r.ok) return;
-      var d=await r.json(); var had=(window._obUrgentItems||[]).length;
-      if(d&&d.ok&&d.needsRestart&&d.latest){
-        window._obUrgentItems=[{c:"urgent",i:"\u26a0",h:'<b>RESTART EDMC</b> \u2014 Blades Registrar '+esc(String(d.latest.version))+' staged \u00b7 restart to apply'}];
-      } else if(d&&d.ok&&d.needsSetup){
-        window._obUrgentItems=[{c:"urgent",i:"⚠",h:'<b><a href="/blades/onboarding/" style="color:inherit;text-decoration:underline">COMPLETE SETUP</a></b> — install the Blades Registrar plugin to sync with the board'}];
-      } else { window._obUrgentItems=[]; }
-      try{
-        var _nav=document.querySelector(".blades-nav");
-        if(_nav){
-          var _sg=document.getElementById("setupGuideBtn");
-          if(d&&d.ok&&d.needsSetup && location.pathname.indexOf("/blades/onboarding")!==0){ if(!_sg){ _sg=document.createElement("a"); _sg.id="setupGuideBtn"; _sg.className="bn"; _sg.href="/blades/onboarding/"; _sg.textContent="SETUP GUIDE"; _nav.appendChild(_sg); } }
-          else if(_sg){ _sg.remove(); }
-          var _tpx=document.getElementById("testPilotBtn");
-          if(_tpx){ _tpx.style.display=(d&&d.ok&&d.testPilot)?"":"none"; }
-          else { var _tp=document.getElementById("testPilotNavBtn");
-            if(d&&d.ok&&d.testPilot){ if(!_tp){ _tp=document.createElement("a"); _tp.id="testPilotNavBtn"; _tp.className="bn"; _tp.href="/blades/checklist/"; _tp.textContent="⚑ TEST PILOT"; _nav.appendChild(_tp); } }
-            else if(_tp){ _tp.remove(); } }
-        }
-      }catch(e){}
-      if((window._obUrgentItems||[]).length!==had && typeof window._obRunTicker==="function") window._obRunTicker();
-    }catch(e){}
-  }
-  if(document.readyState!=="loading") chk(); else document.addEventListener("DOMContentLoaded",chk);
-  setInterval(chk,15000);
 })();
 </script>
 </body>
