@@ -385,8 +385,12 @@
   (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;
-      const tp=$("testPilotBtn"); if(tp&&CMDR[em])tp.style.display="";  // shakedown crew only
+      // TEST PILOT button is gated on the real test-pilot role via plugin-status (poller below), not the crew map.
     }).catch(()=>{});})();
+// ===== TEST PILOT button — driven by real test-pilot role; a revoke hides it on the next poll =====
+  (function(){var tp=$("testPilotBtn");if(!tp)return;
+    function poll(){fetch("/blades/api/plugin-status",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(d=>{tp.style.display=(d&&d.testPilot)?"":"none";}).catch(()=>{});}
+    poll();setInterval(poll,20000);})();
 // ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
   (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{if(a&&a.isAdmin){const ab=$("adminBtn");if(ab)ab.style.display="";const ub=$("usageBtn");if(ub)ub.style.display="";}}).catch(()=>{});})();
 // ===== Admiral's Desk reveal — ACTIVE. Button shows for admins/leadership. =====
