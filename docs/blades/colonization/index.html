@@ -184,7 +184,9 @@
   @keyframes obUrgentBg{0%,49%{background:color-mix(in srgb,#ffb000 15%,transparent)}50%,100%{background:color-mix(in srgb,#2fe0ff 15%,transparent)}}
   .ticker .item.urgent{font-weight:700;letter-spacing:.6px;border-radius:var(--radius,6px);animation:obUrgent .66s steps(1,end) infinite,obUrgentBg .66s steps(1,end) infinite}
   .ticker .item.urgent .ico,.ticker .item.urgent b{color:inherit!important;animation:obUrgent .66s steps(1,end) infinite}
-  @media(prefers-reduced-motion:reduce){.ticker .item.urgent{animation:none;color:#ffb000;background:color-mix(in srgb,#ffb000 18%,transparent)}.ticker .item.urgent .ico,.ticker .item.urgent b{animation:none;color:#ffb000!important}}
+  @keyframes obUrgentTag{0%,49%{background:#ffb000;box-shadow:0 0 16px rgba(255,176,0,.55)}50%,100%{background:#2fe0ff;box-shadow:0 0 16px rgba(47,224,255,.55)}}
+  .ticker.obUrgentOn .tag{animation:obUrgentTag .66s steps(1,end) infinite}
+  @media(prefers-reduced-motion:reduce){.ticker .item.urgent{animation:none;color:#ffb000;background:color-mix(in srgb,#ffb000 18%,transparent)}.ticker .item.urgent .ico,.ticker .item.urgent b{animation:none;color:#ffb000!important}.ticker.obUrgentOn .tag{animation:none;background:#ffb000}}
   .dial-labels{display:flex;gap:7px}
   .dl{font-family:var(--font-head);font-size:10px;letter-spacing:1.2px;line-height:1.12;text-align:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:6px 11px;cursor:pointer;border-radius:var(--radius);transition:.15s}
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
@@ -645,7 +647,7 @@
     async function loadHot(){ try{ const d=await fetch('/blades/api/hotlist',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); HOT=(d&&Array.isArray(d.hotlist))?d.hotlist:[]; }catch(e){ HOT=[]; } }
     function completedSystems(){ const s=new Set(); try{ (REGISTRY||[]).forEach(function(b){ if(b&&b.completedTs&&b.system) s.add(String(b.system).toLowerCase().trim()); }); }catch(e){} return s; }
     function hotItems(){ const done=completedSystems(); return HOT.filter(function(h){ return !(h.system&&done.has(String(h.system).toLowerCase().trim())); }).slice(0,8).map(function(h){ const d=h.daysLeft; const c=d<=3?"emergency":(d<=7?"crit":"news"); const verb=h.tier==="not_started"?"CLAIM EXPIRING":"PRIMARY PORT DUE"; const who=h.architect?" · "+escH(h.architect):""; return {c:c,i:"⏳",h:"<b>"+escH(h.system||h.systemAddress)+"</b> — "+verb+who+" · "+d+"d to deploy primary port"}; }); }
-    function render(items,el){ const html=(window._obUrgentItems||[]).concat(items).map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
+    function render(items,el){ const html=(window._obUrgentItems&&window._obUrgentItems.length?window._obUrgentItems.concat(window._obUrgentItems,window._obUrgentItems):items).map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; var _bar=el.closest?el.closest(".ticker"):null; if(_bar)_bar.classList.toggle("obUrgentOn", !!(window._obUrgentItems&&window._obUrgentItems.length)); }
     async function run(){
       await loadCustom(); await loadHot();
       if(!BUILD_ID){
