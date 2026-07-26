@@ -30,11 +30,53 @@
   .logo-slot{width:56px;height:56px;border:1px solid var(--accent);border-radius:12px;display:grid;place-items:center;background:#050506;box-shadow:0 0 18px var(--glow),inset 0 0 12px color-mix(in srgb,var(--accent) 22%,transparent);flex:none;font-size:26px;color:var(--accent-bright);text-shadow:0 0 10px var(--glow)}
   .brand h1{font-family:var(--font-head);font-weight:800;margin:0;font-size:18px;letter-spacing:3px;color:var(--accent-bright);text-shadow:0 0 12px var(--glow)}
   .brand .sub{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:3px}
-  .themebar{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-  .themebar .tl{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-right:2px}
-  .theme-btn{font-family:var(--font-head);font-size:9.5px;letter-spacing:1.2px;padding:6px 10px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:var(--radius);transition:.15s}
-  .theme-btn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
-  .theme-btn.on{color:#04070a;background:var(--accent);border-color:var(--accent);box-shadow:0 0 14px var(--glow)}
+
+  /* ===== standard header stack: clock · blades-nav · ticker · colour dial ===== */
+  .secure .right span{margin-left:14px}
+  .clock{display:flex;align-items:center;gap:9px;font-family:var(--font-head);font-size:12px;letter-spacing:1.5px;color:var(--accent-bright);text-shadow:0 0 8px var(--glow)}
+  .clock .cl-lab{color:var(--muted);font-size:8.5px;letter-spacing:1.5px;font-family:var(--font-body)}
+  .clock #clTime{font-variant-numeric:tabular-nums}
+  .clock .cl-toggle{cursor:pointer;border:1px solid var(--accent-dim);color:var(--muted);font-size:8.5px;padding:2px 7px;border-radius:var(--radius);letter-spacing:1px;font-family:var(--font-body)}
+  .clock .cl-toggle:hover{color:var(--accent-bright);border-color:var(--accent)}
+  @media(max-width:720px){.clock{display:none}}
+
+  .blades-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .blades-nav .bn{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;text-decoration:none;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:var(--radius);transition:.15s}
+  .blades-nav .bn:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
+  .blades-nav .bn.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
+  :root[data-theme="cyan"] .blades-nav .bn.on,:root[data-theme="onyx"] .blades-nav .bn.on,:root[data-theme="green"] .blades-nav .bn.on{color:#04070a}
+
+  .ticker{margin-top:12px;border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 7%,var(--bg));overflow:hidden;position:relative;height:38px;display:flex;align-items:center;border-radius:var(--radius)}
+  .ticker .tag{flex:none;font-family:var(--font-head);font-size:11px;letter-spacing:2px;font-weight:700;background:var(--accent);color:#0a0705;padding:0 14px;height:100%;display:flex;align-items:center;z-index:2;box-shadow:0 0 18px var(--glow)}
+  .ticker .track{display:flex;white-space:nowrap;animation:scroll 46s linear infinite;will-change:transform}
+  .ticker:hover .track{animation-play-state:paused}
+  .ticker .item{font-size:12.5px;padding:0 30px;color:var(--text);letter-spacing:.5px;display:inline-flex;align-items:center;gap:8px}
+  .ticker .item .ico{color:var(--accent-bright);font-size:13px}.ticker .item b{color:var(--accent-bright)}
+  .ticker .sep{color:var(--accent-dim)}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  .controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 16px;flex-wrap:wrap}
+  .dialbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .dial-labels{display:flex;gap:7px}
+  .dl{font-family:var(--font-head);font-size:10px;letter-spacing:1.2px;line-height:1.12;text-align:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:6px 11px;cursor:pointer;border-radius:var(--radius);transition:.15s}
+  .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
+  .dl:hover{color:var(--accent-bright);border-color:var(--accent-dim)}
+  .dl.on{color:#0a0705;background:linear-gradient(180deg,var(--accent-bright),var(--accent));border-color:var(--accent);box-shadow:0 0 12px var(--glow)}
+  :root[data-theme="cyan"] .dl.on,:root[data-theme="onyx"] .dl.on,:root[data-theme="green"] .dl.on{color:#04070a}
+  .dial-knob-row{display:flex;align-items:center;gap:11px}
+  .dial-cap{font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase}
+  .dial-scheme{font-family:var(--font-head);font-size:11px;letter-spacing:1.5px;color:var(--accent-bright);min-width:112px;text-shadow:0 0 8px var(--glow)}
+  .knob{position:relative;width:58px;height:58px;border-radius:50%;cursor:grab;flex:none;
+    background:radial-gradient(circle at 50% 36%, color-mix(in srgb,var(--accent) 24%,#000) 0%, #0c0906 58%, #050403 100%);
+    border:2px solid var(--accent-dim);
+    box-shadow:0 0 16px var(--glow), inset 0 2px 6px rgba(255,255,255,.08), inset 0 -3px 8px rgba(0,0,0,.75);
+    transform:rotate(0deg);transition:transform .38s cubic-bezier(.25,1.35,.5,1);touch-action:none;user-select:none}
+  .knob:active{cursor:grabbing}
+  .knob::before{content:"";position:absolute;inset:8px;border-radius:50%;border:1px dashed color-mix(in srgb,var(--accent) 42%,transparent);opacity:.55}
+  .knob .pointer{position:absolute;left:50%;top:3px;width:3px;height:19px;margin-left:-1.5px;border-radius:2px;background:linear-gradient(var(--accent-bright),var(--accent));box-shadow:0 0 9px var(--glow)}
+  .knob:focus{outline:none;box-shadow:0 0 0 2px var(--accent),0 0 16px var(--glow)}
+  .knob.turning{transition:none}
+  @media(prefers-reduced-motion:reduce){.knob{transition:none}}
 
   .lead{margin:16px 0 4px;font-size:12.5px;color:var(--muted);line-height:1.6}
   .lead b{color:var(--accent-bright)}
@@ -100,13 +142,13 @@
 <div class="wrap">
 
   <div class="secure">
-    <div><span class="lock">⬢ SECURE</span> · FLIGHT OPERATIONS · CMDR TERMINAL</div>
-    <nav class="nav">
-      <a href="/blades/">◈ HOME</a>
-      <a href="/blades/colonization/">◈ COLONISATION</a>
-      <a href="/blades/commander/">◈ MY STATS</a>
-      <a href="/blades/flight/" class="here">⎈ FLIGHT RIG</a>
-    </nav>
+    <div><span class="lock">🔒</span> ONYX BLADES SECURE CHANNEL · FLIGHT OPERATIONS</div>
+    <div class="clock" id="clock" title="Elite Dangerous runs on real UTC, year +1286. Click to toggle RL local time.">
+      <span class="cl-lab" id="clLab">GALACTIC</span>
+      <span id="clTime">————</span>
+      <span class="cl-toggle" id="clToggle">ED ⇄ LOCAL</span>
+    </div>
+    <div class="right"><span>CMDR TERMINAL</span></div>
   </div>
 
   <header class="hud">
@@ -117,14 +159,24 @@
         <div class="sub">CMDR BIGSKINNY · HOVER ANY CONTROL FOR ITS JOB</div>
       </div>
     </div>
-    <div class="themebar">
-      <span class="tl">Scheme</span>
-      <button class="theme-btn" data-t="amber">AMBER</button>
-      <button class="theme-btn" data-t="cyan">CYAN</button>
-      <button class="theme-btn" data-t="onyx">ONYX</button>
-      <button class="theme-btn" data-t="green">GREEN</button>
-    </div>
   </header>
+
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a><a class="bn on" href="/blades/flight/">FLIGHT RIG</a></nav>
+  <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
+  <div class="controls">
+    <div class="dialbox">
+      <div class="dial-labels">
+        <button class="dl on" data-t="amber">AMBER<small>COCKPIT</small></button>
+        <button class="dl" data-t="cyan">FLEET<small>TACTICAL</small></button>
+        <button class="dl" data-t="onyx">ONYX<small>BLADE</small></button><button class="dl" data-t="green">JADE<small>CANOPY</small></button>
+      </div>
+      <div class="dial-knob-row">
+        <span class="dial-cap">Turn ►</span>
+        <div class="knob" id="knob" tabindex="0" role="slider" aria-label="Colour scheme" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><span class="pointer"></span></div>
+        <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
+      </div>
+    </div>
+  </div>
 
   <p class="lead">Rig on record: <b>VIRPIL Constellation Alpha</b> grip + <b>VIRPIL twin-lever throttle</b> + <b>Tobii</b> head-tracking on the LG C1. The schematics render in the active scheme colour — hover (or tap) any control for its job. Numbers are the VIRPIL button IDs (your bridge from the game's "Button 47"). <b>Wired to your real <code style="color:var(--warn)">Custom.4.2.binds</code></b> — controls shown <b style="color:var(--good)">green</b> are confirmed/high-confidence; the throttle toggles list their bound function but their exact physical position is still pending your VIRPIL profile.</p>
 
@@ -248,11 +300,54 @@
 
 <script>
 (function(){
-  var STORE="ob_theme",root=document.documentElement;
-  try{var t=localStorage.getItem(STORE);if(t)root.setAttribute("data-theme",t);}catch(e){}
-  function paint(){var c=root.getAttribute("data-theme");document.querySelectorAll(".theme-btn").forEach(function(b){b.classList.toggle("on",b.dataset.t===c);});}
-  document.querySelectorAll(".theme-btn").forEach(function(b){b.addEventListener("click",function(){root.setAttribute("data-theme",b.dataset.t);try{localStorage.setItem(STORE,b.dataset.t);}catch(e){}paint();});});
-  paint();
+  var root=document.documentElement;
+  try{var _t=localStorage.getItem("ob_theme");if(_t)root.setAttribute("data-theme",_t);}catch(e){}
+
+  // ===== colour-scheme rotary dial (drives data-theme, persists to ob_theme) =====
+  (function(){
+    var SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];
+    var knob=document.getElementById("knob"),schemeEl=document.getElementById("dialScheme"),labels=[].slice.call(document.querySelectorAll(".dl"));
+    if(!knob)return;
+    var idx=0,dragging=false;
+    function paint(i){var s=SCHEMES[i];root.setAttribute("data-theme",s.t);if(schemeEl)schemeEl.textContent=s.n;labels.forEach(function(l,j){l.classList.toggle("on",j===i);});knob.setAttribute("aria-valuenow",i);}
+    function apply(i){idx=(i%SCHEMES.length+SCHEMES.length)%SCHEMES.length;knob.classList.remove("turning");knob.style.transform="rotate("+SCHEMES[idx].a+"deg)";paint(idx);try{localStorage.setItem("ob_theme",SCHEMES[idx].t);}catch(e){}}
+    labels.forEach(function(l,j){l.onclick=function(){apply(j);};});
+    function ang(e){var r=knob.getBoundingClientRect();var cx=r.left+r.width/2,cy=r.top+r.height/2;var pt=e.touches?e.touches[0]:e;var d=Math.atan2(pt.clientX-cx,-(pt.clientY-cy))*180/Math.PI;return Math.max(-72,Math.min(72,d));}
+    function near(d){var b=0,bd=1e9;SCHEMES.forEach(function(s,i){var x=Math.abs(s.a-d);if(x<bd){bd=x;b=i;}});return b;}
+    function mv(e){if(!dragging)return;if(e.cancelable)e.preventDefault();var d=ang(e);knob.classList.add("turning");knob.style.transform="rotate("+d+"deg)";var n=near(d);if(n!==idx){idx=n;paint(idx);}}
+    function up(){if(!dragging)return;dragging=false;apply(idx);window.removeEventListener("mousemove",mv);window.removeEventListener("mouseup",up);window.removeEventListener("touchmove",mv);window.removeEventListener("touchend",up);}
+    function dn(e){dragging=true;if(e.cancelable)e.preventDefault();knob.focus();window.addEventListener("mousemove",mv);window.addEventListener("mouseup",up);window.addEventListener("touchmove",mv,{passive:false});window.addEventListener("touchend",up);}
+    knob.addEventListener("mousedown",dn);knob.addEventListener("touchstart",dn,{passive:false});
+    knob.addEventListener("wheel",function(e){e.preventDefault();apply(idx+(e.deltaY>0?1:-1));},{passive:false});
+    knob.addEventListener("keydown",function(e){if(e.key==="ArrowRight"||e.key==="ArrowUp"){e.preventDefault();apply(idx+1);}else if(e.key==="ArrowLeft"||e.key==="ArrowDown"){e.preventDefault();apply(idx-1);}});
+    var _st=0;try{var _s=localStorage.getItem("ob_theme");var _j=SCHEMES.findIndex(function(x){return x.t===_s;});if(_j>=0)_st=_j;}catch(e){}apply(_st);
+  })();
+
+  // ===== galactic clock =====
+  (function(){var pad2=function(n){return String(n).padStart(2,"0");};var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];var mode="ed";try{var _cm=localStorage.getItem("ob_clock");if(_cm==="ed"||_cm==="local")mode=_cm;}catch(e){}
+    var timeEl=document.getElementById("clTime"),labEl=document.getElementById("clLab"),tgl=document.getElementById("clToggle");
+    if(!timeEl)return;
+    function tz(){try{return new Intl.DateTimeFormat("en-US",{timeZoneName:"short"}).formatToParts(new Date()).find(function(p){return p.type==="timeZoneName";}).value;}catch(e){return "LOCAL";}}
+    function fmtStamp(d){return mode==="ed"?(d.getUTCFullYear()+1286)+" "+MON[d.getUTCMonth()]+" "+pad2(d.getUTCDate())+" · "+pad2(d.getUTCHours())+":"+pad2(d.getUTCMinutes())+":"+pad2(d.getUTCSeconds())+" GMT":d.getFullYear()+" "+MON[d.getMonth()]+" "+pad2(d.getDate())+" · "+pad2(d.getHours())+":"+pad2(d.getMinutes())+":"+pad2(d.getSeconds())+" "+tz();}
+    function tick(){var d=new Date();timeEl.textContent=fmtStamp(d);if(labEl)labEl.textContent=mode==="ed"?"GALACTIC":"LOCAL / RL";}
+    if(tgl)tgl.onclick=function(){mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};
+    tick();setInterval(tick,1000);})();
+
+  // ===== SQUAD NET ticker (custom fields feed only) =====
+  (function(){
+    function escH(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+    var el=document.getElementById("tickTrack");if(!el)return;
+    function render(items){var html=items.map(function(x){return '<span class="item"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>';}).join("");el.innerHTML=html+html;}
+    function fallback(){render([{i:"◈",h:"SQUAD NET standing by"}]);}
+    async function run(){
+      var fields=[];
+      try{var d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(function(r){return r.ok?r.json():null;});var now=Date.now();fields=((d&&d.fields)||[]).filter(function(f){return f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now);});}catch(e){}
+      if(!fields.length){fallback();return;}
+      var items=fields.map(function(f){return {i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))};});
+      render(items);
+    }
+    run();setInterval(run,60000);
+  })();
   function wire(stageId,nm,tg,fn,rd){
     var st=document.getElementById(stageId);if(!st)return;
     var N=document.getElementById(nm),T=document.getElementById(tg),F=document.getElementById(fn),R=document.getElementById(rd);
@@ -269,5 +364,6 @@
   wire("stkStage","stkName","stkTag","stkFn","stkRead");
 })();
 </script>
+<script src="/blades/net-takeover.js" defer></script>
 </body>
 </html>

@@ -102,14 +102,6 @@
   .ticker .item.emergency{animation:emgPulse .8s steps(1,end) infinite;border-radius:var(--radius);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bad) 45%,transparent)}
   .ticker .item.emergency .ico,.ticker .item.emergency b{color:var(--bad)}
   @media(prefers-reduced-motion:reduce){.ticker .item.crit,.ticker .item.emergency{animation:none}.ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}.ticker .item.emergency{background:color-mix(in srgb,var(--bad) 20%,transparent)}}
-  /* ---- urgent ticker item: amber<->fleet hazard flash (reusable for any urgent message) ---- */
-  @keyframes obUrgent{0%,49%{color:#ffb000}50%,100%{color:#2fe0ff}}
-  @keyframes obUrgentBg{0%,49%{background:color-mix(in srgb,#ffb000 15%,transparent)}50%,100%{background:color-mix(in srgb,#2fe0ff 15%,transparent)}}
-  .ticker .item.urgent{font-weight:700;letter-spacing:.6px;border-radius:var(--radius,6px);animation:obUrgent .66s steps(1,end) infinite,obUrgentBg .66s steps(1,end) infinite}
-  .ticker .item.urgent .ico,.ticker .item.urgent b{color:inherit!important;animation:obUrgent .66s steps(1,end) infinite}
-  @keyframes obUrgentTag{0%,49%{background:#ffb000;box-shadow:0 0 16px rgba(255,176,0,.55)}50%,100%{background:#2fe0ff;box-shadow:0 0 16px rgba(47,224,255,.55)}}
-  .ticker.obUrgentOn .tag{animation:obUrgentTag .66s steps(1,end) infinite}
-  @media(prefers-reduced-motion:reduce){.ticker .item.urgent{animation:none;color:#ffb000;background:color-mix(in srgb,#ffb000 18%,transparent)}.ticker .item.urgent .ico,.ticker .item.urgent b{animation:none;color:#ffb000!important}.ticker.obUrgentOn .tag{animation:none;background:#ffb000}}
   .dial-labels{display:flex;gap:7px}
   .dl{font-family:var(--font-head);font-size:10px;letter-spacing:1.2px;line-height:1.12;text-align:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:6px 11px;cursor:pointer;border-radius:var(--radius);transition:.15s}
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
@@ -149,7 +141,7 @@
       <div><h1>COHORT UPLINK PROCEDURES</h1><div class="sub">FIELD MANUAL · GET WIRED INTO THE COLONISATION BOARD</div></div>
     </div>
   </header>
-  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY STATS</a></nav>
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn on" href="/blades/onboarding/">SETUP GUIDE</a></nav>
 
   <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
 
@@ -213,7 +205,7 @@
         </ol>
         <div class="kv">macOS: <code>~/Library/Application Support/EDMarketConnector/plugins</code> · Linux: <code>~/.local/share/EDMarketConnector/plugins</code></div>
       </div>
-      <a class="link" href="https://github.com/toemaus313/ravencolonial_edmc" target="_blank" rel="noopener">⬇ RavenColonial plugin — Releases</a>
+      <a class="link" href="https://github.com/EDToolbox/EDMC-Ravencolonial/releases" target="_blank" rel="noopener">⬇ RavenColonial plugin — Releases</a>
       <a class="link ghost" href="https://ravencolonial.com" target="_blank" rel="noopener">◉ ravencolonial.com</a>
       <div class="confirm"><b>✔ Confirmation signal:</b> after the restart, EDMC shows a new <b>RavenColonial</b> panel/row (and a 🚧 button that lights up when you're docked at a construction ship).</div>
     </div>
@@ -234,7 +226,7 @@
         </ol>
         <div class="kv">macOS: <code>~/Library/Application Support/EDMarketConnector/plugins</code> · Linux: <code>~/.local/share/EDMarketConnector/plugins</code></div>
       </div>
-      <a class="link" href="/blades/api/plugin-download" download="BladesRegistrar.zip">⬇ Blades Registrar — download (.zip)</a>
+      <a class="link" href="/blades/BladesRegistrar.zip" download>⬇ Blades Registrar — download (.zip)</a>
       <div class="note"><b>Architects only — auto-create:</b> under <b>File → Settings → Blades Registrar</b> you can switch on <b>Auto-create</b> so the Registrar raises a brand-new build in RavenColonial when none exists yet (it waits a few minutes first, in case SrvSurvey or another Blade logs it). Leave it <b>off</b> if you only ever join existing builds — it still auto-posts those to the board. Fallback architect defaults to <b>Onyx Blades</b>.</div>
       <div class="confirm"><b>✔ Confirmation signal:</b> after the restart, EDMC shows a <b>“Blades: idle”</b> line (near the RavenColonial row). Dock at a construction ship and within ~15 s it flips to <b>“Blades: registered …”</b> — that build now shows up in the board's build picker on its own.</div>
     </div>
@@ -348,46 +340,12 @@
   var TCUSTOM=[];
   async function tLoadCustom(){ try{ var d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(function(r){return r.ok?r.json():null;}); var now=Date.now(); TCUSTOM=(((d&&d.fields)||[]).filter(function(f){return f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now);})); }catch(e){ TCUSTOM=[]; } }
   function tCustomItems(){ return TCUSTOM.map(function(f){ return {c:"news",i:(f.key==="galnet"?"\u2756":f.key==="cg"?"\u25ce":"\u2726"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> \u00b7 '+escH(String(f.text))}; }); }
-  function renderTicker(items){ var el=document.getElementById("tickTrack"); if(!el) return; var html=(window._obUrgentItems&&window._obUrgentItems.length?window._obUrgentItems.concat(window._obUrgentItems,window._obUrgentItems):items).map(function(x){return '<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">\u25c6</span>';}).join(""); el.innerHTML=html+html; var _bar=el.closest?el.closest(".ticker"):null; if(_bar)_bar.classList.toggle("obUrgentOn", !!(window._obUrgentItems&&window._obUrgentItems.length)); }
+  function renderTicker(items){ var el=document.getElementById("tickTrack"); if(!el) return; var html=items.map(function(x){return '<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">\u25c6</span>';}).join(""); el.innerHTML=html+html; }
   async function runTicker(){ await tLoadCustom(); var cust=tCustomItems(); var tail=[{c:"",i:"\u25c8",h:"SQUAD NET \u00b7 live build traffic on the Colonization board."}]; renderTicker(cust.concat(tail)); }
   window._obRunTicker=runTicker;
   (function(){ var go=function(){ if(document.getElementById("tickTrack")) runTicker(); }; if(document.readyState!=="loading") go(); else document.addEventListener("DOMContentLoaded",go); setInterval(go,60000); })();
 })();
 </script>
-<script>
-/* Registrar update takeover — blares an urgent RESTART EDMC ticker item until the
-   pilot's plugin reports the new version. Per-pilot via /blades/api/plugin-status. */
-(function(){
-  function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
-  async function chk(){
-    try{
-      var r=await fetch('/blades/api/plugin-status',{headers:{accept:'application/json'},credentials:'same-origin'});
-      if(!r.ok) return;
-      var d=await r.json(); var had=(window._obUrgentItems||[]).length;
-      if(d&&d.ok&&d.needsRestart&&d.latest){
-        window._obUrgentItems=[{c:"urgent",i:"\u26a0",h:'<b>RESTART EDMC</b> \u2014 Blades Registrar '+esc(String(d.latest.version))+' staged \u00b7 restart to apply'}];
-      } else if(d&&d.ok&&d.needsSetup){
-        window._obUrgentItems=[{c:"urgent",i:"⚠",h:'<b><a href="/blades/onboarding/" style="color:inherit;text-decoration:underline">COMPLETE SETUP</a></b> — install the Blades Registrar plugin to sync with the board'}];
-      } else { window._obUrgentItems=[]; }
-      try{
-        var _nav=document.querySelector(".blades-nav");
-        if(_nav){
-          var _sg=document.getElementById("setupGuideBtn");
-          if(d&&d.ok&&d.needsSetup && location.pathname.indexOf("/blades/onboarding")!==0){ if(!_sg){ _sg=document.createElement("a"); _sg.id="setupGuideBtn"; _sg.className="bn"; _sg.href="/blades/onboarding/"; _sg.textContent="SETUP GUIDE"; _nav.appendChild(_sg); } }
-          else if(_sg){ _sg.remove(); }
-          var _tpx=document.getElementById("testPilotBtn");
-          if(_tpx){ _tpx.style.display=(d&&d.ok&&d.testPilot)?"":"none"; }
-          else { var _tp=document.getElementById("testPilotNavBtn");
-            if(d&&d.ok&&d.testPilot){ if(!_tp){ _tp=document.createElement("a"); _tp.id="testPilotNavBtn"; _tp.className="bn"; _tp.href="/blades/checklist/"; _tp.textContent="⚑ TEST PILOT"; _nav.appendChild(_tp); } }
-            else if(_tp){ _tp.remove(); } }
-        }
-      }catch(e){}
-      if((window._obUrgentItems||[]).length!==had && typeof window._obRunTicker==="function") window._obRunTicker();
-    }catch(e){}
-  }
-  if(document.readyState!=="loading") chk(); else document.addEventListener("DOMContentLoaded",chk);
-  setInterval(chk,15000);
-})();
-</script>
+<script src="/blades/net-takeover.js" defer></script>
 </body>
 </html>
