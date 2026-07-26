@@ -124,6 +124,8 @@
   thead th.num{text-align:right}
   tbody td{padding:8px;border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
   tbody td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .msort{font-family:var(--font-head,inherit);font-size:9.5px;letter-spacing:1px;color:var(--accent-bright);background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid var(--accent-dim);border-radius:4px;padding:2px 7px;margin-left:8px;cursor:pointer;vertical-align:middle}
+  .msort:hover{background:color-mix(in srgb,var(--accent) 22%,transparent)}
   tr.commRow{cursor:pointer}tr.commRow:hover{background:color-mix(in srgb,var(--accent) 6%,transparent)}
   tr.commRow .caret{color:var(--accent-dim);font-size:10px;margin-right:6px;display:inline-block;width:9px}
   tr.commRow.open .caret{color:var(--accent-bright)}
@@ -454,8 +456,39 @@
     srcCache[key]=list; return list;
   }
 
+  // ---- manifest sort cycle (Templar: match the in-game screen orderings) ----
+  let MANIFEST_SORT="need"; try{ MANIFEST_SORT=localStorage.getItem("ob_msort")||"need"; }catch(e){}
+  const MSORT_ORDER=["need","az","market"];
+  const MSORT_LBL={need:"NEED",az:"A–Z",market:"MARKET"};
+  const _CATIDX=(function(){
+    const groups=[
+      ["agronomic treatment","explosives","hydrogen fuel","hydrogen peroxide","liquid oxygen","mineral oil","nerve agents","pesticides","rockforth fertiliser","surface stabilisers","synthetic reagents","tritium","water"],
+      ["clothing","consumer technology","domestic appliances","evacuation shelter","survival equipment"],
+      ["algae","animal meat","coffee","fish","food cartridges","fruit and vegetables","grain","synthetic meat","tea"],
+      ["ceramic composites","cmm composite","insulating membrane","meta-alloys","micro-weave cooling hoses","neofabric insulation","polymers","semiconductors","superconductors"],
+      ["beer","bootleg liquor","liquor","narcotics","tobacco","wine"],
+      ["articulation motors","atmospheric processors","building fabricators","crop harvesters","emergency power cells","energy grid assembly","exhaust manifold","geological equipment","heatsink interlink","hn shock mount","ion distributor","magnetic emitter coil","marine equipment","microbial furnaces","mineral extractors","modular terminals","power converter","power generators","power transfer bus","radiation baffle","reinforced mounting plate","skimmer components","thermal cooling units","water purifiers"],
+      ["advanced medicines","agri-medicines","basic medicines","combat stabilisers","performance enhancers","progenitor cells"],
+      ["aluminium","beryllium","bismuth","cobalt","copper","gallium","gold","indium","lanthanum","lithium","osmium","palladium","platinum","praseodymium","samarium","silver","steel","tantalum","thallium","thorium","titanium","uranium"],
+      ["advanced catalysers","animal monitors","aquaponic systems","auto-fabricators","bioreducing lichen","computer components","h.e. suits","hardware diagnostic sensor","land enrichment systems","medical diagnostic equipment","micro controllers","muon imager","nanobreakers","resonating separators","robotics","structural regulators","telemetry suite"],
+      ["conductive fabrics","leather","military grade fabrics","natural fabrics","synthetic fabrics"],
+      ["biowaste","chemical waste","scrap"],
+      ["battle weapons","landmines","non-lethal weapons","personal weapons","reactive armour"]
+    ];
+    const m={}; for(let i=0;i<groups.length;i++){ for(const n of groups[i]) m[n]=i; } return m;
+  })();
+  function _cnm(k){ return String((typeof disp==="function"?disp(k):k)||k||"").toLowerCase(); }
+  function _catRank(k){ const n=_cnm(k); return (n in _CATIDX)?_CATIDX[n]:99; }
+  function sortEntries(entries){
+    const e=entries.slice();
+    if(MANIFEST_SORT==="az") return e.sort((a,b)=>_cnm(a[0]).localeCompare(_cnm(b[0])));
+    if(MANIFEST_SORT==="market") return e.sort((a,b)=>{const ca=_catRank(a[0]),cb=_catRank(b[0]);return ca!==cb?ca-cb:_cnm(a[0]).localeCompare(_cnm(b[0]));});
+    return e.sort((a,b)=>b[1]-a[1]); // need (default)
+  }
+  function applyMsort(){ var l=document.getElementById("msortLbl"); if(l)l.textContent=MSORT_LBL[MANIFEST_SORT]||"NEED"; var b=document.getElementById("clBody"); if(b&&typeof PROJECT!=="undefined"&&PROJECT){ b.innerHTML=commodityRows(PROJECT); wire(); } }
+
   function commodityRows(p){
-    const entries=Object.entries(p.commodities||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    const entries=sortEntries(Object.entries(p.commodities||{}).filter(([k,v])=>v>0));
     if(!entries.length) return '<tr><td colspan="3" class="done" style="padding:14px">✔ All commodities delivered — build complete.</td></tr>';
     return entries.map(([k,v])=>{
       return `<tr class="commRow" data-comm="${k}" data-name="${disp(k)}"><td><span class="caret">▶</span>${disp(k)}</td>
@@ -490,7 +523,7 @@
         <div class="bar"><i style="width:${pct}%"></i></div>
         <div style="margin-top:22px;color:var(--accent-bright);font-family:var(--font-head);letter-spacing:1px;font-size:13px">\u25c8 ${escFC(facLabel)} <span style="color:var(--muted);font-weight:normal">\u00b7 ${escFC(facBody)}</span></div><h2 style="margin-top:6px">Shipping Manifest — Remaining Haul<span class="h2r"><span class="last-refresh" id="lastRefresh" style="font-size:10px;letter-spacing:.5px;color:var(--muted);margin-right:10px;font-variant-numeric:tabular-nums"></span><button class="refresh-btn" id="refreshBtn">⟳ REFRESH</button></span></h2>
         <div style="font-size:10.5px;color:var(--muted);margin:-8px 0 8px">Live from RavenColonial. Click a commodity → live Ardent suppliers near ${p.systemName}. ⧉ copies the system to your nav computer.</div>
-        <table><thead><tr><th>Commodity</th><th class="num">Remaining</th><th class="num">Trips*</th></tr></thead><tbody id="clBody">${commodityRows(p)}</tbody></table>
+        <table><thead><tr><th>Commodity <button type="button" id="msort" class="msort" title="Cycle sort: need / A–Z / market order">⇅ <span id="msortLbl">NEED</span></button></th><th class="num">Remaining</th><th class="num">Trips*</th></tr></thead><tbody id="clBody">${commodityRows(p)}</tbody></table>
       </div>
       <div>
         <div class="panel" style="margin-bottom:16px"><h2>At a Glance</h2>
@@ -529,6 +562,7 @@
       };
     });
     const rb=$("refreshBtn"); if(rb) rb.onclick=refresh;
+    var _mb=document.getElementById("msort"); if(_mb){ var _ml=document.getElementById("msortLbl"); if(_ml)_ml.textContent=MSORT_LBL[MANIFEST_SORT]||"NEED"; _mb.onclick=function(e){ e.stopPropagation(); var i=MSORT_ORDER.indexOf(MANIFEST_SORT); MANIFEST_SORT=MSORT_ORDER[(i+1)%MSORT_ORDER.length]; try{localStorage.setItem("ob_msort",MANIFEST_SORT);}catch(_){} applyMsort(); }; }
   }
   // ---- Inara cross-check (alternative supplier view) ----
   // Inara's commodity search keys commodities by numeric id (not name), so we map the
