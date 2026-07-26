@@ -33,7 +33,7 @@
     color:var(--text);font-family:var(--font-body);letter-spacing:.3px;min-height:100vh}
   body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
     background:repeating-linear-gradient(to bottom,rgba(255,255,255,var(--scan)) 0 1px,transparent 1px 3px);mix-blend-mode:screen;opacity:.6}
-  .wrap{max-width:1200px;margin:0 auto;padding:0 18px 60px}
+  .wrap{max-width:1600px;margin:0 auto;padding:0 18px 60px}
 
   .secure{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10.5px;letter-spacing:1.5px;color:var(--muted);border-bottom:1px solid var(--line);padding:8px 4px;text-transform:uppercase}
   .secure .lock{color:var(--accent-bright)}.secure .right span{margin-left:14px}.online b{color:var(--good)}
@@ -748,6 +748,55 @@
   }
   paintCurShip();
   setInterval(paintCurShip, 30000);
+})();
+</script>
+<!-- deck controls: fullscreen + zoom (tablet-friendly, no pinch) -->
+<div id="deckCtl" aria-label="Display controls">
+  <button id="obZoomOut" title="Zoom out" aria-label="Zoom out">&#8211;</button>
+  <span id="obZoomLbl">100%</span>
+  <button id="obZoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+  <button id="obFull" title="Full screen" aria-label="Toggle full screen">&#9974;</button>
+</div>
+<style>
+  #deckCtl{position:fixed;right:10px;bottom:10px;z-index:99997;display:none;gap:6px;align-items:center;
+    background:rgba(12,9,6,.80);border:1px solid var(--accent-dim,#a24d08);border-radius:9px;padding:5px 7px;
+    -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);font-family:var(--font-head,'Orbitron',sans-serif)}
+  #deckCtl button{cursor:pointer;min-width:34px;height:34px;line-height:1;font-size:17px;
+    background:var(--panel2,#1c1109);color:var(--accent-bright,#ffb057);border:1px solid var(--accent-dim,#a24d08);
+    border-radius:6px;padding:0 6px;touch-action:manipulation}
+  #deckCtl button:active{background:var(--accent-dim,#a24d08);color:#0a0705}
+  #obZoomLbl{min-width:40px;text-align:center;color:var(--accent-bright,#ffb057);font-size:12px;letter-spacing:1px}
+  #obFull{margin-left:2px}
+  @media print{#deckCtl{display:none}}
+</style>
+<script>
+(function(){
+  var Z=100; try{var z=parseInt(localStorage.getItem("ob_zoom")||"100",10); if(z>=50&&z<=250)Z=z;}catch(e){}
+  function apply(){ try{document.documentElement.style.zoom=(Z/100);}catch(e){} var l=document.getElementById("obZoomLbl"); if(l)l.textContent=Z+"%"; try{localStorage.setItem("ob_zoom",String(Z));}catch(e){} }
+  function setZ(v){ Z=Math.max(50,Math.min(250,v)); apply(); }
+  function wire(){
+    var i=document.getElementById("obZoomIn"),o=document.getElementById("obZoomOut"),f=document.getElementById("obFull");
+    if(i)i.onclick=function(){setZ(Z+10);};
+    if(o)o.onclick=function(){setZ(Z-10);};
+    if(f)f.onclick=function(){
+      var d=document.documentElement,doc=document;
+      var fsel=doc.fullscreenElement||doc.webkitFullscreenElement||doc.mozFullScreenElement;
+      try{
+        if(!fsel){(d.requestFullscreen||d.webkitRequestFullscreen||d.mozRequestFullScreen||function(){}).call(d);}
+        else{(doc.exitFullscreen||doc.webkitExitFullscreen||doc.mozCancelFullScreen||function(){}).call(doc);}
+      }catch(e){}
+    };
+    var c=document.getElementById("deckCtl"); if(c)c.style.display="flex";
+    apply();
+  }
+  // Members-only perk: only reveal for a signed-in commander (same identity check as the gate).
+  function gate(){
+    fetch("/blades/api/whoami-cmdr",{headers:{accept:"application/json"},credentials:"include"})
+      .then(function(r){ if(!r.ok) return null; var ct=r.headers.get("content-type")||""; return ct.indexOf("json")>=0?r.json():null; })
+      .then(function(j){ if(j&&j.ok&&j.me) wire(); })
+      .catch(function(){});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",gate);else gate();
 })();
 </script>
 </body>
