@@ -113,7 +113,7 @@
   async function boot(){
     // leadership gate — same roster the ⚙ ADMIN button uses
     let leader=false;
-    try{ const r=await fetch("/blades/api/admins",{credentials:"same-origin"}); if(r.ok){ const a=await r.json(); leader=!!(a&&a.isAdmin); } }catch(e){}
+    try{ const r=await fetch("/blades/api/admins",{credentials:"same-origin"}); if(r.ok){ const a=await r.json(); leader=!!(a&&(a.isAdmin||a.isAdmiral)); } }catch(e){}
     if(!leader){ $("gate").classList.remove("hidden"); return; }
     $("desk").classList.remove("hidden");
     // load current welcome message

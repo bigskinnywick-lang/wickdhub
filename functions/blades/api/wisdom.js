@@ -32,11 +32,12 @@ function callerEmail(request) {
   if (jwt) { const p = jwt.split("."); if (p.length === 3) { try { const c = JSON.parse(b64urlToStr(p[1])); if (c && c.email) return String(c.email).toLowerCase().trim(); } catch (_) {} } }
   return "";
 }
-// Leadership gate. For now = the KV admin roster + OWNER (same as ticker/admin). When the
-// rank system lands, narrow this to the Admiral role specifically.
+// Leadership gate = the admin roster + the Admiral roster + OWNER. The Admiral tier
+// (KV "admiral:emails") can edit this welcome message without holding full admin powers.
 async function leadershipList(env) {
   let a = [];
   try { const v = await env.BUILDS.get("admin:emails"); if (v) { const arr = JSON.parse(v); if (Array.isArray(arr)) a = arr.map(x => String(x).toLowerCase().trim()).filter(Boolean); } } catch (e) {}
+  try { const v = await env.BUILDS.get("admiral:emails"); if (v) { const arr = JSON.parse(v); if (Array.isArray(arr)) arr.forEach(x => { const e = String(x).toLowerCase().trim(); if (e && !a.includes(e)) a.push(e); }); } } catch (e) {}
   if (!a.includes(OWNER)) a.push(OWNER);
   return a;
 }

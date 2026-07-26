@@ -110,6 +110,7 @@
       <a href="#stale">◷ STALE</a>
       <a href="#access">⛨ ACCESS</a>
       <a href="#admins">☗ ADMINS</a>
+      <a href="#admirals">⚓ ADMIRAL</a>
     </div>
 
     <!-- PULSE -->
@@ -214,6 +215,17 @@
       <div id="adminsTbl"><div class="empty">loading…</div></div>
     </div>
 
+    <!-- ADMIRAL'S DESK ACCESS -->
+    <div class="panel" id="admirals">
+      <h2>⚓ ADMIRAL'S DESK ACCESS <span class="count" id="admiralCount">—</span> <a href="/blades/admiral/" style="margin-left:auto;font-size:13px">open the Desk →</a></h2>
+      <div class="desc">Leadership who can open the <b>Admiral's Desk</b> (edit the home welcome message &amp; signature) <b>without</b> full admin powers. Admins already have Desk access — this roster is Desk-only. Members here must also be on the Squad Access allow-list above so they can sign in. Stored in the <code>admiral:emails</code> KV key.</div>
+      <div class="toolbar">
+        <input id="amEmail" placeholder="email to grant Admiral's Desk" style="width:260px" />
+        <button id="amAdd" class="go">+ add admiral</button>
+      </div>
+      <div id="admiralsTbl"><div class="empty">loading…</div></div>
+    </div>
+
     <div class="sub" style="margin-top:20px;text-align:center">ONYX BLADES · ADMIN CONSOLE v1.1 · admin-gated over the Access-gated /blades surface · o7</div>
   </div><!-- /console -->
 </div>
@@ -240,7 +252,7 @@ async function api(method,url,body){
 }
 
 // ---------- boot / gate ----------
-let BUILDS=[], CLAIMS=[], ADMINS=[];
+let BUILDS=[], CLAIMS=[], ADMINS=[], ADMIRALS=[];
 (async function boot(){
   let d;
   try{ d=await fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject(new Error("HTTP "+r.status))); }
@@ -248,8 +260,10 @@ let BUILDS=[], CLAIMS=[], ADMINS=[];
   $("meEmail").textContent=d.me||"—";
   if(!d.isAdmin){ $("restrictedEmail").textContent=d.me||"unknown"; document.body.dataset.state="restricted"; return; }
   ADMINS=d.admins||[];
+  ADMIRALS=d.admirals||[];
   document.body.dataset.state="console";
   renderAdmins();
+  renderAdmirals();
   loadBuilds(); loadClaims(); pulse(); loadAccess(); loadTicker();
 })();
 $("signOut").onclick=()=>{location.href="https://bigskinnywick.cloudflareaccess.com/cdn-cgi/access/logout";};
@@ -457,6 +471,25 @@ $("adAdd").onclick=()=>{
   const email=$("adEmail").value.trim().toLowerCase();
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("invalid email",true);
   api("PUT","/blades/api/admins",{email}).then(d=>{ADMINS=d.admins||[];renderAdmins();$("adEmail").value="";toast("admin added");}).catch(err=>toast(err.message,true));
+};
+
+// ---------- admiral's desk roster ----------
+function renderAdmirals(){
+  $("admiralCount").textContent=ADMIRALS.length;
+  const rows=ADMIRALS.length
+    ? ADMIRALS.map(e=>`<tr><td>${esc(e)} <span class="pill info">admiral</span></td><td><button class="danger" data-e="${esc(e)}">remove</button></td></tr>`).join("")
+    : '<tr><td colspan="2" class="subtle">No Admiral-only members yet. Admins already have Desk access.</td></tr>';
+  $("admiralsTbl").innerHTML=`<table><thead><tr><th>EMAIL</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  $("admiralsTbl").querySelectorAll("button[data-e]").forEach(btn=>btn.onclick=e=>{
+    const email=e.target.dataset.e;
+    if(!confirm("Remove Admiral's Desk access for "+email+"?")) return;
+    api("DELETE","/blades/api/admins",{email,role:"admiral"}).then(d=>{ADMIRALS=d.admirals||[];renderAdmirals();toast("admiral removed");}).catch(err=>toast(err.message,true));
+  });
+}
+$("amAdd").onclick=()=>{
+  const email=$("amEmail").value.trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return toast("invalid email",true);
+  api("PUT","/blades/api/admins",{email,role:"admiral"}).then(d=>{ADMIRALS=d.admirals||[];renderAdmirals();$("amEmail").value="";toast("admiral added");}).catch(err=>toast(err.message,true));
 };
 
 // ---------- squad net ticker ----------

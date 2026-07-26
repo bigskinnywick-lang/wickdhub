@@ -390,7 +390,7 @@
 // ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
   (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{if(a&&a.isAdmin){const ab=$("adminBtn");if(ab)ab.style.display="";const ub=$("usageBtn");if(ub)ub.style.display="";}}).catch(()=>{});})();
 // ===== Admiral's Desk reveal — ACTIVE. Button shows for admins/leadership. =====
-  (function(){var ADMIRAL_DESK_ACTIVE=true;if(!ADMIRAL_DESK_ACTIVE)return;fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{const ab=$("admiralBtn");if(ab&&a&&a.isAdmin)ab.style.display="";}).catch(()=>{});})();
+  (function(){var ADMIRAL_DESK_ACTIVE=true;if(!ADMIRAL_DESK_ACTIVE)return;fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{const ab=$("admiralBtn");if(ab&&a&&(a.isAdmin||a.isAdmiral))ab.style.display="";}).catch(()=>{});})();
 // ===== theme dial =====
   (function(){
     const SCHEMES=[{t:"amber",n:"AMBER COCKPIT",a:-60},{t:"cyan",n:"FLEET TACTICAL",a:-20},{t:"onyx",n:"ONYX BLADE",a:20},{t:"green",n:"JADE CANOPY",a:60}];

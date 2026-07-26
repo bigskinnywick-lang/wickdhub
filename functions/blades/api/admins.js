@@ -38,13 +38,31 @@ export async function isAdmin(request, env) {
   const e = callerEmail(request);
   return !!e && (await adminList(env)).includes(e);
 }
+// Admiral roster — a leadership tier that unlocks the Admiral's Desk ONLY (welcome-message
+// editor), not the full admin console. Stored in KV "admiral:emails" (JSON array, lowercased).
+// Every admin is implicitly an admiral (admin is the superset); the reverse is not true.
+export async function admiralList(env) {
+  let a = [];
+  try { const v = await env.BUILDS.get("admiral:emails"); if (v) { const arr = JSON.parse(v); if (Array.isArray(arr)) a = arr.map(e => String(e).toLowerCase().trim()).filter(Boolean); } } catch (e) {}
+  return a;
+}
+export async function isAdmiral(request, env) {
+  const e = callerEmail(request);
+  if (!e) return false;
+  if ((await adminList(env)).includes(e)) return true;
+  return (await admiralList(env)).includes(e);
+}
 
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const me = callerEmail(request);
   const admins = await adminList(env);
   const admin = !!me && admins.includes(me);
-  return admin ? json({ me, isAdmin: true, admins }) : json({ me, isAdmin: false });
+  const admirals = await admiralList(env);
+  const isAdmiralTier = admin || (!!me && admirals.includes(me));
+  return admin
+    ? json({ me, isAdmin: true, isAdmiral: true, admins, admirals })
+    : json({ me, isAdmin: false, isAdmiral: isAdmiralTier });
 }
 
 export async function onRequestPut({ request, env }) {
@@ -53,6 +71,12 @@ export async function onRequestPut({ request, env }) {
   let body = {}; try { body = await request.json(); } catch (e) {}
   const email = String(body.email || "").toLowerCase().trim();
   if (!EMAIL.test(email)) return json({ ok: false, error: "invalid email" }, 400);
+  if (String(body.role || "") === "admiral") {
+    const admirals = await admiralList(env);
+    if (!admirals.includes(email)) admirals.push(email);
+    await env.BUILDS.put("admiral:emails", JSON.stringify(admirals));
+    return json({ ok: true, admirals });
+  }
   const admins = await adminList(env);
   if (!admins.includes(email)) admins.push(email);
   await env.BUILDS.put("admin:emails", JSON.stringify(admins));
@@ -64,6 +88,11 @@ export async function onRequestDelete({ request, env }) {
   if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
   let body = {}; try { body = await request.json(); } catch (e) {}
   const email = String(body.email || "").toLowerCase().trim();
+  if (String(body.role || "") === "admiral") {
+    const admirals = (await admiralList(env)).filter(e => e !== email);
+    await env.BUILDS.put("admiral:emails", JSON.stringify(admirals));
+    return json({ ok: true, admirals });
+  }
   if (email === OWNER) return json({ ok: false, error: "owner cannot be removed" }, 400);
   let admins = (await adminList(env)).filter(e => e !== email);
   if (!admins.includes(OWNER)) admins.push(OWNER);
