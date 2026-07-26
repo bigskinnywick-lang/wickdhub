@@ -41,6 +41,9 @@ async function listMembers(env) {
   const map = {}; // lowerName -> displayName
   try { const l = await env.BUILDS.list({ prefix: "cmdrlink:" }); for (const k of (l.keys || [])) { const o = await readJson(env, k.name); if (o && o.cmdr) { const d = String(o.cmdr); map[d.toLowerCase()] = d; } } } catch (e) {}
   try { const l = await env.BUILDS.list({ prefix: "cmdrver:" }); for (const k of (l.keys || [])) { const nm = k.name.slice("cmdrver:".length); if (nm && !map[nm.toLowerCase()]) map[nm.toLowerCase()] = nm; } } catch (e) {}
+  // claim architects (e.g. system owners like TEMPLAR57 who never bound / never ran the plugin),
+  // skipping the "Onyx Blades" squad fallback which is not a commander.
+  try { const l = await env.BUILDS.list({ prefix: "claim:" }); for (const k of (l.keys || [])) { const o = await readJson(env, k.name); const a = o && o.architect ? String(o.architect).trim() : ""; if (a && a.toLowerCase() !== "onyx blades" && !map[a.toLowerCase()]) map[a.toLowerCase()] = a; } } catch (e) {}
   try { const roles = (await readJson(env, "plugin:roles")) || {}; Object.keys(roles).forEach(c => { if (!map[c.toLowerCase()]) map[c.toLowerCase()] = c; }); } catch (e) {}
   return Object.values(map).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 }

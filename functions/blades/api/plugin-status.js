@@ -66,7 +66,11 @@ export async function onRequestGet({ request, env }) {
   // Nag to RESTART when a heard-from pilot is behind; nag to COMPLETE SETUP when we
   // have no heartbeat at all (no plugin, a pre-2.0 plugin that can't report, or a
   // plugin whose heartbeat has aged out).
-  const needsRestart = !!(running && latest && cmpVer(running, latest.version) < 0);
+  // A pilot should be running EXACTLY their channel's latest build. If we've heard from
+  // them and they're on anything else, nag to restart — symmetric, so entering beta,
+  // leaving beta (revoke), a plain upgrade, and a staged-not-yet-restarted build all fire
+  // the same way. Clears the instant the plugin reports the target version.
+  const needsRestart = !!(running && latest && running !== latest.version);
   const needsSetup = !running;
   return json({ ok: true, cmdr, running, pending, latest, channel, needsRestart, needsSetup, testPilot: channel === "beta" });
 }
