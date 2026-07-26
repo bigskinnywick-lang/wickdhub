@@ -35,6 +35,15 @@ function cleanRoles(arr) {
   for (const x of arr) { const r = String(x || "").toLowerCase().trim(); if (ALLOWED.includes(r) && !out.includes(r)) out.push(r); }
   return out;
 }
+// All known member CMDRs, for the admin "add pilot" dropdown. Sourced from bound
+// CMDRs (cmdrlink:*), plugins that have reported (cmdrver:*), and existing role keys.
+async function listMembers(env) {
+  const map = {}; // lowerName -> displayName
+  try { const l = await env.BUILDS.list({ prefix: "cmdrlink:" }); for (const k of (l.keys || [])) { const o = await readJson(env, k.name); if (o && o.cmdr) { const d = String(o.cmdr); map[d.toLowerCase()] = d; } } } catch (e) {}
+  try { const l = await env.BUILDS.list({ prefix: "cmdrver:" }); for (const k of (l.keys || [])) { const nm = k.name.slice("cmdrver:".length); if (nm && !map[nm.toLowerCase()]) map[nm.toLowerCase()] = nm; } } catch (e) {}
+  try { const roles = (await readJson(env, "plugin:roles")) || {}; Object.keys(roles).forEach(c => { if (!map[c.toLowerCase()]) map[c.toLowerCase()] = c; }); } catch (e) {}
+  return Object.values(map).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+}
 async function listPilots(env) {
   const out = [];
   try {
@@ -51,7 +60,7 @@ async function listPilots(env) {
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
-  return json({ ok: true, roles: (await readJson(env, "plugin:roles")) || {}, allowed: ALLOWED, pilots: await listPilots(env) });
+  return json({ ok: true, roles: (await readJson(env, "plugin:roles")) || {}, allowed: ALLOWED, pilots: await listPilots(env), members: await listMembers(env) });
 }
 
 export async function onRequestPost({ request, env }) {

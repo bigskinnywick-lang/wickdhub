@@ -143,7 +143,7 @@
       <h2>☗ ROLES · TEST PILOTS <button id="rolesRefresh" style="margin-left:auto">↻ reload</button></h2>
       <div class="desc"><b>Test pilots</b> get the beta channel — the beta download and any beta auto-push go to them; everyone else stays on stable. Add a pilot by CMDR to grant a role before they've ever run the plugin. Changes take effect on their next heartbeat (~5s). Pilots see a <b>⚑ TEST PILOT</b> button in their own nav.</div>
       <div class="toolbar" style="margin-top:8px">
-        <input id="roleAddCmdr" placeholder="CMDR name" style="width:220px">
+        <select id="roleAddSelect" style="min-width:220px"><option value="">loading members…</option></select>
         <button class="go" id="roleAdd">+ add pilot</button>
       </div>
       <div id="rolesRows" style="margin-top:8px"><div class="empty">loading…</div></div>
@@ -577,11 +577,11 @@ async function loadRegistrar(){
   try{ const rel=await api("GET","/blades/api/plugin-release"); renderChannels(rel); }
   catch(e){ $("regChannels").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
 }
-let EXTRA_CMDRS=[];
+let EXTRA_CMDRS=[], REG_MEMBERS=[];
 async function loadRoles(){
   try{
     const rl=await api("GET","/blades/api/plugin-roles");
-    REG_ROLES=rl.roles||{}; REG_ALLOWED=rl.allowed||REG_ALLOWED; REG_PILOTS=rl.pilots||[];
+    REG_ROLES=rl.roles||{}; REG_ALLOWED=rl.allowed||REG_ALLOWED; REG_PILOTS=rl.pilots||[]; REG_MEMBERS=rl.members||[];
     renderRoles();
   }catch(e){ $("rolesRows").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
 }
@@ -636,14 +636,21 @@ function renderRoles(){
       api("POST","/blades/api/plugin-roles",{cmdr:c,roles:checked}).then(d=>{REG_ROLES=d.roles||REG_ROLES;toast("roles saved · "+c);renderRoles();}).catch(err=>{toast(err.message,true);loadRoles();});
     };
   });
+  populateMemberSelect();
+}
+function populateMemberSelect(){
+  const sel=$("roleAddSelect"); if(!sel) return;
+  const shown=new Set(); REG_PILOTS.forEach(p=>shown.add(p.cmdr.toLowerCase())); Object.keys(REG_ROLES).forEach(c=>shown.add(c.toLowerCase())); EXTRA_CMDRS.forEach(c=>shown.add(c.toLowerCase()));
+  const avail=(REG_MEMBERS||[]).filter(m=>!shown.has(m.toLowerCase())).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase()));
+  sel.innerHTML='<option value="">'+(avail.length?'choose a member…':'— all known members added —')+'</option>'+avail.map(m=>'<option value="'+esc(m)+'">'+esc(m)+'</option>').join('');
 }
 if($("regRefresh")) $("regRefresh").onclick=loadRegistrar;
 if($("rolesRefresh")) $("rolesRefresh").onclick=loadRoles;
 if($("roleAdd")) $("roleAdd").onclick=()=>{
-  const c=($("roleAddCmdr").value||"").replace(/^\s*(cmdr|commander)\s+/i,"").trim();
-  if(!c){toast("enter a CMDR name",true);return;}
+  const c=($("roleAddSelect").value||"").trim();
+  if(!c){toast("choose a member",true);return;}
   if(!EXTRA_CMDRS.includes(c)) EXTRA_CMDRS.push(c);
-  $("roleAddCmdr").value=""; renderRoles();
+  renderRoles();
   toast("added "+c+" — tick a role to save");
 };
 
