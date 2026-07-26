@@ -722,6 +722,7 @@
   function esc(x){return String(x==null?"":x).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
   function shipName(t){t=String(t||"").toLowerCase();if(SHIP[t])return SHIP[t];if(!t)return "—";return t.split("_").map(function(w){return w?w.charAt(0).toUpperCase()+w.slice(1):w;}).join(" ");}
   function fmt(n){return (n||0).toLocaleString("en-US");}
+  function paintCurShip(){
   var el=document.getElementById("curShip");
   if(!el)return;
   Promise.all([
@@ -744,6 +745,9 @@
       +' &nbsp;·&nbsp; <b style="color:var(--accent-bright)">'+fmt(cap)+' t</b> hold ('+fmt(free)+' t free) '
       +'<span style="color:var(--muted);font-size:11px">— the trip counter uses this capacity.</span>';
   });
+  }
+  paintCurShip();
+  setInterval(paintCurShip, 30000);
 })();
 </script>
 </body>

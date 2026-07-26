@@ -365,6 +365,38 @@
     try{fetch("/blades/api/builds",{method:"PATCH",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});}catch(e){}
   }
   const SHIP_CAP=790, PAD_REQ=3;
+  // --- current-ship trip maths + squad carrier registry ------------------
+  // Trips reflect YOUR real ship (reported live by the Blades Registrar plugin),
+  // not a fixed Type-9. Falls back to a 790t Type-9 until your loadout is known.
+  let MY_CAP=790, MY_SHIP_LABEL="Type-9 (default)", SQUAD_CARRIERS={};
+  function shipPretty(t){ t=String(t||""); if(!t) return ""; return t.split(/[_ ]/).map(function(w){return w?w.charAt(0).toUpperCase()+w.slice(1):w;}).join(" "); }
+  async function refreshSelfData(){
+    let changed=false;
+    try{
+      const [who,lo,cs]=await Promise.all([
+        fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
+        fetch("/blades/api/loadouts",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null),
+        fetch("/blades/api/carriers",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).catch(()=>null)
+      ]);
+      if(who&&who.cmdr&&lo&&lo.haulers){
+        const me=String(who.cmdr).toLowerCase();
+        const mine=lo.haulers.filter(h=>String(h.cmdr).toLowerCase()===me)[0];
+        let cap=790, lbl="Type-9 (default)";
+        if(mine&&mine.cargoCap>0){ cap=mine.cargoCap; lbl=((mine.shipName&&mine.shipName.trim())||shipPretty(mine.ship)||"your ship")+" (your ship)"; }
+        if(cap!==MY_CAP||lbl!==MY_SHIP_LABEL){ MY_CAP=cap; MY_SHIP_LABEL=lbl; changed=true; }
+      }
+      if(cs&&cs.carriers){
+        const map={}; cs.carriers.forEach(function(c){ if(c.marketId) map[String(c.marketId)]=c; });
+        const before=Object.keys(SQUAD_CARRIERS).sort().join(","), after=Object.keys(map).sort().join(",");
+        if(before!==after) changed=true;
+        SQUAD_CARRIERS=map;
+      }
+    }catch(e){}
+    return changed;
+  }
+  function reRenderIfLoaded(){ try{ if(typeof PROJECT!=="undefined"&&PROJECT) render(PROJECT); }catch(e){} }
+  refreshSelfData().then(function(){ reRenderIfLoaded(); });
+  setInterval(function(){ refreshSelfData().then(function(ch){ if(ch) reRenderIfLoaded(); }); }, 30000);
   // supplier ranking weights (tunable): distance-dominant; price a tiebreaker; carriers deprioritised (mobile/may vanish); stale market nudged down
   const RANK={distLY:1.0, priceCr:1/400, carrierPenalty:80, stalePenalty:25, staleHrs:72};
   const $=(id)=>document.getElementById(id);
@@ -412,7 +444,7 @@
     return entries.map(([k,v])=>{
       return `<tr class="commRow" data-comm="${k}" data-name="${disp(k)}"><td><span class="caret">▶</span>${disp(k)}</td>
         <td class="num"><span class="rem-strong">${fmt(v)} t</span></td>
-        <td class="num">${Math.ceil(v/SHIP_CAP)}</td></tr>`;
+        <td class="num">${Math.ceil(v/MY_CAP)}</td></tr>`;
     }).join("");
   }
 
@@ -420,7 +452,7 @@
     PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||""; window.LAST_REFRESH_TS=Date.now();
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
-    const carriers=(p.linkedFC||[]).map(f=>`<div class="contrib"><div class="who">${f.displayName||f.name}<small>market ${f.marketId}</small></div><div><div class="amt">${(f.sales||[]).length} sell</div><div class="commit">linked carrier</div></div></div>`).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
+    const carriers=(p.linkedFC||[]).map(function(f){var mid=String(f.marketId||"");var ours=SQUAD_CARRIERS[mid];var nm=esc((ours&&ours.name)||f.displayName||f.name||"Fleet Carrier");var cs=esc((ours&&ours.callsign)||f.callsign||f.callSign||"");var idline=cs?(cs+(mid?" · market "+esc(mid):"")):(mid?"market "+esc(mid):"");var tag=ours?('<div class="commit" style="color:var(--good)">\u25c6 '+esc(ours.owner||"Blades")+'</div>'):'<div class="commit" style="color:var(--muted)">unaffiliated</div>';return '<div class="contrib"><div class="who">'+nm+'<small>'+idline+'</small></div><div><div class="amt">'+((f.sales||[]).length)+' sell</div>'+tag+'</div></div>';}).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
     $("subline").textContent=(p.systemName||"—")+" · "+(TYPE[p.buildType]||p.buildType||"construction");
     $("cmdrLine").textContent="build: "+BUILD_ID.slice(0,8)+"… · architect "+(p.architectName||"—");
     $("view").innerHTML=`<div class="grid">
@@ -442,11 +474,11 @@
       </div>
       <div>
         <div class="panel" style="margin-bottom:16px"><h2>At a Glance</h2>
-          <div class="stat-row"><div class="stat"><div class="big">${fmt(total)}</div><div class="lbl">Tonnes Left</div></div><div class="stat"><div class="big">${Math.ceil(total/SHIP_CAP)}</div><div class="lbl">Trips Left*</div></div></div>
+          <div class="stat-row"><div class="stat"><div class="big">${fmt(total)}</div><div class="lbl">Tonnes Left</div></div><div class="stat"><div class="big">${Math.ceil(total/MY_CAP)}</div><div class="lbl">Trips Left*</div></div></div>
           <div class="most-needed"><div class="lbl">◈ Biggest Shortfall</div><div class="val" id="mnVal">—</div><div class="note" id="mnNote">tap a commodity for sources</div></div>
           <div class="sync-line">SYNC: <b>live</b> · progress via RavenColonial · buildId ${BUILD_ID.slice(0,8)}…</div>
         </div>
-        <div class="panel"><h2>Linked Fleet Carriers</h2>${carriers}<div class="sync-line" style="margin-top:12px">*Type-9 · ${SHIP_CAP}t. Carrier stock can offset the shared remaining.</div></div>
+        <div class="panel"><h2>Linked Fleet Carriers</h2>${carriers}<div class="sync-line" style="margin-top:12px">*${MY_SHIP_LABEL} · ${MY_CAP}t. Carrier stock can offset the shared remaining.</div></div>
       </div></div>`;
     // biggest shortfall
     const top=Object.entries(p.commodities||{}).filter(([k,v])=>v>0).sort((a,b)=>b[1]-a[1])[0];
