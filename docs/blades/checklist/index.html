@@ -34,6 +34,11 @@
   .p-arch,.p-wing,.locked,.resolving{display:none}
   body[data-role="arch"] .p-arch{display:block}
   body[data-role="wing"] .p-wing{display:block}
+  body[data-role="tp"] .p-arch,body[data-role="tp"] .p-wing{display:block}
+  .clConf{color:var(--ok);font-weight:700;letter-spacing:1px}
+  #submitBar textarea{width:100%;background:var(--panel);color:inherit;border:1px solid var(--line);border-radius:6px;padding:8px;font-family:inherit;font-size:13px;resize:vertical}
+  #clSubmit{background:var(--amber);color:#0a0705;border:none;border-radius:6px;padding:9px 16px;font-weight:700;letter-spacing:1px;cursor:pointer}
+  #clSubmit:disabled{opacity:.6;cursor:default}
   body[data-role="none"] .locked{display:block}
   body[data-role="none"] .crew{display:none}
   body:not([data-role]) .resolving{display:block}
@@ -120,24 +125,73 @@
     <label class="step"><input type="checkbox" /><span>Co-op: did each pilot's drop shrink the OTHER's shopping list, and did both show tonnage in MY STATS?</span></label>
     <label class="step"><input type="checkbox" /><span>Did the board run the whole session with no manual reload? (y/n)</span></label>
   </div>
+  <div class="phase" id="submitBar" style="border-left-color:var(--ok)">
+    <h2 style="color:var(--ok)">▷ REPORT RESULTS</h2>
+    <div class="when">Tick every item that passed, add any notes, and submit. Confirmed items are logged so we skip re-testing them next round. A green ✓ means another pilot already confirmed it.</div>
+    <textarea id="clNote" rows="3" placeholder="notes — anything that failed, surprised you, or needs a fix"></textarea>
+    <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
+      <button id="clSubmit">▷ SUBMIT RESULTS</button>
+      <span id="clStatus" class="when" style="margin:0"></span>
+    </div>
+  </div>
   </div><!-- /crew -->
 
   <footer>ONYX BLADES · AUTO-CREATE &amp; CO-OP PROCEDURE v1.2 · issued to the test pilots only · this run: TEMPLAR architect (system owner) / BIGSKINNY registrar + interloper<br />checkbox state lives only while this tab is open · o7</footer>
 </div>
 <script>
-  // Shakedown crew gate — roles: TEMPLAR57 = architect/system owner, BIGSKINNY = registrar/interloper.
+  // Shakedown crew gate + general test-pilot access + result submit.
+  var CHECKLIST_KEY="autocreate-coop-v1.2";
   (function(){
     var CREW={"presto575@gmail.com":["arch","CMDR TEMPLAR57","ROLE: ARCHITECT"],
               "bigskinnywick@gmail.com":["wing","CMDR BIGSKINNY","ROLE: REGISTRAR / INTERLOPER"]};
+    function setRole(role,name,line){
+      document.body.dataset.role=role;
+      var pn=document.getElementById("pilotName"), rl=document.getElementById("roleLine");
+      if(name&&pn)pn.textContent=name; if(line&&rl)rl.textContent=line;
+      if(role==="arch"||role==="wing"||role==="tp") initSubmit();
+    }
+    function fallbackTP(){
+      // not hardcoded crew — let anyone with the testpilot role view + report
+      fetch("/blades/api/plugin-status",{headers:{accept:"application/json"},credentials:"same-origin"})
+        .then(function(r){return r.ok?r.json():null;})
+        .then(function(d){ if(d&&d.ok&&d.testPilot){ setRole("tp", d.cmdr?("CMDR "+d.cmdr):"TEST PILOT","ROLE: TEST PILOT"); } else { setRole("none"); } })
+        .catch(function(){ setRole("none"); });
+    }
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"})
       .then(function(r){return r.ok?r.json():Promise.reject();})
-      .then(function(d){
-        var c=CREW[(d.email||"").toLowerCase()];
-        document.body.dataset.role=c?c[0]:"none";
-        if(c){document.getElementById("pilotName").textContent=c[1];document.getElementById("roleLine").textContent=c[2];}
-      })
-      .catch(function(){document.body.dataset.role="none";});
+      .then(function(d){ var c=CREW[(d.email||"").toLowerCase()]; if(c){ setRole(c[0],c[1],c[2]); } else { fallbackTP(); } })
+      .catch(function(){ fallbackTP(); });
   })();
+
+  function _clHash(s){ var h=5381; s=String(s||""); for(var i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; } return h.toString(36); }
+  var _clInit=false;
+  function initSubmit(){
+    if(_clInit) return; _clInit=true;
+    var boxes=[].slice.call(document.querySelectorAll('label.step input[type=checkbox]'));
+    boxes.forEach(function(b){ var sp=b.parentNode.querySelector('span'); b.dataset.cid=_clHash(sp?sp.textContent:(b.parentNode.textContent||"")); });
+    fetch("/blades/api/checklist?key="+encodeURIComponent(CHECKLIST_KEY),{headers:{accept:"application/json"},credentials:"same-origin"})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(d){
+        if(!d||!d.ok) return;
+        var mine=(d.mine&&d.mine.items)||[], ver=d.verified||{};
+        boxes.forEach(function(b){
+          if(mine.indexOf(b.dataset.cid)>=0) b.checked=true;
+          var v=ver[b.dataset.cid];
+          if(v){ var sp=b.parentNode.querySelector('span'); if(sp&&!sp.querySelector('.clConf')){ var t=document.createElement('span'); t.className='clConf'; t.title='confirmed by '+((v.by||[]).join(', ')); t.textContent=' ✓'+(v.count>1?('×'+v.count):''); sp.appendChild(t); } }
+        });
+        if(d.mine&&d.mine.note){ var n=document.getElementById('clNote'); if(n&&!n.value) n.value=d.mine.note; }
+      }).catch(function(){});
+    var btn=document.getElementById('clSubmit');
+    if(btn) btn.onclick=function(){
+      var items=boxes.filter(function(b){return b.checked;}).map(function(b){return b.dataset.cid;});
+      var note=(document.getElementById('clNote')||{}).value||"";
+      btn.disabled=true; var st=document.getElementById('clStatus'); if(st)st.textContent='submitting…';
+      fetch("/blades/api/checklist",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({key:CHECKLIST_KEY,items:items,note:note})})
+        .then(function(r){return r.json();})
+        .then(function(d){ if(st)st.textContent=(d&&d.ok)?('✓ submitted '+items.length+' item(s) — logged o7'):('error: '+((d&&d.error)||'failed')); btn.disabled=false; })
+        .catch(function(){ if(st)st.textContent='network error'; btn.disabled=false; });
+    };
+  }
 </script>
 </body>
 </html>

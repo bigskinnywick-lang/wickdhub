@@ -234,7 +234,7 @@
         </ol>
         <div class="kv">macOS: <code>~/Library/Application Support/EDMarketConnector/plugins</code> · Linux: <code>~/.local/share/EDMarketConnector/plugins</code></div>
       </div>
-      <a class="link" href="/blades/BladesRegistrar.zip" download>⬇ Blades Registrar — download (.zip)</a>
+      <a class="link" href="/blades/api/plugin-download" download="BladesRegistrar.zip">⬇ Blades Registrar — download (.zip)</a>
       <div class="note"><b>Architects only — auto-create:</b> under <b>File → Settings → Blades Registrar</b> you can switch on <b>Auto-create</b> so the Registrar raises a brand-new build in RavenColonial when none exists yet (it waits a few minutes first, in case SrvSurvey or another Blade logs it). Leave it <b>off</b> if you only ever join existing builds — it still auto-posts those to the board. Fallback architect defaults to <b>Onyx Blades</b>.</div>
       <div class="confirm"><b>✔ Confirmation signal:</b> after the restart, EDMC shows a <b>“Blades: idle”</b> line (near the RavenColonial row). Dock at a construction ship and within ~15 s it flips to <b>“Blades: registered …”</b> — that build now shows up in the board's build picker on its own.</div>
     </div>
@@ -371,10 +371,13 @@
       } else { window._obUrgentItems=[]; }
       try{
         var _nav=document.querySelector(".blades-nav");
-        if(_nav && location.pathname.indexOf("/blades/onboarding")!==0){
+        if(_nav){
           var _sg=document.getElementById("setupGuideBtn");
-          if(d&&d.ok&&d.needsSetup){ if(!_sg){ _sg=document.createElement("a"); _sg.id="setupGuideBtn"; _sg.className="bn"; _sg.href="/blades/onboarding/"; _sg.textContent="SETUP GUIDE"; _nav.appendChild(_sg); } }
+          if(d&&d.ok&&d.needsSetup && location.pathname.indexOf("/blades/onboarding")!==0){ if(!_sg){ _sg=document.createElement("a"); _sg.id="setupGuideBtn"; _sg.className="bn"; _sg.href="/blades/onboarding/"; _sg.textContent="SETUP GUIDE"; _nav.appendChild(_sg); } }
           else if(_sg){ _sg.remove(); }
+          var _tp=document.getElementById("testPilotNavBtn");
+          if(d&&d.ok&&d.testPilot){ if(!_tp){ _tp=document.createElement("a"); _tp.id="testPilotNavBtn"; _tp.className="bn"; _tp.href="/blades/checklist/"; _tp.textContent="⚑ TEST PILOT"; _nav.appendChild(_tp); } }
+          else if(_tp){ _tp.remove(); }
         }
       }catch(e){}
       if((window._obUrgentItems||[]).length!==had && typeof window._obRunTicker==="function") window._obRunTicker();

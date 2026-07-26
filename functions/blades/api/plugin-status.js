@@ -51,7 +51,7 @@ export async function onRequestGet({ request, env }) {
   if (!email) return json({ ok: false, error: "no identity" }, 403);
   const cmdr = await resolveCmdr(env, email);
   // Signed in but no CMDR bound = setup not finished -> nudge to complete setup.
-  if (!cmdr) return json({ ok: true, cmdr: "", running: "", pending: "", latest: null, channel: "stable", needsRestart: false, needsSetup: true });
+  if (!cmdr) return json({ ok: true, cmdr: "", running: "", pending: "", latest: null, channel: "stable", needsRestart: false, needsSetup: true, testPilot: false });
   const cmdrLower = cmdr.toLowerCase();
 
   const ver = await readJson(env, "cmdrver:" + cmdrLower);
@@ -68,5 +68,5 @@ export async function onRequestGet({ request, env }) {
   // plugin whose heartbeat has aged out).
   const needsRestart = !!(running && latest && cmpVer(running, latest.version) < 0);
   const needsSetup = !running;
-  return json({ ok: true, cmdr, running, pending, latest, channel, needsRestart, needsSetup });
+  return json({ ok: true, cmdr, running, pending, latest, channel, needsRestart, needsSetup, testPilot: channel === "beta" });
 }

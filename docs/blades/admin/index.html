@@ -134,16 +134,19 @@
     <!-- REGISTRAR RELEASE -->
     <div class="panel" id="registrar">
       <h2>◆ REGISTRAR RELEASE <button id="regRefresh" style="margin-left:auto">↻ reload</button></h2>
-      <div class="desc">Cut a Registrar release — the board hashes the deployed zip and publishes it as the version pilots auto-update to. <b>Pure-number versions</b> (e.g. <code>2.1</code>) go to <b>stable</b> (everyone); <b>anything with a letter</b> (e.g. <code>b2.1</code>) goes to <b>beta</b> (test pilots only). Build &amp; push the zip first — stable → <code>BladesRegistrar.zip</code>, beta → <code>BladesRegistrar-beta.zip</code> — then cut here so the checksum matches what is live.</div>
-      <div id="regReleases" class="desc"><span class="subtle">loading…</span></div>
+      <div class="desc">Version &amp; suggested notes are read straight from the deployed zip's <code>load.py</code> — review and click Cut, nothing to type. A pure-number version → <b>stable</b> (everyone); a letter in it → <b>beta</b> (test pilots only). Build &amp; push the zip first: stable → <code>BladesRegistrar.zip</code>, beta → <code>BladesRegistrar-beta.zip</code>.</div>
+      <div id="regChannels"><div class="empty">loading…</div></div>
+    </div>
+
+    <!-- ROLES -->
+    <div class="panel" id="roles">
+      <h2>☗ ROLES · TEST PILOTS <button id="rolesRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc"><b>Test pilots</b> get the beta channel — the beta download and any beta auto-push go to them; everyone else stays on stable. Add a pilot by CMDR to grant a role before they've ever run the plugin. Changes take effect on their next heartbeat (~5s). Pilots see a <b>⚑ TEST PILOT</b> button in their own nav.</div>
       <div class="toolbar" style="margin-top:8px">
-        <input id="regVer" placeholder="version e.g. 2.1 or b2.1" style="width:180px">
-        <input id="regNotes" placeholder="release notes (optional)" style="flex:1;min-width:200px">
-        <button class="go" id="regCut">▷ Cut Release</button>
+        <input id="roleAddCmdr" placeholder="CMDR name" style="width:220px">
+        <button class="go" id="roleAdd">+ add pilot</button>
       </div>
-      <div style="border-top:1px dashed var(--line);margin:14px 0 10px"></div>
-      <div class="desc"><b>Roles</b> — <b>test pilots</b> receive the beta channel; other roles are stored for later. Changes take effect on the pilot's next heartbeat.</div>
-      <div id="regRoles"><div class="empty">loading…</div></div>
+      <div id="rolesRows" style="margin-top:8px"><div class="empty">loading…</div></div>
     </div>
 
     <!-- BACKUP -->
@@ -279,7 +282,7 @@ let BUILDS=[], CLAIMS=[], ADMINS=[], ADMIRALS=[];
   document.body.dataset.state="console";
   renderAdmins();
   renderAdmirals();
-  loadBuilds(); loadClaims(); pulse(); loadAccess(); loadTicker(); loadRegistrar();
+  loadBuilds(); loadClaims(); pulse(); loadAccess(); loadTicker(); loadRegistrar(); loadRoles();
 })();
 $("signOut").onclick=()=>{location.href="https://bigskinnywick.cloudflareaccess.com/cdn-cgi/access/logout";};
 
@@ -571,48 +574,78 @@ $("tickerRefresh").onclick=loadTicker;
 // ---------- registrar release + roles ----------
 let REG_ROLES={}, REG_ALLOWED=["member","testpilot","officer","admin"], REG_PILOTS=[];
 async function loadRegistrar(){
+  try{ const rel=await api("GET","/blades/api/plugin-release"); renderChannels(rel); }
+  catch(e){ $("regChannels").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
+}
+let EXTRA_CMDRS=[];
+async function loadRoles(){
   try{
-    const rel=await api("GET","/blades/api/plugin-release");
-    let rl={roles:{},allowed:REG_ALLOWED,pilots:rel.pilots||[]};
-    try{ rl=await api("GET","/blades/api/plugin-roles"); }catch(e){}
-    REG_ROLES=rl.roles||{}; REG_ALLOWED=rl.allowed||REG_ALLOWED; REG_PILOTS=rel.pilots||rl.pilots||[];
-    renderReleases(rel); renderRoles();
-  }catch(e){ $("regReleases").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
+    const rl=await api("GET","/blades/api/plugin-roles");
+    REG_ROLES=rl.roles||{}; REG_ALLOWED=rl.allowed||REG_ALLOWED; REG_PILOTS=rl.pilots||[];
+    renderRoles();
+  }catch(e){ $("rolesRows").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
 }
-function relLine(name,r){
-  if(!r) return '<div><b>'+name+':</b> <span class="subtle">none cut yet</span></div>';
-  const sha=String(r.sha256||"").slice(0,12);
-  return '<div><b>'+name+':</b> <span class="pill ok">v'+esc(r.version)+'</span> <span class="subtle" style="font-size:10.5px">'+(r.notes?esc(r.notes)+' · ':'')+(sha?'sha '+esc(sha)+'… · ':'')+(r.ts?ago(r.ts):'')+(r.by?' · '+esc(String(r.by).split("@")[0]):'')+'</span></div>';
+function chanBlock(ch,label,zipName,published,detected){
+  const pubTxt = published
+    ? '<span class="pill ok">v'+esc(published.version)+'</span> <span class="subtle" style="font-size:10.5px">'+(published.notes?esc(published.notes)+' · ':'')+(published.ts?ago(published.ts):'')+(published.by?' · '+esc(String(published.by).split("@")[0]):'')+'</span>'
+    : '<span class="subtle">none cut yet</span>';
+  let action;
+  if(!detected){
+    action='<div class="subtle" style="font-size:11px;margin-top:6px">No '+esc(ch)+' zip detected ('+esc(zipName)+') — build &amp; push it, then reload.</div>';
+  }else{
+    const zipV=esc(detected.version);
+    const notesVal=detected.notes||(published&&published.notes)||"";
+    const upToDate=published&&published.version===detected.version;
+    action='<textarea data-notes rows="2" style="width:100%;resize:vertical;font-family:inherit;margin-top:6px" placeholder="release notes (auto-suggested from the code)">'+esc(notesVal)+'</textarea>'
+      +'<div class="toolbar" style="margin-top:6px"><button class="go" data-cut>▷ Cut '+esc(ch)+' v'+zipV+'</button>'
+      +(upToDate?'<span class="pill">published = deployed zip</span>':'<span class="subtle" style="font-size:10.5px">deployed zip: <b>v'+zipV+'</b></span>')+'</div>';
+  }
+  return '<div class="chanblock" data-chan="'+esc(ch)+'" style="border-bottom:1px dashed var(--line);padding:10px 0">'
+    +'<div class="toolbar" style="justify-content:space-between;gap:8px"><b>'+esc(label)+'</b> <span>'+pubTxt+'</span></div>'+action+'</div>';
 }
-function renderReleases(rel){
-  $("regReleases").innerHTML='<div style="display:flex;flex-direction:column;gap:5px">'+relLine("STABLE",rel.stable)+relLine("BETA",rel.beta)+'</div>';
+function renderChannels(rel){
+  const det=rel.detected||{};
+  $("regChannels").innerHTML =
+    chanBlock("stable","STABLE","BladesRegistrar.zip",rel.stable,det.stable)
+    + chanBlock("beta","BETA","BladesRegistrar-beta.zip",rel.beta,det.beta);
+  $("regChannels").querySelectorAll('.chanblock').forEach(bl=>{
+    const ch=bl.dataset.chan, btn=bl.querySelector('[data-cut]');
+    if(!btn) return;
+    btn.onclick=()=>{
+      const ta=bl.querySelector('[data-notes]'); const notes=ta?ta.value.trim():"";
+      if(!confirm("Cut "+ch.toUpperCase()+" release?\n\nHashes the live "+(ch==="beta"?"BladesRegistrar-beta.zip":"BladesRegistrar.zip")+" and pushes it to "+(ch==="beta"?"test pilots only":"ALL pilots")+"."))return;
+      btn.disabled=true;
+      api("POST","/blades/api/plugin-release",{channel:ch,notes}).then(d=>{toast("cut "+d.channel+" v"+d.version);loadRegistrar();}).catch(err=>{toast(err.message,true);btn.disabled=false;});
+    };
+  });
 }
 function renderRoles(){
-  const names=new Set(REG_PILOTS.map(p=>p.cmdr)); Object.keys(REG_ROLES).forEach(c=>names.add(c));
-  const rows=[...names].sort(); const pmap={}; REG_PILOTS.forEach(p=>pmap[p.cmdr]=p);
-  if(!rows.length){ $("regRoles").innerHTML='<div class="empty">No pilots have reported in yet — versions appear here once a v2+ plugin phones home.</div>'; return; }
-  $("regRoles").innerHTML=rows.map(c=>{
+  const names=new Set(REG_PILOTS.map(p=>p.cmdr)); Object.keys(REG_ROLES).forEach(c=>names.add(c)); EXTRA_CMDRS.forEach(c=>names.add(c));
+  const rows=[...names].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase())); const pmap={}; REG_PILOTS.forEach(p=>pmap[p.cmdr]=p);
+  if(!rows.length){ $("rolesRows").innerHTML='<div class="empty">No pilots yet — add one by CMDR above, or wait for a v2+ plugin to phone home.</div>'; return; }
+  $("rolesRows").innerHTML=rows.map(c=>{
     const roles=REG_ROLES[c]||[]; const p=pmap[c];
     const ver=p?('<span class="pill">v'+esc(p.running||"?")+'</span>'+(p.pending?' <span class="subtle">staged '+esc(p.pending)+'</span>':'')+' <span class="subtle" style="font-size:10.5px">'+ago(p.ts)+'</span>'):'<span class="subtle">no heartbeat</span>';
     const toggles=REG_ALLOWED.map(role=>'<label style="margin-right:12px;font-size:12px"><input type="checkbox" data-cmdr="'+esc(c)+'" data-role="'+esc(role)+'"'+(roles.includes(role)?' checked':'')+'> '+esc(role)+'</label>').join("");
     return '<div style="border-bottom:1px dashed var(--line);padding:9px 0"><div class="toolbar" style="justify-content:space-between;gap:8px"><b>'+esc(c)+'</b> <span>'+ver+'</span></div><div style="margin-top:5px">'+toggles+'</div></div>';
   }).join("");
-  $("regRoles").querySelectorAll('input[type=checkbox]').forEach(cb=>{
+  $("rolesRows").querySelectorAll('input[type=checkbox]').forEach(cb=>{
     cb.onchange=()=>{
       const c=cb.dataset.cmdr;
-      const checked=[...$("regRoles").querySelectorAll('input[data-cmdr="'+CSS.escape(c)+'"]')].filter(x=>x.checked).map(x=>x.dataset.role);
-      api("POST","/blades/api/plugin-roles",{cmdr:c,roles:checked}).then(d=>{REG_ROLES=d.roles||REG_ROLES;toast("roles saved · "+c);}).catch(err=>{toast(err.message,true);loadRegistrar();});
+      const checked=[...$("rolesRows").querySelectorAll('input[data-cmdr="'+CSS.escape(c)+'"]')].filter(x=>x.checked).map(x=>x.dataset.role);
+      api("POST","/blades/api/plugin-roles",{cmdr:c,roles:checked}).then(d=>{REG_ROLES=d.roles||REG_ROLES;toast("roles saved · "+c);renderRoles();}).catch(err=>{toast(err.message,true);loadRoles();});
     };
   });
 }
-if($("regCut")) $("regCut").onclick=()=>{
-  const version=$("regVer").value.trim(), notes=$("regNotes").value.trim();
-  if(!version){toast("enter a version",true);return;}
-  const beta=/[a-z]/i.test(version);
-  if(!confirm("Cut "+(beta?"BETA":"STABLE")+" release v"+version+"?\n\nHashes the live "+(beta?"BladesRegistrar-beta.zip":"BladesRegistrar.zip")+" and pushes it to "+(beta?"test pilots only":"ALL pilots")+"."))return;
-  api("POST","/blades/api/plugin-release",{version,notes}).then(d=>{toast("cut "+d.channel+" v"+d.version);$("regVer").value="";$("regNotes").value="";loadRegistrar();}).catch(err=>toast(err.message,true));
-};
 if($("regRefresh")) $("regRefresh").onclick=loadRegistrar;
+if($("rolesRefresh")) $("rolesRefresh").onclick=loadRoles;
+if($("roleAdd")) $("roleAdd").onclick=()=>{
+  const c=($("roleAddCmdr").value||"").replace(/^\s*(cmdr|commander)\s+/i,"").trim();
+  if(!c){toast("enter a CMDR name",true);return;}
+  if(!EXTRA_CMDRS.includes(c)) EXTRA_CMDRS.push(c);
+  $("roleAddCmdr").value=""; renderRoles();
+  toast("added "+c+" — tick a role to save");
+};
 
 // ---------- squad access (Cloudflare Access allow-list) ----------
 let ACCESS_EMAILS=[];
