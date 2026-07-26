@@ -2,6 +2,13 @@
 <html lang="en" data-theme="amber">
 <head>
 <script>try{var _t=localStorage.getItem("ob_theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
+<link rel="manifest" href="/blades/manifest.webmanifest">
+<meta name="theme-color" content="#08150d">
+<link rel="apple-touch-icon" href="/blades/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Onyx Blades">
+<script>if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/blades/sw.js",{scope:"/blades/"}).catch(function(){});});}</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ONYX BLADES · Live Colonisation Board</title>
@@ -504,7 +511,7 @@
     return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent · ${inaraLink(name)}</span></div>${carrNote}${rows}</div>`;
   }
 
-  function copyNav(sys){const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
+  function copyNav(sys){try{fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})}).then(function(r){if(r&&r.ok)toast(sys+" -> sent to your PC (paste in the galaxy map)");}).catch(function(){});}catch(e){}const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(sys).then(done).catch(()=>fb(sys,done));}else fb(sys,done);}
   function fb(t,cb){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);cb();}catch(e){toast("copy blocked — "+t);}}
   let toastT;function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("show"),2200);}
