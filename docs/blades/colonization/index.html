@@ -433,7 +433,7 @@
     medicaldiagnosticequipment:"Medical Diagnostic Equipment",cropraisers:"Crop Harvesters",militarygradefabrics:"Military Grade Fabrics",
     nonlethalweapons:"Non-Lethal Weapons",reactivearmour:"Reactive Armour",basicmedicines:"Basic Medicines",
     hydrogenfuel:"Hydrogen Fuel",robotics:"Robotics",geologicalequipment:"Geological Equipment"};
-  const disp=(k)=>NAMES[k]||k.replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
+  const disp=(k)=>NAMES[k]||DISP_N[_strip(k)]||k.replace(/(^|[^a-z])([a-z])/g,(m)=>m.toUpperCase());
   const TYPE={consus:"Colonisation Construction Site",coriolis:"Coriolis Starport",orbis:"Orbis Starport",ocellus:"Ocellus Starport",asteroid:"Asteroid Base",outpost:"Outpost"};
 
   let PROJECT=null;
@@ -569,8 +569,15 @@
   // colonisation + common commodity set. Unmapped names fall back to Inara's search
   // with just the reference system pre-filled. Reference system = the build's system.
   const INARA_CID={"agronomic treatment":10268,"explosives":3,"hydrogen fuel":4,"hydrogen peroxide":138,"liquid oxygen":137,"mineral oil":5,"nerve agents":96,"pesticides":6,"rockforth fertiliser":10264,"surface stabilisers":97,"synthetic reagents":98,"tritium":10269,"water":139,"clothing":7,"consumer technology":8,"domestic appliances":9,"evacuation shelter":99,"survival equipment":164,"beer":10,"bootleg liquor":95,"liquor":11,"narcotics":12,"tobacco":13,"wine":14,"algae":15,"animal meat":16,"coffee":17,"fish":18,"food cartridges":19,"fruit and vegetables":20,"grain":21,"synthetic meat":23,"tea":22,"ceramic composites":100,"cmm composite":140,"insulating membrane":141,"meta-alloys":101,"micro-weave cooling hoses":185,"neofabric insulation":183,"polymers":26,"semiconductors":28,"superconductors":27,"articulation motors":182,"atmospheric processors":87,"building fabricators":102,"crop harvesters":29,"emergency power cells":158,"energy grid assembly":149,"exhaust manifold":159,"geological equipment":103,"heatsink interlink":151,"hn shock mount":150,"ion distributor":160,"magnetic emitter coil":152,"marine equipment":86,"microbial furnaces":85,"mineral extractors":31,"modular terminals":181,"power converter":153,"power generators":83,"power transfer bus":161,"radiation baffle":162,"reinforced mounting plate":163,"skimmer components":104,"thermal cooling units":105,"water purifiers":82,"advanced medicines":166,"agri-medicines":1,"basic medicines":33,"combat stabilisers":34,"performance enhancers":35,"progenitor cells":36,"aluminium":37,"beryllium":38,"bismuth":106,"cobalt":39,"copper":40,"gallium":41,"gold":42,"indium":43,"lanthanum":107,"lithium":44,"osmium":72,"palladium":45,"platinum":81,"praseodymium":143,"samarium":142,"silver":46,"steel":10487,"tantalum":47,"thallium":108,"thorium":109,"titanium":48,"uranium":50,"advanced catalysers":61,"animal monitors":62,"aquaponic systems":63,"auto-fabricators":65,"bioreducing lichen":66,"computer components":67,"h.e. suits":68,"hardware diagnostic sensor":155,"land enrichment systems":71,"medical diagnostic equipment":154,"micro controllers":156,"muon imager":119,"nanobreakers":167,"resonating separators":69,"robotics":70,"structural regulators":117,"telemetry suite":184,"conductive fabrics":165,"leather":73,"military grade fabrics":157,"natural fabrics":74,"synthetic fabrics":75,"biowaste":76,"chemical waste":32,"scrap":77,"battle weapons":88,"landmines":118,"non-lethal weapons":78,"personal weapons":79,"reactive armour":80};
+  // ---- commodity name normalisation (plugin sends game-internal run-together keys) ----
+  const _strip=(x)=>String(x||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+  const INARA_CID_N={}, DISP_N={};
+  for(const _k in INARA_CID){ INARA_CID_N[_strip(_k)]=INARA_CID[_k]; DISP_N[_strip(_k)]=_k.replace(/\b\w/g,function(c){return c.toUpperCase();}); }
+  // Elite internal-name quirks: the plugin's internal name differs from Inara's spelling.
+  const _INARA_ALIAS={terrainenrichmentsystems:71,cropraisers:29,agriculturalmedicines:1,marinesupplies:86};
+  for(const _a in _INARA_ALIAS){ if(INARA_CID_N[_a]==null) INARA_CID_N[_a]=_INARA_ALIAS[_a]; }
   function inaraUrl(name){
-    const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')];
+    const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')]||INARA_CID_N[_strip(name)];
     const sys=encodeURIComponent((PROJECT&&PROJECT.systemName)||'');
     return id
       ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
