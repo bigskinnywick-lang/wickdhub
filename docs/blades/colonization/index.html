@@ -846,7 +846,7 @@
       try{
         var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})});
         var d=null; try{ d=await r.json(); }catch(_){}
-        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; setTimeout(function(){ btn.textContent=BASE; },1600); }
+        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; try{ localStorage.removeItem(KEY); }catch(e){} setTimeout(function(){ hide(); btn.textContent=BASE; },1200); }
         else if(r.status===409){ toast("Bind your CMDR first (MY STATS) so we know whose PC to reach."); btn.textContent=BASE; }
         else { toast("Could not transmit "+sys+" — "+((d&&d.error)||("HTTP "+r.status))); btn.textContent=BASE; }
       }catch(e){ toast("Transmit failed — network error."); btn.textContent=BASE; }
