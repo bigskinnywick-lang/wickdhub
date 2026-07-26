@@ -369,6 +369,7 @@
   // Trips reflect YOUR real ship (reported live by the Blades Registrar plugin),
   // not a fixed Type-9. Falls back to a 790t Type-9 until your loadout is known.
   let MY_CAP=790, MY_SHIP_LABEL="Type-9 (default)", SQUAD_CARRIERS={};
+  function escFC(v){return String(v==null?"":v).replace(/[&<>\"]/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"})[c];});}
   function shipPretty(t){ t=String(t||""); if(!t) return ""; return t.split(/[_ ]/).map(function(w){return w?w.charAt(0).toUpperCase()+w.slice(1):w;}).join(" "); }
   async function refreshSelfData(){
     let changed=false;
@@ -452,7 +453,7 @@
     PROJECT=p; LAST_ETAG=p.eTag||p.timestamp||""; window.LAST_REFRESH_TS=Date.now();
     const pct=p.maxNeed>0?Math.round(((p.maxNeed-p.sumNeed)/p.maxNeed)*100):(p.complete?100:0);
     const total=p.sumNeed||0;
-    const carriers=(p.linkedFC||[]).map(function(f){var mid=String(f.marketId||"");var ours=SQUAD_CARRIERS[mid];var nm=esc((ours&&ours.name)||f.displayName||f.name||"Fleet Carrier");var cs=esc((ours&&ours.callsign)||f.callsign||f.callSign||"");var idline=cs?(cs+(mid?" · market "+esc(mid):"")):(mid?"market "+esc(mid):"");var tag=ours?('<div class="commit" style="color:var(--good)">\u25c6 '+esc(ours.owner||"Blades")+'</div>'):'<div class="commit" style="color:var(--muted)">unaffiliated</div>';return '<div class="contrib"><div class="who">'+nm+'<small>'+idline+'</small></div><div><div class="amt">'+((f.sales||[]).length)+' sell</div>'+tag+'</div></div>';}).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
+    const carriers=(p.linkedFC||[]).map(function(f){var mid=String(f.marketId||"");var ours=SQUAD_CARRIERS[mid];var nm=escFC((ours&&ours.name)||f.displayName||f.name||"Fleet Carrier");var cs=escFC((ours&&ours.callsign)||f.callsign||f.callSign||"");var idline=cs?(cs+(mid?" · market "+escFC(mid):"")):(mid?"market "+escFC(mid):"");var tag=ours?('<div class="commit" style="color:var(--good)">\u25c6 '+escFC(ours.owner||"Blades")+'</div>'):'<div class="commit" style="color:var(--muted)">unaffiliated</div>';return '<div class="contrib"><div class="who">'+nm+'<small>'+idline+'</small></div><div><div class="amt">'+((f.sales||[]).length)+' sell</div>'+tag+'</div></div>';}).join("")||'<div style="color:var(--muted);font-size:12px">No linked fleet carriers.</div>';
     $("subline").textContent=(p.systemName||"—")+" · "+(TYPE[p.buildType]||p.buildType||"construction");
     $("cmdrLine").textContent="build: "+BUILD_ID.slice(0,8)+"… · architect "+(p.architectName||"—");
     $("view").innerHTML=`<div class="grid">
