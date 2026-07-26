@@ -75,6 +75,22 @@
   .manifest-link a:hover{background:color-mix(in srgb,var(--accent) 14%,var(--bg))}
   /* ===== colour-scheme rotary dial (matches the rest of the site) ===== */
   .dialbox{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  /* ---- SQUAD NET ticker (standard header stack) ---- */
+  .ticker{margin-top:12px;border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 7%,var(--bg));overflow:hidden;position:relative;height:38px;display:flex;align-items:center;border-radius:var(--radius)}
+  .ticker .tag{flex:none;font-family:var(--font-head);font-size:11px;letter-spacing:2px;font-weight:700;background:var(--accent);color:#0a0705;padding:0 14px;height:100%;display:flex;align-items:center;z-index:2;box-shadow:0 0 18px var(--glow)}
+  .ticker .track{display:flex;white-space:nowrap;animation:scroll 46s linear infinite;will-change:transform}
+  .ticker:hover .track{animation-play-state:paused}
+  .ticker .item{font-size:12.5px;padding:0 30px;color:var(--text);letter-spacing:.5px;display:inline-flex;align-items:center;gap:8px}
+  .ticker .item .ico{color:var(--accent-bright);font-size:13px}.ticker .item b{color:var(--accent-bright)}
+  .ticker .sep{color:var(--accent-dim)}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  @keyframes tickBlink{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes emgPulse{0%,100%{background:transparent}50%{background:color-mix(in srgb,var(--bad) 24%,transparent)}}
+  .ticker .item.crit{animation:tickBlink 1.05s ease-in-out infinite}
+  .ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}
+  .ticker .item.emergency{animation:emgPulse .8s steps(1,end) infinite;border-radius:var(--radius);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bad) 45%,transparent)}
+  .ticker .item.emergency .ico,.ticker .item.emergency b{color:var(--bad)}
+  @media(prefers-reduced-motion:reduce){.ticker .item.crit,.ticker .item.emergency{animation:none}.ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}.ticker .item.emergency{background:color-mix(in srgb,var(--bad) 20%,transparent)}}
   .dial-labels{display:flex;gap:7px}
   .dl{font-family:var(--font-head);font-size:10px;letter-spacing:1.2px;line-height:1.12;text-align:center;color:var(--muted);border:1px solid var(--line);background:var(--panel);padding:6px 11px;cursor:pointer;border-radius:var(--radius);transition:.15s}
   .dl small{display:block;font-size:8px;opacity:.72;margin-top:2px;letter-spacing:1px}
@@ -247,6 +263,8 @@
     <a class="bn" href="/blades/commander/">MY STATS</a>
     <a class="bn" href="/blades/onboarding/">SETUP GUIDE</a>
   </nav>
+
+  <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
 
   <div class="controls">
     <div class="dialbox">
@@ -647,6 +665,25 @@ async function loadActivity(){
   await Promise.all([loadDiscord(), loadPresence(), loadActivity()]);
   heartbeat();
   setInterval(()=>{ heartbeat(); loadDiscord(); loadPresence(); }, 4*60*1000);
+})();
+</script>
+<script>
+/* SQUAD NET ticker — standard stack. Home is the PUBLIC storefront, so it always
+   shows the public feed (GalNet + Community Goals). Members get the fuller feed with
+   the build/stats goodies once they head inside (dashboard / my stats / setup guide). */
+(function(){
+  function escH(s){return String(s==null?"":s).replace(/[&<>\"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;","'":"&#39;"}[c];});}
+  function iconFor(k){ return k==="galnet"?"\u2756":k==="cg"?"\u25ce":"\u2726"; }
+  function itemsFrom(fields){ var now=Date.now(); return (fields||[]).filter(function(f){return f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now);}).map(function(f){ return {c:"news",i:iconFor(f.key),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> \u00b7 '+escH(String(f.text))}; }); }
+  var MAINT=[{c:"",i:"◈",h:"SQUAD NET · feed under maintenance — GalNet & Community Goals back shortly. ☕"}];
+  function render(items){ var el=document.getElementById("tickTrack"); if(!el) return; var bar=el.closest?el.closest(".ticker"):null; if(!items||!items.length) items=MAINT; if(bar) bar.style.display=""; var html=items.map(function(x){return '<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">\u25c6</span>';}).join(""); el.innerHTML=html+html; }
+  async function jget(url,opts){ var r=await fetch(url,opts); if(!r.ok) throw 0; return await r.json(); }
+  async function run(){
+    // Public storefront feed only — never the member/build slots, regardless of Access config.
+    try{ var p=await jget('/blades/api/ticker-public',{headers:{accept:'application/json'}}); render(itemsFrom((p&&p.fields)||[])); }catch(e){ render([]); }
+  }
+  window._obRunTicker=run;
+  (function(){ var go=function(){ if(document.getElementById("tickTrack")) run(); }; if(document.readyState!=="loading") go(); else document.addEventListener("DOMContentLoaded",go); setInterval(go,60000); })();
 })();
 </script>
 </body>
