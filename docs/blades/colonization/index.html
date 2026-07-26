@@ -973,7 +973,17 @@
       var d=await r.json(); var had=(window._obUrgentItems||[]).length;
       if(d&&d.ok&&d.needsRestart&&d.latest){
         window._obUrgentItems=[{c:"urgent",i:"\u26a0",h:'<b>RESTART EDMC</b> \u2014 Blades Registrar '+esc(String(d.latest.version))+' staged \u00b7 restart to apply'}];
+      } else if(d&&d.ok&&d.needsSetup){
+        window._obUrgentItems=[{c:"urgent",i:"⚠",h:'<b><a href="/blades/onboarding/" style="color:inherit;text-decoration:underline">COMPLETE SETUP</a></b> — install the Blades Registrar plugin to sync with the board'}];
       } else { window._obUrgentItems=[]; }
+      try{
+        var _nav=document.querySelector(".blades-nav");
+        if(_nav && location.pathname.indexOf("/blades/onboarding")!==0){
+          var _sg=document.getElementById("setupGuideBtn");
+          if(d&&d.ok&&d.needsSetup){ if(!_sg){ _sg=document.createElement("a"); _sg.id="setupGuideBtn"; _sg.className="bn"; _sg.href="/blades/onboarding/"; _sg.textContent="SETUP GUIDE"; _nav.appendChild(_sg); } }
+          else if(_sg){ _sg.remove(); }
+        }
+      }catch(e){}
       if((window._obUrgentItems||[]).length!==had && typeof window._obRunTicker==="function") window._obRunTicker();
     }catch(e){}
   }

@@ -50,7 +50,8 @@ export async function onRequestGet({ request, env }) {
   const email = callerEmail(request);
   if (!email) return json({ ok: false, error: "no identity" }, 403);
   const cmdr = await resolveCmdr(env, email);
-  if (!cmdr) return json({ ok: true, cmdr: "", running: "", pending: "", latest: null, channel: "stable", needsRestart: false });
+  // Signed in but no CMDR bound = setup not finished -> nudge to complete setup.
+  if (!cmdr) return json({ ok: true, cmdr: "", running: "", pending: "", latest: null, channel: "stable", needsRestart: false, needsSetup: true });
   const cmdrLower = cmdr.toLowerCase();
 
   const ver = await readJson(env, "cmdrver:" + cmdrLower);
@@ -62,7 +63,10 @@ export async function onRequestGet({ request, env }) {
   if (!rel && channel === "beta") rel = await readJson(env, "plugin:release:stable");
   const latest = pubRelease(rel);
 
-  // Only nag pilots we've actually heard from (running set) who are numerically behind.
+  // Nag to RESTART when a heard-from pilot is behind; nag to COMPLETE SETUP when we
+  // have no heartbeat at all (no plugin, a pre-2.0 plugin that can't report, or a
+  // plugin whose heartbeat has aged out).
   const needsRestart = !!(running && latest && cmpVer(running, latest.version) < 0);
-  return json({ ok: true, cmdr, running, pending, latest, channel, needsRestart });
+  const needsSetup = !running;
+  return json({ ok: true, cmdr, running, pending, latest, channel, needsRestart, needsSetup });
 }
