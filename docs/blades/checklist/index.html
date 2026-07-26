@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ONYX BLADES · Auto-Create &amp; Co-op Checklist</title>
+<title>ONYX BLADES · v2.0 Shakedown Checklist</title>
 <style>
   :root{--bg:#0d0906;--panel:#161009;--line:#3a2a17;--text:#e8dcc8;--muted:#9c8a6e;--amber:#f0a828;--amber-b:#ffc95e;--ok:#39d353;--bad:#ff5c5c;--violet:#b06bff}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.65 "Share Tech Mono","Consolas",monospace;padding:24px 16px 80px}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.65 "Share Tech Mono","Consolas",monospace;padding:24px 16px 120px}
   .wrap{max-width:900px;margin:0 auto}
   h1{font-size:20px;letter-spacing:3px;color:var(--amber-b);margin:0 0 2px}
   .sub{font-size:11px;letter-spacing:2px;color:var(--muted);margin-bottom:22px}
@@ -17,181 +17,169 @@
   label.step{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px dashed var(--line);cursor:pointer}
   label.step:last-of-type{border-bottom:none}
   label.step input{margin-top:4px;accent-color:var(--amber);width:15px;height:15px;flex:none}
-  label.step input:checked + span{color:var(--muted);text-decoration:line-through}
+  label.step input:checked + span{color:var(--muted)}
+  .vbadge{display:inline-block;margin-left:8px;font-size:10px;letter-spacing:1px;padding:1px 7px;border-radius:10px;border:1px solid var(--ok);color:var(--ok);background:rgba(57,211,83,.08);white-space:nowrap;vertical-align:middle}
+  .vbadge.none{display:none}
   .watch{margin:6px 0 6px 26px;padding:8px 12px;border-left:3px solid var(--ok);background:rgba(57,211,83,.06);font-size:13px}
   .watch b{color:var(--ok)}
   .watch code{color:var(--ok);background:rgba(57,211,83,.1);padding:1px 5px;border-radius:3px}
-  .err{margin:6px 0 10px 26px;padding:8px 12px;border-left:3px solid var(--bad);background:rgba(255,92,92,.05);font-size:12.5px;color:var(--muted)}
-  .err b{color:var(--bad)}
-  .err code{color:#ffb0b0;background:rgba(255,92,92,.08);padding:1px 5px;border-radius:3px}
   .note{margin:6px 0 6px 26px;padding:8px 12px;border-left:3px solid var(--violet);background:rgba(176,107,255,.06);font-size:12.5px;color:var(--muted)}
   .note b{color:var(--violet)}
   code{color:var(--amber-b)}
   footer{margin-top:26px;font-size:10.5px;letter-spacing:1.5px;color:var(--muted);text-align:center;line-height:1.9}
   .backrow a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:2px;border:1px solid var(--line);padding:5px 10px;border-radius:4px}
   .backrow{margin-bottom:14px}
-  /* identity gating: role sections show only for the matching pilot */
-  .p-arch,.p-wing,.locked,.resolving{display:none}
-  body[data-role="arch"] .p-arch{display:block}
-  body[data-role="wing"] .p-wing{display:block}
-  body[data-role="tp"] .p-arch,body[data-role="tp"] .p-wing{display:block}
-  .clConf{color:var(--ok);font-weight:700;letter-spacing:1px}
-  #submitBar textarea{width:100%;background:var(--panel);color:inherit;border:1px solid var(--line);border-radius:6px;padding:8px;font-family:inherit;font-size:13px;resize:vertical}
-  #clSubmit{background:var(--amber);color:#0a0705;border:none;border-radius:6px;padding:9px 16px;font-weight:700;letter-spacing:1px;cursor:pointer}
-  #clSubmit:disabled{opacity:.6;cursor:default}
-  body[data-role="none"] .locked{display:block}
-  body[data-role="none"] .crew{display:none}
-  body:not([data-role]) .resolving{display:block}
-  body:not([data-role]) .crew{display:none}
+  /* submit bar */
+  #submitBar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(13,9,6,.4),var(--panel));border-top:1px solid var(--line);padding:12px 16px;z-index:20}
+  #submitBar .inner{max-width:900px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  #submitBar textarea{flex:1;min-width:200px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:5px;padding:8px 10px;font:12px/1.4 inherit;resize:vertical;min-height:38px}
+  #submitBar button{font-family:inherit;font-size:12px;letter-spacing:1.5px;font-weight:700;color:#0a0705;background:var(--amber-b);border:1px solid var(--amber);border-radius:6px;padding:11px 18px;cursor:pointer}
+  #submitBar button:disabled{opacity:.5;cursor:default}
+  #submitMsg{font-size:11px;color:var(--muted);letter-spacing:1px}
+  #toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:var(--amber);color:#0a0705;font-size:12px;font-weight:700;letter-spacing:1px;padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+  #toast.show{opacity:1}
+  /* test-pilot gate */
+  .crew,.locked,.resolving{display:none}
+  body[data-tp="yes"] .crew{display:block}
+  body[data-tp="yes"] #submitBar{display:block}
+  body[data-tp="no"] .locked{display:block}
+  body:not([data-tp]) .resolving{display:block}
+  #submitBar{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="backrow"><a href="/blades/commander/">◂ MY STATS</a></div>
-  <h1>AUTO-CREATE &amp; CO-OP CHECKLIST</h1>
-  <div class="sub">DETECT · AUTO-CREATE · REGISTER · CO-OP HAUL · v1.2 · TEST PILOT: <b id="pilotName" style="color:var(--amber-b)">—</b> · <span id="roleLine">—</span></div>
+  <h1>v2.0 SHAKEDOWN CHECKLIST</h1>
+  <div class="sub">FLY THE NEW KIT · SIGN OFF WHAT WORKS · v2.0 · TEST PILOT: <b id="pilotName" style="color:var(--amber-b)">—</b></div>
 
   <div class="resolving phase"><div class="when">Resolving shakedown-crew credentials…</div></div>
-  <div class="locked phase" style="border-left-color:var(--bad)"><h2>RESTRICTED · SHAKEDOWN CREW ONLY</h2><div class="when">This procedure is issued to the current test pilots. Fly the released systems — the Setup Guide has everything you need.</div></div>
+  <div class="locked phase" style="border-left-color:var(--bad)"><h2>RESTRICTED · SHAKEDOWN CREW ONLY</h2><div class="when">This flight card is issued to the current test pilots. If you should be on the crew, ask an admin to flag you — then restart EDMC so the board hears your plugin.</div></div>
 
   <div class="crew">
-  <div class="note"><b>WHAT WE'RE PROVING THIS RUN:</b> the auto-create chain — <b>land at an unregistered construction site → the registrar detects there's no Raven build → it creates one → registers it to the board</b> — and then <b>co-op hauling</b> pools both our tonnages. The 502 that used to kill auto-create is fixed: it now self-heals on a cold Raven, and any real failure shows a plain-English reason instead of a blind error.</div>
+  <div class="note"><b>HOW THIS WORKS:</b> fly each item live, tick the ones that pass, and hit <b>SUBMIT</b> at the bottom to sign them off for the whole crew. Items already confirmed by another pilot wear a green <b>✓ CONFIRMED</b> badge — you don't have to re-fly those, but a second confirmation never hurts. Your ticks are your report; the note box rides along with them.</div>
 
   <div class="phase">
-    <h2>PHASE 0 · PRE-FLIGHT — AT THE DESK, GAME NOT REQUIRED</h2>
-    <div class="when">Before launching Elite. ~5 minutes.</div>
-    <span class="p-wing"><label class="step"><input type="checkbox" /><span>Download the fresh registrar: <code>wickdhub.com/blades/onboarding/</code> → Stage 03 button (<code>BladesRegistrar.zip</code>).</span></label>
-    <label class="step"><input type="checkbox" /><span><b>Delete</b> the old <code>BladesRegistrar</code> folder from the EDMC plugins dir, drop in the new one — clean swap, don't merge. (Path check: <code>plugins\BladesRegistrar\load.py</code>, not doubled.)</span></label>
-    <label class="step"><input type="checkbox" /><span>EDMC → File → Settings → <b>Blades Registrar</b> tab: ☑ Auto-create ON · fallback architect <code>Onyx Blades</code> · grace <code>1</code> min (short for testing). Save.</span></label>
-    <label class="step"><input type="checkbox" /><span>Fully restart EDMC. The Blades status label should read <code>Blades: idle (v1.2)</code> — that confirms the new plugin loaded.</span></label>
-    <div class="watch"><b>NEW SAFETY NET:</b> if anything fails at create, the status line now names the cause (e.g. <code>auto-create failed (raven_timeout) — logged</code>) and writes the full detail to <code>BladesRegistrar\last_error.json</code>. No more blind <code>ingest error 502</code>.</div>
-    </span>
-    <span class="p-arch"><label class="step"><input type="checkbox" /><span>Confirm your <b>RavenColonial</b> plugin is running (you're already set up) — this is what makes co-op deliveries pool.</span></label>
-    <label class="step"><input type="checkbox" /><span>Sanity-check on ravencolonial.com: the <b>test station you already finished in this system</b> shows architect <b>TEMPLAR57</b>. That existing build is the attribution seed for what auto-create does next (see Phase 1).</span></label>
-    <div class="note"><b>YOUR ROLE:</b> this is your system and your claim. You don't need the registrar plugin — BigSkinny's rig drives the auto-create. You're here to confirm the new site lands under <b>your</b> name and to co-op the haul.</div>
-    </span>
-    <label class="step"><input type="checkbox" /><span>Open <code>wickdhub.com/blades/colonization/</code> in a browser tab and <b>leave it open, untouched</b>. No reloading from here — hands-off is the whole point.</span></label>
-  </div>
-
-  <span class="p-wing">
-  <div class="phase">
-    <h2>PHASE 1 · AUTO-CREATE — YOU FILE THE PAPERS</h2>
-    <div class="when">Dock at an <b>unregistered</b> construction site in Templar's system (a NEW one — not the station already finished/registered).</div>
-    <label class="step"><input type="checkbox" /><span>Dock. Watch the EDMC Blades status line — it updates on every ~15s depot ping.</span></label>
-    <div class="watch"><b>EXPECT, in order:</b> <code>waiting — no build in Raven yet</code> → countdown <code>waiting — auto-create in 0m59s</code> → at zero, next ping: <code>created &lt;name&gt; · architect TEMPLAR57 (from Raven)</code></div>
-    <div class="note"><b>THE SUFFIX IS THE TEST — and this run it should be <code>(from Raven)</code>:</b> the registrar looks at the other build already in this system (your finished station, architect Templar57) and inherits that name. That's the sibling-detection win we're watching for. · <code>(claimed ✓)</code> = would mean Templar's claim was in a journal (Frontier usually doesn't log it, so don't expect this). · <code>(fallback — fix later)</code> = it saw no sibling and stamped <code>Onyx Blades</code> — note it; that's exactly what the new <b>admin fix-architect</b> panel is for.</div>
-    <div class="note"><b>COLD-START IS NORMAL:</b> RavenColonial's server naps. You may briefly see <code>create attempt 1/2 failed (raven_timeout) — backing off 1.2s</code> then success on the retry. That's the self-heal working, not a bug.</div>
-    <label class="step"><input type="checkbox" /><span>Glance at the board tab — hands off the keyboard.</span></label>
-    <div class="watch"><b>EXPECT:</b> within ~60s the board toasts <code>◈ new build on the wire</code>, leaves Standing Down, and renders the new build live. Picker gains it under Active builds.</div>
-    <div class="err"><b>IF you get a failure line:</b> note the reason verbatim <b>and grab <code>BladesRegistrar\last_error.json</code></b> — that pair tells us exactly what to fix. Countdown restarting = deliberate back-off, not a loop. <code>auth error (bad key)</code> = old zip still installed, re-swap.</div>
-  </div>
-  </span>
-
-  <span class="p-arch">
-  <div class="phase">
-    <h2>PHASE 1 · ATTRIBUTION — YOUR NAME ON THE NEW PLAQUE</h2>
-    <div class="when">BigSkinny docks the new site and auto-creates it. You watch that it lands under YOU.</div>
-    <label class="step"><input type="checkbox" /><span>When BigSkinny reports <code>created &lt;name&gt;</code>, check the board: the new build should show architect <b>TEMPLAR57</b>, inherited from your existing station in this system.</span></label>
-    <div class="watch"><b>EXPECT:</b> suffix <code>(from Raven)</code> on his status line, and the board build attributed to <b>TEMPLAR57</b> — a site <b>he</b> filed, landing under <b>your</b> name. That's the co-op attribution proof.</div>
-    <div class="err"><b>IF it says <code>(fallback — fix later)</code>:</b> the sibling lookup didn't find your station (wrong system, or Raven hadn't surfaced it). Not fatal — flag it and we correct it in the admin fix-architect panel; the board build still works for hauling.</div>
-    <label class="step"><input type="checkbox" /><span>Optional cross-check: ravencolonial.com shows the new build with architect <b>TEMPLAR57</b>.</span></label>
-  </div>
-  </span>
-
-  <div class="phase">
-    <h2>PHASE 2 · CO-OP HAUL — POOL THE CARGO</h2>
-    <div class="when">The real payoff: both of us haul the same site and the board sums both holds. Requires <b>both</b> on the RavenColonial plugin, delivering to the <b>same</b> construction depot.</div>
-    <label class="step"><input type="checkbox" /><span><b>Both:</b> in the RavenColonial plugin, accept the <b>🚧 join</b> prompt on the site so your deliveries count as a project member.</span></label>
-    <label class="step"><input type="checkbox" /><span>On the dashboard, tap a commodity → supplier drawer opens; try the <code>⧉ NAV</code> copy button. Buy mats, fly back, deliver at the construction ship.</span></label>
-    <div class="watch"><b>EXPECT:</b> within ~60s of a drop → toast <code>⟳ live update</code>, progress % and shopping list shrink, ticker shows <code>&lt;YOU&gt; synced · X t hauled</code>. <b>Co-op check:</b> the remaining list nets out BOTH pilots' deliveries — when Templar drops, BigSkinny's shopping list shrinks too, and vice-versa. That's Raven pooling us server-side.</div>
-    <label class="step"><input type="checkbox" /><span>Check MY STATS once mid-session: career tonnes ticked up, the new build in your Service Record, and <b>both</b> commanders showing tonnage on the build.</span></label>
-    <div class="err"><b>NOT BUGS:</b> up to ~60s lag (poll pulse). · A supplier drawer snapping shut when data changes (re-render did its job). · Tracked tonnage &lt; total on a build hauled before you joined — pre-join deliveries are invisible by design.</div>
-    <div class="err"><b>REAL PROBLEM:</b> your deliveries never appearing → you're likely not a project member — accept the 🚧 join prompt.</div>
+    <h2>PHASE 0 · THE RELAY — AUTO-UPDATE &amp; CHANNELS</h2>
+    <div class="when">Confirm the plugin self-updates and reports in. Game running, EDMC open.</div>
+    <label class="step"><input type="checkbox" data-cid="autoupd" /><span><b>Self-update:</b> you did NOT reinstall by hand this cycle — the relay pulled the new build itself, and after an EDMC restart the Blades line shows the current version.</span></label>
+    <label class="step"><input type="checkbox" data-cid="betachan" /><span><b>Beta channel:</b> as a test pilot you received the beta build (version carries a letter), and the <code>⚑ TEST PILOT</code> chip shows on MY STATS. Revoke test-pilot (ask an admin) and you get pushed back to stable; the chip disappears.</span></label>
+    <label class="step"><input type="checkbox" data-cid="blare" /><span><b>RESTART-EDMC blare:</b> when a new build is pushed, the SQUAD NET ticker takes over — tag, border and the words <code>RESTART EDMC</code> flashing amber↔fleet, rest of the line readable — and clears itself ~15s after you relaunch EDMC and it reports the new version.</span></label>
+    <div class="watch"><b>NEW-PILOT VARIANT:</b> with no plugin (or pre-2.0) the blare reads <code>COMPLETE SETUP</code> instead and surfaces the Setup Guide.</div>
   </div>
 
   <div class="phase">
-    <h2>PHASE 3 · IF THE BUILD COMPLETES</h2>
-    <div class="when">Only if you finish it this session. Otherwise skip.</div>
-    <label class="step"><input type="checkbox" /><span>Deliver the final tonnes and watch the board.</span></label>
-    <div class="watch"><b>EXPECT:</b> toast <code>✔ build complete — honors board updated</code> → board auto-advances → the build joins the Honors Board, architect <b>TEMPLAR57</b> → picker moves it to <code>Completed · N · stats only</code>.</div>
+    <h2>PHASE 1 · THE BOARD — MANIFEST &amp; COMMODITIES</h2>
+    <div class="when">On the Colonisation board, an active build open.</div>
+    <label class="step"><input type="checkbox" data-cid="sortcycle" /><span><b>Sort cycle:</b> the <code>↕ SORT</code> button on the manifest cycles <code>NEED → A–Z → CATEGORY</code> and remembers your pick across a refresh.</span></label>
+    <label class="step"><input type="checkbox" data-cid="sortcat" /><span><b>Category order (the one to scrutinise):</b> in <code>CATEGORY</code> mode the grouping matches how the in-game commodity market / carrier transfer list groups things. Flag any commodity in the wrong bucket.</span></label>
+    <label class="step"><input type="checkbox" data-cid="commnames" /><span><b>Commodity names:</b> no run-together gibberish. Spot-check the quirky ones — <code>Microbial Furnaces</code>, <code>H.E. Suits</code>, <code>Land Enrichment Systems</code>, <code>Marine Equipment</code> — all read as proper names.</span></label>
+    <label class="step"><input type="checkbox" data-cid="inaralink" /><span><b>Inara links:</b> a commodity's <code>↗ Inara</code> link opens THAT commodity's sellers near the build system — not a blank/generic search.</span></label>
+    <label class="step"><input type="checkbox" data-cid="transmit" /><span><b>Transmit-from-Inara:</b> after opening an Inara link and copying a system, the <code>⧉ TRANSMIT SYSTEM → PC</code> button appears, sends the system to your PC, then vanishes once clicked (and times out on its own if you don't use it).</span></label>
   </div>
 
   <div class="phase">
-    <h2>PHASE 4 · DEBRIEF</h2>
-    <div class="when">What to report back so we can close this out.</div>
-    <label class="step"><input type="checkbox" /><span>The exact <code>created …</code> line and its <b>suffix</b> — did it read <code>(from Raven)</code>?</span></label>
-    <label class="step"><input type="checkbox" /><span>Did a retry fire (<code>create attempt 1/2 … backing off</code>)? Did it recover on its own?</span></label>
-    <label class="step"><input type="checkbox" /><span>Any failure line + the contents of <code>last_error.json</code>, verbatim.</span></label>
-    <label class="step"><input type="checkbox" /><span>Co-op: did each pilot's drop shrink the OTHER's shopping list, and did both show tonnage in MY STATS?</span></label>
-    <label class="step"><input type="checkbox" /><span>Did the board run the whole session with no manual reload? (y/n)</span></label>
+    <h2>PHASE 2 · STATION TYPE</h2>
+    <div class="when">Colonisation board + admin console.</div>
+    <label class="step"><input type="checkbox" data-cid="stationtype" /><span><b>Type override shows:</b> a build with an admin-set type displays the real class (e.g. <code>Large Industrial Outpost — Gia pattern</code>) in the heading, subline and Station Type field — not the generic <code>Colonisation Construction Site</code>.</span></label>
+    <label class="step"><input type="checkbox" data-cid="rawtype" /><span><b>Hunt the raw data:</b> note any build/page still showing RavenColonial's generic type where a real one should be — those are the targets for the coming auto-inference.</span></label>
+    <div class="note"><b>NEXT UP:</b> auto-inferring the type from the depot's commodity manifest, so we stop hand-setting it. This phase is scouting for where the OG Raven type still leaks through.</div>
   </div>
-  <div class="phase" id="submitBar" style="border-left-color:var(--ok)">
-    <h2 style="color:var(--ok)">▷ REPORT RESULTS</h2>
-    <div class="when">Tick every item that passed, add any notes, and submit. Confirmed items are logged so we skip re-testing them next round. A green ✓ means another pilot already confirmed it.</div>
-    <textarea id="clNote" rows="3" placeholder="notes — anything that failed, surprised you, or needs a fix"></textarea>
-    <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
-      <button id="clSubmit">▷ SUBMIT RESULTS</button>
-      <span id="clStatus" class="when" style="margin:0"></span>
-    </div>
+
+  <div class="phase">
+    <h2>PHASE 3 · THE COCKPIT STACK</h2>
+    <div class="when">Click through every page.</div>
+    <label class="step"><input type="checkbox" data-cid="stack" /><span><b>Consistent header:</b> Home, Colonisation, My Stats, Setup Guide and Flight Rig all read top-down the same — date/time bar → banner → nav → SQUAD NET ticker → colour dial — then page content.</span></label>
+    <label class="step"><input type="checkbox" data-cid="flightrig" /><span><b>Flight Rig specifically:</b> it now carries the full stack (it was the odd one out) — clock, nav, ticker and the colour dial all present and the dial changes the scheme.</span></label>
+  </div>
+
+  <div class="phase">
+    <h2>PHASE 4 · CARRIERS &amp; ATTRIBUTION</h2>
+    <div class="when">The fitted-but-untested kit from the register — needs a real carrier / live claim.</div>
+    <label class="step"><input type="checkbox" data-cid="carrierid" /><span><b>Carrier identity:</b> a carrier linked to a build shows name + call sign; squad-owned carriers show their owner, outsiders are tagged <code>unaffiliated</code>.</span></label>
+    <label class="step"><input type="checkbox" data-cid="carrierlink" /><span><b>Squad carrier link:</b> link your own fleet carrier to the build you're viewing from the commander deck; it appears on the board as a mobile depot.</span></label>
+    <label class="step"><input type="checkbox" data-cid="hotlist" /><span><b>Claim hot list:</b> a fresh claim inside its ~4-week primary-port window with no build yet rides the SQUAD NET ticker first — red under 3 days, amber under 7.</span></label>
+    <label class="step"><input type="checkbox" data-cid="archdeck" /><span><b>Architect deck:</b> bind your CMDR, see your claims with window countdowns, and correct a mistyped name or release one — all scoped to you.</span></label>
+  </div>
+
+  <div class="phase">
+    <h2>PHASE 5 · SIGN OFF — AND TEST THE SUBMIT</h2>
+    <div class="when">The report step. This also shakes down the Submit itself.</div>
+    <label class="step"><input type="checkbox" data-cid="submit" /><span><b>Submit works:</b> tick this box, add anything useful in the note field below, and press <code>SUBMIT</code>. Confirm you get a <code>submitted N items</code> toast and that a green <b>✓ CONFIRMED</b> badge appears on the items you signed off (reload to double-check it stuck).</span></label>
+    <div class="watch"><b>WHAT SUBMIT DOES:</b> it records exactly which boxes you ticked, keyed to you, durably. The next checklist can then assume already-confirmed items are good and pre-mark them — so an honest tick list here saves the whole crew work later.</div>
   </div>
   </div><!-- /crew -->
 
-  <footer>ONYX BLADES · AUTO-CREATE &amp; CO-OP PROCEDURE v1.2 · issued to the test pilots only · this run: TEMPLAR architect (system owner) / BIGSKINNY registrar + interloper<br />checkbox state lives only while this tab is open · o7</footer>
+  <footer>ONYX BLADES · v2.0 SHAKEDOWN PROCEDURE · issued to the test pilots only · tick what flies, submit to sign off · o7</footer>
 </div>
-<script>
-  // Shakedown crew gate + general test-pilot access + result submit.
-  var CHECKLIST_KEY="autocreate-coop-v1.2";
-  (function(){
-    var CREW={"presto575@gmail.com":["arch","CMDR TEMPLAR57","ROLE: ARCHITECT"],
-              "bigskinnywick@gmail.com":["wing","CMDR BIGSKINNY","ROLE: REGISTRAR / INTERLOPER"]};
-    function setRole(role,name,line){
-      document.body.dataset.role=role;
-      var pn=document.getElementById("pilotName"), rl=document.getElementById("roleLine");
-      if(name&&pn)pn.textContent=name; if(line&&rl)rl.textContent=line;
-      if(role==="arch"||role==="wing"||role==="tp") initSubmit();
-    }
-    function fallbackTP(){
-      // not hardcoded crew — let anyone with the testpilot role view + report
-      fetch("/blades/api/plugin-status",{headers:{accept:"application/json"},credentials:"same-origin"})
-        .then(function(r){return r.ok?r.json():null;})
-        .then(function(d){ if(d&&d.ok&&d.testPilot){ setRole("tp", d.cmdr?("CMDR "+d.cmdr):"TEST PILOT","ROLE: TEST PILOT"); } else { setRole("none"); } })
-        .catch(function(){ setRole("none"); });
-    }
-    fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"})
-      .then(function(r){return r.ok?r.json():Promise.reject();})
-      .then(function(d){ var c=CREW[(d.email||"").toLowerCase()]; if(c){ setRole(c[0],c[1],c[2]); } else { fallbackTP(); } })
-      .catch(function(){ fallbackTP(); });
-  })();
 
-  function _clHash(s){ var h=5381; s=String(s||""); for(var i=0;i<s.length;i++){ h=((h<<5)+h+s.charCodeAt(i))>>>0; } return h.toString(36); }
-  var _clInit=false;
-  function initSubmit(){
-    if(_clInit) return; _clInit=true;
-    var boxes=[].slice.call(document.querySelectorAll('label.step input[type=checkbox]'));
-    boxes.forEach(function(b){ var sp=b.parentNode.querySelector('span'); b.dataset.cid=_clHash(sp?sp.textContent:(b.parentNode.textContent||"")); });
-    fetch("/blades/api/checklist?key="+encodeURIComponent(CHECKLIST_KEY),{headers:{accept:"application/json"},credentials:"same-origin"})
-      .then(function(r){return r.ok?r.json():null;})
-      .then(function(d){
-        if(!d||!d.ok) return;
-        var mine=(d.mine&&d.mine.items)||[], ver=d.verified||{};
-        boxes.forEach(function(b){
-          if(mine.indexOf(b.dataset.cid)>=0) b.checked=true;
-          var v=ver[b.dataset.cid];
-          if(v){ var sp=b.parentNode.querySelector('span'); if(sp&&!sp.querySelector('.clConf')){ var t=document.createElement('span'); t.className='clConf'; t.title='confirmed by '+((v.by||[]).join(', ')); t.textContent=' ✓'+(v.count>1?('×'+v.count):''); sp.appendChild(t); } }
-        });
-        if(d.mine&&d.mine.note){ var n=document.getElementById('clNote'); if(n&&!n.value) n.value=d.mine.note; }
-      }).catch(function(){});
-    var btn=document.getElementById('clSubmit');
-    if(btn) btn.onclick=function(){
-      var items=boxes.filter(function(b){return b.checked;}).map(function(b){return b.dataset.cid;});
-      var note=(document.getElementById('clNote')||{}).value||"";
-      btn.disabled=true; var st=document.getElementById('clStatus'); if(st)st.textContent='submitting…';
-      fetch("/blades/api/checklist",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({key:CHECKLIST_KEY,items:items,note:note})})
-        .then(function(r){return r.json();})
-        .then(function(d){ if(st)st.textContent=(d&&d.ok)?('✓ submitted '+items.length+' item(s) — logged o7'):('error: '+((d&&d.error)||'failed')); btn.disabled=false; })
-        .catch(function(){ if(st)st.textContent='network error'; btn.disabled=false; });
-    };
+<div id="submitBar"><div class="inner">
+  <textarea id="noteBox" placeholder="Notes for the crew (optional) — anything odd, a category in the wrong bucket, a page still showing raw Raven type…"></textarea>
+  <span id="submitMsg"></span>
+  <button id="submitBtn">▷ SUBMIT REPORT</button>
+</div></div>
+<div id="toast"></div>
+
+<script>
+  var KEY = "v2.0-shakedown";
+  var $ = function (id) { return document.getElementById(id); };
+  var toastT;
+  function toast(m) { var e = $("toast"); e.textContent = m; e.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(function () { e.classList.remove("show"); }, 2600); }
+
+  // ---- test-pilot gate (real role via plugin-status) ----
+  fetch("/blades/api/plugin-status", { credentials: "same-origin" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      var tp = !!(d && d.testPilot);
+      document.body.dataset.tp = tp ? "yes" : "no";
+      if (tp) { if (d && d.cmdr) $("pilotName").textContent = "CMDR " + String(d.cmdr).toUpperCase(); loadVerified(); }
+    })
+    .catch(function () { document.body.dataset.tp = "no"; });
+
+  // ---- verified aggregate: badge + pre-check my own prior submission ----
+  function badgeFor(cb) {
+    var span = cb.parentNode.querySelector("span");
+    var b = span.querySelector(".vbadge");
+    if (!b) { b = document.createElement("span"); b.className = "vbadge none"; span.appendChild(b); }
+    return b;
   }
+  function loadVerified() {
+    fetch("/blades/api/checklist?key=" + encodeURIComponent(KEY), { credentials: "same-origin" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d || !d.ok) return;
+        var verified = d.verified || {}, mine = d.mine;
+        document.querySelectorAll("input[data-cid]").forEach(function (cb) {
+          var cid = cb.dataset.cid, v = verified[cid], b = badgeFor(cb);
+          if (v && v.count) {
+            var who = (v.by || []).slice(0, 3).join(", ") + ((v.by || []).length > 3 ? "…" : "");
+            b.textContent = "✓ CONFIRMED" + (who ? " · " + who : "");
+            b.className = "vbadge";
+          } else { b.className = "vbadge none"; }
+          if (mine && Array.isArray(mine.items) && mine.items.indexOf(cid) >= 0) cb.checked = true;
+        });
+        if (mine && mine.note && !$("noteBox").value) $("noteBox").value = mine.note;
+      })
+      .catch(function () {});
+  }
+
+  // ---- submit ----
+  $("submitBtn").onclick = function () {
+    var items = Array.prototype.slice.call(document.querySelectorAll("input[data-cid]:checked")).map(function (x) { return x.dataset.cid; });
+    if (!items.length) { toast("tick at least one item first"); return; }
+    var note = $("noteBox").value || "";
+    $("submitBtn").disabled = true; $("submitMsg").textContent = "sending…";
+    fetch("/blades/api/checklist", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ key: KEY, items: items, note: note }) })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function (d) {
+        if (!d || !d.ok) throw new Error("bad");
+        toast("submitted " + (d.saved || items.length) + " items — signed off");
+        $("submitMsg").textContent = "last submitted just now";
+        loadVerified();
+      })
+      .catch(function () { toast("submit failed — try again"); $("submitMsg").textContent = "submit failed"; })
+      .then(function () { $("submitBtn").disabled = false; });
+  };
 </script>
 </body>
 </html>
