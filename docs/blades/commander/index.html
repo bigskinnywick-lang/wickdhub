@@ -67,12 +67,6 @@
   .ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}
   .ticker .item.emergency{animation:emgPulse .8s steps(1,end) infinite;border-radius:var(--radius);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bad) 45%,transparent)}
   .ticker .item.emergency .ico,.ticker .item.emergency b{color:var(--bad)}
-  @keyframes netEmg{0%,49%{background:color-mix(in srgb,#ff7a12 30%,var(--bg))}50%,100%{background:color-mix(in srgb,#13a9ff 34%,var(--bg))}}
-  @keyframes netTagEmg{0%,49%{background:#ff7a12;color:#0a0705}50%,100%{background:#13a9ff;color:#04121a}}
-  .ticker.urgent{animation:netEmg .7s steps(1,end) infinite;border-color:#ff7a12}
-  .ticker.urgent .tag{animation:netTagEmg .7s steps(1,end) infinite}
-  .ticker.urgent .track{animation-duration:22s}
-  @media(prefers-reduced-motion:reduce){.ticker.urgent{animation:none;background:color-mix(in srgb,#ff7a12 26%,var(--bg))}.ticker.urgent .tag{animation:none;background:#ff7a12;color:#0a0705}}
   @media(prefers-reduced-motion:reduce){
     .ticker .item.crit,.ticker .item.emergency{animation:none}
     .ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}
@@ -227,12 +221,6 @@
   .ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}
   .ticker .item.emergency{animation:emgPulse .8s steps(1,end) infinite;border-radius:var(--radius);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--bad) 45%,transparent)}
   .ticker .item.emergency .ico,.ticker .item.emergency b{color:var(--bad)}
-  @keyframes netEmg{0%,49%{background:color-mix(in srgb,#ff7a12 30%,var(--bg))}50%,100%{background:color-mix(in srgb,#13a9ff 34%,var(--bg))}}
-  @keyframes netTagEmg{0%,49%{background:#ff7a12;color:#0a0705}50%,100%{background:#13a9ff;color:#04121a}}
-  .ticker.urgent{animation:netEmg .7s steps(1,end) infinite;border-color:#ff7a12}
-  .ticker.urgent .tag{animation:netTagEmg .7s steps(1,end) infinite}
-  .ticker.urgent .track{animation-duration:22s}
-  @media(prefers-reduced-motion:reduce){.ticker.urgent{animation:none;background:color-mix(in srgb,#ff7a12 26%,var(--bg))}.ticker.urgent .tag{animation:none;background:#ff7a12;color:#0a0705}}
   @media(prefers-reduced-motion:reduce){.ticker .item.crit,.ticker .item.emergency{animation:none}.ticker .item.crit .ico,.ticker .item.crit b{color:var(--warn)}.ticker .item.emergency{background:color-mix(in srgb,var(--bad) 20%,transparent)}}
   /* nav */
   .blades-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
@@ -399,10 +387,6 @@
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;
       // TEST PILOT button is gated on the real test-pilot role via plugin-status (poller below), not the crew map.
     }).catch(()=>{});})();
-// ===== TEST PILOT button — driven by real test-pilot role; a revoke hides it on the next poll =====
-  (function(){var tp=$("testPilotBtn");
-    function poll(){fetch("/blades/api/plugin-status",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(d=>{ if(tp) tp.style.display=(d&&d.testPilot)?"":"none"; try{applyStatus(d);}catch(e){} }).catch(()=>{});}
-    poll();setInterval(poll,15000);})();
 // ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
   (function(){fetch("/blades/api/admins",{credentials:"same-origin"}).then(r=>r.ok?r.json():null).then(a=>{if(a&&a.isAdmin){const ab=$("adminBtn");if(ab)ab.style.display="";const ub=$("usageBtn");if(ub)ub.style.display="";}}).catch(()=>{});})();
 // ===== Admiral's Desk reveal — ACTIVE. Button shows for admins/leadership. =====
@@ -463,21 +447,9 @@
   let TCUSTOM=[];
   async function tLoadCustom(){ try{ const d=await fetch('/blades/api/ticker',{credentials:'same-origin'}).then(r=>r.ok?r.json():null); const now=Date.now(); TCUSTOM=((d&&d.fields)||[]).filter(f=>f&&f.text&&String(f.text).trim()&&!(f.expiresTs&&f.expiresTs<now)); }catch(e){} }
   function tCustomItems(){ return TCUSTOM.map(f=>({c:"news",i:(f.key==="galnet"?"❖":f.key==="cg"?"◎":"✦"),h:'<b>'+escH(String(f.label||"NET").toUpperCase())+'</b> · '+escH(String(f.text))})); }
-  let URGENT=null;
-  function renderTicker(items){ if(URGENT) return; const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
+  function renderTicker(items){ const el=$("tickTrack"); if(!el) return; const html=items.map(x=>'<span class="item '+x.c+'"><span class="ico">'+x.i+'</span>'+x.h+'</span><span class="sep">◆</span>').join(""); el.innerHTML=html+html; }
   async function runTicker(){ await tLoadCustom(); const cust=tCustomItems(); if(!BUILD_ID){ renderTicker(cust.concat([{c:"",i:"◈",h:"SQUAD NET standing by — no active builds. Land at a construction site to begin."}])); return; } try{ renderTicker(cust.concat(tickerItems(await getProj()))); }catch(e){ renderTicker(cust.concat([{c:"",i:"◈",h:"SQUAD NET standing by — live feed resumes when the board reaches RavenColonial (works on wickdhub.com, not in preview)"}])); } }
   window._obRunTicker=runTicker; (function(){ const go=()=>{ if($("tickTrack")) runTicker(); }; if(document.readyState!=="loading") go(); else document.addEventListener("DOMContentLoaded",go); setInterval(go,60000); })();
-  function renderUrgent(){ var tk=document.querySelector('.ticker'); if(!tk||!URGENT) return; tk.classList.add('urgent'); var tag=tk.querySelector('.tag'); if(tag) tag.textContent=URGENT.tag; var el=$("tickTrack"); if(el){ var one='<span class="item emergency"><span class="ico">⚠</span><b>'+URGENT.msg+'</b></span><span class="sep">◆</span>'; el.innerHTML=one.repeat(6); } }
-  function applyStatus(d){ var tk=document.querySelector('.ticker');
-    if(d && (d.needsRestart || d.needsSetup)){
-      URGENT = d.needsRestart
-        ? { tag:'◄ RESTART EDMC', msg:'RESTART EDMC — updating to v'+((d.latest&&d.latest.version)||'?')+' · relaunch EDMC to finish the update' }
-        : { tag:'◄ COMPLETE SETUP', msg:'COMPLETE SETUP — run the Blades Registrar plugin so your commander syncs (see SETUP GUIDE)' };
-      renderUrgent();
-    } else if(URGENT){
-      URGENT=null; if(tk){ tk.classList.remove('urgent'); var tag=tk.querySelector('.tag'); if(tag) tag.textContent='◄ SQUAD NET'; } runTicker();
-    }
-  }
 
 
   const CMDRMAP={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
@@ -829,5 +801,6 @@
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",gate);else gate();
 })();
 </script>
+<script src="/blades/net-takeover.js" defer></script>
 </body>
 </html>
