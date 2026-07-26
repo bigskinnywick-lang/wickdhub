@@ -778,6 +778,45 @@
     window._obPickerReload=load;
     load();
   })();
+
+  /* ---- Transmit-from-Inara button: appears after an Inara link is clicked, reads the copied system from the clipboard and sends it to the PC via the plugin, then vanishes after two refreshes ---- */
+  (function(){
+    var KEY="ob_inaraTx", BASE="⧉ TRANSMIT SYSTEM → PC";
+    var btn=document.createElement("button");
+    btn.id="inaraTxBtn"; btn.type="button"; btn.textContent=BASE;
+    btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Vanishes after two refreshes.";
+    btn.style.cssText="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;font-family:var(--font-head,inherit);font-size:12.5px;letter-spacing:1px;font-weight:700;color:#0a0705;background:#ff7a12;border:1px solid #ffb066;border-radius:8px;padding:11px 16px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(255,122,18,.45)";
+    var mounted=false;
+    function mount(){ if(!mounted && document.body){ document.body.appendChild(btn); mounted=true; } }
+    function show(){ mount(); btn.style.display="block"; }
+    function hide(){ btn.style.display="none"; }
+    function arm(){ try{ localStorage.setItem(KEY,"2"); }catch(e){} show(); }
+    function tick(){ var n=0; try{ n=parseInt(localStorage.getItem(KEY)||"0",10)||0; }catch(e){}
+      if(n>0){ show(); try{ localStorage.setItem(KEY,String(n-1)); }catch(e){} }
+      else { hide(); try{ localStorage.removeItem(KEY); }catch(e){} } }
+    document.addEventListener("click",function(e){
+      var a=(e.target&&e.target.closest)?e.target.closest("a[href]"):null;
+      if(a&&/inara\.cz/i.test(a.getAttribute("href")||"")) arm();
+    },true);
+    function sanit(t){ return String(t||"").replace(/\r/g,"").split("\n")[0].trim().slice(0,60); }
+    async function transmit(){
+      var sys="";
+      try{ if(navigator.clipboard&&navigator.clipboard.readText){ sys=sanit(await navigator.clipboard.readText()); } }catch(e){}
+      if(!sys){ sys=sanit((window.prompt("Paste the system you copied on Inara:","")||"")); }
+      if(!sys){ toast("Nothing to transmit — copy a system on Inara first."); return; }
+      btn.disabled=true; btn.textContent="▷ TRANSMITTING…";
+      try{
+        var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})});
+        var d=null; try{ d=await r.json(); }catch(_){}
+        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; setTimeout(function(){ btn.textContent=BASE; },1600); }
+        else if(r.status===409){ toast("Bind your CMDR first (MY STATS) so we know whose PC to reach."); btn.textContent=BASE; }
+        else { toast("Could not transmit "+sys+" — "+((d&&d.error)||("HTTP "+r.status))); btn.textContent=BASE; }
+      }catch(e){ toast("Transmit failed — network error."); btn.textContent=BASE; }
+      btn.disabled=false;
+    }
+    btn.addEventListener("click",transmit);
+    if(document.readyState!=="loading") tick(); else document.addEventListener("DOMContentLoaded",tick);
+  })();
 </script>
 
 <script>
