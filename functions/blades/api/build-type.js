@@ -40,6 +40,12 @@ function cleanType(v) {
   return s.slice(0, TYPE_MAX);
 }
 
+const BASE_TYPE = { coriolis:"Coriolis Starport", orbis:"Orbis Starport", ocellus:"Ocellus Starport", asteroidbase:"Asteroid Starport", bernal:"Ocellus Starport", outpost:"Outpost", crateroutpost:"Surface Outpost", craterport:"Planetary Port", onfootsettlement:"Settlement", installation:"Installation", planetaryport:"Planetary Port", planetaryoutpost:"Surface Outpost" };
+const ECON = { industrial:"Industrial", hightech:"High Tech", agri:"Agriculture", agriculture:"Agriculture", extraction:"Extraction", refinery:"Refinery", military:"Military", tourism:"Tourism", tourist:"Tourism", service:"Service", contraband:"Service", colony:"", terraforming:"Terraforming" };
+function econName(raw){ let s=String(raw||"").toLowerCase().replace(/^\$?economy_/,"").replace(/;$/,""); return ECON[s]!==undefined?ECON[s]:(s?s.charAt(0).toUpperCase()+s.slice(1):""); }
+function baseName(st){ const s=String(st||"").toLowerCase(); return BASE_TYPE[s]||String(st||""); }
+function stationLabel(st,eco){ const b=baseName(st); const e=econName(eco); if(!b) return ""; if(!e) return b; return /Starport|Port/.test(b)?(b+" · "+e):(e+" "+b); }
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound", overrides: {} }, 500);
   const overrides = {};
@@ -50,7 +56,18 @@ export async function onRequestGet({ request, env }) {
       if (rec && rec.type) overrides[k.name.slice("btype:".length)] = rec.type;
     }
   } catch (e) {}
-  return json({ ok: true, overrides });
+  const stationMeta = {};
+  try {
+    const list2 = await env.BUILDS.list({ prefix: "stationmeta:" });
+    for (const k of (list2.keys || [])) {
+      const rec = await readJson(env, k.name);
+      if (rec && rec.stationType) {
+        const mid = k.name.slice("stationmeta:".length);
+        stationMeta[mid] = { type: stationLabel(rec.stationType, rec.economy), economy: econName(rec.economy), base: baseName(rec.stationType), raw: rec.stationType };
+      }
+    }
+  } catch (e) {}
+  return json({ ok: true, overrides, stationMeta });
 }
 
 export async function onRequestPut({ request, env }) {
