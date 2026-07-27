@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/blades/_shell/blades.css">
+<script src="/blades/_shell/deck.js" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -693,56 +694,6 @@
     if(r.ok){var ct=r.headers.get("content-type")||"";if(ct.indexOf("json")>=0){var j=await r.json();if(j&&j.ok&&j.me)return;}}
   }catch(e){}
   var g=document.getElementById("visitorGate");if(g)g.classList.remove("hidden");
-})();
-</script>
-
-<!-- deck controls: fullscreen + zoom (tablet-friendly, no pinch) -->
-<div id="deckCtl" aria-label="Display controls">
-  <button id="obZoomOut" title="Zoom out" aria-label="Zoom out">&#8211;</button>
-  <span id="obZoomLbl">100%</span>
-  <button id="obZoomIn" title="Zoom in" aria-label="Zoom in">+</button>
-  <button id="obFull" title="Full screen" aria-label="Toggle full screen">&#9974;</button>
-</div>
-<style>
-  #deckCtl{position:fixed;right:10px;bottom:10px;z-index:99997;display:none;gap:6px;align-items:center;
-    background:rgba(12,9,6,.80);border:1px solid var(--accent-dim,#a24d08);border-radius:9px;padding:5px 7px;
-    -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);font-family:var(--font-head,'Orbitron',sans-serif)}
-  #deckCtl button{cursor:pointer;min-width:34px;height:34px;line-height:1;font-size:17px;
-    background:var(--panel2,#1c1109);color:var(--accent-bright,#ffb057);border:1px solid var(--accent-dim,#a24d08);
-    border-radius:6px;padding:0 6px;touch-action:manipulation}
-  #deckCtl button:active{background:var(--accent-dim,#a24d08);color:#0a0705}
-  #obZoomLbl{min-width:40px;text-align:center;color:var(--accent-bright,#ffb057);font-size:12px;letter-spacing:1px}
-  #obFull{margin-left:2px}
-  @media print{#deckCtl{display:none}}
-</style>
-<script>
-(function(){
-  var Z=100; try{var z=parseInt(localStorage.getItem("ob_zoom")||"100",10); if(z>=50&&z<=250)Z=z;}catch(e){}
-  function apply(){ try{document.documentElement.style.zoom=(Z/100);}catch(e){} var l=document.getElementById("obZoomLbl"); if(l)l.textContent=Z+"%"; try{localStorage.setItem("ob_zoom",String(Z));}catch(e){} }
-  function setZ(v){ Z=Math.max(50,Math.min(250,v)); apply(); }
-  function wire(){
-    var i=document.getElementById("obZoomIn"),o=document.getElementById("obZoomOut"),f=document.getElementById("obFull");
-    if(i)i.onclick=function(){setZ(Z+10);};
-    if(o)o.onclick=function(){setZ(Z-10);};
-    if(f)f.onclick=function(){
-      var d=document.documentElement,doc=document;
-      var fsel=doc.fullscreenElement||doc.webkitFullscreenElement||doc.mozFullScreenElement;
-      try{
-        if(!fsel){(d.requestFullscreen||d.webkitRequestFullscreen||d.mozRequestFullScreen||function(){}).call(d);}
-        else{(doc.exitFullscreen||doc.webkitExitFullscreen||doc.mozCancelFullScreen||function(){}).call(doc);}
-      }catch(e){}
-    };
-    var c=document.getElementById("deckCtl"); if(c)c.style.display="flex";
-    apply();
-  }
-  // Members-only perk: only reveal for a signed-in commander (same identity check as the gate).
-  function gate(){
-    fetch("/blades/api/whoami-cmdr",{headers:{accept:"application/json"},credentials:"include"})
-      .then(function(r){ if(!r.ok) return null; var ct=r.headers.get("content-type")||""; return ct.indexOf("json")>=0?r.json():null; })
-      .then(function(j){ if(j&&j.ok&&j.me) wire(); })
-      .catch(function(){});
-  }
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",gate);else gate();
 })();
 </script>
 <script src="/blades/net-takeover.js?v=2" defer></script>

@@ -253,3 +253,12 @@
   .bb-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .bb-in{font-family:var(--font-body);font-size:12px;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:var(--radius);padding:7px 10px;min-width:300px;max-width:100%}
   .bb-in:focus{outline:none;border-color:var(--accent)}
+  /* shared deck controls (fullscreen + zoom) — collapses to just the fullscreen button */
+  #deckCtl{position:fixed;right:10px;bottom:10px;z-index:99997;display:none;gap:6px;align-items:center;background:rgba(12,9,6,.80);border:1px solid var(--accent-dim,#a24d08);border-radius:9px;padding:5px 7px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);font-family:var(--font-head,'Orbitron',sans-serif)}
+  #deckCtl button{cursor:pointer;min-width:34px;height:34px;line-height:1;font-size:17px;background:var(--panel2,#1c1109);color:var(--accent-bright,#ffb057);border:1px solid var(--accent-dim,#a24d08);border-radius:6px;padding:0 6px;touch-action:manipulation}
+  #deckCtl button:active{background:var(--accent-dim,#a24d08);color:#0a0705}
+  #deckZoom{display:flex;align-items:center;gap:6px}
+  #deckZoom[hidden]{display:none}
+  #obZoomLbl{min-width:40px;text-align:center;color:var(--accent-bright,#ffb057);font-size:12px;letter-spacing:1px}
+  #obFull{margin-left:2px}
+  @media print{#deckCtl{display:none}}
