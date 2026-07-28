@@ -1,9 +1,12 @@
 // Cloudflare Pages Function — admin management of member roles.
 //
 // First brick of a wider roles system. KV "plugin:roles" is a map { cmdrLower:
-// ["testpilot","officer",...] }. Today only "testpilot" is load-bearing (it flips a
-// pilot to the beta release channel in navpull / plugin-status); the others are stored
-// for future use. The existing email-based admin gate stays separate for now.
+// ["testpilot","officer",...] }. Today only "testpilot" is load-bearing: it grants
+// ELIGIBILITY — the board offers that pilot the beta test-track switch. It does NOT force
+// the channel; the pilot's own switch (KV "plugin:tier", read by navpull/plugin-status)
+// decides that. The one channel side effect here: REVOKING test-pilot clears the pilot's
+// tier so their registrar demotes back to retail. The existing email-based admin gate
+// stays separate for now.
 //
 // GET  /blades/api/plugin-roles  (admin) -> { ok, roles, pilots:[{cmdr,running,pending,ts}] }
 // POST /blades/api/plugin-roles  (admin) { cmdr, roles:[...] } -> { ok, roles }  (empty roles clears the entry)
@@ -75,8 +78,22 @@ export async function onRequestPost({ request, env }) {
   const roles = cleanRoles(body.roles);
   const map = (await readJson(env, "plugin:roles")) || {};
   const key = cmdr.toLowerCase();
+  const hadTestpilot = Array.isArray(map[key]) && map[key].map(x => String(x).toLowerCase()).includes("testpilot");
   if (roles.length) map[key] = roles; else delete map[key];
   try { await env.BUILDS.put("plugin:roles", JSON.stringify(map)); }
   catch (e) { return json({ ok: false, error: "write failed" }, 500); }
+
+  // Admin promote/revoke controls ELIGIBILITY, not the channel — with ONE exception:
+  // REVOKING test-pilot must DEMOTE that pilot's registrar back to retail (their beta
+  // clearance is gone, so they can't be left armed). GRANTING never forces beta — the
+  // pilot stays on retail until they flick their OWN switch. So the only thing we ever do
+  // to the tier here is CLEAR it on a revoke; we never set beta.
+  const nowTestpilot = roles.includes("testpilot");
+  if (hadTestpilot && !nowTestpilot) {
+    try {
+      const tiers = (await readJson(env, "plugin:tier")) || {};
+      if (tiers[key]) { delete tiers[key]; await env.BUILDS.put("plugin:tier", JSON.stringify(tiers)); }
+    } catch (e) {}
+  }
   return json({ ok: true, roles: map });
 }

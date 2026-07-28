@@ -8,9 +8,10 @@
 //   2) records the plugin's reported running (+ staged) version as a heartbeat, so
 //      the board knows who is up to date  (KV "cmdrver:{cmdr}");
 //   3) returns the release the plugin SHOULD be on ("latest"), chosen per-pilot by
-//      channel: test pilots get the beta release, everyone else gets stable. The
-//      channel decision lives here on the server, so a regular member can never be
-//      pushed a beta build.
+//      the pilot's own test-track SWITCH (KV "plugin:tier"): armed -> beta build,
+//      disarmed -> stable. The role only gates whether the switch is offered; it no
+//      longer forces the channel. A regular member can never arm beta, so they can
+//      never be pushed a beta build.
 //
 // Plugin-authed with INGEST_KEY (same as the other /ingest/* endpoints); the caller
 // passes ?cmdr= and optionally ?v=<running>&pending=<staged>. No caching.
@@ -36,14 +37,16 @@ function cleanVer(v) {
 async function readJson(env, key) {
   try { const v = await env.BUILDS.get(key); return v ? JSON.parse(v) : null; } catch (e) { return null; }
 }
-// Roles are the first brick of a wider roles system: KV "plugin:roles" is a map
-// { cmdrLower: ["testpilot","officer",...] }. Test pilots receive beta releases;
-// everyone else gets stable. (The existing email-based admin gate is separate for
-// now and can be folded into roles later.)
-async function hasRole(env, cmdrLower, role) {
-  const m = await readJson(env, "plugin:roles");
-  const r = m && m[cmdrLower];
-  return Array.isArray(r) && r.map(x => String(x).toLowerCase()).includes(String(role).toLowerCase());
+// The pilot's CHANNEL is driven by their own switch (KV "plugin:tier"), NOT by any role
+// or admin action. The test-pilot role only decides whether the board offers the switch;
+// once offered, the pilot alone arms/disarms the beta track and the plugin follows. A
+// member can never have a non-retail tier written (/blades/api/testpilot validates
+// clearance before storing), so reading the tier straight through is safe: retail (or no
+// entry) -> stable; beta/research -> the beta build.
+async function tierChannel(env, cmdrLower) {
+  const m = await readJson(env, "plugin:tier");
+  const t = (m && m[cmdrLower]) ? String(m[cmdrLower]).toLowerCase() : "retail";
+  return t !== "retail" ? "beta" : "stable";
 }
 // Public shape of a release manifest — never leak internal ts/by.
 function pubRelease(r) {
@@ -79,8 +82,8 @@ export async function onRequestGet({ request, env }) {
     } catch (e) {}
   }
 
-  // (3) which release this pilot should be on
-  const channel = (await hasRole(env, cmdrLower, "testpilot")) ? "beta" : "stable";
+  // (3) which release this pilot should be on — decided by the pilot's own switch
+  const channel = await tierChannel(env, cmdrLower);
   const latest = await latestFor(env, channel);
 
   // (1) nav target

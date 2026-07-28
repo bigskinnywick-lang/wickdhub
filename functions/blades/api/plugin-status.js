@@ -58,7 +58,14 @@ export async function onRequestGet({ request, env }) {
   const running = (ver && ver.running) ? String(ver.running) : "";
   const pending = (ver && ver.pending) ? String(ver.pending) : "";
 
-  const channel = (await hasRole(env, cmdrLower, "testpilot")) ? "beta" : "stable";
+  // ELIGIBILITY (the role) only decides whether the ⚑ TEST PILOT badge/switch is offered.
+  // The actual CHANNEL the plugin should be on is the pilot's own switch (KV "plugin:tier"),
+  // exactly as navpull resolves it — so this RESTART nag tracks what the plugin will really
+  // pull, not what the role would have forced.
+  const eligible = await hasRole(env, cmdrLower, "testpilot");
+  const tierMap = await readJson(env, "plugin:tier");
+  const tier = (tierMap && tierMap[cmdrLower]) ? String(tierMap[cmdrLower]).toLowerCase() : "retail";
+  const channel = tier !== "retail" ? "beta" : "stable";
   let rel = await readJson(env, "plugin:release:" + channel);
   if (!rel && channel === "beta") rel = await readJson(env, "plugin:release:stable");
   const latest = pubRelease(rel);
@@ -67,10 +74,10 @@ export async function onRequestGet({ request, env }) {
   // have no heartbeat at all (no plugin, a pre-2.0 plugin that can't report, or a
   // plugin whose heartbeat has aged out).
   // A pilot should be running EXACTLY their channel's latest build. If we've heard from
-  // them and they're on anything else, nag to restart — symmetric, so entering beta,
-  // leaving beta (revoke), a plain upgrade, and a staged-not-yet-restarted build all fire
-  // the same way. Clears the instant the plugin reports the target version.
+  // them and they're on anything else, nag to restart — symmetric, so arming beta,
+  // disarming back to retail, a plain upgrade, and a staged-not-yet-restarted build all
+  // fire the same way. Clears the instant the plugin reports the target version.
   const needsRestart = !!(running && latest && running !== latest.version);
   const needsSetup = !running;
-  return json({ ok: true, cmdr, running, pending, latest, channel, needsRestart, needsSetup, testPilot: channel === "beta" });
+  return json({ ok: true, cmdr, running, pending, latest, channel, needsRestart, needsSetup, testPilot: eligible });
 }

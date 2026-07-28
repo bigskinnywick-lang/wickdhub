@@ -1,10 +1,11 @@
-// Cloudflare Pages Function — role-aware Blades Registrar download.
+// Cloudflare Pages Function — switch-aware Blades Registrar download.
 //
-// Test pilots get the BETA build; everyone else gets STABLE — but the file always
+// An ARMED test pilot gets the BETA build; everyone else gets STABLE — but the file always
 // downloads as "BladesRegistrar.zip" (same name, different payload), so installing it
 // just swaps load.py in place. EDMC then shows whatever version is baked into that
-// build, so a beta build (e.g. "b2.0") reads as a beta flavour. Flip a pilot's
-// testpilot role in /blades/admin to swap them between beta and retail on next download.
+// build, so a beta build (e.g. "b2.1") reads as a beta flavour. The channel follows the
+// pilot's own test-track switch (KV "plugin:tier"), never the role directly — so being
+// made a test pilot doesn't change your download until you actually arm the track.
 //
 // GET /blades/api/plugin-download (Access-gated) -> the .zip bytes, filename BladesRegistrar.zip
 const URLS = {
@@ -38,8 +39,12 @@ export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return err("KV not bound", 500);
   const email = callerEmail(request);
   const cmdr = email ? await resolveCmdr(env, email) : "";
-  const testpilot = cmdr ? await hasRole(env, cmdr.toLowerCase(), "testpilot") : false;
-  const channel = testpilot ? "beta" : "stable";
+  // Follow the pilot's own switch (KV "plugin:tier"), same as navpull — a freshly-promoted
+  // pilot who hasn't armed the test track still downloads STABLE; only an armed pilot gets
+  // the beta build. The role never forces beta here.
+  const tierMap = cmdr ? await readJson(env, "plugin:tier") : null;
+  const tier = (tierMap && tierMap[cmdr.toLowerCase()]) ? String(tierMap[cmdr.toLowerCase()]).toLowerCase() : "retail";
+  const channel = tier !== "retail" ? "beta" : "stable";
   let resp = await fetchZip(env, URLS[channel]);
   if (!resp && channel === "beta") resp = await fetchZip(env, URLS.stable); // no beta zip yet -> fall back to stable
   if (!resp) return err("plugin unavailable", 502);
