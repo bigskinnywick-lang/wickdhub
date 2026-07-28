@@ -29,10 +29,10 @@
       "#obTp.on .tpled{background:var(--good,#57e0a0);box-shadow:0 0 9px var(--good,#57e0a0)}",
       "#obTp .tpchk{font-family:var(--font-head,'Orbitron',sans-serif);font-size:10.5px;letter-spacing:1.5px;text-decoration:none;color:var(--muted,#b98a52);border:1px solid var(--line,#3a2410);background:var(--panel,#140d07);padding:6px 12px;border-radius:6px;transition:.15s}",
       "#obTp .tpchk:hover{color:var(--accent-bright,#ffb057);border-color:var(--accent-dim,#a24d08)}",
-      "#obTpTrack{position:fixed;top:8px;right:12px;z-index:99998;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9.5px;letter-spacing:2px;color:var(--good,#57e0a0);border:1px solid var(--good,#57e0a0);border-radius:4px;padding:3px 8px;background:rgba(6,10,7,.72);pointer-events:none;animation:obTpBreathe 3.2s ease-in-out infinite}",
-      // breathing pulse so a pilot can see the test track is live, not a static badge
-      "@keyframes obTpBreathe{0%,100%{opacity:.58;border-color:color-mix(in srgb,var(--good,#57e0a0) 55%,transparent);box-shadow:0 0 5px color-mix(in srgb,var(--good,#57e0a0) 25%,transparent)}50%{opacity:1;border-color:var(--good,#57e0a0);box-shadow:0 0 17px color-mix(in srgb,var(--good,#57e0a0) 72%,transparent)}}",
-      "@media (prefers-reduced-motion:reduce){#obTpTrack{animation:none;opacity:1;box-shadow:0 0 9px color-mix(in srgb,var(--good,#57e0a0) 45%,transparent)}}"
+      "#obTpTrack{position:fixed;top:8px;right:12px;z-index:99998;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9.5px;letter-spacing:2px;color:var(--good,#57e0a0);border:1px solid var(--good,#57e0a0);border-radius:4px;padding:3px 8px;background:rgba(6,10,7,.72);pointer-events:none;transform-origin:right center;animation:obTpBreathe 2.4s ease-in-out infinite}",
+      // pronounced breathing pulse (opacity + scale + glow) so a pilot can't miss that the test track is live
+      "@keyframes obTpBreathe{0%,100%{opacity:.4;transform:scale(.94);border-color:color-mix(in srgb,var(--good,#57e0a0) 40%,transparent);box-shadow:0 0 3px color-mix(in srgb,var(--good,#57e0a0) 15%,transparent);text-shadow:none}50%{opacity:1;transform:scale(1.06);border-color:var(--good,#57e0a0);box-shadow:0 0 22px color-mix(in srgb,var(--good,#57e0a0) 90%,transparent);text-shadow:0 0 8px color-mix(in srgb,var(--good,#57e0a0) 80%,transparent)}}",
+      "@media (prefers-reduced-motion:reduce){#obTpTrack{animation:none;opacity:1;transform:none;box-shadow:0 0 9px color-mix(in srgb,var(--good,#57e0a0) 45%,transparent)}}"
     ].join("\n");
     (document.head || document.documentElement).appendChild(st);
   }
@@ -90,7 +90,7 @@
   // heartbeat (the colonization board, the plugin-status ticker) can fold this into that
   // existing tick instead of adding a second timer. We re-render ONLY on an actual change,
   // so the poll is cheap and never flickers the control group.
-  var POLL_MS = 25000;
+  var POLL_MS = 12000;
 
   function apply(d) {
     if (!d || !d.ok) return;
