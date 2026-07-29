@@ -195,6 +195,11 @@
   .xcross .arm.v{left:50%;top:0;width:0;height:100%;border-left:1.5px dashed var(--warn);box-shadow:0 0 6px var(--warn)}
   .xcross .xhandle{position:absolute;left:83%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--warn);box-shadow:0 0 10px var(--warn);pointer-events:auto;cursor:grab;z-index:8}
   .xcross .xang{position:absolute;left:83%;top:calc(50% - 26px);transform:translateX(-50%);font-family:var(--font-body);font-size:11px;color:#04070a;background:var(--warn);padding:1px 6px;border-radius:4px;white-space:nowrap;font-weight:700}
+  .rigmon{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:62;font-family:var(--font-body);font-size:12px;letter-spacing:1px;color:var(--text);background:rgba(4,7,10,.9);border:1px solid var(--accent-dim);border-radius:8px;padding:6px 14px;opacity:0;transition:opacity .15s;pointer-events:none;white-space:nowrap}
+  .rigmon.show{opacity:1}
+  .rigmon b{color:var(--accent-bright)}
+  .rigmon .ok{color:var(--good)}
+  .rigmon .unm{color:var(--warn)}
 </style>
 </head>
 <body>
@@ -462,7 +467,7 @@
     });
   }
   function press(dev,n,down){
-    var els=(RIG.idx[dev]||{})[n]; if(!els)return;
+    var els=(RIG.idx[dev]||{})[n]; if(down)mon(dev,n,els); if(!els)return;
     els.forEach(function(h){
       if(down){var t=RIG.timers.get(h);if(t){clearTimeout(t);RIG.timers.delete(h);}h.classList.add("pressed");}
       else{var t2=setTimeout(function(){h.classList.remove("pressed");RIG.timers.delete(h);},130);RIG.timers.set(h,t2);}
@@ -476,7 +481,7 @@
     });
   }
   function setFlags(bits){RIG.flagBits=bits;pills(document);}
-  window.RIG={pills:pills,press:press,setFlags:setFlags};
+  window.RIG={pills:pills,press:press,setFlags:setFlags};var monEl=document.createElement("div");monEl.className="rigmon";monEl.id="rigmon";document.body.appendChild(monEl);function mon(dev,n,els){var labs=els?els.map(function(e){return e.dataset.lab;}).filter(Boolean).join(", "):"";monEl.innerHTML='<b>'+String(dev).toUpperCase()+'</b> Joy_'+n+(labs?' <span class="ok">\u2192 '+labs+'</span>':' <span class="unm">UNMAPPED</span>');monEl.classList.add("show");clearTimeout(monEl._t);monEl._t=setTimeout(function(){monEl.classList.remove("show");},2600);}
 
   var link=document.createElement("div");link.className="riglink";
   link.innerHTML='<span class="dot"></span><span class="txt">RIG OFFLINE</span>';
