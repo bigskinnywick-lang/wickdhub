@@ -1,23 +1,24 @@
 // Cloudflare Pages Function — the plugin's read side of "nav push" + the plugin's
-// version heartbeat / auto-update channel.
+// version heartbeat / auto-update channel + per-pilot Companion settings.
 //
 // The Blades Registrar plugin (on a commander's PC) polls this on its own timer.
-// It does three things in one call:
+// It does four things in one call:
 //   1) returns that commander's latest galaxy-map nav target (pushed from the board
 //      via /blades/api/navpush) to drop on the PC clipboard;
 //   2) records the plugin's reported running (+ staged) version as a heartbeat, so
 //      the board knows who is up to date  (KV "cmdrver:{cmdr}");
 //   3) returns the release the plugin SHOULD be on ("latest"), chosen per-pilot by
 //      the pilot's own test-track SWITCH (KV "plugin:tier"): armed -> beta build,
-//      disarmed -> stable. The role only gates whether the switch is offered; it no
-//      longer forces the channel. A regular member can never arm beta, so they can
-//      never be pushed a beta build.
+//      disarmed -> stable;
+//   4) returns that commander's Companion settings (KV "plugin:settings"), set from
+//      the MY STATS panel — auto-create + assist features (honk, ...). The plugin
+//      applies them live, no EDMC restart.
 //
 // Plugin-authed with INGEST_KEY (same as the other /ingest/* endpoints); the caller
 // passes ?cmdr= and optionally ?v=<running>&pending=<staged>. No caching.
 //
 // GET /ingest/navpull?key=..&cmdr=Name[&v=1.9][&pending=2.0]
-//   -> { ok, system, ts, latest:{version,sha256,notes,url}|null, channel }
+//   -> { ok, system, ts, latest:{version,sha256,notes,url}|null, channel, settings:{autocreate,honk}|null }
 const HEARTBEAT_TTL_S = 60 * 60 * 24 * 14; // 14 days — a pilot who stops flying drops off
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
@@ -61,6 +62,16 @@ async function latestFor(env, channel) {
   }
   return pubRelease(stable);
 }
+// This pilot's Companion settings, normalised to booleans (missing = null so the
+// plugin keeps its own fallback rather than being forced off).
+async function settingsFor(env, cmdrLower) {
+  const m = await readJson(env, "plugin:settings");
+  const s = (m && m[cmdrLower]) ? m[cmdrLower] : null;
+  if (!s || typeof s !== "object") return null;
+  const out = {};
+  for (const k of ["autocreate", "honk"]) if (typeof s[k] === "boolean") out[k] = s[k];
+  return Object.keys(out).length ? out : null;
+}
 
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
@@ -86,11 +97,14 @@ export async function onRequestGet({ request, env }) {
   const channel = await tierChannel(env, cmdrLower);
   const latest = await latestFor(env, channel);
 
+  // (4) this pilot's Companion settings (from the MY STATS panel)
+  const settings = await settingsFor(env, cmdrLower);
+
   // (1) nav target
   let rec = null;
   try { const v = await env.BUILDS.get("nav:" + cmdrLower); if (v) rec = JSON.parse(v); } catch (e) {}
   const navSystem = (rec && rec.system) ? rec.system : null;
   const navTs = (rec && rec.ts) ? rec.ts : 0;
 
-  return json({ ok: true, system: navSystem, ts: navTs, latest, channel });
+  return json({ ok: true, system: navSystem, ts: navTs, latest, channel, settings });
 }
