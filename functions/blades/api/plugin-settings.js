@@ -8,8 +8,8 @@
 //
 // GET  /blades/api/plugin-settings  -> { ok, cmdr, settings:{autocreate,honk}, needsSetup? }
 // POST /blades/api/plugin-settings  { autocreate?, honk? } -> { ok, cmdr, settings }
-const ALLOWED = ["autocreate", "honk"];
-const DEFAULTS = { autocreate: false, honk: false };
+const ALLOWED = ["autocreate", "honk", "galaxymap", "fuel"];
+const DEFAULTS = { autocreate: false, honk: false, galaxymap: false, fuel: false };
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
 });

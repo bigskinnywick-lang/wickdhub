@@ -11,8 +11,10 @@
     { sec: "BUILD REGISTRAR" },
     { k: "autocreate", label: "Auto-create", sub: "create a Raven build when a site has none (safeguarded)" },
     { sec: "ASSIST FEATURES" },
-    { k: "honk", label: "Honk on arrival", sub: "auto-fire the Discovery Scanner when you jump" },
-    { soon: true, label: "Auto-clipboard → Galaxy Map", sub: "paste an Inara system into the map — coming soon" }
+    { k: "honk", label: "Honk on arrival", sub: "auto-fire the Discovery Scanner when you jump · needs a keyboard key on your fire control" },
+    { k: "galaxymap", label: "Auto-plot to Galaxy Map", sub: "on a NAV send, open the map + paste the system · needs a keyboard Open-Galaxy-Map bind" },
+    { k: "fuel", label: "Fuel safety check", sub: "warn in EDMC before a jump that would leave you low on fuel" },
+    { soon: true, label: "Pirate / cargo-scan alarm", sub: "alert when a ship scans your cargo — coming soon" }
   ];
 
   function api(method, body) {

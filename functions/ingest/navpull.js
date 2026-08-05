@@ -69,7 +69,7 @@ async function settingsFor(env, cmdrLower) {
   const s = (m && m[cmdrLower]) ? m[cmdrLower] : null;
   if (!s || typeof s !== "object") return null;
   const out = {};
-  for (const k of ["autocreate", "honk"]) if (typeof s[k] === "boolean") out[k] = s[k];
+  for (const k of ["autocreate", "honk", "galaxymap", "fuel"]) if (typeof s[k] === "boolean") out[k] = s[k];
   return Object.keys(out).length ? out : null;
 }
 
