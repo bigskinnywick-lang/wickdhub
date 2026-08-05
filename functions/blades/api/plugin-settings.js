@@ -53,8 +53,10 @@ export async function onRequestPost({ request, env }) {
   for (const k of ALLOWED) {
     if (k in body) { rec[k] = !!body[k]; touched = true; }
   }
-  if (!touched) return json({ ok: false, error: "no valid setting in body (autocreate|honk)" }, 400);
-  map[key] = { autocreate: !!rec.autocreate, honk: !!rec.honk };
+  if (!touched) return json({ ok: false, error: "no valid setting in body (" + ALLOWED.join("|") + ")" }, 400);
+  const saved = {};
+  for (const k of ALLOWED) saved[k] = !!rec[k];   // persist EVERY allowed key, not just the first two
+  map[key] = saved;
   try { await env.BUILDS.put("plugin:settings", JSON.stringify(map)); }
   catch (e) { return json({ ok: false, error: "write failed" }, 500); }
   return json({ ok: true, cmdr, settings: pubSettings(map[key]) });
