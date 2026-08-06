@@ -118,6 +118,42 @@ async function storeReadiness(env, cmdrLower, rawParam) {
   } catch (e) {}
 }
 
+// Live telemetry the plugin reports on its heartbeat (?tel=<url-encoded JSON>): the pilot's
+// current system, ship, fuel %, cargo, flight state. Feeds the MY DASHBOARD tile row. Stored
+// at KV plugin:telemetry:{cmdr} with a short TTL so a pilot who logs off goes "offline" (grey
+// tiles) rather than showing a stale position forever.
+const TELEMETRY_TTL_S = 60 * 60 * 6; // 6h — telemetry is live data, not a durable record
+function normTelemetry(raw) {
+  let obj = raw;
+  if (typeof raw === "string") { try { obj = JSON.parse(raw); } catch (e) { return null; } }
+  if (!obj || typeof obj !== "object") return null;
+  const out = {};
+  const str = (v, n) => (typeof v === "string" && v.trim()) ? v.trim().slice(0, n) : undefined;
+  const intIn = (v, lo, hi) => {
+    const n = Math.round(Number(v));
+    return (Number.isFinite(n)) ? Math.max(lo, Math.min(hi, n)) : undefined;
+  };
+  const sys = str(obj.sys, 64); if (sys !== undefined) out.sys = sys;
+  const ship = str(obj.ship, 32); if (ship !== undefined) out.ship = ship;
+  const shipName = str(obj.shipName, 48); if (shipName !== undefined) out.shipName = shipName;
+  const status = str(obj.status, 24); if (status !== undefined) out.status = status;
+  const fuelPct = intIn(obj.fuelPct, 0, 100); if (fuelPct !== undefined) out.fuelPct = fuelPct;
+  const cargo = intIn(obj.cargo, 0, 100000); if (cargo !== undefined) out.cargo = cargo;
+  const cargoCap = intIn(obj.cargoCap, 0, 100000); if (cargoCap !== undefined) out.cargoCap = cargoCap;
+  return Object.keys(out).length ? out : null;
+}
+async function storeTelemetry(env, cmdrLower, rawParam) {
+  if (rawParam == null || rawParam === "") return;      // nothing reported — keep last known
+  if (rawParam.length > 600) return;                     // guard
+  const next = normTelemetry(rawParam);
+  if (!next) return;
+  try {
+    await env.BUILDS.put("plugin:telemetry:" + cmdrLower,
+      JSON.stringify({ telemetry: next, ts: Date.now() }),
+      { expirationTtl: TELEMETRY_TTL_S });
+  } catch (e) {}
+}
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const url = new URL(request.url);
@@ -140,6 +176,9 @@ export async function onRequestGet({ request, env }) {
 
   // (2b) per-assist readiness heartbeat — only written when the plugin sent it AND it changed
   await storeReadiness(env, cmdrLower, url.searchParams.get("ready"));
+
+  // (2c) live telemetry heartbeat — only written when the plugin sent it (plugin sends on change)
+  await storeTelemetry(env, cmdrLower, url.searchParams.get("tel"));
 
   // (3) which release this pilot should be on — decided by the pilot's own switch
   const channel = await tierChannel(env, cmdrLower);
