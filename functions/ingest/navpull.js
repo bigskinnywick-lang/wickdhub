@@ -73,6 +73,51 @@ async function settingsFor(env, cmdrLower) {
   return Object.keys(out).length ? out : null;
 }
 
+// The plugin reports per-assist READINESS on its heartbeat (?ready=<url-encoded JSON>):
+// which key-pressing assists have the keyboard binds they need, and — when they don't —
+// the human list of what to set. This feeds the MY DASHBOARD / Companion readiness LEDs
+// (red + "set this key"). Only assists that actually press an in-game control report here;
+// everything else is implicitly ready. Kept on ONE key per pilot so a new assist is just a
+// new sub-object, never a new endpoint.
+const READY_ASSISTS = ["honk", "galaxymap"];
+const READINESS_TTL_S = 60 * 60 * 24 * 14; // mirror the heartbeat: a pilot who stops flying ages out
+function normReadiness(raw) {
+  // Accept the compact plugin shape { honk:{r:0|1, m:[...]}, ... } and normalise to a
+  // stable, bounded public shape. Unknown assists dropped; strings capped so a bad or
+  // hostile payload can't bloat KV. Returns {} when there's nothing usable.
+  let obj = raw;
+  if (typeof raw === "string") { try { obj = JSON.parse(raw); } catch (e) { return {}; } }
+  if (!obj || typeof obj !== "object") return {};
+  const out = {};
+  for (const k of READY_ASSISTS) {
+    const v = obj[k];
+    if (!v || typeof v !== "object") continue;
+    const ready = (v.r === 1 || v.r === true || v.ready === true);
+    const miss = Array.isArray(v.m) ? v.m : (Array.isArray(v.missing) ? v.missing : []);
+    const missing = miss.filter(x => typeof x === "string").slice(0, 6).map(x => x.slice(0, 80));
+    out[k] = { ready, missing: ready ? [] : missing };
+  }
+  return out;
+}
+function sameReadiness(a, b) {
+  return JSON.stringify(a || {}) === JSON.stringify(b || {});
+}
+async function storeReadiness(env, cmdrLower, rawParam) {
+  if (rawParam == null || rawParam === "") return;      // nothing reported this poll — keep last known
+  if (rawParam.length > 1200) return;                    // guard: ignore absurdly large payloads
+  const next = normReadiness(rawParam);
+  if (!Object.keys(next).length) return;
+  const prev = await readJson(env, "plugin:readiness:" + cmdrLower);
+  // Dedup: the plugin only sends on change, but double-guard so a steady state never
+  // rewrites KV every 5s.
+  if (prev && sameReadiness(prev.assists, next)) return;
+  try {
+    await env.BUILDS.put("plugin:readiness:" + cmdrLower,
+      JSON.stringify({ assists: next, ts: Date.now() }),
+      { expirationTtl: READINESS_TTL_S });
+  } catch (e) {}
+}
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const url = new URL(request.url);
@@ -92,6 +137,9 @@ export async function onRequestGet({ request, env }) {
         { expirationTtl: HEARTBEAT_TTL_S });
     } catch (e) {}
   }
+
+  // (2b) per-assist readiness heartbeat — only written when the plugin sent it AND it changed
+  await storeReadiness(env, cmdrLower, url.searchParams.get("ready"));
 
   // (3) which release this pilot should be on — decided by the pilot's own switch
   const channel = await tierChannel(env, cmdrLower);

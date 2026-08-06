@@ -26,6 +26,10 @@
   }
 
   function on(k) { return !!(STATE && STATE.settings && STATE.settings[k]); }
+  // Per-assist readiness the plugin reported (present only for key-pressing assists on a
+  // reporting plugin). null = no data -> render exactly as before (older plugin / retail).
+  function readyOf(k) { var r = STATE && STATE.readiness && STATE.readiness[k]; return (r && typeof r === "object") ? r : null; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   function injectCss() {
     if (document.getElementById("obCompStyle")) return;
@@ -49,6 +53,13 @@
       "#obCompPan .oc-led{width:10px;height:10px;border-radius:50%;background:#2a1a0c;border:1px solid #000;transition:.2s;flex:none}",
       "#obCompPan .oc-row.on .oc-sw{color:var(--good,#57e0a0);border-color:var(--good,#57e0a0)}",
       "#obCompPan .oc-row.on .oc-led{background:var(--good,#57e0a0);box-shadow:0 0 9px var(--good,#57e0a0)}",
+      // not-ready wins over on/off: a red LED + red switch means the assist can't fire until
+      // the pilot sets the missing keyboard bind. Rules come AFTER .on so red overrides green.
+      "#obCompPan .oc-row.not-ready .oc-sw{color:var(--bad,#e0574a);border-color:var(--bad,#e0574a)}",
+      "#obCompPan .oc-row.not-ready .oc-led{background:var(--bad,#e0574a);box-shadow:0 0 9px var(--bad,#e0574a)}",
+      "#obCompPan .oc-warn{display:none;font-size:11px;line-height:1.5;color:var(--bad,#e0574a);padding:0 16px 11px}",
+      "#obCompPan .oc-row.not-ready + .oc-warn{display:block}",
+      "#obCompPan .oc-warn b{color:var(--bad,#e0574a);font-weight:600}",
       "#obCompPan .oc-row.busy .oc-sw{opacity:.5;pointer-events:none}",
       "#obCompPan .oc-soon .oc-lab{opacity:.6}",
       "#obCompPan .oc-soon-tag{font-family:var(--font-head,'Orbitron',sans-serif);font-size:9px;letter-spacing:1.5px;color:var(--muted,#b98a52);border:1px dashed var(--line,#3a2410);border-radius:6px;padding:6px 10px}",
@@ -63,8 +74,11 @@
       ? '<span class="oc-soon-tag">SOON</span>'
       : '<span class="oc-sw" role="switch" tabindex="0" aria-label="' + r.label + '"><span class="oc-led"></span><span class="oc-state">OFF</span></span>';
     var cls = "oc-row" + (r.soon ? " oc-soon" : "");
-    return '<div class="' + cls + '"' + (r.k ? ' data-k="' + r.k + '"' : "") + ">" +
+    var rowEl = '<div class="' + cls + '"' + (r.k ? ' data-k="' + r.k + '"' : "") + ">" +
       '<div class="oc-lab">' + r.label + '<span class="oc-sub">' + r.sub + "</span></div>" + right + "</div>";
+    // Adjacent readiness slot (immediate sibling) — CSS reveals it when the row is not-ready.
+    if (r.k) rowEl += '<div class="oc-warn" data-warn="' + r.k + '"></div>';
+    return rowEl;
   }
 
   function buildPanel() {
@@ -100,6 +114,20 @@
       row.classList.toggle("on", isOn);
       var stx = row.querySelector(".oc-state"); if (stx) stx.textContent = isOn ? "ON" : "OFF";
       var sw = row.querySelector(".oc-sw"); if (sw) sw.setAttribute("aria-checked", isOn ? "true" : "false");
+      // Readiness overlay: a key-pressing assist whose binds are missing goes red + locked,
+      // with a line naming exactly what to set. No readiness data (older plugin) = no change.
+      var rd = readyOf(r.k);
+      var notReady = !!(rd && rd.ready === false);
+      row.classList.toggle("not-ready", notReady);
+      var warn = ov.querySelector('.oc-warn[data-warn="' + r.k + '"]');
+      if (warn) {
+        if (notReady) {
+          var miss = (rd.missing && rd.missing.length) ? rd.missing.join(", ") : "a keyboard bind";
+          warn.innerHTML = "⚠ <b>Set " + esc(miss) + "</b> in Elite’s controls — this assist arms itself the moment it’s bound.";
+        } else {
+          warn.textContent = "";
+        }
+      }
     });
   }
 

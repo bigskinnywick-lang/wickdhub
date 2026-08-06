@@ -28,6 +28,23 @@ function pubSettings(rec) {
   if (rec && typeof rec === "object") for (const k of ALLOWED) if (typeof rec[k] === "boolean") out[k] = rec[k];
   return out;
 }
+// Per-assist readiness the plugin reported on its heartbeat (KV plugin:readiness:{cmdr},
+// written by /ingest/navpull). Shape { honk:{ready,missing:[]}, galaxymap:{...} }. Absent
+// for pilots on an older plugin that doesn't report — the panel then just shows no readiness
+// state, exactly as before (safe dark-launch on the shared shell).
+const READY_ASSISTS = ["honk", "galaxymap"];
+function pubReadiness(rec) {
+  const src = (rec && rec.assists && typeof rec.assists === "object") ? rec.assists : null;
+  if (!src) return {};
+  const out = {};
+  for (const k of READY_ASSISTS) {
+    const v = src[k];
+    if (!v || typeof v !== "object") continue;
+    const missing = Array.isArray(v.missing) ? v.missing.filter(x => typeof x === "string") : [];
+    out[k] = { ready: !!v.ready, missing: v.ready ? [] : missing };
+  }
+  return out;
+}
 
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
@@ -35,8 +52,10 @@ export async function onRequestGet({ request, env }) {
   if (!email) return json({ ok: false, error: "no identity" }, 403);
   const cmdr = await resolveCmdr(env, email);
   if (!cmdr) return json({ ok: true, cmdr: "", settings: pubSettings(null), needsSetup: true });
+  const key = cmdr.toLowerCase();
   const map = await readJson(env, "plugin:settings");
-  return json({ ok: true, cmdr, settings: pubSettings(map && map[cmdr.toLowerCase()]) });
+  const rdy = await readJson(env, "plugin:readiness:" + key);
+  return json({ ok: true, cmdr, settings: pubSettings(map && map[key]), readiness: pubReadiness(rdy) });
 }
 
 export async function onRequestPost({ request, env }) {
