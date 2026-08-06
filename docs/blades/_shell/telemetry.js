@@ -33,6 +33,17 @@
   function agoStr(ms) { if (ms == null) return ""; var s = Math.round(ms / 1000);
     if (s < 60) return s + "s ago"; var m = Math.round(s / 60); if (m < 60) return m + "m ago"; return Math.round(m / 60) + "h ago"; }
 
+  // Age is measured from a LOCAL reference captured at each poll, never by subtracting the
+  // server's epoch `ts` from the browser clock — a browser whose clock is skewed >30s from the
+  // server would otherwise flip the strip to grey one second after load and never recover.
+  // markLocal() freezes the server-reported age + the local time we saw it; liveAge() then adds
+  // only the CLIENT-measured elapsed time, which is immune to any absolute clock offset.
+  function markLocal(d) { if (d) { d._ageAt = (typeof d.ageMs === "number") ? d.ageMs : null; d._localAt = Date.now(); } }
+  function liveAge(d) {
+    if (!d || d._ageAt == null) return null;
+    return d._ageAt + Math.max(0, Date.now() - d._localAt);
+  }
+
   function injectCss() {
     if (document.getElementById("obTelStyle")) return;
     var st = document.createElement("style"); st.id = "obTelStyle";
@@ -132,20 +143,28 @@
     if (document.hidden || busy) return; busy = true;
     api().then(function (d) {
       busy = false;
-      if (d && d.ok) { TEL = d; lastTs = d.ts || 0; }
+      if (d && d.ok) { TEL = d; markLocal(TEL); lastTs = d.ts || 0; }
       paint(strip);
     });
   }
 
+  var bootTries = 0;
   function boot() {
     api().then(function (d) {
-      if (!d || !d.ok || d.needsSetup) return;   // not signed in / no CMDR bound — stay hidden
+      // A null response is a TRANSIENT failure (network blip / non-ok at page load), not a
+      // verdict — retry a few times with backoff instead of giving up, otherwise one blip at
+      // load leaves the pilot with no strip until a manual reload. A definitive "not eligible"
+      // answer (not signed in / no CMDR bound) is NOT transient, so we stop quietly there.
+      if (d == null) { if (bootTries++ < 5) setTimeout(boot, 2000 + bootTries * 1000); return; }
+      if (!d.ok || d.needsSetup) return;   // not signed in / no CMDR bound — stay hidden
       TEL = d;
+      markLocal(TEL);
       var strip = mount();
       paint(strip);
       setInterval(function () { tick(strip); }, POLL_MS);
-      // keep the "Ns ago" label ticking between polls so it feels live
-      tsAgeTimer = setInterval(function () { if (TEL && TEL.ts) { TEL.ageMs = Date.now() - TEL.ts; paint(strip); } }, 1000);
+      // keep the "Ns ago" label ticking between polls so it feels live — measured from the local
+      // reference captured at each poll (skew-proof), not the server epoch vs the browser clock.
+      tsAgeTimer = setInterval(function () { if (TEL && TEL._ageAt != null) { TEL.ageMs = liveAge(TEL); paint(strip); } }, 1000);
       document.addEventListener("visibilitychange", function () { if (!document.hidden) tick(strip); });
     });
   }
