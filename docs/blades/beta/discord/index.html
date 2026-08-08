@@ -50,7 +50,8 @@
     <h2>◇ WHAT THE STOREFRONT WOULD RENDER</h2>
     <div class="preview">
       <div style="margin-bottom:8px"><span class="mut">hero tile →</span> <span class="big" id="pvHero">—</span></div>
-      <div><span class="mut">secure bar →</span> <span id="pvBar" class="mut">—</span></div>
+      <div style="margin-bottom:8px"><span class="mut">secure bar →</span> <span id="pvBar" class="mut">—</span></div>
+      <div><span class="mut">public IN-GAME tile →</span> <span class="v" id="pvGame">—</span></div>
     </div>
   </div>
 
@@ -58,6 +59,7 @@
     <h2>◇ PARSED</h2>
     <div class="row"><span class="k">TOTAL MEMBERS</span><span class="v" id="vMembers">—</span></div>
     <div class="row"><span class="k">ONLINE NOW</span><span class="v" id="vOnline">—</span></div>
+    <div class="row"><span class="k">IN-GAME <span class="mut">(from KV, names withheld)</span></span><span class="v" id="vInGame">—</span></div>
     <div class="row"><span class="k">GUILD</span><span class="v" id="vGuild">—</span></div>
     <div class="row"><span class="k">WIDGET ENABLED <span class="mut">(needs Manage Server)</span></span><span class="v" id="vWidget">—</span></div>
     <div class="row"><span class="k">NAMES IN LIST</span><span class="v" id="vList">—</span></div>
@@ -120,6 +122,12 @@ async function probe(){
   $("vMembers").textContent = (j.members != null) ? j.members : "—";
   $("vOnline").textContent  = (j.online  != null) ? j.online  : "—";
   $("vGuild").textContent   = j.guild || "—";
+  $("vInGame").innerHTML    = (j.inGame != null)
+    ? '<span class="ok">' + j.inGame + '</span>'
+    : '<span class="bad">null — KV unreachable</span>';
+  $("pvGame").innerHTML     = (j.inGame != null)
+    ? j.inGame + ' <span class="mut">(real measurement)</span>'
+    : '<span class="mut">— (unknown, not zero)</span>';
   $("vList").textContent    = (j.list || []).length;
   $("vWidget").innerHTML    = j.widget
     ? '<span class="ok">yes — names available</span>'

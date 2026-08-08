@@ -182,8 +182,10 @@ const CFG = {
   // Server Settings → Widget → Enable Server Widget, then copy the Server ID.
   DISCORD_GUILD_ID: "1122499424187334657",
 
-  // ---- HERO STATS (curated; can be wired live later) -------------------
-  HERO: { commanders: 14, systemsColonized: 0, foundedYear: "3311" },
+  // ---- HERO STATS ------------------------------------------------------
+  // commanders is now LIVE off the Discord roster (/blades/api/discord-counts);
+  // the number here is only the placeholder shown before that fetch lands.
+  HERO: { commanders: 16, systemsColonized: 0, foundedYear: "3311" },
 
   // ---- WICKED WISDOM — the note recruits see first --------------------
   WISDOM: {
@@ -274,7 +276,8 @@ function ago(ts){ if(!ts) return ""; const s=Math.max(0,(Date.now()-ts)/1000);
   }).catch(()=>{});
   const inv=CFG.DISCORD_INVITE||"#";
   ["applyBtn","applyBtn2","whoLnk"].forEach(id=>{ const el=$(id); if(el) el.href=inv; });
-  $("stCmdrs").textContent=CFG.HERO.commanders!=null?CFG.HERO.commanders:"—";
+  // Live Discord roster wins; CFG.HERO.commanders is only the pre-fetch placeholder.
+  paintCmdrs();
   $("stSystems").textContent=CFG.HERO.systemsColonized!=null?CFG.HERO.systemsColonized:"—";
   // loops
   $("loops").innerHTML=CFG.LOOPS.map(l=>{
@@ -298,7 +301,7 @@ function ago(ts){ if(!ts) return ""; const s=Math.max(0,(Date.now()-ts)/1000);
 })();
 
 /* ---------- member detection + presence ---------- */
-let IS_MEMBER=false, MY_CMDR="", GAME_COUNT=null, DISCORD_COUNT=null, LAST_SEEN_TS=null;
+let IS_MEMBER=false, MY_CMDR="", GAME_COUNT=null, DISCORD_COUNT=null, DISCORD_MEMBERS=null, LAST_SEEN_TS=null;
 async function probeIdentity(){
   try{
     const r=await fetch("/blades/api/whoami-cmdr",{headers:{accept:"application/json"},credentials:"include"});
@@ -358,29 +361,46 @@ async function heartbeat(){
   try{ await fetch("/blades/api/presence",{method:"POST",credentials:"include",headers:{"content-type":"application/json"},body:JSON.stringify({source:"web"})}); }catch(e){}
 }
 
-/* Discord widget.json is CORS-open + public — fetch it straight from the browser.
-   Needs CFG.DISCORD_GUILD_ID set and "Enable Server Widget" on in Discord. */
+/* Discord vitals come from OUR OWN edge-cached proxy, not straight from discord.com.
+   See functions/blades/api/discord-counts.js for the full why. Short version:
+   widget.json needs the Manage Server permission and can be switched off at any
+   time by the server owner; the invite endpoint cannot. The proxy calls both,
+   merges them, and shields us from Discord rate limits with a 60s edge cache.
+   `list` is populated only while the widget is enabled — counts survive either way. */
+function paintCmdrs(){
+  const n = (DISCORD_MEMBERS!=null) ? DISCORD_MEMBERS
+          : (CFG.HERO.commanders!=null ? CFG.HERO.commanders : null);
+  $("stCmdrs").textContent = (n!=null) ? n : "—";
+}
 async function loadDiscord(){
-  const gid=(CFG.DISCORD_GUILD_ID||"").trim();
-  if(!gid){ $("discordList").innerHTML='<div class="empty">Set your Discord server ID in the page config to show who’s in chat.</div>'; return; }
   try{
-    const r=await fetch("https://discord.com/api/guilds/"+encodeURIComponent(gid)+"/widget.json",{headers:{accept:"application/json"}});
+    const r=await fetch("/blades/api/discord-counts",{headers:{accept:"application/json"}});
     if(!r.ok) throw 0;
     const j=await r.json();
-    const members=Array.isArray(j.members)?j.members:[];
-    DISCORD_COUNT=(typeof j.presence_count==="number")?j.presence_count:members.length;
+    if(!j||!j.ok) throw 0;
+    const members=Array.isArray(j.list)?j.list:[];
+    DISCORD_COUNT   = (typeof j.online==="number") ? j.online : members.length;
+    DISCORD_MEMBERS = (typeof j.members==="number") ? j.members : null;
     $("cntDiscord").textContent=DISCORD_COUNT;
-    if(IS_MEMBER){
-      $("discordList").innerHTML = members.length ? members.slice(0,30).map(m=>{
+    if(IS_MEMBER && members.length){
+      $("discordList").innerHTML = members.map(m=>{
         const st=(m.status||"online"); const idle=(st==="idle"||st==="dnd");
-        return '<div class="who-row"><span class="pd'+(idle?' idle':'')+'"></span><span class="nm">'+escH(m.username||"—")+'</span><span class="src">'+escH(st.toUpperCase())+'</span></div>';
-      }).join("") : '<div class="empty">No one online in Discord right now.</div>';
+        return '<div class="who-row"><span class="pd'+(idle?' idle':'')+'"></span><span class="nm">'+escH(m.name||"—")+'</span><span class="src">'+escH(st.toUpperCase())+'</span></div>';
+      }).join("");
+    } else if(IS_MEMBER){
+      // Counts came through but the names list did not (widget switched off).
+      $("discordList").innerHTML = DISCORD_COUNT>0
+        ? '<div class="empty">'+DISCORD_COUNT+' online in the Blades Discord.</div>'
+        : '<div class="empty">No one online in Discord right now.</div>';
     } else {
-      $("discordList").innerHTML='<div class="empty">'+DISCORD_COUNT+' online in the Blades Discord. <a href="'+escH(CFG.DISCORD_INVITE)+'" target="_blank" rel="noopener" style="color:var(--accent-bright)">Come say hi ▸</a></div>';
+      $("discordList").innerHTML = DISCORD_COUNT>0
+        ? '<div class="empty">'+DISCORD_COUNT+' online in the Blades Discord. <a href="'+escH(CFG.DISCORD_INVITE)+'" target="_blank" rel="noopener" style="color:var(--accent-bright)">Come say hi ▸</a></div>'
+        : '<div class="empty">Quiet in the Blades Discord right now. <a href="'+escH(CFG.DISCORD_INVITE)+'" target="_blank" rel="noopener" style="color:var(--accent-bright)">Come say hi ▸</a></div>';
     }
   }catch(e){
-    $("discordList").innerHTML='<div class="empty">Discord widget unavailable. <a href="'+escH(CFG.DISCORD_INVITE)+'" target="_blank" rel="noopener" style="color:var(--accent-bright)">Open Discord ▸</a></div>';
+    $("discordList").innerHTML='<div class="empty">Discord unavailable. <a href="'+escH(CFG.DISCORD_INVITE)+'" target="_blank" rel="noopener" style="color:var(--accent-bright)">Open Discord ▸</a></div>';
   }
+  paintCmdrs();
   paintFlying();
 }
 

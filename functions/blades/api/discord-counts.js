@@ -18,14 +18,22 @@
 // the online names list starts populating with zero code changes here or on the
 // page. Until then `list` is simply empty and `widget` is false.
 //
+// ALSO carries inGame: the number of commanders on the wire right now. That count
+// lives in the SAME BUILDS KV that /blades/api/presence reads, so we compute it
+// here server-side and emit ONLY the integer — no cmdr names ever cross to a
+// logged-out visitor. This is why showing prospects a live in-game number needs
+// NO new Cloudflare Access rule: this path is already public, and the gated
+// presence endpoint is untouched.
+//
 // GET /blades/api/discord-counts
-//   -> { ok, members, online, list:[{name,status}], widget, guild, ts }
+//   -> { ok, members, online, inGame, list:[{name,status}], widget, guild, ts }
 //
 // NOTE: for logged-out prospects to read this, the path must be reachable WITHOUT
 // Cloudflare Access (a "Bypass"/"Allow Everyone" policy for /blades/api/discord-counts),
 // same as /blades/api/ticker-public.
 
 const EDGE_TTL_S = 60;          // one upstream Discord call per minute per PoP
+const PRESENCE_WINDOW_MIN = 12; // keep in step with WINDOW_MIN in presence.js
 const UPSTREAM_TIMEOUT_MS = 4000;
 
 // Permanent, unlimited-use invite (expires_at: null — verified 2026-08-08).
@@ -61,6 +69,26 @@ async function getJSON(url) {
   } catch (e) { return null; } finally { clearTimeout(t); }
 }
 
+// Distinct commanders seen inside the presence window. Mirrors presence.js's
+// dedupe (freshest record per cmdr) so the public number can never disagree with
+// the member-side list. Returns null — not 0 — when KV is unavailable, so the
+// page can tell "nobody flying" apart from "we couldn't ask".
+async function countInGame(env) {
+  if (!env || !env.BUILDS) return null;
+  const cutoff = Date.now() - PRESENCE_WINDOW_MIN * 60 * 1000;
+  const seen = new Set();
+  try {
+    const listing = await env.BUILDS.list({ prefix: "presence:" });
+    for (const k of listing.keys) {
+      let rec = null;
+      try { const v = await env.BUILDS.get(k.name); if (v) rec = JSON.parse(v); } catch (e) {}
+      if (!rec || !rec.ts || rec.ts < cutoff) continue;
+      seen.add(String(rec.cmdr || k.name.slice("presence:".length)).toLowerCase());
+    }
+  } catch (e) { return null; }
+  return seen.size;
+}
+
 export async function onRequestGet(context) {
   const { request, waitUntil, env } = context;
 
@@ -71,9 +99,10 @@ export async function onRequestGet(context) {
   const gid  = (env && env.DISCORD_GUILD_ID)    || GUILD_ID;
 
   // Both upstreams in parallel; neither is allowed to sink the response.
-  const [inv, wid] = await Promise.all([
+  const [inv, wid, inGame] = await Promise.all([
     getJSON("https://discord.com/api/v10/invites/" + encodeURIComponent(code) + "?with_counts=true"),
     getJSON("https://discord.com/api/guilds/" + encodeURIComponent(gid) + "/widget.json"),
+    countInGame(env),
   ]);
 
   // Counts: invite is authoritative for TOTAL members (widget.json never reports it).
@@ -89,7 +118,7 @@ export async function onRequestGet(context) {
     ? wid.members.slice(0, 30).map(m => ({ name: String(m.username || "—"), status: String(m.status || "online") }))
     : [];
 
-  if (members == null && online == null) {
+  if (members == null && online == null && inGame == null) {
     // Both upstreams failed — say so honestly rather than caching a fake zero.
     return json({ ok: false, error: "discord unreachable", members: null, online: null, list: [], widget: false }, 502);
   }
@@ -98,6 +127,7 @@ export async function onRequestGet(context) {
     ok: true,
     members,
     online,
+    inGame,
     list,
     widget: !!(wid && Array.isArray(wid.members)),  // true once Manage Server flips the toggle
     guild: (inv && inv.guild && inv.guild.name) || "The Onyx Blades",
