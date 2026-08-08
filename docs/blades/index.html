@@ -445,7 +445,10 @@ async function loadActivity(){
     if(!r.ok) throw 0; const j=await r.json(); const b=(j&&j.builds)||[];
     const ev=[];
     b.forEach(x=>{
-      if(x.completedTs) ev.push({ic:"✔",ts:x.completedTs,html:"<b>"+escH(x.system||x.name||"A system")+"</b> completed"+(x.tons?" · "+Number(x.tons).toLocaleString()+" t":"")});
+      // Name-first, mirroring the "registered" row below. System used to win here,
+      // so every completion in a shared system rendered as the SAME line — six
+      // distinct stations in Col 285 Sector BU-O b7-3 all read identically.
+      if(x.completedTs) ev.push({ic:"✔",ts:x.completedTs,html:"<b>"+escH(x.name||x.system||"A build")+"</b> completed"+(x.tons?" · "+Number(x.tons).toLocaleString()+" t":"")});
       else if(x.ts) ev.push({ic:"＋",ts:x.ts,html:"<b>"+escH(x.name||x.system||"New build")+"</b> registered"+(x.system?" · "+escH(x.system):"")});
     });
     ev.sort((a,b)=>b.ts-a.ts);
