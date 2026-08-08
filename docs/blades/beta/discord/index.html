@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en" data-mode="beta">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>DISCORD VITALS — SHAKEDOWN · Onyx Blades BETA</title>
+<link rel="icon" href="/blades/icon-192.png">
+<style>
+  :root{
+    --bg:#07090b; --panel:#0d1116; --line:#1d262f; --ink:#c9d4de; --muted:#6b7a89;
+    --accent:#39c0d6; --accent-bright:#6fe3f5; --ok:#4ade80; --warn:#fbbf24; --bad:#f87171;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:14px;line-height:1.55;padding:24px}
+  .wrap{max-width:820px;margin:0 auto}
+  h1{font-size:15px;letter-spacing:.18em;margin:0 0 4px;color:var(--accent-bright);font-weight:600}
+  .sub{color:var(--muted);font-size:12px;letter-spacing:.08em;margin-bottom:22px}
+  .tag{display:inline-block;border:1px solid var(--warn);color:var(--warn);padding:1px 7px;border-radius:3px;font-size:10px;letter-spacing:.16em;margin-left:8px;vertical-align:2px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 18px;margin-bottom:14px}
+  .card h2{font-size:11px;letter-spacing:.16em;color:var(--muted);margin:0 0 12px;font-weight:600}
+  .row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px dotted var(--line)}
+  .row:last-child{border-bottom:0}
+  .k{color:var(--muted);font-size:12px;letter-spacing:.06em}
+  .v{font-weight:600}
+  .big{font-size:26px;color:var(--accent-bright);font-weight:600}
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)} .mut{color:var(--muted)}
+  pre{background:#050709;border:1px solid var(--line);border-radius:4px;padding:12px;overflow-x:auto;font-size:11.5px;color:var(--muted);margin:0;white-space:pre-wrap;word-break:break-word}
+  button{background:transparent;border:1px solid var(--accent);color:var(--accent-bright);font-family:var(--mono);font-size:11px;letter-spacing:.14em;padding:7px 16px;border-radius:4px;cursor:pointer}
+  button:hover{background:rgba(57,192,214,.1)}
+  .preview{background:#050709;border:1px solid var(--line);border-radius:4px;padding:14px 16px;letter-spacing:.1em;font-size:12px}
+  .verdict{padding:12px 14px;border-radius:4px;border:1px solid;margin-bottom:14px;font-size:12.5px;letter-spacing:.04em}
+  .verdict.pass{border-color:var(--ok);color:var(--ok);background:rgba(74,222,128,.06)}
+  .verdict.fail{border-color:var(--bad);color:var(--bad);background:rgba(248,113,113,.06)}
+  .verdict.wait{border-color:var(--muted);color:var(--muted)}
+  a{color:var(--accent-bright)}
+  .foot{color:var(--muted);font-size:11px;margin-top:20px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>DISCORD VITALS — SHAKEDOWN<span class="tag">BETA</span></h1>
+  <div class="sub">/blades/api/discord-counts · proving the no-admin counts path before it touches the storefront</div>
+
+  <div id="verdict" class="verdict wait">◷ Probing endpoint…</div>
+
+  <div class="card">
+    <h2>◇ WHAT THE STOREFRONT WOULD RENDER</h2>
+    <div class="preview">
+      <div style="margin-bottom:8px"><span class="mut">hero tile →</span> <span class="big" id="pvHero">—</span></div>
+      <div><span class="mut">secure bar →</span> <span id="pvBar" class="mut">—</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>◇ PARSED</h2>
+    <div class="row"><span class="k">TOTAL MEMBERS</span><span class="v" id="vMembers">—</span></div>
+    <div class="row"><span class="k">ONLINE NOW</span><span class="v" id="vOnline">—</span></div>
+    <div class="row"><span class="k">GUILD</span><span class="v" id="vGuild">—</span></div>
+    <div class="row"><span class="k">WIDGET ENABLED <span class="mut">(needs Manage Server)</span></span><span class="v" id="vWidget">—</span></div>
+    <div class="row"><span class="k">NAMES IN LIST</span><span class="v" id="vList">—</span></div>
+    <div class="row"><span class="k">ROUND TRIP</span><span class="v" id="vMs">—</span></div>
+    <div class="row"><span class="k">EDGE CACHE</span><span class="v" id="vCache">—</span></div>
+  </div>
+
+  <div class="card" id="namesCard" style="display:none">
+    <h2>◇ ONLINE NOW <span class="mut">— widget bonus</span></h2>
+    <div id="names"></div>
+  </div>
+
+  <div class="card">
+    <h2>◇ RAW RESPONSE</h2>
+    <pre id="raw">…</pre>
+  </div>
+
+  <button onclick="probe()">⟳ RE-PROBE</button>
+
+  <div class="foot">
+    <b>PASS</b> = counts came back without the widget toggle, so the storefront can show live numbers
+    with no admin permission. <b>WIDGET ENABLED: yes</b> is the bonus tier — names and avatars —
+    and only appears once WickedWisdom flips Server Settings → Widget.<br>
+    Counts are edge-cached 60s, so back-to-back probes returning identical <code>ts</code> is correct, not stale.
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+async function probe(){
+  $("verdict").className = "verdict wait";
+  $("verdict").textContent = "◷ Probing endpoint…";
+  const t0 = performance.now();
+  let r, j, bodyText;
+  try{
+    r = await fetch("/blades/api/discord-counts?_=" + Date.now(), { headers:{accept:"application/json"} });
+    bodyText = await r.text();
+    try { j = JSON.parse(bodyText); } catch(e){ j = null; }
+  }catch(e){
+    $("verdict").className = "verdict fail";
+    $("verdict").textContent = "✕ FAIL — could not reach /blades/api/discord-counts. Is the Pages Function deployed, and is the path bypassed in Cloudflare Access?";
+    $("raw").textContent = String(e);
+    return;
+  }
+  const ms = Math.round(performance.now() - t0);
+
+  $("raw").textContent = j ? JSON.stringify(j, null, 2) : (bodyText || "(empty body)");
+  $("vMs").textContent = ms + " ms";
+  $("vCache").textContent = r.headers.get("cf-cache-status") || "—";
+
+  if(!j || !j.ok){
+    $("verdict").className = "verdict fail";
+    $("verdict").textContent = "✕ FAIL — endpoint reachable (HTTP " + r.status + ") but returned no usable counts. "
+      + (j && j.error ? "Error: " + j.error : "Check the invite code is still valid.");
+    return;
+  }
+
+  $("vMembers").textContent = (j.members != null) ? j.members : "—";
+  $("vOnline").textContent  = (j.online  != null) ? j.online  : "—";
+  $("vGuild").textContent   = j.guild || "—";
+  $("vList").textContent    = (j.list || []).length;
+  $("vWidget").innerHTML    = j.widget
+    ? '<span class="ok">yes — names available</span>'
+    : '<span class="warn">no — counts only (expected)</span>';
+
+  $("pvHero").textContent = (j.online != null) ? j.online : "—";
+  $("pvBar").innerHTML = (j.online > 0)
+    ? '◉ <b>' + j.online + '</b> ON DISCORD'
+    : '<span class="mut">◷ QUIET ON THE WIRE</span>';
+
+  if((j.list || []).length){
+    $("namesCard").style.display = "";
+    $("names").innerHTML = j.list.map(m =>
+      '<div class="row"><span class="k">' + m.name.replace(/[<>&]/g,"") + '</span><span class="v mut">' + m.status.toUpperCase() + '</span></div>'
+    ).join("");
+  } else {
+    $("namesCard").style.display = "none";
+  }
+
+  $("verdict").className = "verdict pass";
+  $("verdict").textContent = "✓ PASS — live counts with no widget and no admin permission. "
+    + j.members + " members, " + j.online + " online."
+    + (j.widget ? " Widget is ON too, so names are flowing." : " Widget still off; names unavailable, counts unaffected.");
+}
+probe();
+</script>
+</body>
+</html>
