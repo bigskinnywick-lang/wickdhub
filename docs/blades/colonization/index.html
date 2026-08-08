@@ -418,7 +418,7 @@
 
   // ===== Cloudflare Access identity =====
   (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
-    const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{location.href=TEAM+"/cdn-cgi/access/logout";};
+    const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{(window.bladesSignOut||function(){location.href="/cdn-cgi/access/logout";})();};
     fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
 
   // ===== SQUAD NET ticker (live; re-runnable — the poll loop calls it on change) =====

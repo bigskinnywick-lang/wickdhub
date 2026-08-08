@@ -296,7 +296,9 @@ let BUILDS=[], CLAIMS=[], ADMINS=[], ADMIRALS=[];
   renderAdmirals();
   loadBuilds(); loadClaims(); pulse(); loadAccess(); loadTicker(); loadRegistrar(); loadRoles(); loadBtype();
 })();
-$("signOut").onclick=()=>{location.href="https://bigskinnywick.cloudflareaccess.com/cdn-cgi/access/logout";};
+// Same-origin logout then back to the public home. This page does NOT load
+// _shell/deck.js, so bladesSignOut() is inlined rather than shared.
+$("signOut").onclick=()=>{const go=()=>location.replace("/blades/");try{fetch("/cdn-cgi/access/logout",{credentials:"include",mode:"no-cors",cache:"no-store"}).then(go,go);}catch(e){go();}setTimeout(go,1500);};
 
 // ---------- pulse ----------
 async function timedFetch(url,opt){const t0=Date.now();try{const r=await fetch(url,opt);return {ok:r.ok,ms:Date.now()-t0,status:r.status};}catch(e){return {ok:false,ms:Date.now()-t0,err:e.message};}}

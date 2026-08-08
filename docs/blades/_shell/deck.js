@@ -3,6 +3,28 @@
    fullscreen AND reveals the zoom cluster, which auto-collapses after idle.
    Zoom (ob_zoom) persists on EVERY page, even while the cluster is hidden. */
 (function () {
+  /* ---- SHARED SIGN-OUT ---------------------------------------------------
+     Cloudflare Access has no post-logout redirect for self-hosted apps.
+     Sending the pilot to the TEAM domain's logout URL
+     (https://<team>.cloudflareaccess.com/cdn-cgi/access/logout) dumps them on a
+     Cloudflare-branded page on a DIFFERENT ORIGIN with no route back — that was
+     the bug. Instead hit the logout endpoint on THIS origin (clears the
+     CF_Authorization cookie for wickdhub.com), then bounce to the public home
+     where they correctly read as logged-out.
+
+     Defined OUTSIDE the members-only gate below so it is always available.
+     Mirrors doSignOut() in docs/blades/index.html — if you change one, change both.
+
+     NOTE: this clears the app cookie, not the team-level Access session. Signing
+     back in may not re-prompt the IdP. That is the accepted trade for landing
+     back on /blades/ instead of a dead Cloudflare page. */
+  window.bladesSignOut = function () {
+    var go = function () { try { location.replace("/blades/"); } catch (e) { location.href = "/blades/"; } };
+    try { fetch("/cdn-cgi/access/logout", { credentials: "include", mode: "no-cors", cache: "no-store" }).then(go, go); }
+    catch (e) { go(); }
+    setTimeout(go, 1500); // safety net if the fetch stalls
+  };
+
   var Z = 100;
   try { var z = parseInt(localStorage.getItem("ob_zoom") || "100", 10); if (z >= 50 && z <= 250) Z = z; } catch (e) {}
 
