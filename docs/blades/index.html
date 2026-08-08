@@ -389,6 +389,13 @@ async function loadDiscord(){
     DISCORD_COUNT   = (typeof j.online==="number") ? j.online : members.length;
     DISCORD_MEMBERS = (typeof j.members==="number") ? j.members : null;
     $("cntDiscord").textContent=DISCORD_COUNT;
+    // Prospects never call the gated presence endpoint, so cntGame would sit at its
+    // static "0" — a number that reads "dead squadron" but was never measured. The
+    // proxy hands us a real count; null means "couldn't ask", which renders as —.
+    if(!IS_MEMBER){
+      const cg=$("cntGame");
+      if(cg) cg.textContent = (typeof j.inGame==="number") ? j.inGame : "—";
+    }
     if(IS_MEMBER && members.length){
       $("discordList").innerHTML = members.map(m=>{
         const st=(m.status||"online"); const idle=(st==="idle"||st==="dnd");
@@ -406,6 +413,8 @@ async function loadDiscord(){
     }
   }catch(e){
     $("discordList").innerHTML='<div class="empty">Discord unavailable. <a href="'+escH(CFG.DISCORD_INVITE)+'" target="_blank" rel="noopener" style="color:var(--accent-bright)">Open Discord ▸</a></div>';
+    // Unknown, not zero — never leave a prospect looking at a fabricated 0.
+    if(!IS_MEMBER){ const cg=$("cntGame"); if(cg) cg.textContent="—"; }
   }
   paintCmdrs();
   paintFlying();
