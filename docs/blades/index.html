@@ -276,8 +276,11 @@ function ago(ts){ if(!ts) return ""; const s=Math.max(0,(Date.now()-ts)/1000);
   }).catch(()=>{});
   const inv=CFG.DISCORD_INVITE||"#";
   ["applyBtn","applyBtn2","whoLnk"].forEach(id=>{ const el=$(id); if(el) el.href=inv; });
-  // Live Discord roster wins; CFG.HERO.commanders is only the pre-fetch placeholder.
-  paintCmdrs();
+  // Placeholder only — loadDiscord() calls paintCmdrs() once the live roster count
+  // lands and overwrites this. Do NOT call paintCmdrs() here: it reads DISCORD_MEMBERS,
+  // a `let` declared further down this block, so calling it now throws a TDZ
+  // ReferenceError and takes the whole script with it.
+  $("stCmdrs").textContent=CFG.HERO.commanders!=null?CFG.HERO.commanders:"—";
   $("stSystems").textContent=CFG.HERO.systemsColonized!=null?CFG.HERO.systemsColonized:"—";
   // loops
   $("loops").innerHTML=CFG.LOOPS.map(l=>{
@@ -368,7 +371,11 @@ async function heartbeat(){
    merges them, and shields us from Discord rate limits with a 60s edge cache.
    `list` is populated only while the widget is enabled — counts survive either way. */
 function paintCmdrs(){
-  const n = (DISCORD_MEMBERS!=null) ? DISCORD_MEMBERS
+  // Guarded: if this is ever called before the state block initialises, fall back
+  // to the config placeholder instead of throwing and killing the page.
+  let live = null;
+  try { live = DISCORD_MEMBERS; } catch(e) { live = null; }
+  const n = (live!=null) ? live
           : (CFG.HERO.commanders!=null ? CFG.HERO.commanders : null);
   $("stCmdrs").textContent = (n!=null) ? n : "—";
 }
