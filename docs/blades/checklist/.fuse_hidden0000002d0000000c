@@ -49,7 +49,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="backrow"><a href="/blades/commander/">◂ MY DASHBOARD</a></div>
+  <div class="backrow"><a href="/blades/commander/">◂ MY STATS</a></div>
   <h1>v2.0 SHAKEDOWN CHECKLIST</h1>
   <div class="sub">FLY THE NEW KIT · SIGN OFF WHAT WORKS · v2.0 · TEST PILOT: <b id="pilotName" style="color:var(--amber-b)">—</b></div>
 
@@ -63,7 +63,7 @@
     <h2>PHASE 0 · THE RELAY — AUTO-UPDATE &amp; CHANNELS</h2>
     <div class="when">Confirm the plugin self-updates and reports in. Game running, EDMC open.</div>
     <label class="step"><input type="checkbox" data-cid="autoupd" /><span><b>Self-update:</b> you did NOT reinstall by hand this cycle — the relay pulled the new build itself, and after an EDMC restart the Blades line shows the current version.</span></label>
-    <label class="step"><input type="checkbox" data-cid="betachan" /><span><b>Beta channel:</b> as a test pilot you received the beta build (version carries a letter), and the <code>⚑ TEST PILOT</code> chip shows on MY DASHBOARD. Revoke test-pilot (ask an admin) and you get pushed back to stable; the chip disappears.</span></label>
+    <label class="step"><input type="checkbox" data-cid="betachan" /><span><b>Beta channel:</b> as a test pilot you received the beta build (version carries a letter), and the <code>⚑ TEST PILOT</code> chip shows on MY STATS. Revoke test-pilot (ask an admin) and you get pushed back to stable; the chip disappears.</span></label>
     <label class="step"><input type="checkbox" data-cid="blare" /><span><b>RESTART-EDMC blare:</b> when a new build is pushed, the SQUAD NET ticker takes over — tag, border and the words <code>RESTART EDMC</code> flashing amber↔fleet, rest of the line readable — and clears itself ~15s after you relaunch EDMC and it reports the new version.</span></label>
     <div class="watch"><b>NEW-PILOT VARIANT:</b> with no plugin (or pre-2.0) the blare reads <code>COMPLETE SETUP</code> instead and surfaces the Setup Guide.</div>
   </div>

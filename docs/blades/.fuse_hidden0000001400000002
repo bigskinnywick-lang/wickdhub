@@ -42,7 +42,7 @@
   <nav class="blades-nav">
     <a class="bn on" href="/blades/">HOME</a>
     <a class="bn" href="/blades/colonization/">COLONIZATION</a>
-    <a class="bn" href="/blades/commander/">MY DASHBOARD</a>
+    <a class="bn" href="/blades/commander/">MY STATS</a>
     <a class="bn" href="/blades/onboarding/">SETUP GUIDE</a>
   </nav>
 

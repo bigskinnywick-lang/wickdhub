@@ -37,7 +37,7 @@
     </div>
     <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
   </header>
-  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY DASHBOARD</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY STATS</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
   <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
   <div class="controls">
     <div class="dialbox">
@@ -363,7 +363,7 @@
     const c=$("cmdrLine");if(c)c.textContent="—";
     const done=REGISTRY.filter(b=>b.completedTs).sort((a,b)=>(b.completedTs||0)-(a.completedTs||0)).slice(0,5);
     const rows=done.map(b=>`<div class="contrib"><div class="who">${escH(b.name||b.id.slice(0,8))}<small>${escH(b.system||"—")} · architect ${escH(b.architect||"—")}</small></div><div><div class="amt">${b.tons?fmt(b.tons)+" t":"✔"}</div><div class="commit">${b.completedTs?"completed "+new Date(b.completedTs).toISOString().slice(0,10):"complete"}</div></div></div>`).join("");
-    $("view").innerHTML=`<div class="grid"><div class="panel"><h2>Standing Down — No Active Builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction right now.<br>Land at a construction site with the Blades Registrar plugin running to open one automatically. The board re-arms itself the moment a build registers.</div></div><div><div class="panel"><h2>Honors Board — Recent Completions</h2>${rows||'<div style="color:var(--muted);font-size:12px">No completed builds on record yet.</div>'}<div class="sync-line" style="margin-top:12px">Completed builds keep their stats — see MY DASHBOARD for career totals.</div></div></div></div>`;
+    $("view").innerHTML=`<div class="grid"><div class="panel"><h2>Standing Down — No Active Builds</h2><div style="color:var(--muted);line-height:1.6">The squadron has no active construction right now.<br>Land at a construction site with the Blades Registrar plugin running to open one automatically. The board re-arms itself the moment a build registers.</div></div><div><div class="panel"><h2>Honors Board — Recent Completions</h2>${rows||'<div style="color:var(--muted);font-size:12px">No completed builds on record yet.</div>'}<div class="sync-line" style="margin-top:12px">Completed builds keep their stats — see MY STATS for career totals.</div></div></div></div>`;
   }
   // Walk unstamped builds until an active one renders; stamp any found complete.
   async function boot(){
@@ -601,7 +601,7 @@
         var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})});
         var d=null; try{ d=await r.json(); }catch(_){}
         if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; try{ localStorage.removeItem(KEY); }catch(e){} setTimeout(function(){ hide(); btn.textContent=BASE; },1200); }
-        else if(r.status===409){ toast("Bind your CMDR first (MY DASHBOARD) so we know whose PC to reach."); btn.textContent=BASE; }
+        else if(r.status===409){ toast("Bind your CMDR first (MY STATS) so we know whose PC to reach."); btn.textContent=BASE; }
         else { toast("Could not transmit "+sys+" — "+((d&&d.error)||("HTTP "+r.status))); btn.textContent=BASE; }
       }catch(e){ toast("Transmit failed — network error."); btn.textContent=BASE; }
       btn.disabled=false;

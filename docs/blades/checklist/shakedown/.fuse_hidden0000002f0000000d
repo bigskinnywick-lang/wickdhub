@@ -37,7 +37,7 @@
   <div class="backrow">
     <a href="/blades/colonization/">&#9666; BOARD</a>
     <a href="/blades/checklist/">&#9666; CO-OP CHECKLIST</a>
-    <a href="/blades/commander/">MY DASHBOARD</a>
+    <a href="/blades/commander/">MY STATS</a>
     <button class="reset" id="resetBtn">&#8635; RESET TICKS</button>
   </div>
   <h1>SHAKEDOWN CHECKLIST</h1>

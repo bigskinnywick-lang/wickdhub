@@ -77,7 +77,7 @@
 
   <!-- shared-ish chrome -->
   <div class="topstrip">
-    <a class="chip" href="/blades/commander/">◂ MY DASHBOARD</a>
+    <a class="chip" href="/blades/commander/">◂ MY STATS</a>
     <span>⚙ ADMIN CONSOLE</span>
     <span class="sep">·</span>
     <span>ADMIN: <b id="meEmail">—</b></span>

@@ -69,7 +69,7 @@ async function settingsFor(env, cmdrLower) {
   const s = (m && m[cmdrLower]) ? m[cmdrLower] : null;
   if (!s || typeof s !== "object") return null;
   const out = {};
-  for (const k of ["autocreate", "honk", "galaxymap", "fuel"]) if (typeof s[k] === "boolean") out[k] = s[k];
+  for (const k of ["autocreate", "honk", "galaxymap", "fuel", "pirate"]) if (typeof s[k] === "boolean") out[k] = s[k];
   return Object.keys(out).length ? out : null;
 }
 
@@ -154,6 +154,49 @@ async function storeTelemetry(env, cmdrLower, rawParam) {
   } catch (e) {}
 }
 
+// ALERTS the plugin raised (?al=<url-encoded JSON array>): the shared alert lane — pirate
+// scan, fuel low, and whatever a future assist raises. Compact on the wire ({i,l,m,t}) and
+// expanded here to the readable shape the dashboard strip renders. Merged into a per-pilot
+// rolling log at KV plugin:alerts:{cmdr}, DEDUPED BY ID so a resend after a failed poll can
+// never make the board sound the klaxon twice for one event.
+const ALERTS_TTL_S = 60 * 60 * 6;  // 6h — an alert log is live context, not a durable record
+const ALERTS_KEEP = 20;            // rolling window the strip reads from
+const ALERT_LEVELS = { critical: 1, warn: 1, info: 1 };
+function normAlerts(raw) {
+  let arr = raw;
+  if (typeof raw === "string") { try { arr = JSON.parse(raw); } catch (e) { return []; } }
+  if (!Array.isArray(arr)) return [];
+  const out = [];
+  for (const a of arr.slice(0, 12)) {
+    if (!a || typeof a !== "object") continue;
+    const id = (typeof a.i === "string" || typeof a.i === "number") ? String(a.i).slice(0, 40) : "";
+    const msg = (typeof a.m === "string") ? a.m.trim().slice(0, 120) : "";
+    if (!id || !msg) continue;
+    const lvlRaw = String(a.l || "info").toLowerCase();
+    const level = ALERT_LEVELS[lvlRaw] ? lvlRaw : "info";
+    const ts = Number(a.t);
+    out.push({ id, level, msg, ts: Number.isFinite(ts) ? ts : Date.now() });
+  }
+  return out;
+}
+async function storeAlerts(env, cmdrLower, rawParam) {
+  if (rawParam == null || rawParam === "") return;   // nothing raised this poll
+  if (rawParam.length > 1600) return;                // guard against an absurd payload
+  const next = normAlerts(rawParam);
+  if (!next.length) return;
+  const key = "plugin:alerts:" + cmdrLower;
+  const prev = await readJson(env, key);
+  const have = Array.isArray(prev && prev.alerts) ? prev.alerts : [];
+  const seen = new Set(have.map(a => a && a.id));
+  const fresh = next.filter(a => !seen.has(a.id));
+  if (!fresh.length) return;                         // pure resend — do not rewrite KV
+  const merged = have.concat(fresh).sort((a, b) => (a.ts || 0) - (b.ts || 0)).slice(-ALERTS_KEEP);
+  try {
+    await env.BUILDS.put(key, JSON.stringify({ alerts: merged, ts: Date.now() }),
+      { expirationTtl: ALERTS_TTL_S });
+  } catch (e) {}
+}
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const url = new URL(request.url);
@@ -179,6 +222,9 @@ export async function onRequestGet({ request, env }) {
 
   // (2c) live telemetry heartbeat — only written when the plugin sent it (plugin sends on change)
   await storeTelemetry(env, cmdrLower, url.searchParams.get("tel"));
+
+  // (2d) alerts the plugin raised — merged into the rolling per-pilot log, deduped by id
+  await storeAlerts(env, cmdrLower, url.searchParams.get("al"));
 
   // (3) which release this pilot should be on — decided by the pilot's own switch
   const channel = await tierChannel(env, cmdrLower);

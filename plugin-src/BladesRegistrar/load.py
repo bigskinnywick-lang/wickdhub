@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.6"  # b3.6: Commander Dashboard telemetry fixes. (1) telemetry now reports ONLY while Elite is in a live session (Status.json Flags != 0); at the menu / with Elite closed it reports nothing, so the strip greys out instead of showing a stale system + false "In flight". (2) the live-session snapshot is resent at least every ~15s even when unchanged, so a parked/docked pilot's strip stays LIVE instead of greying after 30s. Plugin-only; navpull/site unchanged. Rest unchanged from b3.5.
+PLUGIN_VERSION = "b3.7"  # b3.7: PIRATE ALARM + the alerts pipe (Commander Dashboard brick 3). New "Pirate / cargo-scan alarm" assist (default OFF): a Cargo or Cabin scan on your ship raises a CRITICAL alert and blares a two-tone klaxon on this PC (Windows winsound, 12s cooldown); a Crime scan logs quietly as authority traffic. Alerts ride the existing navpull heartbeat as &al= into the board's alerts strip, which sounds its own klaxon. The fuel-low warning now raises an alert too instead of only writing an EDMC status line. Rest unchanged from b3.6.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -67,6 +67,10 @@ DEFAULT_GRACE_MIN = 5
 # honk-on-arrival (BladeRelay): opt-in; presses YOUR fire key, read live from binds.
 DEFAULT_HONK = False
 DEFAULT_HONK_FIRE = "PrimaryFire"
+# pirate alarm (BladeRelay): opt-in; watches for someone scanning YOUR ship.
+DEFAULT_PIRATE = False
+PIRATE_BLARE = True   # also sound a klaxon on THIS PC (Windows only); the board sounds its own
+PIRATE_COOLDOWN_S = 12.0  # never blare more than once per this window — a scan can repeat fast
 # ----------------------------------------------------------------------------
 
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -127,7 +131,11 @@ def _cfg_int(key, default):
 # server-driven per-pilot settings (set on the site, delivered on the nav poll).
 # Cached to disk so they persist offline / across restarts. A server value wins
 # when present; otherwise we fall back to the EDMC checkbox / default.
-_srv = {"autocreate": None, "honk": None, "galaxymap": None, "fuel": None}
+_srv = {"autocreate": None, "honk": None, "galaxymap": None, "fuel": None, "pirate": None}
+
+# Every server-driven setting key, in one place — the load / apply / persist paths all
+# read this tuple, so adding an assist is a one-line change here instead of four.
+_SRV_KEYS = ("autocreate", "honk", "galaxymap", "fuel", "pirate")
 
 
 def _srv_path():
@@ -139,7 +147,7 @@ def _load_srv():
         with open(_srv_path(), "r", encoding="utf-8") as f:
             d = json.load(f)
         if isinstance(d, dict):
-            for _k in ("autocreate", "honk", "galaxymap", "fuel"):
+            for _k in _SRV_KEYS:
                 _srv[_k] = d.get(_k)
     except Exception:
         pass
@@ -150,7 +158,7 @@ def _apply_srv(settings):
     if not isinstance(settings, dict):
         return
     changed = False
-    for k in ("autocreate", "honk", "galaxymap", "fuel"):
+    for k in _SRV_KEYS:
         if k in settings and settings[k] is not None:
             v = bool(settings[k])
             if _srv.get(k) != v:
@@ -159,7 +167,7 @@ def _apply_srv(settings):
     if changed:
         try:
             with open(_srv_path(), "w", encoding="utf-8") as f:
-                json.dump({kk: _srv[kk] for kk in ("autocreate", "honk", "galaxymap", "fuel")}, f)
+                json.dump({kk: _srv[kk] for kk in _SRV_KEYS}, f)
         except Exception:
             pass
         if _srv.get("honk"):
@@ -208,6 +216,12 @@ def _fuel_on():
     if _srv.get("fuel") is not None:
         return bool(_srv["fuel"])
     return _cfg_bool("blades_fuel", False)
+
+
+def _pirate_on():
+    if _srv.get("pirate") is not None:
+        return bool(_srv["pirate"])
+    return _cfg_bool("blades_pirate", DEFAULT_PIRATE)
 
 
 # --- seen persistence -------------------------------------------------------
@@ -579,11 +593,20 @@ def _nav_poll_loop():
                 _tel_live = bool(_tel and _tel != "{}")
                 _tel_stale = (time.time() - _nav.get("tel_at", 0)) >= TEL_REFRESH_S
                 _send_tel = _tel if (_tel_live and (_tel != _nav.get("tel_sent") or _tel_stale)) else ""
+                # Alerts ride the same heartbeat, sent only when the ring CHANGES — i.e. only
+                # when something actually happened. The board dedups by alert id, so a resend
+                # after a failed poll can never double-sound the klaxon.
+                try:
+                    _al = json.dumps(_alerts_payload(), separators=(",", ":"))
+                except Exception:
+                    _al = ""
+                _send_al = _al if (_al and _al != "[]" and _al != _nav.get("al_sent")) else ""
                 url = (NAVPULL_URL + "?key=" + INGEST_KEY + "&cmdr=" + urllib.request.quote(cmdr)
                        + "&v=" + urllib.request.quote(PLUGIN_VERSION)
                        + (("&pending=" + urllib.request.quote(pend)) if pend else "")
                        + (("&ready=" + urllib.request.quote(_send_rdy)) if _send_rdy else "")
-                       + (("&tel=" + urllib.request.quote(_send_tel)) if _send_tel else ""))
+                       + (("&tel=" + urllib.request.quote(_send_tel)) if _send_tel else "")
+                       + (("&al=" + urllib.request.quote(_send_al)) if _send_al else ""))
                 req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA, "Accept": "application/json"})
                 with urllib.request.urlopen(req, timeout=8) as resp:
                     body = json.loads(resp.read().decode("utf-8"))
@@ -592,6 +615,8 @@ def _nav_poll_loop():
                 if _send_tel:
                     _nav["tel_sent"] = _tel
                     _nav["tel_at"] = time.time()
+                if _send_al:
+                    _nav["al_sent"] = _al
                 try:
                     _maybe_update(body.get("latest"), body.get("channel"))
                 except Exception:
@@ -1354,10 +1379,112 @@ def _gm_paste():
 
 
 # --- fuel safety check (BladeRelay assist) ----------------------------------
+# --- alerts lane + the PIRATE ALARM (BladeRelay) ----------------------------
+# ONE shared alert lane. Any feature can raise an alert; alerts ride the existing navpull
+# heartbeat (&al=) into KV and out to the MY DASHBOARD alerts strip, which glows and sounds
+# its own klaxon. Levels use the Systems-Register vocabulary the rest of the board already
+# speaks: critical (red) / warn (amber) / info (grey). Held as a bounded ring so a noisy
+# instance can never grow the heartbeat URL.
+_ALERT_MAX = 6            # most recent alerts carried on the heartbeat
+_ALERT_MSG_MAX = 90       # message chars; the strip truncates anyway — keep the URL small
+_alerts = []              # newest LAST: [{"i":id,"l":level,"m":msg,"t":ms}]
+_alert_state = {"seq": 0, "cool": {}}
+
+try:
+    import winsound as _winsound        # Windows only — the PC klaxon no-ops elsewhere
+except Exception:
+    _winsound = None
+
+# The PC-side klaxon: an alternating two-tone blare, pitched to cut through game audio.
+_KLAXON = {
+    "critical": [(880, 200), (620, 200), (880, 200), (620, 200), (880, 280)],
+    "warn": [(700, 140), (700, 140)],
+}
+
+
+def _alarm_blare(level):
+    """Sound the klaxon on THIS PC. Always on its own daemon thread — winsound.Beep is
+    BLOCKING, and the journal callback must never sit through a 1.1s siren."""
+    if not PIRATE_BLARE or _winsound is None:
+        return
+    pattern = _KLAXON.get(level)
+    if not pattern:
+        return
+
+    def _run():
+        try:
+            for freq, ms in pattern:
+                _winsound.Beep(int(freq), int(ms))
+        except Exception:
+            pass
+    try:
+        threading.Thread(target=_run, daemon=True).start()
+    except Exception:
+        pass
+
+
+def _alert_raise(level, msg, key=None, cooldown=0.0, blare=False):
+    """Raise one alert. `key` + `cooldown` de-bounce a repeating source — a pirate can
+    re-scan you every few seconds, and a siren that never stops is a siren you turn off.
+    While cooling, the alert is dropped entirely (not queued). Returns True if raised."""
+    try:
+        now = time.time()
+        if key and cooldown:
+            if (now - _alert_state["cool"].get(key, 0.0)) < cooldown:
+                return False
+            _alert_state["cool"][key] = now
+        _alert_state["seq"] += 1
+        text = str(msg or "")[:_ALERT_MSG_MAX]
+        _alerts.append({
+            "i": str(int(now * 1000)) + "-" + str(_alert_state["seq"]),
+            "l": str(level or "info")[:10],
+            "m": text,
+            "t": int(now * 1000),
+        })
+        del _alerts[:-_ALERT_MAX]        # bounded ring: keep only the newest _ALERT_MAX
+        _set_status(text)
+        if blare:
+            _alarm_blare(level)
+        return True
+    except Exception:
+        return False
+
+
+def _alerts_payload():
+    """The alert ring as the heartbeat sends it — a plain list, newest last."""
+    return list(_alerts)
+
+
+# Someone scanning YOUR ship. Elite's `Scanned` event names the KIND of scan but never the
+# scanner, so the scan type IS the identification: a CARGO scan is a pirate reading your hold
+# and a CABIN scan is a passenger hunter doing the same — both are the alarm. A CRIME scan is
+# system authority: traffic, not a threat, so it is logged to the strip and never sounded.
+_PIRATE_SCANS = {
+    "cargo": ("critical", "PIRATE SCAN - your cargo hold is being read"),
+    "cabin": ("critical", "CABIN SCAN - someone is hunting your passengers"),
+}
+
+
+def _pa_scanned(entry):
+    if not _pirate_on():
+        return
+    kind = str(entry.get("ScanType") or "").strip().lower()
+    hit = _PIRATE_SCANS.get(kind)
+    if hit:
+        level, msg = hit
+        _alert_raise(level, msg, key="pirate-scan", cooldown=PIRATE_COOLDOWN_S, blare=True)
+    elif kind == "crime":
+        _alert_raise("info", "Authority scan - routine crime check",
+                     key="crime-scan", cooldown=PIRATE_COOLDOWN_S)
+
+
 _fuel = {"main": None, "cap": None, "used": None}
 
 
 def _fuel_check():
+    # Fuel-low now raises a WARN on the shared alerts lane (which also writes the EDMC status
+    # line) instead of only writing status — so it reaches the dashboard strip like any other
+    # alert. Cooled hard: one warning per 5 minutes, not one per FSD target change.
     try:
         m = _fuel.get("main")
         if not m:
@@ -1366,11 +1493,13 @@ def _fuel_check():
         if u and u > 0:
             jumps = m / u
             if jumps < 2.0:
-                _set_status("fuel low - ~%.1f jump(s) of fuel left, scoop soon" % jumps)
+                _alert_raise("warn", "Fuel low - ~%.1f jump(s) left, scoop soon" % jumps,
+                             key="fuel-low", cooldown=300.0)
                 return
         cap = _fuel.get("cap")
         if cap and m < cap * 0.2:
-            _set_status("fuel low - %d%% tank" % int(100 * m / cap))
+            _alert_raise("warn", "Fuel low - %d%% tank" % int(100 * m / cap),
+                         key="fuel-low", cooldown=300.0)
     except Exception:
         pass
 
@@ -1809,6 +1938,13 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if ev == "FSDTarget" and _fuel_on():
         try:
             _fuel_check()
+        except Exception:
+            pass
+
+    # pirate alarm (BladeRelay assist): somebody is scanning YOUR ship.
+    if ev == "Scanned":
+        try:
+            _pa_scanned(entry)
         except Exception:
             pass
 

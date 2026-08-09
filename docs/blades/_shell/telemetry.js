@@ -1,16 +1,24 @@
-/* Blades — MY DASHBOARD live telemetry tile row (shared, MY STATS page).
-   Brick 2 of the Commander Dashboard. Renders a strip of live tiles — current system, ship,
-   fuel %, cargo, flight state — fed by the Blades Registrar plugin's heartbeat
+/* Blades — MY DASHBOARD live telemetry tile row + ALERTS strip (shared, MY STATS page).
+   Bricks 2 and 3 of the Commander Dashboard. Renders a strip of live tiles — current system,
+   ship, fuel %, cargo, flight state — fed by the Blades Registrar plugin's heartbeat
    (/ingest/navpull -> KV plugin:telemetry -> /blades/api/telemetry). Design rules it honors:
      • LIVENESS + FAIL-TO-GREY: shows "updated Ns ago" when live; if the plugin isn't
        reporting (stale/no data) the tiles go GREY and read "—" rather than showing a stale
        position as if it were current.
      • THRESHOLD GLOW: the fuel tile glows amber when fuel is low.
+   BRICK 3 — ALERTS: the same poll carries the pilot's alert lane (pirate scan, fuel low, …).
+   A new alert pulses the strip red/amber and sounds a KLAXON synthesized in-page (no audio
+   file), with a per-device mute in localStorage like the theme dials, and a TEST button that
+   doubles as the browser's required first-gesture to arm audio. Only the newest unseen alerts
+   ever sound — a re-poll of the same log is silent, and the backlog present at page load is
+   marked seen without a peep.
    Self-contained (own CSS); mounts only for a signed-in, CMDR-bound pilot; polls every ~5s
    while visible, pauses when the tab is hidden. */
 (function () {
   var POLL_MS = 5000, STALE_MS = 30000, FUEL_LOW = 25, FUEL_CRIT = 10;
   var TEL = null, tsAgeTimer = null, lastTs = 0;
+  var ALERTS_SHOW = 6, FLASH_MS = 6000, MUTE_KEY = "ob_alarm_mute";
+  var SEEN = null, AC = null, audioBlocked = false, flashTimer = null;
 
   // Ship code -> display name (subset; unknown codes get title-cased).
   var SHIP = {
@@ -65,9 +73,104 @@
       "#obTelStrip .ot-tile.warn{box-shadow:inset 0 0 0 1px var(--warn,#f0a828);animation:otPulse 1.8s ease-in-out infinite}",
       "#obTelStrip .ot-tile.crit .ot-val{color:var(--bad,#e0574a)}",
       "#obTelStrip .ot-tile.crit{box-shadow:inset 0 0 0 1px var(--bad,#e0574a);animation:otPulse 1s ease-in-out infinite}",
-      "@keyframes otPulse{0%,100%{background:var(--panel,#140d07)}50%{background:color-mix(in srgb,var(--warn,#f0a828) 12%,var(--panel,#140d07))}}"
+      "@keyframes otPulse{0%,100%{background:var(--panel,#140d07)}50%{background:color-mix(in srgb,var(--warn,#f0a828) 12%,var(--panel,#140d07))}}",
+      // ---- brick 3: alerts strip ----
+      "#obAlertStrip{margin:8px 0 4px;border:1px solid var(--accent-dim,#a24d08);background:color-mix(in srgb,var(--accent,#ff7a12) 5%,var(--panel,#140d07));border-radius:var(--radius,12px);overflow:hidden}",
+      "#obAlertStrip .oa-head{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line,#3a2410);font-family:var(--font-head,'Orbitron',sans-serif);font-size:10.5px;letter-spacing:2px;color:var(--accent-bright,#ffb057)}",
+      "#obAlertStrip .oa-tools{margin-left:auto;display:inline-flex;gap:7px}",
+      "#obAlertStrip .oa-btn{cursor:pointer;user-select:none;border:1px solid var(--accent-dim,#a24d08);background:var(--panel2,#1c1109);border-radius:7px;padding:4px 9px;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9px;letter-spacing:1.5px;color:var(--muted,#b98a52);transition:.15s}",
+      "#obAlertStrip .oa-btn:hover{border-color:var(--accent,#ff7a12);color:var(--accent-bright,#ffb057)}",
+      "#obAlertStrip .oa-btn.muted{color:var(--bad,#e0574a);border-color:var(--bad,#e0574a)}",
+      "#obAlertStrip .oa-list{list-style:none;margin:0;padding:0}",
+      "#obAlertStrip .oa-item{display:flex;align-items:flex-start;gap:10px;padding:9px 14px;border-top:1px solid var(--line,#3a2410);font-size:12.5px;color:var(--fg,#f2d9b8)}",
+      "#obAlertStrip .oa-item:first-child{border-top:0}",
+      "#obAlertStrip .oa-led{width:9px;height:9px;border-radius:50%;margin-top:4px;flex:none;background:var(--muted,#7a6a55)}",
+      "#obAlertStrip .oa-item.critical .oa-led{background:var(--bad,#e0574a);box-shadow:0 0 9px var(--bad,#e0574a)}",
+      "#obAlertStrip .oa-item.critical .oa-msg{color:var(--bad,#e0574a);font-weight:600}",
+      "#obAlertStrip .oa-item.warn .oa-led{background:var(--warn,#f0a828);box-shadow:0 0 9px var(--warn,#f0a828)}",
+      "#obAlertStrip .oa-item.warn .oa-msg{color:var(--warn,#f0a828)}",
+      "#obAlertStrip .oa-msg{flex:1;line-height:1.4;word-break:break-word}",
+      "#obAlertStrip .oa-when{font-size:10px;color:var(--muted,#b98a52);white-space:nowrap;margin-top:2px}",
+      "#obAlertStrip .oa-quiet{padding:11px 14px;font-size:11.5px;color:var(--muted,#b98a52)}",
+      "#obAlertStrip .oa-blocked{display:none;padding:0 14px 10px;font-size:11px;color:var(--warn,#f0a828)}",
+      "#obAlertStrip.blocked .oa-blocked{display:block}",
+      // a fresh alert pulses the whole strip so a glance catches it even with the sound muted
+      "#obAlertStrip.flash-critical{animation:oaFlashC .9s ease-in-out 6}",
+      "#obAlertStrip.flash-warn{animation:oaFlashW 1.4s ease-in-out 4}",
+      "@keyframes oaFlashC{0%,100%{box-shadow:0 0 0 0 rgba(224,87,74,0)}50%{box-shadow:0 0 22px 2px rgba(224,87,74,.55);border-color:var(--bad,#e0574a)}}",
+      "@keyframes oaFlashW{0%,100%{box-shadow:0 0 0 0 rgba(240,168,40,0)}50%{box-shadow:0 0 18px 1px rgba(240,168,40,.45);border-color:var(--warn,#f0a828)}}",
+      "@media (prefers-reduced-motion:reduce){#obAlertStrip.flash-critical,#obAlertStrip.flash-warn{animation:none;border-color:var(--bad,#e0574a)}}"
     ].join("\n");
     (document.head || document.documentElement).appendChild(st);
+  }
+
+  /* ---------- the klaxon: synthesized, no audio file ----------------------------------
+     A two-tone alternating blare built from oscillators, so there's no binary in the repo,
+     no licence question, and no cache-bust to get wrong. Level picks the pattern: critical
+     is the pirate klaxon, warn is a softer double-beep, info never sounds. */
+  function audioCtx() {
+    if (AC) return AC;
+    try {
+      var C = window.AudioContext || window.webkitAudioContext;
+      if (!C) return null;
+      AC = new C();
+    } catch (e) { AC = null; }
+    return AC;
+  }
+  function muted() { try { return localStorage.getItem(MUTE_KEY) === "1"; } catch (e) { return false; } }
+  function setMuted(v) { try { localStorage.setItem(MUTE_KEY, v ? "1" : "0"); } catch (e) {} }
+
+  // One blast: a sawtooth+square pair through a lowpass, bending down slightly for the growl.
+  function blast(ac, t0, freq, dur, peak) {
+    var o = ac.createOscillator(), o2 = ac.createOscillator();
+    var f = ac.createBiquadFilter(), g = ac.createGain();
+    o.type = "sawtooth"; o2.type = "square";
+    o.frequency.setValueAtTime(freq, t0);
+    o.frequency.linearRampToValueAtTime(freq * 0.96, t0 + dur);
+    o2.frequency.setValueAtTime(freq / 2, t0);
+    f.type = "lowpass"; f.frequency.setValueAtTime(2200, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.02);
+    g.gain.setValueAtTime(peak, t0 + Math.max(0.03, dur - 0.06));
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
+    o.start(t0); o2.start(t0); o.stop(t0 + dur + 0.02); o2.stop(t0 + dur + 0.02);
+  }
+  var PATTERNS = {
+    // [freq, duration] pairs, played back to back
+    critical: [[880, .22], [620, .22], [880, .22], [620, .22], [880, .30]],
+    warn: [[700, .13], [700, .13]]
+  };
+  function klaxon(level, force) {
+    if (!force && muted()) return;
+    var pat = PATTERNS[level]; if (!pat) return;
+    var ac = audioCtx(); if (!ac) return;
+    // Browsers hold audio until a user gesture. If we're still suspended, say so in the strip
+    // rather than failing silently — a muted alarm you think is armed is worse than none.
+    if (ac.state === "suspended") {
+      try { ac.resume(); } catch (e) {}
+      if (ac.state === "suspended") { audioBlocked = true; markBlocked(); return; }
+    }
+    audioBlocked = false; markBlocked();
+    var t = ac.currentTime + 0.03;
+    for (var i = 0; i < pat.length; i++) { blast(ac, t, pat[i][0], pat[i][1], 0.17); t += pat[i][1] + 0.03; }
+  }
+  function markBlocked() {
+    var s = document.getElementById("obAlertStrip");
+    if (s) s.classList.toggle("blocked", !!audioBlocked && !muted());
+  }
+  // Arm audio on the first real gesture anywhere on the page, so a klaxon that fires while
+  // Adam is mid-click isn't the one that gets swallowed.
+  function armAudioOnce() {
+    var fn = function () {
+      var ac = audioCtx();
+      if (ac && ac.state === "suspended") { try { ac.resume().then(function () { audioBlocked = false; markBlocked(); }); } catch (e) {} }
+      else if (ac) { audioBlocked = false; markBlocked(); }
+      document.removeEventListener("pointerdown", fn, true);
+      document.removeEventListener("keydown", fn, true);
+    };
+    document.addEventListener("pointerdown", fn, true);
+    document.addEventListener("keydown", fn, true);
   }
 
   var TILES = [
@@ -133,6 +236,92 @@
     setTile(strip, "status", esc(t.status || "—"), "", null);
   }
 
+  /* ---------- brick 3: the alerts strip ---------------------------------------------- */
+  function mountAlerts() {
+    var ex = document.getElementById("obAlertStrip"); if (ex) return ex;
+    injectCss();
+    var s = document.createElement("div"); s.id = "obAlertStrip";
+    s.innerHTML =
+      '<div class="oa-head">◈ ALERTS' +
+        '<span class="oa-tools">' +
+          '<span class="oa-btn" data-a="mute" role="button" tabindex="0"></span>' +
+          '<span class="oa-btn" data-a="test" role="button" tabindex="0" title="Hear the klaxon">TEST</span>' +
+        "</span></div>" +
+      '<div class="oa-blocked">🔇 your browser is holding the sound — click TEST once to arm it</div>' +
+      '<ul class="oa-list"></ul>';
+    // Sits directly under the telemetry tiles; falls back to the dossier anchor if the
+    // tile strip never mounted.
+    var tel = document.getElementById("obTelStrip");
+    if (tel && tel.parentNode) tel.parentNode.insertBefore(s, tel.nextSibling);
+    else {
+      var anchor = document.querySelector(".dossier");
+      if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(s, anchor);
+      else (document.querySelector(".wrap") || document.body).appendChild(s);
+    }
+    var mute = s.querySelector('[data-a="mute"]'), test = s.querySelector('[data-a="test"]');
+    function paintMute() {
+      mute.textContent = muted() ? "🔇 MUTED" : "🔊 SOUND";
+      mute.classList.toggle("muted", muted());
+      mute.setAttribute("title", muted() ? "Alarm sound off on this device" : "Alarm sound on for this device");
+      markBlocked();
+    }
+    function hit(el, fn) {
+      el.addEventListener("click", fn);
+      el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } });
+    }
+    hit(mute, function () { setMuted(!muted()); paintMute(); });
+    // TEST always sounds, mute or not — it's how you check the alarm still works, and it's
+    // the user gesture that unblocks WebAudio.
+    hit(test, function () { klaxon("critical", true); });
+    paintMute();
+    return s;
+  }
+
+  function renderAlerts(list) {
+    var s = mountAlerts();
+    var ul = s.querySelector(".oa-list");
+    if (!list || !list.length) {
+      ul.innerHTML = '<li class="oa-quiet">All quiet — no alerts from your ship.</li>';
+      return;
+    }
+    ul.innerHTML = list.slice(0, ALERTS_SHOW).map(function (a) {
+      var lvl = (a.level === "critical" || a.level === "warn") ? a.level : "info";
+      var when = a.ts ? agoStr(Math.max(0, Date.now() - a.ts)) : "";
+      return '<li class="oa-item ' + lvl + '"><span class="oa-led"></span>' +
+        '<span class="oa-msg">' + esc(a.msg) + "</span>" +
+        '<span class="oa-when">' + esc(when) + "</span></li>";
+    }).join("");
+  }
+
+  function flash(level) {
+    var s = document.getElementById("obAlertStrip"); if (!s) return;
+    var cls = level === "critical" ? "flash-critical" : "flash-warn";
+    s.classList.remove("flash-critical", "flash-warn");
+    void s.offsetWidth;                      // restart the animation on a repeat alert
+    s.classList.add(cls);
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(function () { s.classList.remove("flash-critical", "flash-warn"); }, FLASH_MS);
+  }
+
+  // Decide what's NEW and therefore what gets to make noise. The first list we ever see is
+  // the backlog — marked seen silently, so opening the page after a rough trip doesn't set
+  // the klaxon off for scans that happened an hour ago.
+  function handleAlerts(list) {
+    if (!Array.isArray(list)) return;        // older worker with no alerts field — stay dark
+    var first = (SEEN === null);
+    if (first) SEEN = {};
+    var worst = null;
+    for (var i = 0; i < list.length; i++) {
+      var a = list[i]; if (!a || !a.id || SEEN[a.id]) continue;
+      SEEN[a.id] = 1;
+      if (first) continue;
+      if (a.level === "critical") worst = "critical";
+      else if (a.level === "warn" && worst !== "critical") worst = "warn";
+    }
+    renderAlerts(list);
+    if (worst) { flash(worst); klaxon(worst); }
+  }
+
   function api() {
     return fetch("/blades/api/telemetry", { credentials: "same-origin" })
       .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
@@ -143,7 +332,7 @@
     if (document.hidden || busy) return; busy = true;
     api().then(function (d) {
       busy = false;
-      if (d && d.ok) { TEL = d; markLocal(TEL); lastTs = d.ts || 0; }
+      if (d && d.ok) { TEL = d; markLocal(TEL); lastTs = d.ts || 0; handleAlerts(d.alerts); }
       paint(strip);
     });
   }
@@ -161,6 +350,8 @@
       markLocal(TEL);
       var strip = mount();
       paint(strip);
+      armAudioOnce();
+      handleAlerts(d.alerts);          // backlog: rendered, marked seen, silent
       setInterval(function () { tick(strip); }, POLL_MS);
       // keep the "Ns ago" label ticking between polls so it feels live — measured from the local
       // reference captured at each poll (skew-proof), not the server epoch vs the browser clock.

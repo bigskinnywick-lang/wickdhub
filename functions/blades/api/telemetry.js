@@ -7,8 +7,12 @@
 // so the tile row can show a liveness heartbeat and go "offline" (grey) when the plugin
 // isn't running. Per-pilot, self only — a pilot only ever sees their own cockpit here.
 //
+// It also carries the pilot's ALERTS (pirate scan, fuel low, …) from the same heartbeat, so
+// the dashboard has ONE poll for its whole live state rather than an endpoint per card.
+//
 // GET /blades/api/telemetry (Access-gated, no-store)
-//   -> { ok, cmdr, telemetry:{sys,ship,shipName,fuelPct,cargo,cargoCap,status}|null, ts, ageMs }
+//   -> { ok, cmdr, telemetry:{sys,ship,shipName,fuelPct,cargo,cargoCap,status}|null, ts, ageMs,
+//        alerts:[{id,level,msg,ts}] }
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
 });
@@ -33,14 +37,38 @@ function pubTelemetry(rec) {
   return Object.keys(out).length ? out : null;
 }
 
+// Whitelist the alert fields the strip renders, newest FIRST, capped. An unknown level is
+// forced to "info" so a bad KV value can never paint (or sound) as critical.
+const ALERT_LEVELS = { critical: 1, warn: 1, info: 1 };
+const ALERTS_SHOW = 8;
+function pubAlerts(rec) {
+  const src = Array.isArray(rec && rec.alerts) ? rec.alerts : [];
+  const out = [];
+  for (const a of src) {
+    if (!a || typeof a !== "object") continue;
+    if (typeof a.id !== "string" || typeof a.msg !== "string" || !a.msg) continue;
+    const lvl = String(a.level || "info").toLowerCase();
+    out.push({
+      id: a.id.slice(0, 40),
+      level: ALERT_LEVELS[lvl] ? lvl : "info",
+      msg: a.msg.slice(0, 120),
+      ts: (typeof a.ts === "number" && Number.isFinite(a.ts)) ? a.ts : 0
+    });
+  }
+  out.sort((a, b) => (b.ts || 0) - (a.ts || 0));   // newest first — the strip reads top-down
+  return out.slice(0, ALERTS_SHOW);
+}
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const email = callerEmail(request);
   if (!email) return json({ ok: false, error: "no identity" }, 403);
   const cmdr = await resolveCmdr(env, email);
-  if (!cmdr) return json({ ok: true, cmdr: "", telemetry: null, ts: 0, ageMs: null, needsSetup: true });
-  const rec = await readJson(env, "plugin:telemetry:" + cmdr.toLowerCase());
+  if (!cmdr) return json({ ok: true, cmdr: "", telemetry: null, ts: 0, ageMs: null, alerts: [], needsSetup: true });
+  const key = cmdr.toLowerCase();
+  const rec = await readJson(env, "plugin:telemetry:" + key);
+  const alr = await readJson(env, "plugin:alerts:" + key);
   const ts = (rec && typeof rec.ts === "number") ? rec.ts : 0;
   const ageMs = ts ? Math.max(0, Date.now() - ts) : null;
-  return json({ ok: true, cmdr, telemetry: pubTelemetry(rec), ts, ageMs });
+  return json({ ok: true, cmdr, telemetry: pubTelemetry(rec), ts, ageMs, alerts: pubAlerts(alr) });
 }

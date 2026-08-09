@@ -14,7 +14,7 @@
     { k: "honk", label: "Honk on arrival", sub: "auto-fire the Discovery Scanner when you jump · needs a keyboard key on your fire control" },
     { k: "galaxymap", label: "Auto-plot to Galaxy Map", sub: "on a NAV send, open the map + paste the system · needs a keyboard Open-Galaxy-Map bind" },
     { k: "fuel", label: "Fuel safety check", sub: "warn in EDMC before a jump that would leave you low on fuel" },
-    { soon: true, label: "Pirate / cargo-scan alarm", sub: "alert when a ship scans your cargo — coming soon" }
+    { k: "pirate", label: "Pirate / cargo-scan alarm", sub: "klaxon here and on your PC the moment something reads your hold · needs no binds" }
   ];
 
   function api(method, body) {

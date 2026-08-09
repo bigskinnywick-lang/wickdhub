@@ -54,7 +54,7 @@
 <div class="wrap">
   <header class="hud">
     <div class="brand"><div class="ic">⚡</div><div><h1>SQUAD NET USAGE</h1><div class="sub" id="sub">TRAFFIC & KV · LAST 7 DAYS</div></div></div>
-    <div class="hlinks"><button class="refresh" id="refreshBtn">⟳ REFRESH</button><a href="/blades/commander/">◂ MY DASHBOARD</a></div>
+    <div class="hlinks"><button class="refresh" id="refreshBtn">⟳ REFRESH</button><a href="/blades/commander/">◂ MY STATS</a></div>
   </header>
 
   <div id="gate" class="panel hidden"><div class="gate"><div class="lk">📊</div><div class="t">ADMINS ONLY</div><div style="font-size:11.5px;margin-top:10px">The usage glance is limited to squadron admins.</div></div></div>
