@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.7"  # b3.7: PIRATE ALARM + the alerts pipe (Commander Dashboard brick 3). New "Pirate / cargo-scan alarm" assist (default OFF): a Cargo or Cabin scan on your ship raises a CRITICAL alert and blares a two-tone klaxon on this PC (Windows winsound, 12s cooldown); a Crime scan logs quietly as authority traffic. Alerts ride the existing navpull heartbeat as &al= into the board's alerts strip, which sounds its own klaxon. The fuel-low warning now raises an alert too instead of only writing an EDMC status line. Rest unchanged from b3.6.
+PLUGIN_VERSION = "b3.8"  # b3.8: ALARM SOUND SWAP (test-pilot call) — the pirate klaxon is now an F-16 RWR-style LAUNCH WARBLE, alternating 1046/1245Hz pulses, matched tone-for-tone to the browser klaxon so the rig and the board make the same noise. Still winsound.Beep (proven loud enough over Elite; a mixer-routed WAV would let the game bury it). No behaviour change beyond the sound. b3.7 added the PIRATE ALARM + alerts pipe: a Cargo or Cabin scan raises a CRITICAL alert (12s cooldown) and blares here + on the board; a Crime scan logs quietly as authority traffic; alerts ride the navpull heartbeat as &al=; fuel-low raises a WARN on the same lane.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1395,26 +1395,56 @@ try:
 except Exception:
     _winsound = None
 
-# The PC-side klaxon: an alternating two-tone blare, pitched to cut through game audio.
-_KLAXON = {
-    "critical": [(880, 200), (620, 200), (880, 200), (620, 200), (880, 280)],
-    "warn": [(700, 140), (700, 140)],
+# The PC-side klaxon — an F-16 RWR-style LAUNCH WARBLE (test-pilot call, 2026-08-09), matched
+# tone-for-tone to the browser klaxon in _shell/telemetry.js (OB_TONES) so the rig and the board
+# make the SAME noise. The "deedle deedle" is alternating pitch, not a single repeated beep.
+#
+# Format: (freq_hz, milliseconds); freq 0 means SILENCE (winsound.Beep cannot emit a rest, so a
+# gap is a sleep). Kept on winsound.Beep rather than a mixer-routed WAV on purpose: Beep proved
+# loud enough to carry over a running Elite (verified 2026-08-09), and PlaySound would put the
+# alarm back under the volume mixer where the game can bury it.
+# The same three threat tones the board offers, so whichever one wins the A/B on the board can
+# be matched here without a code change — set `blades_alarm_tone` to warble|lock|growl in EDMC
+# settings. (The board's picker is per-device localStorage and deliberately does NOT drive the
+# rig: syncing it would mean pushing a STRING through a settings pipe that is boolean-only.)
+_KLAXON_TONES = {
+    "warble": [(1046, 45), (0, 28), (1245, 45), (0, 28)] * 10,     # ~1.46s, mirrors OB_TONES.warble
+    "lock": [(1000, 70), (0, 55)] * 12,                            # mirrors OB_TONES.lock
+    "growl": [(150, 60), (190, 60), (240, 60), (0, 50)]            # a Beep can't buzz — closest is a rising
+             + [(1046, 45), (0, 28), (1245, 45), (0, 28)] * 5,     # sweep into the warble
 }
+DEFAULT_ALARM_TONE = "warble"
+
+
+def _alarm_tone():
+    t = _cfg_str("blades_alarm_tone", DEFAULT_ALARM_TONE).strip().lower()
+    return t if t in _KLAXON_TONES else DEFAULT_ALARM_TONE
+
+
+def _klaxon_pattern(level):
+    if level == "critical":
+        return _KLAXON_TONES[_alarm_tone()]
+    if level == "warn":
+        return [(660, 100), (0, 90), (660, 100)]                   # mirrors OB_TONES.soft
+    return None
 
 
 def _alarm_blare(level):
     """Sound the klaxon on THIS PC. Always on its own daemon thread — winsound.Beep is
-    BLOCKING, and the journal callback must never sit through a 1.1s siren."""
+    BLOCKING, and the journal callback must never sit through a 1.5s warble."""
     if not PIRATE_BLARE or _winsound is None:
         return
-    pattern = _KLAXON.get(level)
+    pattern = _klaxon_pattern(level)
     if not pattern:
         return
 
     def _run():
         try:
             for freq, ms in pattern:
-                _winsound.Beep(int(freq), int(ms))
+                if freq:
+                    _winsound.Beep(int(freq), int(ms))
+                else:
+                    time.sleep(ms / 1000.0)
         except Exception:
             pass
     try:

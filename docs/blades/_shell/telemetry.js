@@ -17,7 +17,7 @@
 (function () {
   var POLL_MS = 5000, STALE_MS = 30000, FUEL_LOW = 25, FUEL_CRIT = 10;
   var TEL = null, tsAgeTimer = null, lastTs = 0;
-  var ALERTS_SHOW = 6, FLASH_MS = 6000, MUTE_KEY = "ob_alarm_mute";
+  var ALERTS_SHOW = 6, FLASH_MS = 6000, MUTE_KEY = "ob_alarm_mute", TONE_KEY = "ob_alarm_tone";
   var SEEN = null, AC = null, audioBlocked = false, flashTimer = null;
 
   // Ship code -> display name (subset; unknown codes get title-cased).
@@ -120,30 +120,104 @@
   function muted() { try { return localStorage.getItem(MUTE_KEY) === "1"; } catch (e) { return false; } }
   function setMuted(v) { try { localStorage.setItem(MUTE_KEY, v ? "1" : "0"); } catch (e) {} }
 
-  // One blast: a sawtooth+square pair through a lowpass, bending down slightly for the growl.
-  function blast(ac, t0, freq, dur, peak) {
-    var o = ac.createOscillator(), o2 = ac.createOscillator();
-    var f = ac.createBiquadFilter(), g = ac.createGain();
-    o.type = "sawtooth"; o2.type = "square";
-    o.frequency.setValueAtTime(freq, t0);
-    o.frequency.linearRampToValueAtTime(freq * 0.96, t0 + dur);
-    o2.frequency.setValueAtTime(freq / 2, t0);
-    f.type = "lowpass"; f.frequency.setValueAtTime(2200, t0);
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.02);
-    g.gain.setValueAtTime(peak, t0 + Math.max(0.03, dur - 0.06));
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    o.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
-    o.start(t0); o2.start(t0); o.stop(t0 + dur + 0.02); o2.stop(t0 + dur + 0.02);
+  /* --KLAXON-SYNTH-START-- (the offline preview harness extracts this block VERBATIM and renders
+     it through an OfflineAudioContext, so what Adam auditions is byte-identical to what the page
+     plays — keep it self-contained: no closure references beyond its own args.)
+
+     Modelled on an F-16 threat cue rather than a generic klaxon (test-pilot call, 2026-08-09):
+     short hard-edged square pulses read as "something has YOU", where a two-tone blare reads as
+     "a machine is unhappy". Two primitives compose every pattern:
+       obPulseTrain — the RWR-style chirp: fast square bursts, alternating pitch for the warble
+       obGrowl      — the AIM-9 seeker buzz: a low sawtooth chopped by an accelerating LFO       */
+  function obPulseTrain(ac, t0, s) {
+    var t = t0, i, o, g;
+    for (i = 0; i < s.count; i++) {
+      o = ac.createOscillator(); g = ac.createGain();
+      o.type = s.wave || "square";
+      o.frequency.setValueAtTime(s.freqs[i % s.freqs.length], t);
+      // Hard attack + hard release: the edge is what makes it read as a warning rather than a note.
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(s.peak, t + 0.004);
+      g.gain.setValueAtTime(s.peak, t + s.on - 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + s.on);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t); o.stop(t + s.on + 0.005);
+      t += s.on + s.off;
+    }
+    return t;
   }
-  var PATTERNS = {
-    // [freq, duration] pairs, played back to back
-    critical: [[880, .22], [620, .22], [880, .22], [620, .22], [880, .30]],
-    warn: [[700, .13], [700, .13]]
+  function obGrowl(ac, t0, s) {
+    // osc -> lowpass -> mod (chopped 0..1 by the LFO) -> env (overall shape) -> out.
+    // The LFO drives a gain node whose BASE is 0.5 and whose LFO swing is ±0.5, so the carrier is
+    // chopped fully to silence and back — that on/off chop is the rasp, not a filter sweep.
+    var o = ac.createOscillator(), lfo = ac.createOscillator();
+    var lg = ac.createGain(), mod = ac.createGain(), env = ac.createGain(), f = ac.createBiquadFilter();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(s.f0, t0);
+    o.frequency.linearRampToValueAtTime(s.f1, t0 + s.dur);
+    lfo.type = "square";
+    lfo.frequency.setValueAtTime(s.lfo0, t0);
+    lfo.frequency.linearRampToValueAtTime(s.lfo1, t0 + s.dur);   // seeker tightening on the target
+    lg.gain.setValueAtTime(0.5, t0);
+    mod.gain.setValueAtTime(0.5, t0);
+    f.type = "lowpass"; f.frequency.setValueAtTime(2600, t0);
+    env.gain.setValueAtTime(0.0001, t0);
+    env.gain.exponentialRampToValueAtTime(s.peak, t0 + 0.05);
+    env.gain.setValueAtTime(s.peak, t0 + s.dur - 0.06);
+    env.gain.exponentialRampToValueAtTime(0.0001, t0 + s.dur);
+    lfo.connect(lg); lg.connect(mod.gain);
+    o.connect(f); f.connect(mod); mod.connect(env); env.connect(ac.destination);
+    o.start(t0); lfo.start(t0);
+    o.stop(t0 + s.dur + 0.02); lfo.stop(t0 + s.dur + 0.02);
+    return t0 + s.dur;
+  }
+  function obPlaySpec(ac, t0, spec) {
+    var t = t0;
+    for (var i = 0; i < spec.length; i++) {
+      var seg = spec[i];
+      if (seg.gap) { t += seg.gap; continue; }
+      t = (seg.kind === "growl") ? obGrowl(ac, t, seg) : obPulseTrain(ac, t, seg);
+    }
+    return t;
+  }
+  // Peak is deliberately high for the threat tones — this has to cut through game audio on a
+  // second screen, and a square wave at 0.16 disappears under a running Elite. Verified
+  // clip-free (no sample exceeds 1.0) by the offline render; pulses never overlap, and the
+  // growl's carrier is chopped by a 0..1 modulator so it can't exceed its own env peak.
+  var OB_TONES = {
+    // A — RWR LAUNCH WARBLE: the "deedle deedle deedle" everyone means by "missile lock".
+    warble: [{ freqs: [1046, 1245], count: 20, on: 0.045, off: 0.028, peak: 0.60 }],
+    // B — LOCK TONE: one pitch, hammered. Colder, more "acquired" than "incoming".
+    lock: [{ freqs: [1000], count: 12, on: 0.070, off: 0.055, peak: 0.60 }],
+    // C — SEEKER GROWL -> LOCK: the AIM-9 buzz tightening, then breaking into the warble.
+    growl: [
+      { kind: "growl", f0: 150, f1: 240, lfo0: 18, lfo1: 52, dur: 0.85, peak: 0.55 },
+      { gap: 0.05 },
+      { freqs: [1046, 1245], count: 10, on: 0.045, off: 0.028, peak: 0.62 }
+    ],
+    // Fuel-low and friends: same family, lower and slower so it never reads as a threat.
+    soft: [{ freqs: [660], count: 2, on: 0.10, off: 0.09, peak: 0.30 }]
   };
+  /* --KLAXON-SYNTH-END-- */
+
+  // Which threat tone this device plays. Per-device like the mute and the theme dials — the
+  // point is that Adam and a test pilot can A/B them in flight without a redeploy, so it must
+  // NOT be server-synced. An unknown stored value falls back to the default rather than going
+  // silent. NOTE: this picks the BOARD's tone only; the rig's own klaxon is chosen in EDMC
+  // settings (blades_alarm_tone) and defaults to the same warble.
+  var TONE_ORDER = ["warble", "lock", "growl"];
+  var TONE_LABEL = { warble: "WARBLE", lock: "LOCK", growl: "GROWL" };
+  function tone() {
+    var t; try { t = localStorage.getItem(TONE_KEY); } catch (e) {}
+    return (t && OB_TONES[t] && TONE_ORDER.indexOf(t) >= 0) ? t : TONE_ORDER[0];
+  }
+  function setTone(t) { try { localStorage.setItem(TONE_KEY, t); } catch (e) {} }
+  function nextTone() { return TONE_ORDER[(TONE_ORDER.indexOf(tone()) + 1) % TONE_ORDER.length]; }
+
   function klaxon(level, force) {
     if (!force && muted()) return;
-    var pat = PATTERNS[level]; if (!pat) return;
+    var pat = (level === "critical") ? OB_TONES[tone()] : (level === "warn" ? OB_TONES.soft : null);
+    if (!pat) return;
     var ac = audioCtx(); if (!ac) return;
     // Browsers hold audio until a user gesture. If we're still suspended, say so in the strip
     // rather than failing silently — a muted alarm you think is armed is worse than none.
@@ -152,8 +226,7 @@
       if (ac.state === "suspended") { audioBlocked = true; markBlocked(); return; }
     }
     audioBlocked = false; markBlocked();
-    var t = ac.currentTime + 0.03;
-    for (var i = 0; i < pat.length; i++) { blast(ac, t, pat[i][0], pat[i][1], 0.17); t += pat[i][1] + 0.03; }
+    obPlaySpec(ac, ac.currentTime + 0.03, pat);
   }
   function markBlocked() {
     var s = document.getElementById("obAlertStrip");
@@ -244,8 +317,9 @@
     s.innerHTML =
       '<div class="oa-head">◈ ALERTS' +
         '<span class="oa-tools">' +
+          '<span class="oa-btn" data-a="tone" role="button" tabindex="0"></span>' +
           '<span class="oa-btn" data-a="mute" role="button" tabindex="0"></span>' +
-          '<span class="oa-btn" data-a="test" role="button" tabindex="0" title="Hear the klaxon">TEST</span>' +
+          '<span class="oa-btn" data-a="test" role="button" tabindex="0" title="Hear the alarm">TEST</span>' +
         "</span></div>" +
       '<div class="oa-blocked">🔇 your browser is holding the sound — click TEST once to arm it</div>' +
       '<ul class="oa-list"></ul>';
@@ -259,21 +333,30 @@
       else (document.querySelector(".wrap") || document.body).appendChild(s);
     }
     var mute = s.querySelector('[data-a="mute"]'), test = s.querySelector('[data-a="test"]');
+    var toneBtn = s.querySelector('[data-a="tone"]');
     function paintMute() {
       mute.textContent = muted() ? "🔇 MUTED" : "🔊 SOUND";
       mute.classList.toggle("muted", muted());
       mute.setAttribute("title", muted() ? "Alarm sound off on this device" : "Alarm sound on for this device");
       markBlocked();
     }
+    function paintTone() {
+      toneBtn.textContent = "♪ " + TONE_LABEL[tone()];
+      toneBtn.setAttribute("title", "Threat tone on this device — click to try " + TONE_LABEL[nextTone()]
+        + " (board only; the rig's own alarm is set in EDMC)");
+    }
     function hit(el, fn) {
       el.addEventListener("click", fn);
       el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } });
     }
     hit(mute, function () { setMuted(!muted()); paintMute(); });
+    // Cycling the tone PLAYS it — the whole point is auditioning, and clicking through three
+    // labels in silence tells you nothing. Forced, so it works while muted too.
+    hit(toneBtn, function () { setTone(nextTone()); paintTone(); klaxon("critical", true); });
     // TEST always sounds, mute or not — it's how you check the alarm still works, and it's
     // the user gesture that unblocks WebAudio.
     hit(test, function () { klaxon("critical", true); });
-    paintMute();
+    paintMute(); paintTone();
     return s;
   }
 
