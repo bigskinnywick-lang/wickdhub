@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.8"  # b3.8: ALARM SOUND SWAP (test-pilot call) — the pirate klaxon is now an F-16 RWR-style LAUNCH WARBLE, alternating 1046/1245Hz pulses, matched tone-for-tone to the browser klaxon so the rig and the board make the same noise. Still winsound.Beep (proven loud enough over Elite; a mixer-routed WAV would let the game bury it). No behaviour change beyond the sound. b3.7 added the PIRATE ALARM + alerts pipe: a Cargo or Cabin scan raises a CRITICAL alert (12s cooldown) and blares here + on the board; a Crime scan logs quietly as authority traffic; alerts ride the navpull heartbeat as &al=; fuel-low raises a WARN on the same lane.
+PLUGIN_VERSION = "b3.9"  # b3.9: THE PIRATE ANNOUNCES ITSELF. `Scanned` carries only a ScanType and never names the scanner, so it cannot tell a pirate from a customs officer — that is why a security NPC set the klaxon off. The identity IS available, just on a different event: NPC chatter arrives as ReceiveText/Channel=npc with a ROLE-PREFIXED token, and the pirate hails you BEFORE it interdicts. So the hail is now the alarm: critical + klaxon the moment a hostile NPC speaks, while there is still time to boost or high-wake. A cargo scan with no hail keeps the location + cargo gates and stays a WARN (police stay silent). Interdiction/attack/damage are demoted to a BACKSTOP — they arrive after anything can be done about them. Token vocabulary is matched broadly and every NPC token is logged to npc-tokens.log, because a hardcoded guess would fail silently.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1485,27 +1485,204 @@ def _alerts_payload():
     return list(_alerts)
 
 
-# Someone scanning YOUR ship. Elite's `Scanned` event names the KIND of scan but never the
-# scanner, so the scan type IS the identification: a CARGO scan is a pirate reading your hold
-# and a CABIN scan is a passenger hunter doing the same — both are the alarm. A CRIME scan is
-# system authority: traffic, not a threat, so it is logged to the strip and never sounded.
+# --- b3.9: the pirate announces itself --------------------------------------
+# `Scanned` carries ONLY timestamp/event/ScanType — it never names the scanner (verified
+# against the journal spec 2026-08-10), so it cannot separate a pirate from a customs
+# officer. b3.7 guessed "Cargo scan = pirate" and a security NPC proved it wrong.
+#
+# The identity does exist; it is just on a different event. NPC chatter arrives as
+# ReceiveText with Channel="npc" and a ROLE-PREFIXED token in `Message`, and crucially the
+# pirate HAILS YOU BEFORE IT INTERDICTS. That single fact reorders everything:
+#
+#   * The hail is EARLY  -> there is still time to boost, high-wake, or set up a submit-run.
+#   * The hail is SPECIFIC -> it says who is talking, which is what `Scanned` could not.
+#
+# So the hail IS the alarm. The earlier design waited for interdiction / attack / hull
+# damage to "confirm" a scan, but those all land AFTER the window in which anything can be
+# done — a klaxon at that point is a narrator, not a warning. They are now a backstop only.
+PIRATE_ESCALATE_S = 15.0        # backstop window: scan -> hostile act
+PIRATE_NEAR_STATION_S = 300.0   # docking traffic keeps us in "authority country"
+PIRATE_HAIL_S = 120.0           # how long a hostile hail keeps the encounter hot
+PIRATE_ENCOUNTER_S = 120.0      # suppress a second klaxon for the same encounter
+
 _PIRATE_SCANS = {
-    "cargo": ("critical", "PIRATE SCAN - your cargo hold is being read"),
-    "cabin": ("critical", "CABIN SCAN - someone is hunting your passengers"),
+    "cargo": "PIRATE SCAN - your cargo hold is being read",
+    "cabin": "CABIN SCAN - someone is hunting your passengers",
 }
+
+# Matched as case-insensitive SUBSTRINGS of the raw token, deliberately loose. The journal
+# spec does not publish this vocabulary, and a hardcoded exact token that turns out wrong
+# would fail SILENTLY — the single worst failure mode, and one this project has now hit
+# three times. Broad match + capture log, then tighten from Adam's real journal.
+_NPC_PIRATE_HINTS = ("pirate", "cargohunter", "cargo_hunter", "ambushedpilot", "assassin")
+_NPC_AUTH_HINTS = ("police", "security", "authority", "military", "customs")
+
+# SECOND NET, matched against Message_Localised (the words you actually read in comms).
+# ⚠ PROVENANCE: supplied 2026-08-10 from an LLM's recollection of in-game dialogue, NOT
+# from a captured journal. That is the same grade of evidence that produced the "Anatomy
+# collection = VIRPIL product renders" dead end earlier the same day, so it is wired as a
+# FALLBACK behind the token match and never as the sole trigger. Phrases are chosen to be
+# unambiguously predatory — "cargo" alone would also match a customs officer. The capture
+# log is what replaces this with fact on first flight.
+_NPC_PIRATE_PHRASES = (
+    "take it by force", "pull over", "don't try to run", "tasty cargo",
+    "big haul", "all that haul", "you've got what i want", "i knew i'd find you",
+    "what's in your cargo hold", "that's the ship i'm after",
+)
+
+_pa_st = {"near_until": 0.0, "pend_until": 0.0, "pend_msg": "", "legal": "",
+          "flags_prev": 0, "hail_until": 0.0, "alarmed_until": 0.0}
+_pa_seen = set()
+
+
+def _pa_flags():
+    f = _hk.get("flags")
+    return f if isinstance(f, int) else 0
+
+
+def _pa_authority_country():
+    """LOCATION GATE. Authority scans cluster where authority is; pirates scan you in open
+    space. Status.json has no 'no-fire zone' flag, so this is a PROXY: docked, landed, or
+    recently in docking traffic (or a police voice heard nearby)."""
+    f = _pa_flags()
+    if (f & 0x1) or (f & 0x2):          # Docked / Landed
+        return True
+    return time.time() < _pa_st.get("near_until", 0.0)
+
+
+def _pa_worth_taking():
+    """CARGO-VALUE GATE. A hold scan only threatens you if the hold holds something — or if
+    you are already wanted. Unknown cargo FAILS OPEN."""
+    try:
+        if str(_pa_st.get("legal") or "").strip().lower() not in ("", "clean"):
+            return True
+        used = _LO.get("cargoUsed")
+        if used is None:
+            return True
+        return float(used) > 0
+    except Exception:
+        return True
+
+
+def _pa_alarm(msg, reason=""):
+    """The real thing: critical + klaxon on the rig + the page flash on the board."""
+    txt = (msg + " - " + str(reason)[:60]) if reason else msg
+    if _alert_raise("critical", txt, key="pirate-alarm",
+                    cooldown=PIRATE_COOLDOWN_S, blare=True):
+        _pa_st["alarmed_until"] = time.time() + PIRATE_ENCOUNTER_S
+        return True
+    return False
+
+
+def _pa_capture(tok, loc):
+    """CAPTURE MODE. Record every distinct NPC token this game actually emits, so the match
+    above can be tightened from real data instead of from someone's memory. Bounded, append
+    only, best-effort — it must never be able to break the alarm it is helping to build."""
+    try:
+        if not tok or tok in _pa_seen or len(_pa_seen) >= 200:
+            return
+        _pa_seen.add(tok)
+        d = _state.get("dir")
+        if not d:
+            return
+        with open(os.path.join(d, "npc-tokens.log"), "a", encoding="utf-8") as fh:
+            fh.write(str(tok) + "\t" + str(loc or "") + "\n")
+    except Exception:
+        pass
+
+
+def _pa_npc_text(entry):
+    """★ THE EARLY WARNING. A hostile NPC opening its mouth is the first and best signal."""
+    if not _pirate_on():
+        return
+    if str(entry.get("Channel") or "").strip().lower() != "npc":
+        return
+    tok = str(entry.get("Message") or "")
+    loc = str(entry.get("Message_Localised") or "")
+    _pa_capture(tok, loc)
+    low = tok.lower()
+    # Curly apostrophes are common in localised strings and would break a naive match.
+    low_loc = loc.lower().replace("\u2019", "'")
+    if any(h in low for h in _NPC_AUTH_HINTS):
+        # A police voice is positive evidence of authority country, wherever we are.
+        _pa_st["near_until"] = max(_pa_st.get("near_until", 0.0),
+                                   time.time() + PIRATE_NEAR_STATION_S)
+        return
+    by_token = any(h in low for h in _NPC_PIRATE_HINTS)
+    by_words = any(ph in low_loc for ph in _NPC_PIRATE_PHRASES)
+    if by_token or by_words:
+        _pa_st["hail_until"] = time.time() + PIRATE_HAIL_S
+        # Record WHICH net caught it, so the capture log can prove whether the token match
+        # is doing the work or the unverified phrase list is carrying the feature.
+        _pa_alarm("PIRATE INBOUND - hostile hail" + ("" if by_token else " (phrase)"), loc[:60])
 
 
 def _pa_scanned(entry):
     if not _pirate_on():
         return
     kind = str(entry.get("ScanType") or "").strip().lower()
-    hit = _PIRATE_SCANS.get(kind)
-    if hit:
-        level, msg = hit
-        _alert_raise(level, msg, key="pirate-scan", cooldown=PIRATE_COOLDOWN_S, blare=True)
-    elif kind == "crime":
+    if kind == "crime":
         _alert_raise("info", "Authority scan - routine crime check",
                      key="crime-scan", cooldown=PIRATE_COOLDOWN_S)
+        return
+    msg = _PIRATE_SCANS.get(kind)
+    if not msg:
+        return
+
+    # A pirate already announced itself, so we have already shouted. The scan only
+    # corroborates it; logging beats a second klaxon.
+    if time.time() < _pa_st.get("hail_until", 0.0):
+        _alert_raise("info", "Scan follows a pirate hail - already alarmed",
+                     key="pirate-scan", cooldown=PIRATE_COOLDOWN_S)
+        return
+
+    laden = _pa_worth_taking()
+    safe = _pa_authority_country()
+
+    # Empty hold, clean record, authority country, and nobody threatened us: police
+    # paperwork. Log it so the strip shows it happened; make no noise.
+    if safe and not laden:
+        _alert_raise("info", "Scan (" + kind + ") - empty hold in station space, ignored",
+                     key="pirate-scan", cooldown=PIRATE_COOLDOWN_S)
+        return
+
+    where = "station space" if safe else "open space"
+    if _alert_raise("warn", msg + " (" + where + ")",
+                    key="pirate-scan", cooldown=PIRATE_COOLDOWN_S):
+        _pa_st["pend_until"] = time.time() + PIRATE_ESCALATE_S
+        _pa_st["pend_msg"] = msg
+
+
+def _pa_confirm(reason):
+    """BACKSTOP ONLY. Interdiction, attack and hull damage all arrive AFTER the moment
+    anything could be done about them, so they are not the alarm — they only catch the case
+    where an un-hailed scan turned out to be real and nothing else fired."""
+    try:
+        if not _pirate_on():
+            return False
+        now = time.time()
+        if now < _pa_st.get("alarmed_until", 0.0):
+            return False                      # already shouted for this encounter
+        if now >= _pa_st.get("pend_until", 0.0):
+            return False
+        _pa_st["pend_until"] = 0.0
+        return _pa_alarm("THREAT CONFIRMED", reason)
+    except Exception:
+        return False
+
+
+def _pa_journal_hostile(ev, entry):
+    if ev == "Interdicted":
+        _pa_confirm("interdicted by " + str(entry.get("Interdictor") or "unknown")[:40])
+    elif ev == "UnderAttack":
+        if str(entry.get("Target") or "").strip().lower() in ("", "you", "mothership"):
+            _pa_confirm("under attack")
+    elif ev == "HullDamage":
+        if entry.get("PlayerPilot", True):
+            _pa_confirm("taking hull damage")
+    elif ev == "ShieldState":
+        if entry.get("ShieldsUp") is False:
+            _pa_confirm("shields down")
 
 
 _fuel = {"main": None, "cap": None, "used": None}
@@ -1579,6 +1756,17 @@ def dashboard_entry(cmdr, is_beta, entry):
         fl = entry.get("Flags")
         if isinstance(fl, int):
             _hk["flags"] = fl
+            # b3.9: RISING EDGE only. IsInDanger sits set for the whole fight, so testing the
+            # bit alone would re-confirm every status tick; only the transition is news.
+            _prev = _pa_st.get("flags_prev", 0)
+            if (fl & 0x800000) and not (_prev & 0x800000):
+                _pa_confirm("being interdicted")
+            elif (fl & 0x400000) and not (_prev & 0x400000):
+                _pa_confirm("in danger")
+            _pa_st["flags_prev"] = fl
+        _ls = entry.get("LegalState")
+        if _ls is not None:
+            _pa_st["legal"] = str(_ls)
         fu = entry.get("Fuel")
         if isinstance(fu, dict) and fu.get("FuelMain") is not None:
             _fuel["main"] = fu.get("FuelMain")
@@ -1975,6 +2163,29 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if ev == "Scanned":
         try:
             _pa_scanned(entry)
+        except Exception:
+            pass
+
+    # b3.9 ★ EARLY WARNING: a hostile NPC opening its mouth, before any interdiction.
+    if ev == "ReceiveText":
+        try:
+            _pa_npc_text(entry)
+        except Exception:
+            pass
+
+    # b3.9 BACKSTOP: a hostile act within the window turns a pending WARN into the klaxon.
+    if ev in ("Interdicted", "UnderAttack", "HullDamage", "ShieldState"):
+        try:
+            _pa_journal_hostile(ev, entry)
+        except Exception:
+            pass
+
+    # b3.9 LOCATION GATE input: docking traffic means authority is nearby. Kept as a decaying
+    # timestamp rather than a boolean so leaving a station fades out instead of flipping.
+    if ev in ("Docked", "Undocked", "DockingRequested", "DockingGranted",
+              "DockingDenied", "ApproachSettlement"):
+        try:
+            _pa_st["near_until"] = time.time() + PIRATE_NEAR_STATION_S
         except Exception:
             pass
 

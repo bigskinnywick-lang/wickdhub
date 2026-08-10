@@ -99,7 +99,22 @@
       "#obAlertStrip.flash-warn{animation:oaFlashW 1.4s ease-in-out 4}",
       "@keyframes oaFlashC{0%,100%{box-shadow:0 0 0 0 rgba(224,87,74,0)}50%{box-shadow:0 0 22px 2px rgba(224,87,74,.55);border-color:var(--bad,#e0574a)}}",
       "@keyframes oaFlashW{0%,100%{box-shadow:0 0 0 0 rgba(240,168,40,0)}50%{box-shadow:0 0 18px 1px rgba(240,168,40,.45);border-color:var(--warn,#f0a828)}}",
-      "@media (prefers-reduced-motion:reduce){#obAlertStrip.flash-critical,#obAlertStrip.flash-warn{animation:none;border-color:var(--bad,#e0574a)}}"
+      "@media (prefers-reduced-motion:reduce){#obAlertStrip.flash-critical,#obAlertStrip.flash-warn{animation:none;border-color:var(--bad,#e0574a)}}",
+      /* ---- b3.9: WHOLE-PAGE flash. The strip pulse is easy to miss if you are heads-down
+         in the game on another screen; this is meant to catch the corner of your eye from
+         across the room. An edge-weighted vignette, NOT a full wash, so the board stays
+         readable while it fires -- an alarm you cannot read through is a worse alarm.
+         pointer-events:none is load-bearing: this sits above everything and must never
+         eat a click. THREE pulses over ~3s = 1Hz, comfortably under the WCAG 2.3.1
+         three-flashes-per-second photosensitivity limit; do not speed this up. */
+      "#obPageFlash{position:fixed;inset:0;z-index:99999;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(224,87,74,0) 35%,rgba(224,87,74,.28) 72%,rgba(224,87,74,.62) 100%)}",
+      "#obPageFlash.on{animation:obPageFlashC 1s ease-in-out 3}",
+      "#obPageFlash.warn{background:radial-gradient(ellipse at center,rgba(240,168,40,0) 45%,rgba(240,168,40,.16) 78%,rgba(240,168,40,.34) 100%)}",
+      "#obPageFlash.warn.on{animation:obPageFlashW .9s ease-in-out 1}",
+      "@keyframes obPageFlashC{0%,100%{opacity:0}50%{opacity:1}}",
+      "@keyframes obPageFlashW{0%,100%{opacity:0}50%{opacity:1}}",
+      /* Reduced motion: hold a steady glow instead of pulsing. Still unmissable, no strobe. */
+      "@media (prefers-reduced-motion:reduce){#obPageFlash.on{animation:none;opacity:.85;transition:opacity .4s}}"
     ].join("\n");
     (document.head || document.documentElement).appendChild(st);
   }
@@ -376,7 +391,31 @@
     }).join("");
   }
 
+  /* The page-flash overlay is created lazily and reused. Kept OUTSIDE the strip so it is
+     unaffected by the strip's own layout, scroll position, or a collapsed dashboard. */
+  var pageFlashEl = null, pageFlashTimer = null;
+  function pageFlash(level) {
+    try {
+      if (!pageFlashEl || !pageFlashEl.isConnected) {
+        pageFlashEl = document.createElement("div");
+        pageFlashEl.id = "obPageFlash";
+        document.body.appendChild(pageFlashEl);
+      }
+      var warn = (level !== "critical");
+      pageFlashEl.className = warn ? "warn" : "";
+      void pageFlashEl.offsetWidth;              // restart the animation on a repeat alert
+      pageFlashEl.classList.add("on");
+      if (pageFlashTimer) clearTimeout(pageFlashTimer);
+      // Slightly longer than the animation so the class is cleared after it finishes,
+      // never mid-pulse (which would leave the overlay stuck visible).
+      pageFlashTimer = setTimeout(function () {
+        if (pageFlashEl) pageFlashEl.classList.remove("on");
+      }, warn ? 1200 : 3400);
+    } catch (e) {}
+  }
+
   function flash(level) {
+    pageFlash(level);
     var s = document.getElementById("obAlertStrip"); if (!s) return;
     var cls = level === "critical" ? "flash-critical" : "flash-warn";
     s.classList.remove("flash-critical", "flash-warn");
