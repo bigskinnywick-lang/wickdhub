@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.9"  # b3.9: THE PIRATE ANNOUNCES ITSELF. `Scanned` carries only a ScanType and never names the scanner, so it cannot tell a pirate from a customs officer — that is why a security NPC set the klaxon off. The identity IS available, just on a different event: NPC chatter arrives as ReceiveText/Channel=npc with a ROLE-PREFIXED token, and the pirate hails you BEFORE it interdicts. So the hail is now the alarm: critical + klaxon the moment a hostile NPC speaks, while there is still time to boost or high-wake. A cargo scan with no hail keeps the location + cargo gates and stays a WARN (police stay silent). Interdiction/attack/damage are demoted to a BACKSTOP — they arrive after anything can be done about them. Token vocabulary is matched broadly and every NPC token is logged to npc-tokens.log, because a hardcoded guess would fail silently.
+PLUGIN_VERSION = "b3.10"  # b3.10: THE NO-FIRE ZONE IS NOT A GUESS. b3.9 said "Status.json has no no-fire-zone flag" and used a docking-traffic proxy. The first capture log disproved that in 13 lines: the game ANNOUNCES it as $STATION_NoFireZone_entered / _exited on the npc comms channel. That is now tracked as real state, with the proxy demoted to a fallback for the relog case (no entered event). The same log confirmed $Police_* is the real authority prefix, so the token-hint approach is sound; station/docking chatter now counts as authority country too. Pirate tokens remain UNVERIFIED — no pirate spoke during the capture flight. b3.9 = the hail is the alarm.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1515,7 +1515,18 @@ _PIRATE_SCANS = {
 # would fail SILENTLY — the single worst failure mode, and one this project has now hit
 # three times. Broad match + capture log, then tighten from Adam's real journal.
 _NPC_PIRATE_HINTS = ("pirate", "cargohunter", "cargo_hunter", "ambushedpilot", "assassin")
-_NPC_AUTH_HINTS = ("police", "security", "authority", "military", "customs")
+# Confirmed against a real capture log 2026-08-10: `$Police_ThankYouPassedStopAndSearch01;`
+# proves the `$Role_` convention and that matching on the prefix works. Station and docking
+# chatter is added because it is equally positive evidence of authority country.
+_NPC_AUTH_HINTS = ("police", "security", "authority", "military", "customs",
+                   "station", "docking", "starport")
+
+# ★ The game TELLS you when you are in a no-fire zone. b3.9 asserted no such signal existed
+# and built a timestamp proxy instead; the very first capture log contained both of these on
+# the npc comms channel. Exact beats proxy — but the proxy is KEPT as a fallback, because a
+# relog inside a zone never emits an `entered` and would otherwise read as open space.
+_NPC_NOFIRE_IN = "nofirezone_entered"
+_NPC_NOFIRE_OUT = "nofirezone_exited"
 
 # SECOND NET, matched against Message_Localised (the words you actually read in comms).
 # ⚠ PROVENANCE: supplied 2026-08-10 from an LLM's recollection of in-game dialogue, NOT
@@ -1531,7 +1542,7 @@ _NPC_PIRATE_PHRASES = (
 )
 
 _pa_st = {"near_until": 0.0, "pend_until": 0.0, "pend_msg": "", "legal": "",
-          "flags_prev": 0, "hail_until": 0.0, "alarmed_until": 0.0}
+          "flags_prev": 0, "hail_until": 0.0, "alarmed_until": 0.0, "nofire": False}
 _pa_seen = set()
 
 
@@ -1544,6 +1555,8 @@ def _pa_authority_country():
     """LOCATION GATE. Authority scans cluster where authority is; pirates scan you in open
     space. Status.json has no 'no-fire zone' flag, so this is a PROXY: docked, landed, or
     recently in docking traffic (or a police voice heard nearby)."""
+    if _pa_st.get("nofire"):            # exact, announced by the game itself
+        return True
     f = _pa_flags()
     if (f & 0x1) or (f & 0x2):          # Docked / Landed
         return True
@@ -1603,6 +1616,17 @@ def _pa_npc_text(entry):
     low = tok.lower()
     # Curly apostrophes are common in localised strings and would break a naive match.
     low_loc = loc.lower().replace("\u2019", "'")
+
+    # Exact no-fire-zone state, straight from the game. Checked BEFORE the role hints
+    # because these tokens also contain "station" and would otherwise stop at the auth
+    # branch without ever updating the flag.
+    if _NPC_NOFIRE_IN in low:
+        _pa_st["nofire"] = True
+        return
+    if _NPC_NOFIRE_OUT in low:
+        _pa_st["nofire"] = False
+        return
+
     if any(h in low for h in _NPC_AUTH_HINTS):
         # A police voice is positive evidence of authority country, wherever we are.
         _pa_st["near_until"] = max(_pa_st.get("near_until", 0.0),
