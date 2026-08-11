@@ -129,9 +129,9 @@
     function tick(){const d=new Date();if(mode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${tz()}`;$("clLab").textContent="LOCAL / RL";}}
     $("clToggle").onclick=()=>{mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};tick();setInterval(tick,1000);})();
 // ===== Cloudflare Access identity =====
-  (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
+  (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{(window.bladesSignOut||function(){location.href="/cdn-cgi/access/logout";})();};
-    fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;
+    fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(d&&d.cmdr){if(nameEl)nameEl.textContent="CMDR "+String(d.cmdr).toUpperCase();}else{fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(i=>{const n=String((i&&i.name)||"").trim();if(nameEl&&n)nameEl.textContent=n.toUpperCase();}).catch(()=>{});}
       // TEST PILOT button is gated on the real test-pilot role via plugin-status (poller below), not the crew map.
     }).catch(()=>{});})();
 // ===== admin console reveal — gated on the KV admin roster, independent of the shakedown crew map =====
@@ -199,9 +199,10 @@
   window._obRunTicker=runTicker; (function(){ const go=()=>{ if($("tickTrack")) runTicker(); }; if(document.readyState!=="loading") go(); else document.addEventListener("DOMContentLoaded",go); setInterval(go,60000); })();
 
 
-  const CMDRMAP={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
   function qparam(k){return new URLSearchParams(location.search).get(k);}
-  async function whoAmI(){ try{ const d=await fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); const em=(d.email||"").toLowerCase(); return CMDRMAP[em]||(d.name||em||"").toUpperCase(); }catch(e){ return null; } }
+  // Identity resolves through the Access-gated whoami-cmdr route (KV cmdrlink:{email}).
+  // Never embed an email->CMDR map in page source: these pages are PUBLIC.
+  async function whoAmI(){ try{ const d=await fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); if(d&&d.cmdr) return "CMDR "+String(d.cmdr).toUpperCase(); const i=await fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()); const n=String((i&&i.name)||"").trim(); return n?n.toUpperCase():null; }catch(e){ return null; } }
   // ===== dossier: career across all builds + selected-build highlight =====
   function renderStats(p, career, key, target){
     const nameEl=$("dossName"), subEl=$("dossSub"), box=$("dossStats");

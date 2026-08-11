@@ -417,9 +417,9 @@
     $("clToggle").onclick=()=>{mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};tick();setInterval(tick,1000);})();
 
   // ===== Cloudflare Access identity =====
-  (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";const CMDR={"bigskinnywick@gmail.com":"CMDR BIGSKINNY","presto575@gmail.com":"CMDR TEMPLAR57"};
+  (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{(window.bladesSignOut||function(){location.href="/cdn-cgi/access/logout";})();};
-    fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{const em=(d.email||"").toLowerCase();const who=CMDR[em]||(d.name||em||"").toUpperCase();if(nameEl&&who)nameEl.textContent=who;}).catch(()=>{});})();
+    fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(d&&d.cmdr){if(nameEl)nameEl.textContent="CMDR "+String(d.cmdr).toUpperCase();}else{fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(i=>{const n=String((i&&i.name)||"").trim();if(nameEl&&n)nameEl.textContent=n.toUpperCase();}).catch(()=>{});}}).catch(()=>{});})();
 
   // ===== SQUAD NET ticker (live; re-runnable — the poll loop calls it on change) =====
   (function(){
