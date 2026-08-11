@@ -2,3 +2,5 @@ site/
 *.bak
 .DS_Store
 _to_delete/
+__pycache__/
+*.pyc

@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.16"  # b3.16: SAY WHICH RUNG WON. The refocus works on the rig (confirmed 2026-08-11) but which of the four methods did it was only ever DEDUCED — from the fact that Alt+Tab would have landed on EDMC given the window order. A measurement was one line away the whole time, so here it is: every success names its rung on the status line and once per hour on the alerts strip. Also ALERTS AGE OUT of the strip (4 shown, 15 min) while the KV ring keeps its full history for diagnosis. b3.15 = the ladder.
+PLUGIN_VERSION = "b3.17"  # b3.17: THE NO-FIRE FLAG NOW LETS GO — and a pirate stops passing as a cop. b3.10 swapped an expiring proxy for the game's exact no-fire-zone signal, but only `exited` ever cleared it and the game does not reliably send that. Measured over 655 journals / 36,610 NPC events: 523 FSDJump + 846 SupercruiseEntry fired while the flag still claimed "station space", 294 sessions ended latched, longest stale span 260h; cargo scans silenced to an info line tripled (5% -> 15%). Now cleared on FSDJump / SupercruiseEntry / LoadGame with a 30-min TTL backstop. ALSO: $Pirate_OnAuthorityDetection* (14 events) matched the auth branch first and returned early — the speaker now wins over the topic. Klaxon/hail path otherwise untouched. b3.16 = say which rung won.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1837,6 +1837,7 @@ PIRATE_ESCALATE_S = 15.0        # backstop window: scan -> hostile act
 PIRATE_NEAR_STATION_S = 300.0   # docking traffic keeps us in "authority country"
 PIRATE_HAIL_S = 120.0           # how long a hostile hail keeps the encounter hot
 PIRATE_ENCOUNTER_S = 120.0      # suppress a second klaxon for the same encounter
+NOFIRE_TTL_S = 1800.0           # b3.17 backstop: the game does not reliably send `exited`
 
 _PIRATE_SCANS = {
     "cargo": "PIRATE SCAN - your cargo hold is being read",
@@ -1875,7 +1876,7 @@ _NPC_PIRATE_PHRASES = (
 )
 
 _pa_st = {"near_until": 0.0, "pend_until": 0.0, "pend_msg": "", "legal": "",
-          "flags_prev": 0, "hail_until": 0.0, "alarmed_until": 0.0, "nofire": False}
+          "flags_prev": 0, "hail_until": 0.0, "alarmed_until": 0.0, "nofire_until": 0.0}
 _pa_seen = set()
 
 
@@ -1888,7 +1889,7 @@ def _pa_authority_country():
     """LOCATION GATE. Authority scans cluster where authority is; pirates scan you in open
     space. Status.json has no 'no-fire zone' flag, so this is a PROXY: docked, landed, or
     recently in docking traffic (or a police voice heard nearby)."""
-    if _pa_st.get("nofire"):            # exact, announced by the game itself
+    if time.time() < _pa_st.get("nofire_until", 0.0):  # exact, announced by the game
         return True
     f = _pa_flags()
     if (f & 0x1) or (f & 0x2):          # Docked / Landed
@@ -1969,10 +1970,21 @@ def _pa_npc_text(entry, capture=True):
     # because these tokens also contain "station" and would otherwise stop at the auth
     # branch without ever updating the flag.
     if _NPC_NOFIRE_IN in low:
-        _pa_st["nofire"] = True
+        _pa_st["nofire_until"] = time.time() + NOFIRE_TTL_S
         return
     if _NPC_NOFIRE_OUT in low:
-        _pa_st["nofire"] = False
+        _pa_st["nofire_until"] = 0.0
+        return
+
+    # ★ b3.17 — the SPEAKER wins over the TOPIC. `$Pirate_OnAuthorityDetection*` contains both
+    # "pirate" and "authority", and because the auth branch ran first it returned early: a
+    # pirate reacting to the cops read AS the cops and bought itself 300s of quiet country.
+    # The $Role_ prefix convention held across all 36,610 replayed events, so a token that
+    # STARTS with $pirate is a pirate speaking. Deliberately narrower than swapping the two
+    # list checks, which would also let police chatter ABOUT pirates raise the alarm.
+    if low.startswith("$pirate"):
+        _pa_st["hail_until"] = time.time() + PIRATE_HAIL_S
+        _pa_alarm("PIRATE INBOUND - hostile hail", loc[:60])
         return
 
     if any(h in low for h in _NPC_AUTH_HINTS):
@@ -2590,6 +2602,19 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
               "DockingDenied", "ApproachSettlement"):
         try:
             _pa_st["near_until"] = time.time() + PIRATE_NEAR_STATION_S
+        except Exception:
+            pass
+
+    # b3.17 NOFIRE RELEASE. You cannot be in a station no-fire zone in supercruise or
+    # mid-hyperspace, and a relog carries no zone state at all. The game does not reliably
+    # send `exited` — measured over 655 journals: 914 `entered` while already set, 523
+    # FSDJump + 846 SupercruiseEntry with the flag still claiming station space, 294
+    # sessions ending latched, longest stale span 260h. So clear on the events that PROVE
+    # we left. NOFIRE_TTL_S is the backstop for what these miss; a relog inside a zone is
+    # still covered by the Docked/Landed flags and the near_until proxy underneath.
+    if ev in ("FSDJump", "SupercruiseEntry", "LoadGame"):
+        try:
+            _pa_st["nofire_until"] = 0.0
         except Exception:
             pass
 
