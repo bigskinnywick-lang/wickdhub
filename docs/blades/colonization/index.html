@@ -699,5 +699,12 @@
 })();
 </script>
 <script src="/blades/net-takeover.js?v=2" defer></script>
+<!-- b3.17: the alert lane follows the pilot. The klaxon + whole-page flash used to exist
+     only on the dossier, but this is the page you actually have open while hauling, so a
+     pirate scan announced itself on the one screen you were not looking at. telemetry.js
+     is self-mounting (own CSS, own elements, fallback anchors) and only renders for a
+     signed-in CMDR-bound pilot — no page markup was needed. Keep ?v= in step with the
+     copy on /blades/commander/ or one page will serve a stale build from the edge. -->
+<script src="/blades/_shell/telemetry.js?v=6" defer></script>
 </body>
 </html>
