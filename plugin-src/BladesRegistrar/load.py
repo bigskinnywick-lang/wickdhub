@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.11"  # b3.11: GIVE THE STICK BACK. Measured: with Elite unfocused it receives NO stick input, buttons or analog — so touching the board on a second monitor of the game rig disarms you, and the pirate alarm is the worst possible moment to reach for it. Two ways back: a GLOBAL HOTKEY (default ctrl+alt+e) and an automatic refocus when the pirate alarm fires. ⚠ These are NOT equally reliable and the code says so: Windows only permits SetForegroundWindow when the caller has a claim on the foreground, and a hotkey press IS that claim while a background alarm is not — the alarm path falls back to the AttachThreadInput trick and reports honestly when it fails. Windows-only; a clean no-op elsewhere. b3.10 = real no-fire-zone state.
+PLUGIN_VERSION = "b3.12"  # b3.12: TEST ALARM button in EDMC, because "wait to be robbed" is a poor test harness. Fires a SYNTHETIC pirate hail through the real path — matcher, klaxon, alerts lane, board flash, refocus — after a 10s DELAY. The delay is the entire point: an instant button would give the plugin a foreground claim and the refocus would succeed for the wrong reason, testing the hotkey path while pretending to test the alarm path. Synthetic hails are excluded from npc-tokens.log so the capture stays honest. b3.11 = refocus.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1642,6 +1642,41 @@ def _rf_loop(mods, vk):
         _rf["state"] = "off"
 
 
+def _pa_test_fire(delay=10.0):
+    """Fire a SYNTHETIC pirate hail after a delay, from a background thread.
+
+    ★ THE DELAY IS THE WHOLE POINT. A button that fired immediately would mean the plugin
+    had just received a user input event, which is exactly the foreground claim Windows
+    looks for — so `SetForegroundWindow` would succeed and we would have "proved" the alarm
+    refocus works when we had really only re-tested the hotkey path. Ten seconds is enough
+    to click the button, go and put focus on the board, and wait. The alarm then fires from
+    a timer thread with no claim of any kind: a faithful reproduction of a real one.
+
+    Runs the REAL path — token/phrase matcher, klaxon, alerts lane, board flash, refocus —
+    with `capture=False` so the synthetic token never lands in npc-tokens.log."""
+    def _go():
+        try:
+            time.sleep(max(0.0, float(delay)))
+            _pa_npc_text({
+                "Channel": "npc",
+                "Message": "$Pirate_TEST_SyntheticHail;",
+                "Message_Localised": "TEST - synthetic pirate hail (not a real contact)",
+            }, capture=False)
+        except Exception:
+            pass
+    try:
+        if not _pirate_on():
+            # Do NOT bypass the gate — the test must behave exactly like the real thing.
+            # But say why nothing happened, rather than looking broken.
+            _set_status("TEST: pirate alarm toggle is OFF - nothing will fire")
+            return False
+        _set_status("TEST: synthetic pirate hail in %ds - go click the board" % int(delay))
+        threading.Thread(target=_go, daemon=True).start()
+        return True
+    except Exception:
+        return False
+
+
 def _rf_sync():
     """Start or stop the hotkey thread to match the toggle. Safe to call repeatedly."""
     try:
@@ -1794,7 +1829,7 @@ def _pa_capture(tok, loc):
         pass
 
 
-def _pa_npc_text(entry):
+def _pa_npc_text(entry, capture=True):
     """★ THE EARLY WARNING. A hostile NPC opening its mouth is the first and best signal."""
     if not _pirate_on():
         return
@@ -1802,7 +1837,8 @@ def _pa_npc_text(entry):
         return
     tok = str(entry.get("Message") or "")
     loc = str(entry.get("Message_Localised") or "")
-    _pa_capture(tok, loc)
+    if capture:
+        _pa_capture(tok, loc)
     low = tok.lower()
     # Curly apostrophes are common in localised strings and would break a naive match.
     low_loc = loc.lower().replace("\u2019", "'")
@@ -1955,11 +1991,23 @@ def plugin_start3(plugin_dir):
 
 
 def plugin_app(parent):
+    # A Frame so the status label can sit beside a TEST button. If anything here fails we
+    # fall back to the bare label — the status line is load-bearing and the button is not.
     try:
         import tkinter as tk
-        lbl = tk.Label(parent, text="Blades: idle (v" + PLUGIN_VERSION + ")")
-        _state["status"] = lbl
-        return lbl
+        try:
+            frm = tk.Frame(parent)
+            lbl = tk.Label(frm, text="Blades: idle (v" + PLUGIN_VERSION + ")")
+            lbl.grid(row=0, column=0, sticky="w")
+            btn = tk.Button(frm, text="TEST ALARM (10s)",
+                            command=lambda: _pa_test_fire(10.0))
+            btn.grid(row=0, column=1, padx=(8, 0))
+            _state["status"] = lbl
+            return frm
+        except Exception:
+            lbl = tk.Label(parent, text="Blades: idle (v" + PLUGIN_VERSION + ")")
+            _state["status"] = lbl
+            return lbl
     except Exception:
         return None
 
