@@ -15,10 +15,28 @@
 // backups/ folder and pushes via GitHub Desktop — git becomes the versioned, diffable,
 // offsite backup. /blades/api/import is the recovery counterpart.
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-// Key prefixes that carry personal data. Add to this list BEFORE shipping any new key family
-// that names a person — the default must be redaction, not remembering to redact.
+// Key families whose WHOLE RECORD is personal — dropped entirely in safe mode.
 const PERSONAL_PREFIXES = ["member:", "rig:", "cmdrlink:"];
 function isPersonal(name) { return PERSONAL_PREFIXES.some(p => String(name).startsWith(p)); }
+
+// ⚠ A prefix list alone is NOT enough, and assuming it was is a real bug we shipped once.
+// Emails also sit in VALUES scattered across unrelated families — admiral:emails, btype:*
+// (who set it), carrierlink:*, home:wisdom, plugin:release:*, ticker:custom — and inside
+// KEY NAMES (check:{feature}:{email}). Any new family can add another tomorrow. So safe mode
+// also pseudonymises every email in the serialised blob, whatever key it came from: this
+// catches families nobody remembered, which is the whole point.
+//
+// Deterministic, so structure survives — the same person maps to the same token everywhere,
+// keys stay unique, and relationships stay readable. It is deliberately NOT reversible.
+function pseudonymiseEmails(text) {
+  const map = new Map();
+  const out = String(text).replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, (m) => {
+    const k = m.toLowerCase();
+    if (!map.has(k)) map.set(k, "member" + (map.size + 1) + "@redacted.invalid");
+    return map.get(k);
+  });
+  return { out, count: map.size };
+}
 const OWNER = "bigskinnywick@gmail.com";
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
@@ -67,7 +85,7 @@ export async function onRequestGet({ request, env }) {
     cursor = l.list_complete ? null : l.cursor;
   } while (cursor);
 
-  return json({
+  const payload = {
     version: 1,
     exportedTs: Date.now(),
     exportedBy: callerEmail(request),
@@ -75,10 +93,19 @@ export async function onRequestGet({ request, env }) {
     claimCount: Object.keys(claims).length,
     builds, claims, admins, other,
     redacted: {
-      mode: includePersonal ? "FULL — CONTAINS PERSONAL DATA, DO NOT COMMIT" : "safe — personal keys omitted",
+      mode: includePersonal ? "FULL — CONTAINS PERSONAL DATA, DO NOT COMMIT" : "safe — personal keys dropped, emails pseudonymised",
       personalIncluded: includePersonal,
       prefixes: PERSONAL_PREFIXES,
       counts: redactedCounts,
+      emailsPseudonymised: 0,
     },
-  });
+  };
+
+  if (includePersonal) return json(payload);
+
+  // Safe mode: scrub the SERIALISED blob, so nothing depends on knowing where emails live.
+  const { out, count } = pseudonymiseEmails(JSON.stringify(payload));
+  const safe = JSON.parse(out);
+  safe.redacted.emailsPseudonymised = count;
+  return json(safe);
 }

@@ -1,5 +1,6 @@
 import * as M from '../functions/blades/api/member.js';
 import * as X from '../functions/blades/api/export.js';
+import * as I from '../functions/blades/api/import.js';
 const ME='pilot@example.com';
 function kv(seed={}){ const s=new Map(Object.entries(seed)); return {
   _s:s, async get(k){ return s.has(k)? s.get(k): null; }, async put(k,v){ s.set(k,String(v)); },
@@ -84,6 +85,34 @@ ok('cleanDiscord empty => ""', M.cleanDiscord('')==='');
   const nonAdmin=await X.onRequestGet({request:req('https://w/blades/api/export',{email:'rando@x.com'}),env});
   ok('export forbidden to non-admin', nonAdmin.status===403);
 }
+
+// ---- email scrub across UNRELATED key families (the prefix list can't cover these) ----
+{ const seed={
+   'admiral:emails':JSON.stringify(['admiral@outlook.com']),
+   'btype:a1abe8cd-e8ee-4054-92e5-5d0cbeab6b9a':JSON.stringify({type:'x',by:'setter@gmail.com'}),
+   'carrierlink:37015:1785':JSON.stringify({by:'carrier@gmail.com'}),
+   'check:v2.0-shakedown:tester@gmail.com':JSON.stringify({ok:true}),
+   'home:wisdom':JSON.stringify({t:'hi',author:'wise@gmail.com'}),
+   'ticker:custom':JSON.stringify([{by:'ticker@gmail.com'}]),
+   'admin:emails':JSON.stringify(['bigskinnywick@gmail.com']) };
+  const env={BUILDS:kv(seed)};
+  const r=await X.onRequestGet({request:req('https://w/blades/api/export',{email:'bigskinnywick@gmail.com'}),env});
+  const j=await r.json(); const blob=JSON.stringify(j).replace(/"exportedBy":"[^"]*"/,'');
+  const left=(blob.match(/[a-zA-Z0-9._%+-]+@(?!redacted\.invalid)[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g)||[]);
+  ok('NO real email survives safe export (any key family)', left.length===0, left.join(','));
+  ok('email inside a KEY NAME is scrubbed too', !JSON.stringify(Object.keys(j.other)).includes('tester@gmail.com'));
+  ok('pseudonyms are deterministic + counted', j.redacted.emailsPseudonymised>=6, String(j.redacted.emailsPseudonymised));
+  ok('same person -> same token', (blob.match(/member1@redacted\.invalid/g)||[]).length>=1);
+  const full=await X.onRequestGet({request:req('https://w/blades/api/export?include=personal',{email:'bigskinnywick@gmail.com'}),env});
+  const fj=await full.json();
+  ok('full export keeps real emails (restore works)', JSON.stringify(fj).includes('admiral@outlook.com'));
+  // import must REFUSE the safe blob
+  const ref=await I.onRequestPost({request:new Request('https://w/blades/api/import',{method:'POST',headers:{'Cf-Access-Authenticated-User-Email':'bigskinnywick@gmail.com'},body:JSON.stringify(j)}),env});
+  ok('import REFUSES a redacted blob', ref.status===400);
+  const acc=await I.onRequestPost({request:new Request('https://w/blades/api/import',{method:'POST',headers:{'Cf-Access-Authenticated-User-Email':'bigskinnywick@gmail.com'},body:JSON.stringify(fj)}),env});
+  ok('import ACCEPTS a full blob', acc.status===200);
+}
+
 const fail=R.filter(r=>!r.pass);
 console.log(R.map(r=>(r.pass?'  ok  ':'  FAIL')+'  '+r.test+(r.detail?'   '+r.detail:'')).join('\n'));
 console.log(`\n${R.length-fail.length}/${R.length} passed`);

@@ -35,6 +35,15 @@ export async function onRequestPost({ request, env }) {
   if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
   let body = {}; try { body = await request.json(); } catch (e) { return json({ ok: false, error: "invalid JSON" }, 400); }
 
+  // ⚠ REFUSE a safe-mode export. Its emails are pseudonyms (member1@redacted.invalid), so
+  // restoring one would overwrite the admin list and every email-keyed record with addresses
+  // that belong to nobody — a silent, self-inflicted lock-out. Recovery needs the full dump:
+  // GET /blades/api/export?include=personal. A backup you cannot safely restore is not a backup.
+  if (body && body.redacted && body.redacted.personalIncluded === false) {
+    return json({ ok: false, error: "refusing a redacted export — emails are pseudonymised. Restore from /blades/api/export?include=personal instead.",
+                  emailsPseudonymised: body.redacted.emailsPseudonymised || 0 }, 400);
+  }
+
   const builds = (body.builds && typeof body.builds === "object") ? body.builds : {};
   const claims = (body.claims && typeof body.claims === "object") ? body.claims : {};
   const admins = Array.isArray(body.admins) ? body.admins.map(e => String(e).toLowerCase().trim()).filter(Boolean) : null;
