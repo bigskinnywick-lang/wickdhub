@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.10"  # b3.10: THE NO-FIRE ZONE IS NOT A GUESS. b3.9 said "Status.json has no no-fire-zone flag" and used a docking-traffic proxy. The first capture log disproved that in 13 lines: the game ANNOUNCES it as $STATION_NoFireZone_entered / _exited on the npc comms channel. That is now tracked as real state, with the proxy demoted to a fallback for the relog case (no entered event). The same log confirmed $Police_* is the real authority prefix, so the token-hint approach is sound; station/docking chatter now counts as authority country too. Pirate tokens remain UNVERIFIED — no pirate spoke during the capture flight. b3.9 = the hail is the alarm.
+PLUGIN_VERSION = "b3.11"  # b3.11: GIVE THE STICK BACK. Measured: with Elite unfocused it receives NO stick input, buttons or analog — so touching the board on a second monitor of the game rig disarms you, and the pirate alarm is the worst possible moment to reach for it. Two ways back: a GLOBAL HOTKEY (default ctrl+alt+e) and an automatic refocus when the pirate alarm fires. ⚠ These are NOT equally reliable and the code says so: Windows only permits SetForegroundWindow when the caller has a claim on the foreground, and a hotkey press IS that claim while a background alarm is not — the alarm path falls back to the AttachThreadInput trick and reports honestly when it fails. Windows-only; a clean no-op elsewhere. b3.10 = real no-fire-zone state.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -135,7 +135,7 @@ _srv = {"autocreate": None, "honk": None, "galaxymap": None, "fuel": None, "pira
 
 # Every server-driven setting key, in one place — the load / apply / persist paths all
 # read this tuple, so adding an assist is a one-line change here instead of four.
-_SRV_KEYS = ("autocreate", "honk", "galaxymap", "fuel", "pirate")
+_SRV_KEYS = ("autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus")
 
 
 def _srv_path():
@@ -158,6 +158,7 @@ def _apply_srv(settings):
     if not isinstance(settings, dict):
         return
     changed = False
+    _rf_before = _refocus_on()
     for k in _SRV_KEYS:
         if k in settings and settings[k] is not None:
             v = bool(settings[k])
@@ -180,6 +181,11 @@ def _apply_srv(settings):
                 _gm_resolve()
             except Exception:
                 pass
+    try:
+        if _refocus_on() != _rf_before:
+            _rf_sync()
+    except Exception:
+        pass
 
 
 def _autocreate():
@@ -1485,6 +1491,183 @@ def _alerts_payload():
     return list(_alerts)
 
 
+# --- b3.11: give the stick back ---------------------------------------------
+# Elite receives NOTHING from the stick while unfocused — not buttons, not axes. So any
+# pilot running the board on a second monitor of the GAME rig is disarmed the moment they
+# touch it, and the pirate alarm is precisely the wrong time to be reaching for a screen.
+#
+# ⚠ THE TWO PATHS ARE NOT EQUALLY RELIABLE, and pretending otherwise would be the bug.
+# Windows only lets SetForegroundWindow succeed for a process with a claim on the
+# foreground — most usefully, one that received the last input event.
+#   * HOTKEY path  -> the user's keypress IS that claim. This should just work.
+#   * ALARM path   -> a journal event on a background thread has no claim at all. It falls
+#                     back to the AttachThreadInput trick, which usually works and sometimes
+#                     does not. It reports the outcome rather than failing silently.
+_RF_MODS = {"alt": 0x0001, "ctrl": 0x0002, "control": 0x0002, "shift": 0x0004, "win": 0x0008}
+_RF_DEFAULT_HOTKEY = "ctrl+alt+e"
+_rf = {"thread": None, "stop": False, "spec": "", "state": "off", "why": ""}
+
+
+def _refocus_on():
+    try:
+        return bool(_srv["refocus"])
+    except Exception:
+        return False
+
+
+def _rf_parse_hotkey(spec):
+    """PURE. 'ctrl+alt+e' -> (modifiers, virtual-key). (0, 0) when unparseable.
+    Kept free of Windows calls so the parsing can be tested anywhere."""
+    mods, vk = 0, 0
+    for part in str(spec or "").lower().replace(" ", "").split("+"):
+        if not part:
+            continue
+        if part in _RF_MODS:
+            mods |= _RF_MODS[part]
+        elif len(part) == 1 and (part.isalpha() or part.isdigit()):
+            vk = ord(part.upper())
+        elif part.startswith("f") and part[1:].isdigit() and 1 <= int(part[1:]) <= 24:
+            vk = 0x70 + int(part[1:]) - 1
+        else:
+            return (0, 0)                      # unknown token: refuse rather than guess
+    return (mods, vk) if vk else (0, 0)
+
+
+def _rf_pick_elite(windows):
+    """PURE. From [(hwnd, title, cls)] pick Elite's main window; 0 if absent.
+    Title first (stable across launcher versions), window class as the fallback."""
+    for hwnd, title, cls in windows:
+        if str(title or "").strip().lower().startswith("elite - dangerous"):
+            return hwnd
+    for hwnd, title, cls in windows:
+        if "frontierdevelopments" in str(cls or "").lower() and str(title or "").strip():
+            return hwnd
+    return 0
+
+
+def _rf_enum_windows():
+    """Windows only. Returns [(hwnd, title, cls)] for visible top-level windows."""
+    import ctypes
+    from ctypes import wintypes
+    u = ctypes.windll.user32
+    out = []
+    CB = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
+
+    def cb(hwnd, _l):
+        try:
+            if not u.IsWindowVisible(hwnd):
+                return True
+            n = u.GetWindowTextLengthW(hwnd)
+            t = ctypes.create_unicode_buffer(n + 1)
+            u.GetWindowTextW(hwnd, t, n + 1)
+            c = ctypes.create_unicode_buffer(256)
+            u.GetClassNameW(hwnd, c, 256)
+            out.append((hwnd, t.value, c.value))
+        except Exception:
+            pass
+        return True
+
+    u.EnumWindows(CB(cb), 0)
+    return out
+
+
+def _refocus_to_elite(why=""):
+    """Hand the foreground back to Elite. Returns True only if it actually moved."""
+    if os.name != "nt":
+        return False
+    try:
+        import ctypes
+        u = ctypes.windll.user32
+        hwnd = _rf_pick_elite(_rf_enum_windows())
+        if not hwnd:
+            log_line = "REFOCUS | Elite window not found"
+            _set_status("refocus: Elite not found")
+            return False
+        if u.GetForegroundWindow() == hwnd:
+            return True                        # already there; nothing to do
+        u.ShowWindow(hwnd, 9)                  # SW_RESTORE, in case it is minimised
+        if u.SetForegroundWindow(hwnd):
+            return True
+        # No foreground claim (the alarm path). Borrow one by attaching our input queue to
+        # the current foreground thread's, which is the long-standing way round this.
+        k = ctypes.windll.kernel32
+        cur = u.GetWindowThreadProcessId(u.GetForegroundWindow(), None)
+        me = k.GetCurrentThreadId()
+        ok = False
+        if u.AttachThreadInput(cur, me, True):
+            try:
+                ok = bool(u.SetForegroundWindow(hwnd))
+            finally:
+                u.AttachThreadInput(cur, me, False)
+        if not ok:
+            _set_status("refocus FAILED (Windows refused foreground)")
+        return ok
+    except Exception:
+        _set_status("refocus error")
+        return False
+
+
+def _rf_loop(mods, vk):
+    """Windows message pump for the global hotkey. RegisterHotKey with a NULL window posts
+    WM_HOTKEY to THIS THREAD's queue, so the loop must live on the registering thread."""
+    import ctypes
+    from ctypes import wintypes
+    u = ctypes.windll.user32
+    HOTKEY_ID = 0xB1AD
+    if not u.RegisterHotKey(None, HOTKEY_ID, mods, vk):
+        # LOUD. A silently unregistered hotkey is a feature that looks installed and is not
+        # — the exact failure shape this project keeps getting bitten by.
+        _rf["state"] = "failed"
+        _rf["why"] = "another application already owns " + _rf["spec"]
+        _alert_raise("warn", "Refocus hotkey " + _rf["spec"] + " is taken by another app - pick another",
+                     key="refocus-hotkey", cooldown=3600.0)
+        _set_status("refocus hotkey UNAVAILABLE (" + _rf["spec"] + ")")
+        return
+    _rf["state"] = "on"
+    _rf["why"] = ""
+    _set_status("refocus hotkey armed (" + _rf["spec"] + ")")
+    msg = wintypes.MSG()
+    try:
+        while not _rf["stop"]:
+            if u.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):
+                if msg.message == 0x0312:      # WM_HOTKEY
+                    _refocus_to_elite("hotkey")
+            else:
+                time.sleep(0.05)
+    finally:
+        try:
+            u.UnregisterHotKey(None, HOTKEY_ID)
+        except Exception:
+            pass
+        _rf["state"] = "off"
+
+
+def _rf_sync():
+    """Start or stop the hotkey thread to match the toggle. Safe to call repeatedly."""
+    try:
+        want = _refocus_on() and os.name == "nt"
+        alive = _rf["thread"] is not None and _rf["thread"].is_alive()
+        if want and not alive:
+            spec = _RF_DEFAULT_HOTKEY
+            try:
+                spec = (_cfg.get_str("blades_refocus_hotkey") or _RF_DEFAULT_HOTKEY) if _cfg else _RF_DEFAULT_HOTKEY
+            except Exception:
+                pass
+            mods, vk = _rf_parse_hotkey(spec)
+            if not vk:
+                _rf["state"] = "failed"
+                _rf["why"] = "cannot parse hotkey '" + str(spec) + "'"
+                _set_status("refocus hotkey unparseable: " + str(spec))
+                return
+            _rf["spec"], _rf["stop"] = spec, False
+            _rf["thread"] = threading.Thread(target=_rf_loop, args=(mods, vk), daemon=True)
+            _rf["thread"].start()
+        elif not want and alive:
+            _rf["stop"] = True
+    except Exception:
+        pass
+
+
 # --- b3.9: the pirate announces itself --------------------------------------
 # `Scanned` carries ONLY timestamp/event/ScanType — it never names the scanner (verified
 # against the journal spec 2026-08-10), so it cannot separate a pirate from a customs
@@ -1583,6 +1766,13 @@ def _pa_alarm(msg, reason=""):
     if _alert_raise("critical", txt, key="pirate-alarm",
                     cooldown=PIRATE_COOLDOWN_S, blare=True):
         _pa_st["alarmed_until"] = time.time() + PIRATE_ENCOUNTER_S
+        # b3.11: the alarm means he needs the stick NOW. Best-effort — this path has no
+        # foreground claim, so it can legitimately fail; it must never break the alarm.
+        if _refocus_on():
+            try:
+                _refocus_to_elite("pirate alarm")
+            except Exception:
+                pass
         return True
     return False
 

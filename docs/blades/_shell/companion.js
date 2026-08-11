@@ -14,7 +14,8 @@
     { k: "honk", label: "Honk on arrival", sub: "auto-fire the Discovery Scanner when you jump · needs a keyboard key on your fire control" },
     { k: "galaxymap", label: "Auto-plot to Galaxy Map", sub: "on a NAV send, open the map + paste the system · needs a keyboard Open-Galaxy-Map bind" },
     { k: "fuel", label: "Fuel safety check", sub: "warn in EDMC before a jump that would leave you low on fuel" },
-    { k: "pirate", label: "Pirate / cargo-scan alarm", sub: "klaxon here and on your PC the moment something reads your hold · needs no binds" }
+    { k: "pirate", label: "Pirate / cargo-scan alarm", sub: "klaxon here and on your PC the moment something reads your hold · needs no binds" },
+    { k: "refocus", label: "Give the stick back", sub: "Windows only · returns focus to Elite via a hotkey (ctrl+alt+e) and automatically when the pirate alarm fires — an unfocused Elite receives NO stick input at all" }
   ];
 
   function api(method, body) {
