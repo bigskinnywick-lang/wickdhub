@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.13"  # b3.13: THE HOTKEY WAS NEVER ARMED. b3.11 only called _rf_sync() from _apply_srv, and only when the value CHANGED — so flipping the toggle armed it, but any EDMC restart afterwards loaded refocus=true from disk, saw no change, and never registered the hotkey. It then failed SILENTLY, because _rf_loop (which is what reports failure) never ran. That is the precise bug class this plugin has been chasing all week and I shipped one. Now: _rf_sync() runs at plugin_start3, and the armed/failed state is ANNOUNCED either way instead of being inferrable only from a working hotkey. b3.12 = TEST ALARM button.
+PLUGIN_VERSION = "b3.15"  # b3.15: DO NOT DUMP KEYSTROKES WHERE THEY ARE NOT WELCOME, and an escalation ladder for the refocus. keybd_event does not send keys TO Elite — it injects them into whatever window has focus, so honk/galaxy-paste firing while the board is focused would have typed Ctrl+G/Ctrl+V/Enter/Escape into a BROWSER. Both are now gated on Elite actually being foreground and say so when they refuse. And the refocus tries four rungs, VERIFYING after each by re-reading GetForegroundWindow (SetForegroundWindow can return success without moving anything): plain -> Alt-tap first (Adams idea, targeted) -> AttachThreadInput -> Alt+Tab as a last resort, which is only safe because we already know Elite is not foreground. Reports which rung won. b3.14 = the alarm names the hotkey.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1064,14 +1064,26 @@ def _gm_click(fx, fy):
 
 
 def _hk_elite_foreground():
+    """Is Elite ACTUALLY the foreground window? Every key-sending assist depends on this,
+    because keybd_event injects into whatever has focus and cannot target a window.
+
+    ⚠ b3.15 TIGHTENED THIS. It used to be `"elite" in window_title.lower()`, which is
+    satisfied by a **browser tab titled "Elite Dangerous wiki"**, a Discord channel named
+    #elite, or an editor with an elite-something file open. Any of those being focused would
+    have let honk fire, or galaxy-paste type Ctrl+G / Ctrl+V / Enter / Escape into it. The
+    guard existed and was correct in spirit; the match was just too loose to keep its promise.
+
+    Now shares one window-identification routine with the refocus code (`_rf_pick_elite`),
+    which requires the title to START with "elite - dangerous" or the Frontier window class —
+    and has a test asserting the Chrome-wiki-tab case does NOT match."""
+    if os.name != "nt":
+        return False
     try:
+        h = _rf_pick_elite(_rf_enum_windows())
+        if not h:
+            return False
         import ctypes
-        u = ctypes.windll.user32
-        h = u.GetForegroundWindow()
-        n = u.GetWindowTextLengthW(h)
-        b = ctypes.create_unicode_buffer(n + 1)
-        u.GetWindowTextW(h, b, n + 1)
-        return "elite" in b.value.lower()
+        return ctypes.windll.user32.GetForegroundWindow() == h
     except Exception:
         return False
 
@@ -1571,37 +1583,120 @@ def _rf_enum_windows():
     return out
 
 
+def _rf_now(hwnd):
+    """Did the foreground ACTUALLY move? SetForegroundWindow can return non-zero and change
+    nothing, so every rung below is judged on the observed result, never the return value."""
+    try:
+        import ctypes
+        return ctypes.windll.user32.GetForegroundWindow() == hwnd
+    except Exception:
+        return False
+
+
+def _rf_alt_tap():
+    """Press and release ALT. Windows relaxes the foreground lock around menu interaction,
+    so a synthesized Alt gives the next SetForegroundWindow a fighting chance. Same family
+    of idea as sending Alt+Tab, but it lets us keep naming Elite explicitly."""
+    try:
+        _hk_send(0x12, 0, False, False)      # VK_MENU down
+        time.sleep(0.03)
+        _hk_send(0x12, 0, False, True)       # up
+        time.sleep(0.03)
+    except Exception:
+        pass
+
+
+def _rf_alt_tab():
+    """LAST RESORT. Alt+Tab goes to the most-recently-used window, NOT to Elite — if the
+    pilot glanced at Discord in between, that is where this lands. It is only ever called
+    after we have confirmed Elite is not already foreground; firing it while Elite IS in
+    front would throw them OUT of the game, which is the precise opposite of the job."""
+    try:
+        _hk_send(0x12, 0, False, False)      # Alt down
+        time.sleep(0.04)
+        _hk_send(0x09, 0, False, False)      # Tab down
+        time.sleep(0.06)
+        _hk_send(0x09, 0, False, True)       # Tab up
+        time.sleep(0.04)
+        _hk_send(0x12, 0, False, True)       # Alt up
+        time.sleep(0.15)                     # let the shell finish the switch
+    except Exception:
+        pass
+
+
+def _elite_hwnd():
+    if os.name != "nt":
+        return 0
+    try:
+        return _rf_pick_elite(_rf_enum_windows())
+    except Exception:
+        return 0
+
+
+def _elite_focused():
+    """★ THE GUARD FOR EVERY KEY-SENDING ASSIST. keybd_event injects into whatever window is
+    focused — it cannot target Elite. Without this check, honk or galaxy-paste firing while
+    the board has focus types Ctrl+G / Ctrl+V / Enter / Escape into a BROWSER."""
+    if os.name != "nt":
+        return True                          # non-Windows rigs do not run the key assists
+    h = _elite_hwnd()
+    return bool(h) and _rf_now(h)
+
+
 def _refocus_to_elite(why=""):
-    """Hand the foreground back to Elite. Returns True only if it actually moved."""
+    """Hand the foreground back to Elite, escalating and verifying at every step.
+    Returns True only when the foreground is OBSERVED to be Elite afterwards."""
     if os.name != "nt":
         return False
     try:
+        hwnd = _elite_hwnd()
+        if not hwnd:
+            _set_status("refocus: Elite window not found")
+            return False
+        if _rf_now(hwnd):
+            return True                      # already there — and the alt-tab rung is unsafe
         import ctypes
         u = ctypes.windll.user32
-        hwnd = _rf_pick_elite(_rf_enum_windows())
-        if not hwnd:
-            log_line = "REFOCUS | Elite window not found"
-            _set_status("refocus: Elite not found")
-            return False
-        if u.GetForegroundWindow() == hwnd:
-            return True                        # already there; nothing to do
-        u.ShowWindow(hwnd, 9)                  # SW_RESTORE, in case it is minimised
-        if u.SetForegroundWindow(hwnd):
+        u.ShowWindow(hwnd, 9)                # SW_RESTORE if minimised
+
+        # rung 1 — the honest call. Works when we already hold a claim (the hotkey path).
+        u.SetForegroundWindow(hwnd)
+        if _rf_now(hwnd):
+            _rf["last"] = "direct"
             return True
-        # No foreground claim (the alarm path). Borrow one by attaching our input queue to
-        # the current foreground thread's, which is the long-standing way round this.
-        k = ctypes.windll.kernel32
-        cur = u.GetWindowThreadProcessId(u.GetForegroundWindow(), None)
-        me = k.GetCurrentThreadId()
-        ok = False
-        if u.AttachThreadInput(cur, me, True):
-            try:
-                ok = bool(u.SetForegroundWindow(hwnd))
-            finally:
-                u.AttachThreadInput(cur, me, False)
-        if not ok:
-            _set_status("refocus FAILED (Windows refused foreground)")
-        return ok
+
+        # rung 2 — Alt-tap, then ask again. Targeted, no window-order guessing.
+        _rf_alt_tap()
+        u.SetForegroundWindow(hwnd)
+        if _rf_now(hwnd):
+            _rf["last"] = "alt-tap"
+            return True
+
+        # rung 3 — borrow the foreground thread's input queue.
+        try:
+            k = ctypes.windll.kernel32
+            cur = u.GetWindowThreadProcessId(u.GetForegroundWindow(), None)
+            me = k.GetCurrentThreadId()
+            if u.AttachThreadInput(cur, me, True):
+                try:
+                    u.SetForegroundWindow(hwnd)
+                finally:
+                    u.AttachThreadInput(cur, me, False)
+            if _rf_now(hwnd):
+                _rf["last"] = "attach"
+                return True
+        except Exception:
+            pass
+
+        # rung 4 — Alt+Tab. Safe here ONLY because Elite is confirmed not foreground.
+        _rf_alt_tab()
+        if _rf_now(hwnd):
+            _rf["last"] = "alt-tab"
+            return True
+
+        _rf["last"] = "failed"
+        _set_status("refocus FAILED (Windows refused foreground, all 4 methods)")
+        return False
     except Exception:
         _set_status("refocus error")
         return False
@@ -1803,18 +1898,25 @@ def _pa_worth_taking():
 
 
 def _pa_alarm(msg, reason=""):
-    """The real thing: critical + klaxon on the rig + the page flash on the board."""
+    """The real thing: critical + klaxon on the rig + the page flash on the board.
+
+    b3.14: the refocus is attempted BEFORE the alert is raised, so that when it fails the
+    alert can carry the remedy. Measured on the rig: this path fails reliably, because a
+    journal-driven background thread has no foreground claim. Rather than silently trying
+    and silently losing, the message tells the pilot which key takes the stick back — on
+    the very flash they are already looking at. Still attempted, because another pilot's
+    Windows may permit it, and a success costs them nothing."""
+    hint = ""
+    if _refocus_on():
+        try:
+            if not _refocus_to_elite("pirate alarm") and _rf.get("state") == "on":
+                hint = " - press " + str(_rf.get("spec") or "").upper() + " for control"
+        except Exception:
+            pass                                  # refocus must NEVER take the alarm down
     txt = (msg + " - " + str(reason)[:60]) if reason else msg
-    if _alert_raise("critical", txt, key="pirate-alarm",
+    if _alert_raise("critical", txt + hint, key="pirate-alarm",
                     cooldown=PIRATE_COOLDOWN_S, blare=True):
         _pa_st["alarmed_until"] = time.time() + PIRATE_ENCOUNTER_S
-        # b3.11: the alarm means he needs the stick NOW. Best-effort — this path has no
-        # foreground claim, so it can legitimately fail; it must never break the alarm.
-        if _refocus_on():
-            try:
-                _refocus_to_elite("pirate alarm")
-            except Exception:
-                pass
         return True
     return False
 
@@ -2019,6 +2121,17 @@ def plugin_app(parent):
                             command=lambda: _pa_test_fire(10.0))
             btn.grid(row=0, column=1, padx=(8, 0))
             _state["status"] = lbl
+            # plugin_start3 runs BEFORE plugin_app, so anything _set_status said during
+            # startup went to a label that did not exist yet — which is why "hotkey ARMED"
+            # never appeared. Re-report now that there is somewhere to report to.
+            try:
+                _st = _rf.get("state")
+                if _st == "on":
+                    _set_status("refocus hotkey ARMED (" + str(_rf.get("spec") or "") + ")")
+                elif _st in ("failed", "unsupported"):
+                    _set_status("refocus hotkey NOT armed: " + str(_rf.get("why") or _st))
+            except Exception:
+                pass
             return frm
         except Exception:
             lbl = tk.Label(parent, text="Blades: idle (v" + PLUGIN_VERSION + ")")
