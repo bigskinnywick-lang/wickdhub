@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.12"  # b3.12: TEST ALARM button in EDMC, because "wait to be robbed" is a poor test harness. Fires a SYNTHETIC pirate hail through the real path — matcher, klaxon, alerts lane, board flash, refocus — after a 10s DELAY. The delay is the entire point: an instant button would give the plugin a foreground claim and the refocus would succeed for the wrong reason, testing the hotkey path while pretending to test the alarm path. Synthetic hails are excluded from npc-tokens.log so the capture stays honest. b3.11 = refocus.
+PLUGIN_VERSION = "b3.13"  # b3.13: THE HOTKEY WAS NEVER ARMED. b3.11 only called _rf_sync() from _apply_srv, and only when the value CHANGED — so flipping the toggle armed it, but any EDMC restart afterwards loaded refocus=true from disk, saw no change, and never registered the hotkey. It then failed SILENTLY, because _rf_loop (which is what reports failure) never ran. That is the precise bug class this plugin has been chasing all week and I shipped one. Now: _rf_sync() runs at plugin_start3, and the armed/failed state is ANNOUNCED either way instead of being inferrable only from a working hotkey. b3.12 = TEST ALARM button.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1625,7 +1625,11 @@ def _rf_loop(mods, vk):
         return
     _rf["state"] = "on"
     _rf["why"] = ""
-    _set_status("refocus hotkey armed (" + _rf["spec"] + ")")
+    # Announce SUCCESS too, not just failure. "It works" and "it never started" looked
+    # identical from the outside in b3.11, which is exactly how the bug survived a test.
+    _set_status("refocus hotkey ARMED (" + _rf["spec"] + ")")
+    _alert_raise("info", "Refocus hotkey armed: " + _rf["spec"],
+                 key="refocus-armed", cooldown=3600.0)
     msg = wintypes.MSG()
     try:
         while not _rf["stop"]:
@@ -1699,6 +1703,9 @@ def _rf_sync():
             _rf["thread"].start()
         elif not want and alive:
             _rf["stop"] = True
+        elif _refocus_on() and os.name != "nt":
+            _rf["state"] = "unsupported"
+            _set_status("refocus: Windows only - toggle has no effect here")
     except Exception:
         pass
 
@@ -1974,6 +1981,15 @@ def plugin_start3(plugin_dir):
     except Exception:
         pass
     _start_nav_poll()
+    # b3.13: ARM THE REFOCUS HOTKEY AT STARTUP.
+    # b3.11 only ever called this from _apply_srv, gated on the value CHANGING. Flipping the
+    # toggle armed the hotkey; every EDMC restart after that loaded refocus=true from disk,
+    # observed no change, and quietly never registered it — and because _rf_loop never ran,
+    # nothing reported the failure. A feature that looks installed and is not.
+    try:
+        _rf_sync()
+    except Exception:
+        pass
     # Only scan/report past claims if the pilot has opted into auto-create.
     if _autocreate():
         threading.Thread(target=_run_backfill, daemon=True).start()
