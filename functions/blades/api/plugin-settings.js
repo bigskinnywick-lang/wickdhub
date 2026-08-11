@@ -8,6 +8,9 @@
 //
 // GET  /blades/api/plugin-settings  -> { ok, cmdr, settings:{autocreate,honk}, needsSetup? }
 // POST /blades/api/plugin-settings  { autocreate?, honk? } -> { ok, cmdr, settings }
+// ⚠⚠ MIRRORED in functions/ingest/navpull.js -> settingsFor(). Both lists must match or a
+// setting saves here and never reaches the plugin, silently. Cost one wrong conclusion on
+// 2026-08-10 ("background refocus is impossible on this rig" — it was simply never on).
 const ALLOWED = ["autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus"];
 const DEFAULTS = { autocreate: false, honk: false, galaxymap: false, fuel: false, pirate: false, refocus: false };
 const json = (o, s) => new Response(JSON.stringify(o), {

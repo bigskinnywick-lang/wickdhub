@@ -69,7 +69,13 @@ async function settingsFor(env, cmdrLower) {
   const s = (m && m[cmdrLower]) ? m[cmdrLower] : null;
   if (!s || typeof s !== "object") return null;
   const out = {};
-  for (const k of ["autocreate", "honk", "galaxymap", "fuel", "pirate"]) if (typeof s[k] === "boolean") out[k] = s[k];
+  // ⚠⚠ THIS LIST IS DUPLICATED in functions/blades/api/plugin-settings.js (ALLOWED).
+  // Adding a setting THERE without adding it HERE lets the board save it and the plugin
+  // never receive it — the setting looks enabled in the UI and is dead in the plugin, with
+  // no error anywhere. That is exactly what happened to `refocus` on 2026-08-10: the whole
+  // feature was judged "broken on Windows" when it had simply never been switched on.
+  // KEEP THE TWO LISTS IN LOCKSTEP.
+  for (const k of ["autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus"]) if (typeof s[k] === "boolean") out[k] = s[k];
   return Object.keys(out).length ? out : null;
 }
 
