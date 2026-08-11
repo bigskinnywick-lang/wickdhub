@@ -28,7 +28,7 @@
       <span id="clTime">————</span>
       <span class="cl-toggle" id="clToggle">ED ⇄ LOCAL</span>
     </div>
-    <div class="right"><span>AUTH: <b style="color:var(--accent-bright)" id="authName">CMDR BIGSKINNY</b></span><span id="signOut" style="cursor:pointer">[ SIGN OUT ]</span></div>
+    <div class="right"><span>AUTH: <b style="color:var(--accent-bright)" id="authName">—</b></span><span id="signOut" style="cursor:pointer">[ SIGN OUT ]</span></div>
   </div>
   <header class="hud">
     <div class="brand">
@@ -76,6 +76,7 @@
       <div class="rhint">Switch commander:</div>
       <div id="rosterList2"><div class="rempty">Loading…</div></div>
     </div>
+    <div class="panel" id="ob1Panel"></div>
   </div>
 
   <footer>ONYX BLADES SQUADRON · PRIVATE COHORT NET · DATA: RAVENCOLONIAL + ARDENT</footer></div>
@@ -503,6 +504,14 @@
 <script src="/blades/net-takeover.js?v=2" defer></script>
 <script src="/blades/_shell/companion.js?v=5" defer></script>
 <script src="/blades/_shell/telemetry.js?v=6" defer></script>
+<script src="/blades/_shell/ob1.js?v=1" defer></script>
+<script>
+  // Form OB-1, settings entry point. The enlistment entry point is the SAME component in
+  // mode:"enlist" and gets routed in phase 6 — do not write a second one.
+  document.addEventListener("DOMContentLoaded", function () {
+    if (window.OB1) window.OB1.mount(document.getElementById("ob1Panel"), { mode: "settings" });
+  });
+</script>
 
 </body>
 </html>

@@ -4,7 +4,8 @@ Plain Node ESM. No framework, no `package.json`, no install step:
 
 ```
 cd <repo root>
-node tests/member-prefs.test.mjs
+node tests/member-prefs.test.mjs          # no dependencies
+node tests/ob1-panel.test.mjs             # needs: npm i -D playwright (skips cleanly without it)
 ```
 
 Exits non-zero on any failure, so it drops straight into a hook or CI later.
@@ -33,6 +34,25 @@ objects, so the exported handlers actually execute — this is not a syntax chec
 - **Export redaction** — `member:`, `rig:` and `cmdrlink:` are counted but never dumped by
   default, because that blob is committed to a PUBLIC repo. `?include=personal` returns the
   full dump and labels itself DO NOT COMMIT.
+
+## What `ob1-panel.test.mjs` covers (Form OB-1, phase 2)
+
+Drives the real panel in headless Chromium against a stubbed `/blades/api/member`, because
+what matters here is runtime behaviour, not syntax.
+
+- **Fail-closed rendering in the UI** — `"true"` and `1` both render a switch OFF; an empty
+  prefs object renders every switch off.
+- **The Section III control is genuinely inert** — clicking it sends no PATCH at all.
+  (Mutation-tested: remove both guards and it posts `{"prefs":{"list_rig":true}}`, which is
+  exactly the "disabled control that still posts a value" bug the spec calls out.)
+- **A live toggle PATCHes only its own key**, never `list_rig`.
+- **A failed save reverts the switch** and surfaces an error, so the UI never claims a
+  setting that didn't persist.
+- **The server's answer wins** over the optimistic flip.
+- **Signed out renders zero switches and no identity** — no CMDR, no handle, in text or markup.
+- **The "we hold no real-world data about you at all" line disappears** the moment
+  `rigFeatureLive` is true. That line is the one piece of copy that becomes a lie when the
+  feature activates, so it is pinned to the flag by a test.
 
 ## Keep the controls honest
 
