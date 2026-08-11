@@ -1,3 +1,4 @@
 site/
 *.bak
 .DS_Store
+_to_delete/

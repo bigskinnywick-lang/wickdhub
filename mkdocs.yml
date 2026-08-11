@@ -1,41 +1,22 @@
-site_name: WickdHub
+site_name: Onyx Blades
 site_url: https://wickdhub.com
-site_description: Outlines, trackers, research docs & user summaries — all in one place.
+site_description: Onyx Blades — an Elite Dangerous squadron. Live colonisation board, systems register, commander dossier and cohort uplink procedures.
 
 theme:
   name: material
-  logo: assets/images/prepass/prepass-wordmark-white.png
-  favicon: assets/images/prepass/prepass-mark-color.png
+  custom_dir: overrides
+  logo: blades/icon-192.png
+  favicon: blades/icon-180.png
   palette:
     - scheme: slate
       primary: custom
       accent: custom
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-    - scheme: default
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
   font:
     text: Inter
     code: Fira Code
   features:
-    - navigation.instant
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
     - navigation.top
-    - search.suggest
-    - search.highlight
     - content.code.copy
-    - toc.follow
-
-extra_css:
-  - stylesheets/prepass-tokens.css
-  - stylesheets/custom.css
 
 plugins:
   - search
@@ -47,8 +28,6 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.tasklist:
-      custom_checkbox: true
   - attr_list
   - md_in_html
   - toc:
@@ -56,34 +35,3 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Outlines:
-    - Overview: outlines/index.md
-  - Trackers:
-    - Overview: trackers/index.md
-    - CC Trainer Tracker: trackers/cc-trainer-tracker.md
-    - Track 2 Weekly (frozen): trackers/track2-weekly.md
-    - Track 1 Weekly (frozen): trackers/track1-weekly.md
-    - MCTE 6-Week Plan (frozen): trackers/mcte-6week-plan.md
-    - Content:
-      - Overview: trackers/content/index.md
-      - Track 1 Content - Intro to PrePass: trackers/content/track1-content-intro-prepass.md
-      - inForm Safety Storyboard (CS): trackers/content/inform-safety-storyboard.md
-      - inForm Safety Capture Guide (CS): trackers/content/inform-safety-capture-guide.md
-      - M5 Customers Market Product: trackers/content/customers-market-product-storyboard.md
-      - M6 Revenue Model: trackers/content/revenue-model-storyboard.md
-      - M7 Market Goals: trackers/content/market-goals-storyboard.md
-  - Research:
-    - Overview: research/index.md
-    - Domain & Hosting Research: research/domain-hosting-research.md
-  - Summaries:
-    - Overview: summaries/index.md
-    - May 19 Utah STAR Prep: summaries/may19-utah-star-prep.md
-    - May 19 Utah Interview Visualization: summaries/may19-utah-interview-visualization.md
-    - April 7 Meeting Prep: summaries/apr7-meeting-prep.md
-    - April 7 Kelsey Quick Ref: summaries/apr7-kelsey-quickref.md
-    - April 7 Patty Follow-Up: summaries/apr7-patty-followup.md
-    - inForm Safety Source Summary: summaries/inform-source-summary.md
-  - Personal:
-    - Overview: personal/index.md
-    - Personal Tracker: personal/personal-tracker.md
-    - Pop!_OS Install: personal/popos-install.md

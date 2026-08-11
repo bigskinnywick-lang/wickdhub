@@ -1,2 +1,15 @@
+# wickdhub.com — Onyx Blades
 User-agent: *
-Disallow: /
+Allow: /
+Disallow: /blades/signin/
+Disallow: /blades/admin/
+Disallow: /blades/api/
+Disallow: /blades/beta/
+Disallow: /blades/usage/
+Disallow: /blades/dashboard/
+Disallow: /blades/checklist/
+Disallow: /blades/architect/
+Disallow: /blades/admiral/
+Disallow: /ingest/
+
+Sitemap: https://wickdhub.com/sitemap.xml

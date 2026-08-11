@@ -1,21 +1,25 @@
-# WickdHub
+---
+search:
+  exclude: true
+---
 
-Personal proof-of-work hub for the L&D Specialist role under Patty Mazerolle's HR org. Gate: May 19, 2026 Utah on-site. Trackers, content storyboards, research, and summaries — organized and accessible from any device.
+# Onyx Blades
+
+An Elite Dangerous squadron running colonisation operations in the Pleiades and beyond.
+
+[Enter the squadron hub :material-arrow-right:](blades/){ .md-button .md-button--primary }
 
 ---
 
-## Quick Navigation
+## What's here
 
-| Section | What's Here |
-|---------|------------|
-| [Outlines](outlines/index.md) | Training outlines, module structures, curriculum maps |
-| [Trackers](trackers/index.md) | Project status, content gaps, implementation progress |
-| [Research](research/index.md) | Architecture docs, product intelligence, technical research |
-| [Summaries](summaries/index.md) | User summaries, org directories, profile references |
+| Deck | What it does |
+|------|--------------|
+| [Squadron Command](blades/) | The hub — roster presence, squad net, active operations |
+| [Live Colonisation Board](blades/colonization/) | Real-time construction sites, commodity needs and hauler claims |
+| [Systems Register](blades/onboarding/features/) | Every system the squadron holds, with build status |
+| [Commander Dossier](blades/commander/) | Your own telemetry, readiness and assist controls |
+| [Cohort Uplink Procedures](blades/onboarding/) | New pilot onboarding — get the plugin, get on the board |
+| [Flight Rig](blades/flight/) | HOTAS reference and bindings |
 
----
-
-## Recently Updated
-
-!!! tip "Getting Started"
-    Drop markdown files into any folder under `docs/`, commit and push — they'll appear here automatically.
+Some decks require a squadron sign-in.
