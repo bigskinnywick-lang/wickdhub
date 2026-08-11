@@ -17,7 +17,13 @@
 (function () {
   var POLL_MS = 5000, STALE_MS = 30000, FUEL_LOW = 25, FUEL_CRIT = 10;
   var TEL = null, tsAgeTimer = null, lastTs = 0;
-  var ALERTS_SHOW = 6, FLASH_MS = 6000, MUTE_KEY = "ob_alarm_mute", TONE_KEY = "ob_alarm_tone";
+  // b3.16: the card used to accumulate — 4 stacked up during one evening's testing. Show
+  // fewer, and let them expire from the STRIP after a while. The KV ring (rolling 20, 6h TTL)
+  // is deliberately left alone: the goal is a quiet card, not a lost record — that history is
+  // how the last several bugs were diagnosed.
+  var ALERTS_SHOW = 4, ALERT_TTL_MS = 15 * 60 * 1000;
+  var FLASH_MS = 6000, MUTE_KEY = "ob_alarm_mute", TONE_KEY = "ob_alarm_tone";
+  var LAST_ALERTS = [];
   var SEEN = null, AC = null, audioBlocked = false, flashTimer = null;
 
   // Ship code -> display name (subset; unknown codes get title-cased).
@@ -375,7 +381,16 @@
     return s;
   }
 
+  function freshAlerts(list) {
+    // An alert with no timestamp is kept rather than dropped: unknown age must not mean
+    // "expired", or a worker that stops sending ts would silently empty the card.
+    var cut = Date.now() - ALERT_TTL_MS;
+    return (list || []).filter(function (a) { return !a || !a.ts ? true : a.ts >= cut; });
+  }
+
   function renderAlerts(list) {
+    LAST_ALERTS = list || [];
+    list = freshAlerts(list);
     var s = mountAlerts();
     var ul = s.querySelector(".oa-list");
     if (!list || !list.length) {
@@ -477,7 +492,14 @@
       setInterval(function () { tick(strip); }, POLL_MS);
       // keep the "Ns ago" label ticking between polls so it feels live — measured from the local
       // reference captured at each poll (skew-proof), not the server epoch vs the browser clock.
-      tsAgeTimer = setInterval(function () { if (TEL && TEL._ageAt != null) { TEL.ageMs = liveAge(TEL); paint(strip); } }, 1000);
+      tsAgeTimer = setInterval(function () {
+        if (TEL && TEL._ageAt != null) { TEL.ageMs = liveAge(TEL); paint(strip); }
+        // Re-render only when something has actually aged out, so an idle card is not
+        // rebuilt every second for nothing.
+        if (LAST_ALERTS.length && freshAlerts(LAST_ALERTS).length !== LAST_ALERTS.length) {
+          renderAlerts(LAST_ALERTS);
+        }
+      }, 1000);
       document.addEventListener("visibilitychange", function () { if (!document.hidden) tick(strip); });
     });
   }

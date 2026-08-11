@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.15"  # b3.15: DO NOT DUMP KEYSTROKES WHERE THEY ARE NOT WELCOME, and an escalation ladder for the refocus. keybd_event does not send keys TO Elite — it injects them into whatever window has focus, so honk/galaxy-paste firing while the board is focused would have typed Ctrl+G/Ctrl+V/Enter/Escape into a BROWSER. Both are now gated on Elite actually being foreground and say so when they refuse. And the refocus tries four rungs, VERIFYING after each by re-reading GetForegroundWindow (SetForegroundWindow can return success without moving anything): plain -> Alt-tap first (Adams idea, targeted) -> AttachThreadInput -> Alt+Tab as a last resort, which is only safe because we already know Elite is not foreground. Reports which rung won. b3.14 = the alarm names the hotkey.
+PLUGIN_VERSION = "b3.16"  # b3.16: SAY WHICH RUNG WON. The refocus works on the rig (confirmed 2026-08-11) but which of the four methods did it was only ever DEDUCED — from the fact that Alt+Tab would have landed on EDMC given the window order. A measurement was one line away the whole time, so here it is: every success names its rung on the status line and once per hour on the alerts strip. Also ALERTS AGE OUT of the strip (4 shown, 15 min) while the KV ring keeps its full history for diagnosis. b3.15 = the ladder.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1643,6 +1643,23 @@ def _elite_focused():
     return bool(h) and _rf_now(h)
 
 
+def _rf_won(rung):
+    """Record and ANNOUNCE which method actually moved the foreground.
+
+    b3.15 stored this in `_rf["last"]` and surfaced it nowhere, so the winning rung had to be
+    deduced from window ordering after the fact. Which rung works is the single most useful
+    thing to know here — it differs by Windows build and by what else is running — so it is
+    now stated. Once per hour per rung, so a change of behaviour still gets reported."""
+    _rf["last"] = rung
+    _set_status("refocus OK via " + rung)
+    try:
+        _alert_raise("info", "Refocus succeeded via " + rung,
+                     key="refocus-rung-" + rung, cooldown=3600.0)
+    except Exception:
+        pass
+    return True
+
+
 def _refocus_to_elite(why=""):
     """Hand the foreground back to Elite, escalating and verifying at every step.
     Returns True only when the foreground is OBSERVED to be Elite afterwards."""
@@ -1662,15 +1679,13 @@ def _refocus_to_elite(why=""):
         # rung 1 — the honest call. Works when we already hold a claim (the hotkey path).
         u.SetForegroundWindow(hwnd)
         if _rf_now(hwnd):
-            _rf["last"] = "direct"
-            return True
+            return _rf_won("direct")
 
         # rung 2 — Alt-tap, then ask again. Targeted, no window-order guessing.
         _rf_alt_tap()
         u.SetForegroundWindow(hwnd)
         if _rf_now(hwnd):
-            _rf["last"] = "alt-tap"
-            return True
+            return _rf_won("alt-tap")
 
         # rung 3 — borrow the foreground thread's input queue.
         try:
@@ -1683,16 +1698,14 @@ def _refocus_to_elite(why=""):
                 finally:
                     u.AttachThreadInput(cur, me, False)
             if _rf_now(hwnd):
-                _rf["last"] = "attach"
-                return True
+                return _rf_won("attach")
         except Exception:
             pass
 
         # rung 4 — Alt+Tab. Safe here ONLY because Elite is confirmed not foreground.
         _rf_alt_tab()
         if _rf_now(hwnd):
-            _rf["last"] = "alt-tab"
-            return True
+            return _rf_won("alt-tab")
 
         _rf["last"] = "failed"
         _set_status("refocus FAILED (Windows refused foreground, all 4 methods)")
