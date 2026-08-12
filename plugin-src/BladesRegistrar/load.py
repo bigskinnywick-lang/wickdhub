@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.17"  # b3.17: THE NO-FIRE FLAG NOW LETS GO — and a pirate stops passing as a cop. b3.10 swapped an expiring proxy for the game's exact no-fire-zone signal, but only `exited` ever cleared it and the game does not reliably send that. Measured over 655 journals / 36,610 NPC events: 523 FSDJump + 846 SupercruiseEntry fired while the flag still claimed "station space", 294 sessions ended latched, longest stale span 260h; cargo scans silenced to an info line tripled (5% -> 15%). Now cleared on FSDJump / SupercruiseEntry / LoadGame with a 30-min TTL backstop. ALSO: $Pirate_OnAuthorityDetection* (14 events) matched the auth branch first and returned early — the speaker now wins over the topic. Klaxon/hail path otherwise untouched. b3.16 = say which rung won.
+PLUGIN_VERSION = "b3.18"  # b3.18: THE TILES SURVIVE AN EDMC RESTART. Ship / cargo / fuel-capacity only ever arrived on `Loadout`, and EDMC does NOT re-emit it to a plugin loaded mid-session (rig-measured: 0 Loadout in the 57 events after a restart) — so restarting EDMC with Elite still running dashed those tiles until a game relog; hauling could not heal it. Now seeded from EDMC's reconstructed `state` dict, which the rig proved is already 42/60 populated on the FIRST callback after a restart. `sys` had the same bug with a different symptom (stale, not dashed — it was never Status.json-backed) and is seeded too. Shapes measured, not guessed: Cargo is a dict to be summed, FuelCapacity is a dict keyed Main, and FuelLevel does not exist. b3.17 = the no-fire flag lets go.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -2539,6 +2539,56 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     if cmdr:
         _nav["cmdr"] = cmdr
 
+    # ─── b3.18 SEED FROM EDMC's STATE ────────────────────────────────────────────────────
+    # Ship / cargo / fuel-capacity only ever arrived on `Loadout`, and EDMC does NOT re-emit
+    # Loadout to a plugin loaded mid-session (measured on the rig: 0 Loadout events in the 57
+    # following a restart). So restarting EDMC while Elite kept running left those tiles
+    # dashed FOREVER — hauling could not heal it, because Cargo alone carries neither the ship
+    # nor the fuel capacity. Only a game relog or an outfitting change did.
+    #
+    # EDMC hands every plugin a reconstructed `state` dict that survives exactly this case:
+    # 42 of 60 keys were already populated on the FIRST journal_entry after a mid-session
+    # restart (richer than a cold start's 13), and ship/cargoCap/fuelCap stayed stable across
+    # all 57 subsequent events. Seed from it, once, when we have nothing better.
+    #
+    # ⚠ SHAPES ARE MEASURED, NOT GUESSED — two plausible guesses were wrong and would have
+    # shipped a dict into an int field:
+    #   state["Cargo"]         -> dict {commodity: count}, NOT a tonnage. Sum the values.
+    #   state["FuelCapacity"]  -> dict {"Main": .., "Reserve": ..}, NOT a float. There is NO
+    #                             "FuelLevel" key at all (harmless — live fuel comes from
+    #                             Status.json; only capacity was ever missing).
+    # isinstance guards throughout: if EDMC ever flattens one of these, a bare .get() would
+    # raise AttributeError *inside* journal_entry.
+    if isinstance(state, dict):
+        try:
+            if not _LO.get("ship"):
+                _sd_ship = state.get("ShipType")
+                if _sd_ship:
+                    _LO["ship"] = str(_sd_ship)
+                    _LO["shipName"] = str(state.get("ShipName") or "")
+                    _sd_cap = state.get("CargoCapacity")
+                    if isinstance(_sd_cap, int):
+                        _LO["cargoCap"] = _sd_cap
+                    _sd_cargo = state.get("Cargo")
+                    if isinstance(_sd_cargo, dict):
+                        _LO["cargoUsed"] = sum(v for v in _sd_cargo.values() if isinstance(v, int))
+            if _fuel.get("cap") is None:
+                _sd_fc = state.get("FuelCapacity")
+                if isinstance(_sd_fc, dict) and _sd_fc.get("Main"):
+                    _fuel["cap"] = _sd_fc.get("Main")
+            # `sys` had the SAME restart bug with a different symptom. It is NOT Status.json
+            # backed — Status.json carries no star-system name at all — it reads a module-level
+            # cache fed by journal events, so a restart left it empty and the board kept
+            # painting whatever it last knew. Seed it, and the system address with it.
+            if not _state.get("system"):
+                _sd_sys = state.get("SystemName")
+                if _sd_sys:
+                    _state["system"] = str(_sd_sys)
+            if _state.get("sa") is None and state.get("SystemAddress"):
+                _state["sa"] = state.get("SystemAddress")
+        except Exception:
+            pass   # seeding is best-effort; never break the journal callback over it
+
     # honk-on-arrival (BladeRelay): fire the Discovery Scanner on a real jump.
     if ev == "FSDJump":
         try:
@@ -2653,7 +2703,10 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
     # Track location context from any event that carries it.
     if entry.get("SystemAddress"):
         _state["sa"] = entry["SystemAddress"]
-    elif state and state.get("SystemAddress"):
+    elif isinstance(state, dict) and state.get("SystemAddress"):
+        # isinstance, not truthiness: this line is NOT inside a try, so any truthy non-dict
+        # (a string, say) turns into an AttributeError raised straight into EDMC's journal
+        # callback. EDMC always passes a dict today; this costs nothing and removes the fuse.
         _state["sa"] = state.get("SystemAddress")
     if system:
         _state["system"] = system
