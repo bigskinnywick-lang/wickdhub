@@ -313,14 +313,25 @@
     else { if (ago) ago.textContent = "stale · last seen " + agoStr(TEL.ageMs); }
 
     var t = (TEL && TEL.telemetry) || {};
-    if (!live) {   // fail to grey: never show a stale position as if it were current
-      TILES.forEach(function (x) { setTile(strip, x.k, "—", "", null); });
-      return;
-    }
+    // ── FAIL TO GREY, NOT TO BLANK (changed 2026-08-12, Adam's call) ────────────────────
+    // This used to wipe every tile to "—" the moment the feed went quiet, on the principle
+    // of never showing a stale position as if it were current. The principle is right; the
+    // implementation was heavier than it needed to be. Jumps and loading screens routinely
+    // pause the heartbeat for longer than STALE_MS, so the strip blanked several times a
+    // run and threw away readings that were perfectly good a moment ago.
+    // The honesty requirement is already met WITHOUT blanking: `.stale` greys the whole
+    // strip and kills the live dot, and the header reads "stale · last seen 2m ago". A
+    // greyed number next to its own age says "this is the last thing we knew" — which is
+    // information. A dash says nothing at all.
+    // Tiles still start dashed and stay dashed until the FIRST reading arrives: when there
+    // is no telemetry at all `t` is {} and every lookup falls through to "—" on its own.
     setTile(strip, "sys", esc(t.sys || "—"), "", null);
     setTile(strip, "ship", esc(shipName(t.ship)), t.shipName ? ('"' + t.shipName + '"') : "", null);
     if (typeof t.fuelPct === "number") {
-      var fcls = t.fuelPct <= FUEL_CRIT ? "crit" : (t.fuelPct <= FUEL_LOW ? "warn" : null);
+      // Threshold glow only while LIVE. A stale reading keeps its number but must not keep
+      // shouting: a red "critical fuel" tile on a feed that stopped two minutes ago is a
+      // claim about right now that we cannot make.
+      var fcls = live ? (t.fuelPct <= FUEL_CRIT ? "crit" : (t.fuelPct <= FUEL_LOW ? "warn" : null)) : null;
       setTile(strip, "fuel", t.fuelPct + "<span style='font-size:11px'>%</span>", fcls ? "low — refuel" : "", fcls);
     } else setTile(strip, "fuel", "—", "", null);
     if (typeof t.cargo === "number") {
