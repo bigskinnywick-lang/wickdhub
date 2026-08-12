@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.19"  # b3.19: THE ALERT STRIP IS FOR ALERTS. "Refocus hotkey armed" moved to the status line only. Its cooldown could never work — the cooldown map is module memory and the alert fires at plugin START, so every EDMC restart re-announced it (five in 33 minutes on 8-11). The strip keeps only the newest 4, so a routine success was evicting real ones — on the night the pirate alarm shipped, the entire visible strip was this message. The refocus FAILURE alert is untouched, so no signal is lost. b3.18 = tiles survive a restart.
+PLUGIN_VERSION = "b3.20"  # b3.20: A SCAN IS A CONFIRMATION, NOT A WARNING. First real pirate captured 2026-08-12 and it overturned the rule: of five Cargo scans that night FOUR were police and one was a pirate, and only TIMING separated them — the pirate spoke ~10s BEFORE the scan, police only ever at +0s after it. Location and cargo discriminated nothing; all three false warns were laden-in-station-space. So Scanned now logs info and never warns on its own (it was 0 for 3), while the hail path that went 1 for 1 is untouched and the escalation window stays armed — quieter, not blinder. ALSO: cargo seeding prefers CargoJSON["Count"], the game's own total, falling back to summing Cargo (the only branch correct on an empty hold). b3.19 = strip is for alerts.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -2028,19 +2028,34 @@ def _pa_scanned(entry):
 
     laden = _pa_worth_taking()
     safe = _pa_authority_country()
-
-    # Empty hold, clean record, authority country, and nobody threatened us: police
-    # paperwork. Log it so the strip shows it happened; make no noise.
-    if safe and not laden:
-        _alert_raise("info", "Scan (" + kind + ") - empty hold in station space, ignored",
-                     key="pirate-scan", cooldown=PIRATE_COOLDOWN_S)
-        return
-
     where = "station space" if safe else "open space"
-    if _alert_raise("warn", msg + " (" + where + ")",
-                    key="pirate-scan", cooldown=PIRATE_COOLDOWN_S):
-        _pa_st["pend_until"] = time.time() + PIRATE_ESCALATE_S
-        _pa_st["pend_msg"] = msg
+
+    # ★ b3.20 — MEASURED 2026-08-12, and it overturned the previous rule.
+    # Five real Cargo scans in one night: FOUR police, ONE pirate. The only thing that
+    # separated them was TIMING. The pirate announced itself ~10s BEFORE the scan
+    # ($Pirate_OnStartScanCargo09 -> "The scan will soon be over."); the police only ever
+    # spoke at +0s, AFTER it completed. Neither location nor cargo discriminated at all —
+    # all three false warns that night were laden-in-station-space, which is precisely what
+    # the old rule treated as suspicious. It was 0 for 3.
+    #
+    # So `Scanned` no longer raises a warning on its own. It is a CONFIRMATION, not a
+    # warning: it fires as the scan completes, which is already too late to act on. The
+    # hail path above is the only genuine early warning — and it went 1 for 1 on real data.
+    #
+    # QUIETER, NOT BLINDER: the escalation window is still armed below, so a pirate who
+    # scans without speaking and then shoots still gets the klaxon via _pa_confirm.
+    # The "no hail first" wording is deliberate — it makes every unexplained scan countable
+    # in the log, which is how the true miss rate gets measured instead of estimated.
+    # Say "cargo scan", NOT "PIRATE SCAN": we have just concluded it is probably authority,
+    # and a line that shouts PIRATE while filing itself as info reads as a bug. `msg` keeps
+    # the alarming wording for `pend_msg` below, which is what the klaxon says IF this
+    # escalates. (_ALERT_MSG_MAX is 90 — the earlier wording was 100 and shipped truncated
+    # mid-word. Anything built by concatenation here needs counting, not eyeballing.)
+    _alert_raise("info", kind.capitalize() + " scan - no hail first, likely authority (" +
+                 ("laden" if laden else "empty hold") + ", " + where + ")",
+                 key="pirate-scan", cooldown=PIRATE_COOLDOWN_S)
+    _pa_st["pend_until"] = time.time() + PIRATE_ESCALATE_S
+    _pa_st["pend_msg"] = msg
 
 
 def _pa_confirm(reason):
@@ -2575,9 +2590,16 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
                     _sd_cap = state.get("CargoCapacity")
                     if isinstance(_sd_cap, int):
                         _LO["cargoCap"] = _sd_cap
-                    _sd_cargo = state.get("Cargo")
-                    if isinstance(_sd_cargo, dict):
-                        _LO["cargoUsed"] = sum(v for v in _sd_cargo.values() if isinstance(v, int))
+                    # CargoJSON["Count"] is the GAME's own total — authoritative rather than
+                    # derived — but it is None on an empty hold, so summing Cargo is the only
+                    # branch that yields a correct 0. Both are load-bearing; neither is padding.
+                    _sd_cj = state.get("CargoJSON")
+                    if isinstance(_sd_cj, dict) and isinstance(_sd_cj.get("Count"), int):
+                        _LO["cargoUsed"] = _sd_cj["Count"]
+                    else:
+                        _sd_cargo = state.get("Cargo")
+                        if isinstance(_sd_cargo, dict):
+                            _LO["cargoUsed"] = sum(v for v in _sd_cargo.values() if isinstance(v, int))
             if _fuel.get("cap") is None:
                 _sd_fc = state.get("FuelCapacity")
                 if isinstance(_sd_fc, dict) and _sd_fc.get("Main"):
