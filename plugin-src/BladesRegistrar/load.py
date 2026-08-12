@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.20"  # b3.20: A SCAN IS A CONFIRMATION, NOT A WARNING. First real pirate captured 2026-08-12 and it overturned the rule: of five Cargo scans that night FOUR were police and one was a pirate, and only TIMING separated them — the pirate spoke ~10s BEFORE the scan, police only ever at +0s after it. Location and cargo discriminated nothing; all three false warns were laden-in-station-space. So Scanned now logs info and never warns on its own (it was 0 for 3), while the hail path that went 1 for 1 is untouched and the escalation window stays armed — quieter, not blinder. ALSO: cargo seeding prefers CargoJSON["Count"], the game's own total, falling back to summing Cargo (the only branch correct on an empty hold). b3.19 = strip is for alerts.
+PLUGIN_VERSION = "b3.21"  # b3.21: FOCUS FOLLOWS ACTION, NOT ATTENTION. A NAV send or an assist toggle now hands the foreground back to Elite; scrolling, reading, tile refreshes and alert polls never do. The hard part was timing, not policy - the plugin only learns of a board action on its 5s heartbeat, so two gates guard two different replays: a freshness gate (nav pushes carry a worker timestamp, aged against the WORKER's own clock so the rig's clock never enters it) kills the "EDMC restarts and a 9-minute-old nav record inside its 600s TTL reads as brand new" yank, and a priming flag kills the "plugin was offline while settings changed" one. Both fail CLOSED - the opposite of the handoff bridge's resurrection guard, deliberately, because here stealing the foreground is the worse outcome. Refocus runs BEFORE the clipboard write, which incidentally un-breaks auto-plot-to-galaxy-map (it bails when Elite is not foreground, i.e. on exactly the NAV sends it exists for). ALSO: an opt-in, EDMC-side, save-and-restore SPI_SETFOREGROUNDLOCKTIMEOUT=0 - the documented reason the ALARM refocus has "failed reliably" since b3.14 is that Windows refuses a background process the foreground, and this is the only lever that moves it. UNVERIFIED ON WINDOWS - built in a Linux container. ALSO: _srv was missing a "refocus" key its own _SRV_KEYS declared, so a fresh install read the feature as off via a swallowed KeyError.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -131,11 +131,16 @@ def _cfg_int(key, default):
 # server-driven per-pilot settings (set on the site, delivered on the nav poll).
 # Cached to disk so they persist offline / across restarts. A server value wins
 # when present; otherwise we fall back to the EDMC checkbox / default.
-_srv = {"autocreate": None, "honk": None, "galaxymap": None, "fuel": None, "pirate": None}
+# ⚠ Every key in _SRV_KEYS must also exist here. `refocus` was missing until b3.21, so on a
+# fresh install (before the first _load_srv/_apply_srv) `_srv["refocus"]` raised KeyError and
+# `_refocus_on()` swallowed it and answered False — the feature reading as "off" for reasons
+# nothing reported. Same silent-off shape that cost a day on 2026-08-10.
+_srv = {"autocreate": None, "honk": None, "galaxymap": None, "fuel": None, "pirate": None,
+        "refocus": None, "refocusact": None}
 
 # Every server-driven setting key, in one place — the load / apply / persist paths all
 # read this tuple, so adding an assist is a one-line change here instead of four.
-_SRV_KEYS = ("autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus")
+_SRV_KEYS = ("autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus", "refocusact")
 
 
 def _srv_path():
@@ -186,6 +191,16 @@ def _apply_srv(settings):
             _rf_sync()
     except Exception:
         pass
+    # A settings change observed on a poll IS an activation: the pilot was on the board a
+    # moment ago flipping a switch. No timestamp needed — `changed` can only be true on the
+    # first poll AFTER the write, so its age is bounded by the poll interval by construction.
+    # The one exception is a plugin that was offline while settings moved; `_rfa["primed"]`
+    # covers that (see _rf_activate).
+    if changed:
+        try:
+            _rf_activate("toggle")
+        except Exception:
+            pass                                   # refocus must never break settings
 
 
 def _autocreate():
@@ -636,6 +651,28 @@ def _nav_poll_loop():
                 if sysname and ts > _nav["last_ts"]:
                     _nav["last_ts"] = ts
                     _set_status("nav rx: " + sysname)  # visible proof the pull worked
+                    # ★ Age is computed from TWO SERVER TIMESTAMPS — the worker stamps the
+                    # push (`ts`) and reports its own clock (`now`) in the same response — so
+                    # the rig's clock never enters the arithmetic. Comparing a Cloudflare ts
+                    # against local time would make the freshness gate a clock-skew detector.
+                    # No `now` (an older worker) => age unknown => fail closed, no refocus.
+                    age_s = None
+                    try:
+                        _srv_now = float(body.get("now") or 0)
+                        if _srv_now > 0 and float(ts) > 0:
+                            age_s = max(0.0, (_srv_now - float(ts)) / 1000.0)
+                    except (TypeError, ValueError):
+                        age_s = None
+                    # ★ REFOCUS FIRST, THEN CLIPBOARD+PASTE — deliberate, and it fixes a
+                    # second thing: _gm_paste bails when Elite is not foreground, so
+                    # auto-plot-to-galaxy-map has been skipping on exactly the NAV sends it
+                    # exists to serve (you were still on the board). Landing focus first
+                    # gives it the state it needs. Synchronous, so it cannot race the
+                    # .after(0) below; the poll thread sleeps 5s afterwards anyway.
+                    try:
+                        _rf_activate("nav", age_s if age_s is not None else _RF_AGE_UNKNOWN)
+                    except Exception:
+                        pass
                     lbl = _state.get("status")
                     if lbl is not None:
                         try:
@@ -644,6 +681,8 @@ def _nav_poll_loop():
                             _apply_nav(sysname)
                     else:
                         _apply_nav(sysname)
+                # A poll completed: from here on, a change means the pilot just made it.
+                _rfa["primed"] = True
         except Exception:
             pass
         time.sleep(5)
@@ -1715,6 +1754,197 @@ def _refocus_to_elite(why=""):
         return False
 
 
+# --- b3.21: refocus on ACTIVATION, never on attention ------------------------
+# Adam's rule, and it is the right one: taking the stick back should follow something you
+# DID on the board — a NAV send, flipping an assist — and never follow merely looking at it.
+# Scrolling, reading, tile refreshes and alert polls must never move the foreground.
+#
+# ★ THE HARD PART IS NOT DECIDING, IT IS TIMING. The plugin only learns about a board action
+# on its 5s heartbeat, so a naive implementation refocuses up to 5 seconds after the click —
+# by which time you have moved on to reading something else, which is EXACTLY the behaviour
+# the rule exists to prevent. Two gates, and they guard different things:
+#
+#   * FRESHNESS (`RF_ACT_MAX_AGE_S`) is REPLAY protection, not latency control. The normal
+#     case is already bounded by the poll interval. The case it catches: EDMC restarts,
+#     `_nav["last_ts"]` resets to 0, and a `nav:` record still inside its 600s KV TTL reads
+#     as brand new — a click from nine minutes ago yanking you out of the game. Same failure
+#     class as the handoff bridge's resurrection guard, and the same fix: trust the stamped
+#     time, not arrival. Sized ABOVE the poll interval on purpose — a gate tight enough to
+#     drop honest clicks would make the feature fire ~60% of the time, and intermittent is
+#     worse than absent.
+#   * PRIMING (`_rfa["primed"]`) covers the other replay: a plugin that was off while the
+#     settings changed sees a difference on its first poll that is history, not intent. The
+#     first poll of a session establishes the baseline and can never refocus.
+#
+# Both fail CLOSED — an unparseable or missing timestamp does not refocus. That is the
+# opposite of the bridge's resurrection guard, deliberately: there, dropping work silently
+# was the worse outcome; here, stealing the foreground is.
+RF_ACT_MAX_AGE_S = 20.0        # a nav push older than this is replay, not intent
+RF_ACT_COOLDOWN_S = 8.0        # a burst of activations is ONE refocus, not five
+_RF_AGE_UNKNOWN = float("inf")  # sentinel: an age we could not compute, treated as failing
+
+_rfa = {"last": 0.0, "primed": False, "why": "", "n": 0}
+
+
+def _refocus_act_on():
+    """Separate toggle from `refocus` on purpose. Wanting the alarm to grab the stick back
+    and wanting a NAV click to do it are different appetites, and one pilot asked for the
+    first without the second."""
+    try:
+        return bool(_srv["refocusact"])
+    except Exception:
+        return False
+
+
+def _rf_activate(kind, age_s=None):
+    """Refocus BECAUSE the pilot acted on the board. Returns True only when the foreground
+    was observed to move. Records why it declined in `_rfa["why"]` — tests assert on that,
+    and so can a puzzled pilot via the status line."""
+    _rfa["why"] = ""
+    try:
+        if not _refocus_act_on():
+            _rfa["why"] = "off"
+            return False
+        if os.name != "nt":
+            _rfa["why"] = "not windows"
+            return False
+        if not _rfa["primed"]:
+            # First poll of the session: whatever we are seeing predates us.
+            _rfa["why"] = "startup (baseline poll)"
+            return False
+        if age_s is not None:
+            # age_s is None ONLY for structurally-fresh triggers (a settings change can only
+            # be seen on the poll after it happened). Anything carrying an age must clear the
+            # gate, and an age we could not compute counts as failing it.
+            try:
+                a = float(age_s)
+            except (TypeError, ValueError):
+                a = _RF_AGE_UNKNOWN
+            if a != a or a == _RF_AGE_UNKNOWN:      # NaN, or no server clock to compare to
+                _rfa["why"] = "age unknown (worker sent no clock)"
+                return False
+            if a > RF_ACT_MAX_AGE_S:
+                _rfa["why"] = "stale (%.0fs old)" % a
+                _set_status("refocus skipped - that action was %.0fs ago" % a)
+                return False
+        now = time.time()
+        if now - _rfa["last"] < RF_ACT_COOLDOWN_S:
+            _rfa["why"] = "cooldown"
+            return False
+        _rfa["last"] = now
+        _rfa["n"] += 1
+        return _refocus_to_elite("board:" + str(kind))
+    except Exception:
+        _rfa["why"] = "error"
+        return False
+
+
+# --- b3.21: why the ALARM refocus has been failing, and the one lever that moves it ------
+# b3.14 measured it and recorded the finding honestly: the alarm path "fails reliably",
+# because Windows only lets SetForegroundWindow succeed for a process holding a foreground
+# claim, and a journal-driven background thread holds none. The ladder's rungs 3 and 4 are
+# workarounds for a rule we were never going to win against by trying harder.
+#
+# The rule has a documented dial: SPI_SETFOREGROUNDLOCKTIMEOUT — how long after the last
+# user input Windows keeps refusing background foreground-changes. Set it to 0 and the
+# refusal stops. This is what "always on top" utilities have used for twenty years.
+#
+# ⚠ IT IS A SYSTEM SETTING FOR THE WHOLE USER SESSION, not a plugin-local one. Any process
+# on the machine may then steal focus. That is a real cost, it is the pilot's to accept,
+# and so this is OPT-IN, off by default, EDMC-side (the machine it affects), saved and
+# restored on plugin stop.
+#
+# ⚠⚠ UNVERIFIED ON WINDOWS AT TIME OF WRITING. Built and reasoned about in a Linux
+# container; the Win32 behaviour has NOT been observed. `_fg_lock_report()` exists so the
+# rig answers this with facts instead of me asserting it — read the status line after
+# enabling, and the alarm's own refocus outcome is already announced by `_rf_won`.
+SPI_GETFOREGROUNDLOCKTIMEOUT = 0x2000
+SPI_SETFOREGROUNDLOCKTIMEOUT = 0x2001
+SPIF_SENDCHANGE = 0x0002
+
+_fglock = {"orig": None, "applied": False}
+
+
+def _fg_lock_get():
+    """Current foreground lock timeout in ms, or None if it cannot be read."""
+    if os.name != "nt":
+        return None
+    try:
+        import ctypes
+        v = ctypes.c_uint(0)
+        if ctypes.windll.user32.SystemParametersInfoW(
+                SPI_GETFOREGROUNDLOCKTIMEOUT, 0, ctypes.byref(v), 0):
+            return int(v.value)
+    except Exception:
+        pass
+    return None
+
+
+def _fg_lock_set(ms):
+    """★ pvParam carries the VALUE here, not a pointer to it — SPI_SETFOREGROUNDLOCKTIMEOUT
+    is one of the handful of SPI actions that work that way, and passing a byref like the
+    GET does is the classic way to make this silently do nothing."""
+    if os.name != "nt":
+        return False
+    try:
+        import ctypes
+        return bool(ctypes.windll.user32.SystemParametersInfoW(
+            SPI_SETFOREGROUNDLOCKTIMEOUT, 0, ctypes.c_void_p(int(ms)), SPIF_SENDCHANGE))
+    except Exception:
+        return False
+
+
+def _fg_lock_unlock_on():
+    return _cfg_bool("blades_refocus_unlock", False)
+
+
+def _fg_lock_apply():
+    """Take the lock off if the pilot opted in; put it back if they opted out. Idempotent,
+    so prefs_changed and plugin_start can both just call it."""
+    if os.name != "nt":
+        return
+    try:
+        want = _fg_lock_unlock_on()
+        if want and not _fglock["applied"]:
+            cur = _fg_lock_get()
+            if cur is None:
+                _set_status("refocus unlock: cannot read the Windows setting - not touching it")
+                return
+            _fglock["orig"] = cur
+            if cur == 0:
+                _fglock["applied"] = True        # already 0; nothing to do, nothing to restore
+                _set_status("refocus unlock: already 0ms (nothing changed)")
+                return
+            if _fg_lock_set(0):
+                _fglock["applied"] = True
+                _set_status("refocus unlock ON (was %dms, now 0) - undo by unticking" % cur)
+            else:
+                _set_status("refocus unlock FAILED - Windows refused the change")
+        elif not want and _fglock["applied"]:
+            _fg_lock_restore()
+    except Exception:
+        pass
+
+
+def _fg_lock_restore():
+    """Put the pilot's setting back exactly as we found it. Called on opt-out and on stop —
+    leaving a machine-wide setting changed after the plugin is gone would be rude."""
+    try:
+        if _fglock["applied"] and _fglock["orig"] is not None and _fglock["orig"] != 0:
+            _fg_lock_set(int(_fglock["orig"]))
+            _set_status("refocus unlock OFF (restored %dms)" % int(_fglock["orig"]))
+        _fglock["applied"] = False
+    except Exception:
+        pass
+
+
+def _fg_lock_report():
+    """Ground truth for the rig, since this cannot be observed where it was written."""
+    return {"os": os.name, "opt_in": bool(_fg_lock_unlock_on()),
+            "current_ms": _fg_lock_get(), "orig_ms": _fglock["orig"],
+            "applied": bool(_fglock["applied"])}
+
+
 def _rf_loop(mods, vk):
     """Windows message pump for the global hotkey. RegisterHotKey with a NULL window posts
     WM_HOTKEY to THIS THREAD's queue, so the loop must live on the registering thread."""
@@ -2138,6 +2368,12 @@ def plugin_start3(plugin_dir):
         _rf_sync()
     except Exception:
         pass
+    # Same lesson as the hotkey above, applied to the lock: an opt-in that only takes effect
+    # when the checkbox CHANGES is off again after every restart, silently.
+    try:
+        _fg_lock_apply()
+    except Exception:
+        pass
     # Only scan/report past claims if the pilot has opted into auto-create.
     if _autocreate():
         threading.Thread(target=_run_backfill, daemon=True).start()
@@ -2244,6 +2480,13 @@ def plugin_prefs(parent, cmdr, is_beta):
         C(frame, text="Honk on arrival - auto-fire the Discovery Scanner when you jump (BladeRelay)",
           variable=_prefs["honk"]).grid(row=r, column=0, columnspan=2, sticky="w", padx=8, pady=(8, 0)); r += 1
         L(frame, text="reads your scanner fire key from your bindings - Windows only").grid(row=r, column=0, columnspan=2, sticky="w", padx=8, pady=(0, 8)); r += 1
+        # Machine-local on purpose: this changes a WINDOWS setting for the whole user
+        # session, so it is consented on the machine it affects, not from the board.
+        _prefs["rfunlock"] = tk.IntVar(value=1 if _fg_lock_unlock_on() else 0)
+        C(frame, text="Let the pirate alarm take focus (changes a Windows setting)",
+          variable=_prefs["rfunlock"]).grid(row=r, column=0, columnspan=2, sticky="w", padx=8, pady=(8, 0)); r += 1
+        L(frame, text="sets the foreground lock timeout to 0 so a background alarm CAN pull you back to Elite.").grid(row=r, column=0, columnspan=2, sticky="w", padx=8); r += 1
+        L(frame, text="side effect - any app on this PC may then steal focus. Restored when you untick or close EDMC.").grid(row=r, column=0, columnspan=2, sticky="w", padx=8, pady=(0, 8)); r += 1
         return frame
     except Exception:
         return None
@@ -2270,6 +2513,12 @@ def prefs_changed(cmdr, is_beta):
                     _hk_resolve()
                 except Exception:
                     pass
+        if "rfunlock" in _prefs:
+            _cfg.set("blades_refocus_unlock", 1 if _prefs["rfunlock"].get() else 0)
+            try:
+                _fg_lock_apply()      # applies OR restores — it reads the setting itself
+            except Exception:
+                pass
         # Saving the tab with auto-create ON = "report my claims now": clear the
         # one-time marker and re-scan immediately, no EDMC restart needed.
         if _prefs.get("autocreate") and _prefs["autocreate"].get():
@@ -2278,6 +2527,17 @@ def prefs_changed(cmdr, is_beta):
             except OSError:
                 pass
             threading.Thread(target=lambda: _run_backfill(0), daemon=True).start()
+    except Exception:
+        pass
+
+
+def plugin_stop():
+    """b3.21. EDMC calls this on shutdown. The ONLY thing that must happen here is putting
+    the pilot's Windows foreground-lock setting back — we changed a machine-wide setting on
+    their behalf and leaving it changed after we are gone would be rude, and worse, invisible.
+    Everything else in this plugin is daemon threads and dies with the process."""
+    try:
+        _fg_lock_restore()
     except Exception:
         pass
 

@@ -15,7 +15,8 @@
     { k: "galaxymap", label: "Auto-plot to Galaxy Map", sub: "on a NAV send, open the map + paste the system · needs a keyboard Open-Galaxy-Map bind" },
     { k: "fuel", label: "Fuel safety check", sub: "warn in EDMC before a jump that would leave you low on fuel" },
     { k: "pirate", label: "Pirate / cargo-scan alarm", sub: "klaxon here and on your PC the moment something reads your hold · needs no binds" },
-    { k: "refocus", label: "Give the stick back", sub: "Windows only · returns focus to Elite via a hotkey (ctrl+alt+e) and automatically when the pirate alarm fires — an unfocused Elite receives NO stick input at all" }
+    { k: "refocus", label: "Give the stick back", sub: "Windows only · returns focus to Elite via a hotkey (ctrl+alt+e) and automatically when the pirate alarm fires — an unfocused Elite receives NO stick input at all" },
+    { k: "refocusact", label: "Back to the game when I act", sub: "Windows only · after a NAV send or an assist toggle, hand focus back to Elite — never while you are just reading the board. Ignores an action older than 20s, so a restart can't yank you out of the game for a click you made ten minutes ago" }
   ];
 
   function api(method, body) {

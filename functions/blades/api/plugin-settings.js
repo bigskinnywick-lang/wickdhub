@@ -11,8 +11,8 @@
 // ⚠⚠ MIRRORED in functions/ingest/navpull.js -> settingsFor(). Both lists must match or a
 // setting saves here and never reaches the plugin, silently. Cost one wrong conclusion on
 // 2026-08-10 ("background refocus is impossible on this rig" — it was simply never on).
-const ALLOWED = ["autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus"];
-const DEFAULTS = { autocreate: false, honk: false, galaxymap: false, fuel: false, pirate: false, refocus: false };
+const ALLOWED = ["autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus", "refocusact"];
+const DEFAULTS = { autocreate: false, honk: false, galaxymap: false, fuel: false, pirate: false, refocus: false, refocusact: false };
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
 });

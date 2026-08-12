@@ -75,7 +75,7 @@ async function settingsFor(env, cmdrLower) {
   // no error anywhere. That is exactly what happened to `refocus` on 2026-08-10: the whole
   // feature was judged "broken on Windows" when it had simply never been switched on.
   // KEEP THE TWO LISTS IN LOCKSTEP.
-  for (const k of ["autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus"]) if (typeof s[k] === "boolean") out[k] = s[k];
+  for (const k of ["autocreate", "honk", "galaxymap", "fuel", "pirate", "refocus", "refocusact"]) if (typeof s[k] === "boolean") out[k] = s[k];
   return Object.keys(out).length ? out : null;
 }
 
@@ -245,5 +245,9 @@ export async function onRequestGet({ request, env }) {
   const navSystem = (rec && rec.system) ? rec.system : null;
   const navTs = (rec && rec.ts) ? rec.ts : 0;
 
-  return json({ ok: true, system: navSystem, ts: navTs, latest, channel, settings });
+  // ★ `now` is the WORKER'S clock, returned so the plugin can age a nav push without ever
+  // involving the rig's clock (b3.21 refocus freshness gate). Comparing a Cloudflare ts
+  // against local time would turn that gate into a clock-skew detector. Cheap and additive:
+  // an older plugin ignores the field, a newer plugin that does not get it fails closed.
+  return json({ ok: true, system: navSystem, ts: navTs, now: Date.now(), latest, channel, settings });
 }
