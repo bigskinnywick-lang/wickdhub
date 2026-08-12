@@ -65,6 +65,13 @@
       "#obTelStrip{margin:14px 0 4px;border:1px solid var(--accent-dim,#a24d08);background:color-mix(in srgb,var(--accent,#ff7a12) 5%,var(--panel,#140d07));border-radius:var(--radius,12px);overflow:hidden}",
       "#obTelStrip .ot-head{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line,#3a2410);font-family:var(--font-head,'Orbitron',sans-serif);font-size:10.5px;letter-spacing:2px;color:var(--accent-bright,#ffb057)}",
       "#obTelStrip .ot-live{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-size:9.5px;letter-spacing:1.5px;color:var(--muted,#b98a52)}",
+      // b3.22 BACK TO GAME. Lives in the telemetry head rather than the alert strip because
+      // the alert strip only mounts when the API returns an `alerts` field, and a control the
+      // pilot is meant to reach for must not depend on whether anything has gone wrong.
+      "#obTelStrip .ot-back{cursor:pointer;user-select:none;margin-left:10px;border:1px solid var(--accent-dim,#a24d08);background:var(--panel2,#1c1109);border-radius:7px;padding:4px 9px;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9px;letter-spacing:1.5px;color:var(--muted,#b98a52);transition:.15s}",
+      "#obTelStrip .ot-back:hover{border-color:var(--accent,#ff7a12);color:var(--accent-bright,#ffb057)}",
+      "#obTelStrip .ot-back[disabled]{opacity:.4;cursor:not-allowed;border-color:var(--line,#3a2410)}",
+      "#obTelStrip .ot-back.sent{border-color:var(--ok,#5fbf7f);color:var(--ok,#5fbf7f)}",
       "#obTelStrip .ot-dot{width:8px;height:8px;border-radius:50%;background:var(--good,#57e0a0);box-shadow:0 0 8px var(--good,#57e0a0)}",
       "#obTelStrip.stale .ot-dot{background:var(--muted,#7a6a55);box-shadow:none}",
       "#obTelStrip .ot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line,#3a2410)}",
@@ -281,7 +288,8 @@
     var strip = document.createElement("div"); strip.id = "obTelStrip"; strip.className = "stale";
     strip.innerHTML =
       '<div class="ot-head">◈ LIVE TELEMETRY' +
-        '<span class="ot-live"><span class="ot-dot"></span><span class="ot-ago">connecting…</span></span></div>' +
+        '<span class="ot-live"><span class="ot-dot"></span><span class="ot-ago">connecting…</span></span>' +
+        '<span class="ot-back" data-a="back" role="button" tabindex="0">↵ GAME</span></div>' +
       '<div class="ot-grid">' +
         TILES.map(function (t) {
           return '<div class="ot-tile" data-t="' + t.k + '"><div class="ot-lbl">' + t.lbl + '</div>' +
@@ -296,6 +304,64 @@
     var wrap = document.querySelector(".wrap") || document.body; wrap.appendChild(strip); return strip;
   }
 
+  // ── BACK TO GAME (b3.22) ──────────────────────────────────────────────────────────────
+  // Explicit intent: the pilot says "I'm done here, put me back". Everything else that moves
+  // focus is the plugin INFERRING it from a NAV send or a toggle; this is the one that isn't
+  // a guess, which is why the plugin lets it skip the refocusact opt-in and the cooldown.
+  //
+  // ★ IT REPORTS WHAT IT ACTUALLY KNOWS, WHICH IS LESS THAN "IT WORKED". The board cannot
+  // observe the Windows foreground — it only knows the request was accepted. So the label
+  // says SENT, not DONE, and the plugin's own status line is where the outcome lives. A
+  // button claiming success it cannot see is how you end up trusting a dead feature.
+  function wireBack(strip) {
+    var btn = strip && strip.querySelector('[data-a="back"]');
+    if (!btn || btn.__obWired) return;
+    btn.__obWired = true;
+    function go() {
+      if (btn.hasAttribute("disabled")) return;
+      var was = btn.textContent;
+      btn.textContent = "…";
+      fetch("/blades/api/act", {
+        method: "POST", credentials: "same-origin",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind: "button" })
+      }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          var ok = !!(j && j.ok);
+          btn.textContent = ok ? "↵ SENT" : "↵ FAILED";
+          btn.classList.toggle("sent", ok);
+          btn.setAttribute("title", ok
+            ? "Sent — your plugin picks this up on its next poll (~5s) and hands focus to Elite"
+            : "Could not reach the board API — nothing was sent");
+          setTimeout(function () { btn.textContent = was; btn.classList.remove("sent"); paintBack(strip); }, 4000);
+        })
+        .catch(function () {
+          btn.textContent = "↵ FAILED";
+          setTimeout(function () { btn.textContent = was; paintBack(strip); }, 4000);
+        });
+    }
+    btn.addEventListener("click", go);
+    btn.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); }
+    });
+  }
+
+  // Disabled while the plugin isn't reporting: with nothing polling, the press would write a
+  // KV record nobody reads and the button would look broken for a reason the pilot can't see.
+  // The title says WHY, rather than leaving a greyed control unexplained.
+  function paintBack(strip) {
+    var btn = strip && strip.querySelector('[data-a="back"]');
+    if (!btn) return;
+    var live = !!(TEL && TEL.telemetry && TEL.ageMs != null && TEL.ageMs < STALE_MS);
+    if (live) {
+      btn.removeAttribute("disabled");
+      btn.setAttribute("title", "Hand focus back to Elite (lands within ~5s, on the plugin's next poll)");
+    } else {
+      btn.setAttribute("disabled", "disabled");
+      btn.setAttribute("title", "Your plugin isn't reporting, so there is nothing to hand focus back to");
+    }
+  }
+
   function setTile(strip, k, val, sub, cls) {
     var tile = strip.querySelector('.ot-tile[data-t="' + k + '"]'); if (!tile) return;
     tile.classList.remove("warn", "crit");
@@ -307,6 +373,7 @@
   function paint(strip) {
     var live = !!(TEL && TEL.telemetry && TEL.ageMs != null && TEL.ageMs < STALE_MS);
     strip.classList.toggle("stale", !live);
+    wireBack(strip); paintBack(strip);
     var ago = strip.querySelector(".ot-ago");
     if (!TEL || TEL.ageMs == null) { if (ago) ago.textContent = "offline — plugin not reporting"; }
     else if (live) { if (ago) ago.textContent = "LIVE · " + agoStr(TEL.ageMs); }

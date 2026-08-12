@@ -245,9 +245,18 @@ export async function onRequestGet({ request, env }) {
   const navSystem = (rec && rec.system) ? rec.system : null;
   const navTs = (rec && rec.ts) ? rec.ts : 0;
 
+  // b3.22 — the generic activation lane (functions/blades/api/act.js). Read-only here and
+  // NOT deleted after reading: the plugin dedups by ts and rejects anything stale, so a
+  // delete would only add a KV write per poll. The 60s TTL is the cleanup.
+  let act = null;
+  try {
+    const a = await env.BUILDS.get("act:" + cmdrLower);
+    if (a) { const o2 = JSON.parse(a); if (o2 && o2.ts) act = { kind: String(o2.kind || "button").slice(0, 24), ts: o2.ts }; }
+  } catch (e) {}
+
   // ★ `now` is the WORKER'S clock, returned so the plugin can age a nav push without ever
   // involving the rig's clock (b3.21 refocus freshness gate). Comparing a Cloudflare ts
   // against local time would turn that gate into a clock-skew detector. Cheap and additive:
   // an older plugin ignores the field, a newer plugin that does not get it fails closed.
-  return json({ ok: true, system: navSystem, ts: navTs, now: Date.now(), latest, channel, settings });
+  return json({ ok: true, system: navSystem, ts: navTs, now: Date.now(), act, latest, channel, settings });
 }

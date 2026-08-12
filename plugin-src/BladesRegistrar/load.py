@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.21"  # b3.21: FOCUS FOLLOWS ACTION, NOT ATTENTION. A NAV send or an assist toggle now hands the foreground back to Elite; scrolling, reading, tile refreshes and alert polls never do. The hard part was timing, not policy - the plugin only learns of a board action on its 5s heartbeat, so two gates guard two different replays: a freshness gate (nav pushes carry a worker timestamp, aged against the WORKER's own clock so the rig's clock never enters it) kills the "EDMC restarts and a 9-minute-old nav record inside its 600s TTL reads as brand new" yank, and a priming flag kills the "plugin was offline while settings changed" one. Both fail CLOSED - the opposite of the handoff bridge's resurrection guard, deliberately, because here stealing the foreground is the worse outcome. Refocus runs BEFORE the clipboard write, which incidentally un-breaks auto-plot-to-galaxy-map (it bails when Elite is not foreground, i.e. on exactly the NAV sends it exists for). ALSO: an opt-in, EDMC-side, save-and-restore SPI_SETFOREGROUNDLOCKTIMEOUT=0 - the documented reason the ALARM refocus has "failed reliably" since b3.14 is that Windows refuses a background process the foreground, and this is the only lever that moves it. UNVERIFIED ON WINDOWS - built in a Linux container. ALSO: _srv was missing a "refocus" key its own _SRV_KEYS declared, so a fresh install read the feature as off via a swallowed KeyError.
+PLUGIN_VERSION = "b3.22"  # b3.22: THE BACK-TO-GAME BUTTON, and the line between inference and instruction. Every other refocus trigger GUESSES that a board action meant "put me back", so those stay gated on the refocusact opt-in, the priming baseline and the burst cooldown. A button press is not a guess, so it skips all three - refusing an explicit press because the guess-feature is off would be a dead control, which is the looks-installed-and-isnt shape this plugin has been bitten by three times. The FRESHNESS gate still applies, because replay is a property of the transport and not of how deliberate the pilot was. New generic lane: POST /blades/api/act -> KV act:{cmdr} (60s TTL) -> navpull -> plugin, deduped by ts exactly like nav so a record inside its TTL cannot re-fire every poll. Deliberately OPT-IN PER BUTTON, not middleware on every POST: forgetting to call it means no refocus, which is the safe direction, whereas a future button inheriting focus-theft is not. Board side reports SENT, never DONE - it cannot observe the Windows foreground and must not claim to.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -392,7 +392,7 @@ def _maybe_send_loadout(cmdr, ts, force=False):
 # The board POSTs a galaxy-map target to /blades/api/navpush keyed to THIS pilot;
 # we poll /ingest/navpull for it and drop it on the PC clipboard for a paste into
 # the galaxy-map search. Per-pilot: we only ever pull our own CMDR's target.
-_nav = {"cmdr": "", "last_ts": 0, "started": False}
+_nav = {"cmdr": "", "last_ts": 0, "act_ts": 0, "started": False}
 
 
 def _set_clipboard(text):
@@ -681,6 +681,26 @@ def _nav_poll_loop():
                             _apply_nav(sysname)
                     else:
                         _apply_nav(sysname)
+                # b3.22 — the BACK TO GAME button. Its own lane, deduped by ts exactly like
+                # nav, so a record still inside its 60s TTL cannot re-fire on every poll.
+                try:
+                    _act = body.get("act")
+                    if isinstance(_act, dict):
+                        _ats = float(_act.get("ts") or 0)
+                        if _ats > _nav.get("act_ts", 0):
+                            _nav["act_ts"] = _ats
+                            _aage = None
+                            try:
+                                _sn = float(body.get("now") or 0)
+                                if _sn > 0 and _ats > 0:
+                                    _aage = max(0.0, (_sn - _ats) / 1000.0)
+                            except (TypeError, ValueError):
+                                _aage = None
+                            _rf_activate("button:" + str(_act.get("kind") or "button")[:24],
+                                         _aage if _aage is not None else _RF_AGE_UNKNOWN,
+                                         explicit=True)
+                except Exception:
+                    pass                          # the button must never take the poll down
                 # A poll completed: from here on, a change means the pilot just made it.
                 _rfa["primed"] = True
         except Exception:
@@ -1796,19 +1816,37 @@ def _refocus_act_on():
         return False
 
 
-def _rf_activate(kind, age_s=None):
+def _rf_activate(kind, age_s=None, explicit=False):
     """Refocus BECAUSE the pilot acted on the board. Returns True only when the foreground
     was observed to move. Records why it declined in `_rfa["why"]` — tests assert on that,
-    and so can a puzzled pilot via the status line."""
+    and so can a puzzled pilot via the status line.
+
+    ★ `explicit=True` is the BACK TO GAME button (b3.22), and it is gated differently on
+    purpose. The other triggers are INFERENCE — we decide a NAV send probably means "put me
+    back" — so they need the `refocusact` opt-in, the priming baseline and the burst
+    cooldown to keep the inference from misfiring. A button press is not an inference; it is
+    the pilot saying the thing out loud. So it skips all three:
+
+      * `refocusact` — that toggle governs whether we GUESS. Refusing an explicit press
+        because the guess-feature is off would be a dead control, which is the exact
+        looks-installed-and-isn't shape this plugin has been bitten by three times.
+      * priming — exists because a settings diff on the first poll might be history. A
+        button press carries its own server timestamp, so freshness already proves intent.
+      * cooldown — exists to collapse a burst of toggles. A human pressing a button twice
+        means they wanted it twice, most likely because the first press did not work; a
+        cooldown there is a dead button at the exact moment it matters.
+
+    The freshness gate still applies, because replay is a property of the transport, not of
+    how deliberate the pilot was."""
     _rfa["why"] = ""
     try:
-        if not _refocus_act_on():
+        if not explicit and not _refocus_act_on():
             _rfa["why"] = "off"
             return False
         if os.name != "nt":
             _rfa["why"] = "not windows"
             return False
-        if not _rfa["primed"]:
+        if not explicit and not _rfa["primed"]:
             # First poll of the session: whatever we are seeing predates us.
             _rfa["why"] = "startup (baseline poll)"
             return False
@@ -1828,7 +1866,7 @@ def _rf_activate(kind, age_s=None):
                 _set_status("refocus skipped - that action was %.0fs ago" % a)
                 return False
         now = time.time()
-        if now - _rfa["last"] < RF_ACT_COOLDOWN_S:
+        if not explicit and now - _rfa["last"] < RF_ACT_COOLDOWN_S:
             _rfa["why"] = "cooldown"
             return False
         _rfa["last"] = now

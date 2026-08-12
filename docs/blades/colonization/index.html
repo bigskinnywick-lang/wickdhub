@@ -572,12 +572,18 @@
     load();
   })();
 
-  /* ---- Transmit-from-Inara button: appears after an Inara link is clicked, reads the copied system from the clipboard and sends it to the PC via the plugin, then vanishes after two refreshes ---- */
+  /* ---- Transmit-from-Inara button: appears after an Inara link is clicked, reads the copied
+     system from the clipboard and sends it to the PC via the plugin.
+     ★ LIFETIME IS COUNTED IN PAGE LOADS, NOT SECONDS — there is no timer, and the copy used to
+     claim there was one. It clears on a successful send, on ⟳ REFRESH, or after two page loads.
+     ⚠ The ⟳ REFRESH button re-fetches data in place; it does NOT reload the page, so it never
+     touched this counter until 2026-08-12. "Vanishes after two refreshes" described a thing
+     that did not happen. Now it does. ---- */
   (function(){
     var KEY="ob_inaraTx", BASE="⧉ TRANSMIT SYSTEM → PC";
     var btn=document.createElement("button");
     btn.id="inaraTxBtn"; btn.type="button"; btn.textContent=BASE;
-    btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Vanishes after two refreshes.";
+    btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Clears when you send it, when you hit ⟳ REFRESH, or after two page loads.";
     btn.style.cssText="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;font-family:var(--font-head,inherit);font-size:12.5px;letter-spacing:1px;font-weight:700;color:#0a0705;background:#ff7a12;border:1px solid #ffb066;border-radius:8px;padding:11px 16px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(255,122,18,.45)";
     var mounted=false;
     function mount(){ if(!mounted && document.body){ document.body.appendChild(btn); mounted=true; } }
@@ -587,8 +593,15 @@
     function tick(){ var n=0; try{ n=parseInt(localStorage.getItem(KEY)||"0",10)||0; }catch(e){}
       if(n>0){ show(); try{ localStorage.setItem(KEY,String(n-1)); }catch(e){} }
       else { hide(); try{ localStorage.removeItem(KEY); }catch(e){} } }
+    function clear(){ try{ localStorage.removeItem(KEY); }catch(e){} hide(); }
+    /* Delegated on document, in the CAPTURE phase, because render() rebuilds the manifest
+       header on every refresh — a listener bound straight to #refreshBtn would be thrown away
+       the first time it fired. Matched by ID, NOT by the .refresh-btn class, which the SORT
+       button also carries; matching the class would kill the button on a harmless re-sort. */
     document.addEventListener("click",function(e){
-      var a=(e.target&&e.target.closest)?e.target.closest("a[href]"):null;
+      var t=(e.target&&e.target.closest)?e.target:null; if(!t||!t.closest) return;
+      if(t.closest("#refreshBtn")){ clear(); return; }
+      var a=t.closest("a[href]");
       if(a&&/inara\.cz/i.test(a.getAttribute("href")||"")) arm();
     },true);
     function sanit(t){ return String(t||"").replace(/\r/g,"").split("\n")[0].trim().slice(0,60); }

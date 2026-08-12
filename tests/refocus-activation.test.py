@@ -195,8 +195,44 @@ ok("CONTROL quiet polls (empty/None settings) do NOT refocus", m.moved == [], st
 src = open(LOADPY, encoding="utf-8").read()
 ok("CONTROL nothing in the telemetry/alerts path calls the gate",
    "_rf_activate" not in src.split("def _assist_telemetry")[-1].split("def ")[0]
-   and src.count("_rf_activate(") == 3,          # 1 def + nav call + toggle call
+   and src.count("_rf_activate(") == 4,          # 1 def + nav + toggle + back-to-game button
    "call sites: %d" % src.count("_rf_activate("))
+
+
+# ── 5b. the BACK TO GAME button: explicit intent, gated differently (b3.22) ──
+# It skips the opt-in, priming and cooldown — and MUST still respect freshness, because
+# replay is a property of the transport, not of how deliberate the pilot was.
+m = fresh(act_on=False)                      # refocusact OFF
+r = m._rf_activate("button:button", 1.0, explicit=True)
+ok("explicit press works even with refocusact OFF",
+   r and m.moved == ["board:button:button"], m._rfa["why"])
+
+m = fresh(primed=False, act_on=False)        # first poll after an EDMC restart
+r = m._rf_activate("button:button", 1.0, explicit=True)
+ok("explicit press works on the very first poll", r and m.moved != [], m._rfa["why"])
+
+m = fresh(act_on=False)
+m._rf_activate("button:button", 1.0, explicit=True)
+m._rf_activate("button:button", 1.0, explicit=True)
+ok("explicit press is NOT swallowed by the cooldown (a second press means try again)",
+   len(m.moved) == 2, str(m.moved))
+
+# The one gate it keeps. 600s = the nav TTL; act's own TTL is 60s, so this is well beyond both.
+m = fresh(act_on=False)
+r = m._rf_activate("button:button", 600.0, explicit=True)
+ok("CONTROL explicit press still refuses a REPLAYED action",
+   (not r) and m.moved == [] and "stale" in m._rfa["why"], m._rfa["why"])
+
+m = fresh(act_on=False)
+r = m._rf_activate("button:button", m._RF_AGE_UNKNOWN, explicit=True)
+ok("CONTROL explicit press with an uncomputable age fails closed",
+   (not r) and m.moved == [], m._rfa["why"])
+
+# Non-Windows is a hard floor for every path, explicit included.
+m = fresh(act_on=False)
+m.os.name = "posix"
+r = m._rf_activate("button:button", 1.0, explicit=True)
+ok("CONTROL explicit press does nothing on non-Windows", (not r) and m.moved == [], m._rfa["why"])
 
 
 # ── 6. the foreground-lock opt-in is inert unless asked for ──────────────────
