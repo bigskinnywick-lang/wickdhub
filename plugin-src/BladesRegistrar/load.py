@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.22"  # b3.22: THE BACK-TO-GAME BUTTON, and the line between inference and instruction. Every other refocus trigger GUESSES that a board action meant "put me back", so those stay gated on the refocusact opt-in, the priming baseline and the burst cooldown. A button press is not a guess, so it skips all three - refusing an explicit press because the guess-feature is off would be a dead control, which is the looks-installed-and-isnt shape this plugin has been bitten by three times. The FRESHNESS gate still applies, because replay is a property of the transport and not of how deliberate the pilot was. New generic lane: POST /blades/api/act -> KV act:{cmdr} (60s TTL) -> navpull -> plugin, deduped by ts exactly like nav so a record inside its TTL cannot re-fire every poll. Deliberately OPT-IN PER BUTTON, not middleware on every POST: forgetting to call it means no refocus, which is the safe direction, whereas a future button inheriting focus-theft is not. Board side reports SENT, never DONE - it cannot observe the Windows foreground and must not claim to.
+PLUGIN_VERSION = "b3.23"  # b3.23: THE PLUGIN NOW REPORTS ITS OWN REFOCUS OUTCOME (rfAt/rfRung on the heartbeat), which lets the BOARD work out whether it is even on the cockpit PC. Adam's point: on a phone or a second machine the back-to-game button is furniture. There is no browser API for "am I on the same box as that process", so the board infers it - press the button, and if focus really moved, THIS browser loses it. The plugin outcome is what makes that sound: "focus did not move here" is ambiguous between wrong-machine and Windows-refused, and those want opposite responses, so only a refocus the plugin says SUCCEEDED counts as evidence. Asymmetric on purpose - a blur is conclusive and sticks; "remote" needs two clean presses and is always recoverable with ?rfbutton=1, because wrongly keeping a useless button costs pixels and wrongly hiding a working one costs trust. rfAt is the RIG's clock and is NEVER compared against the browser's; the board only watches the value CHANGE.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1379,6 +1379,20 @@ def _assist_telemetry():
     _fl = _hk.get("flags")
     if not isinstance(_fl, int) or _fl == 0:
         return out
+    # b3.23 — the board uses this to work out whether IT is on the cockpit PC. If the plugin
+    # reports a refocus that SUCCEEDED and the browser never lost focus, that browser is on a
+    # different machine and its ↵ GAME button is pointless furniture. Reporting the outcome is
+    # what makes that inference sound: without it, "focus did not move here" is ambiguous
+    # between "wrong machine" and "Windows refused", and those want opposite responses.
+    # rfAt is the RIG's clock and is NEVER compared against the browser's — the board only
+    # watches for the VALUE CHANGING. Two clocks, one comparison, is the bug we already shipped
+    # once in the freshness gate.
+    try:
+        if _rf.get("at"):
+            out["rfAt"] = int(float(_rf["at"]) * 1000)
+            out["rfRung"] = str(_rf.get("last") or "")[:16]
+    except Exception:
+        pass
     try:
         if _state.get("system"):
             out["sys"] = str(_state["system"])[:64]
@@ -1576,7 +1590,8 @@ def _alerts_payload():
 #                     does not. It reports the outcome rather than failing silently.
 _RF_MODS = {"alt": 0x0001, "ctrl": 0x0002, "control": 0x0002, "shift": 0x0004, "win": 0x0008}
 _RF_DEFAULT_HOTKEY = "ctrl+alt+e"
-_rf = {"thread": None, "stop": False, "spec": "", "state": "off", "why": ""}
+_rf = {"thread": None, "stop": False, "spec": "", "state": "off", "why": "",
+       "last": "", "at": 0.0}
 
 
 def _refocus_on():
@@ -1710,6 +1725,7 @@ def _rf_won(rung):
     thing to know here — it differs by Windows build and by what else is running — so it is
     now stated. Once per hour per rung, so a change of behaviour still gets reported."""
     _rf["last"] = rung
+    _rf["at"] = time.time()
     _set_status("refocus OK via " + rung)
     try:
         _alert_raise("info", "Refocus succeeded via " + rung,
@@ -1767,6 +1783,7 @@ def _refocus_to_elite(why=""):
             return _rf_won("alt-tab")
 
         _rf["last"] = "failed"
+        _rf["at"] = time.time()
         _set_status("refocus FAILED (Windows refused foreground, all 4 methods)")
         return False
     except Exception:

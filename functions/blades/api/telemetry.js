@@ -33,7 +33,8 @@ function pubTelemetry(rec) {
   if (!t) return null;
   const out = {};
   for (const k of ["sys", "ship", "shipName", "status"]) if (typeof t[k] === "string") out[k] = t[k];
-  for (const k of ["fuelPct", "cargo", "cargoCap"]) if (typeof t[k] === "number") out[k] = t[k];
+  for (const k of ["fuelPct", "cargo", "cargoCap", "rfAt"]) if (typeof t[k] === "number") out[k] = t[k];
+  if (typeof t.rfRung === "string") out.rfRung = t.rfRung;   // b3.23 — see _shell/telemetry.js
   return Object.keys(out).length ? out : null;
 }
 

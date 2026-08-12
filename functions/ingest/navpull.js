@@ -146,6 +146,12 @@ function normTelemetry(raw) {
   const fuelPct = intIn(obj.fuelPct, 0, 100); if (fuelPct !== undefined) out.fuelPct = fuelPct;
   const cargo = intIn(obj.cargo, 0, 100000); if (cargo !== undefined) out.cargo = cargo;
   const cargoCap = intIn(obj.cargoCap, 0, 100000); if (cargoCap !== undefined) out.cargoCap = cargoCap;
+  // b3.23 refocus outcome. rfAt is an epoch-ms stamp from the RIG's clock, so it gets its own
+  // wide bound rather than riding intIn's 100000 cap, which would silently clamp it to a
+  // constant and make every refocus look like the same one.
+  const rfAt = Number(obj.rfAt);
+  if (Number.isFinite(rfAt) && rfAt > 0) out.rfAt = Math.round(rfAt);
+  const rfRung = str(obj.rfRung, 16); if (rfRung !== undefined) out.rfRung = rfRung;
   return Object.keys(out).length ? out : null;
 }
 async function storeTelemetry(env, cmdrLower, rawParam) {

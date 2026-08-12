@@ -65,13 +65,16 @@
       "#obTelStrip{margin:14px 0 4px;border:1px solid var(--accent-dim,#a24d08);background:color-mix(in srgb,var(--accent,#ff7a12) 5%,var(--panel,#140d07));border-radius:var(--radius,12px);overflow:hidden}",
       "#obTelStrip .ot-head{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line,#3a2410);font-family:var(--font-head,'Orbitron',sans-serif);font-size:10.5px;letter-spacing:2px;color:var(--accent-bright,#ffb057)}",
       "#obTelStrip .ot-live{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-size:9.5px;letter-spacing:1.5px;color:var(--muted,#b98a52)}",
-      // b3.22 BACK TO GAME. Lives in the telemetry head rather than the alert strip because
-      // the alert strip only mounts when the API returns an `alerts` field, and a control the
-      // pilot is meant to reach for must not depend on whether anything has gone wrong.
-      "#obTelStrip .ot-back{cursor:pointer;user-select:none;margin-left:10px;border:1px solid var(--accent-dim,#a24d08);background:var(--panel2,#1c1109);border-radius:7px;padding:4px 9px;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9px;letter-spacing:1.5px;color:var(--muted,#b98a52);transition:.15s}",
-      "#obTelStrip .ot-back:hover{border-color:var(--accent,#ff7a12);color:var(--accent-bright,#ffb057)}",
-      "#obTelStrip .ot-back[disabled]{opacity:.4;cursor:not-allowed;border-color:var(--line,#3a2410)}",
-      "#obTelStrip .ot-back.sent{border-color:var(--ok,#5fbf7f);color:var(--ok,#5fbf7f)}",
+      // BACK TO GAME — FIXED, not in the strip (moved 2026-08-12, Adam's call). Its whole job
+      // is "I am done here, put me back", and that is exactly the moment you are least likely
+      // to be scrolled to the top of the board. Anchored top-right because the lower-right is
+      // the zoom control's lane.
+      // ⚠ SHARED LANE: the ⚑ TEST TRACK badge (_shell/testpilot.js) sits directly below at
+      // top:78px. Move either one and check the other.
+      "#obBackFix{position:fixed;top:44px;right:12px;z-index:99998;cursor:pointer;user-select:none;border:1px solid var(--accent-dim,#a24d08);background:rgba(28,17,9,.92);border-radius:7px;padding:5px 10px;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9.5px;letter-spacing:1.5px;color:var(--muted,#b98a52);transition:.15s}",
+      "#obBackFix:hover{border-color:var(--accent,#ff7a12);color:var(--accent-bright,#ffb057)}",
+      "#obBackFix[disabled]{opacity:.4;cursor:not-allowed;border-color:var(--line,#3a2410)}",
+      "#obBackFix.sent{border-color:var(--ok,#5fbf7f);color:var(--ok,#5fbf7f)}",
       "#obTelStrip .ot-dot{width:8px;height:8px;border-radius:50%;background:var(--good,#57e0a0);box-shadow:0 0 8px var(--good,#57e0a0)}",
       "#obTelStrip.stale .ot-dot{background:var(--muted,#7a6a55);box-shadow:none}",
       "#obTelStrip .ot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line,#3a2410)}",
@@ -288,8 +291,7 @@
     var strip = document.createElement("div"); strip.id = "obTelStrip"; strip.className = "stale";
     strip.innerHTML =
       '<div class="ot-head">◈ LIVE TELEMETRY' +
-        '<span class="ot-live"><span class="ot-dot"></span><span class="ot-ago">connecting…</span></span>' +
-        '<span class="ot-back" data-a="back" role="button" tabindex="0">↵ GAME</span></div>' +
+        '<span class="ot-live"><span class="ot-dot"></span><span class="ot-ago">connecting…</span></span></div>' +
       '<div class="ot-grid">' +
         TILES.map(function (t) {
           return '<div class="ot-tile" data-t="' + t.k + '"><div class="ot-lbl">' + t.lbl + '</div>' +
@@ -304,6 +306,72 @@
     var wrap = document.querySelector(".wrap") || document.body; wrap.appendChild(strip); return strip;
   }
 
+  // ── IS THIS BROWSER ON THE COCKPIT PC? (b3.23) ───────────────────────────────────────
+  // Adam's point, and it is right: on a phone or a second machine the ↵ GAME button is
+  // furniture. There is no browser API for "am I on the same box as that process", so this
+  // INFERS it from the one observable that only exists when the answer is yes:
+  //
+  //   press ↵ GAME → the plugin refocuses Elite → THIS browser loses focus.
+  //
+  // ★ The plugin's own outcome is what makes the inference sound. "Focus did not move here"
+  // is ambiguous between "wrong machine" and "Windows refused the foreground", and those want
+  // opposite responses — hide the button vs. definitely keep it. So we only count evidence
+  // when the plugin says it SUCCEEDED. A failed refocus teaches us nothing and is discarded.
+  //
+  // ⚠ Asymmetric on purpose. A blur is conclusive: focus moved here, so this IS the cockpit —
+  // recorded once and never revisited. "Remote" is a guess, so it needs TWO clean presses
+  // before it hides anything, and hiding is always recoverable with ?rfbutton=1. Wrongly
+  // keeping a useless button costs a few pixels; wrongly hiding a working one costs trust.
+  //
+  // ⚠ rfAt is the RIG's clock. It is never compared against the browser's — we only watch for
+  // the value CHANGING after a press. Comparing two clocks is a bug this project already
+  // shipped once, in the refocus freshness gate.
+  var DEV_KEY = "ob_rf_dev", DEV_MISS_KEY = "ob_rf_miss", DEV_WINDOW_MS = 12000;
+  var pressWatch = null;
+
+  function devVerdict() { try { return localStorage.getItem(DEV_KEY) || ""; } catch (e) { return ""; } }
+  function setVerdict(v) { try { localStorage.setItem(DEV_KEY, v); } catch (e) {} }
+  function misses() { try { return parseInt(localStorage.getItem(DEV_MISS_KEY) || "0", 10) || 0; } catch (e) { return 0; } }
+  function setMisses(n) { try { localStorage.setItem(DEV_MISS_KEY, String(n)); } catch (e) {} }
+  function forceShow() { try { return /[?&]rfbutton=1/.test(location.search); } catch (e) { return false; } }
+  function showBackBtn() { return forceShow() || devVerdict() !== "remote"; }
+
+  // Called on every poll. Resolves a press that is still waiting for its answer.
+  function judgeDevice() {
+    if (!pressWatch) return;
+    var t = (TEL && TEL.telemetry) || {};
+    if (pressWatch.blurred) {                       // conclusive, and it sticks
+      setVerdict("cockpit"); setMisses(0);
+      pressWatch.done(); pressWatch = null; paintBack(); return;
+    }
+    var moved = t.rfAt && t.rfAt !== pressWatch.rfAtBefore;
+    if (moved) {
+      if (t.rfRung && t.rfRung !== "failed") {
+        // The plugin took the foreground somewhere, and it was not here.
+        var n = misses() + 1; setMisses(n);
+        if (n >= 2 && devVerdict() !== "cockpit") setVerdict("remote");
+      }
+      // A "failed" rung is discarded entirely — see the note above.
+      pressWatch.done(); pressWatch = null; paintBack(); return;
+    }
+    if (Date.now() - pressWatch.at > DEV_WINDOW_MS) { pressWatch.done(); pressWatch = null; }
+  }
+
+  function watchPress() {
+    if (pressWatch) pressWatch.done();
+    var w = { at: Date.now(), blurred: false,
+              rfAtBefore: ((TEL && TEL.telemetry && TEL.telemetry.rfAt) || 0) };
+    function onBlur() { w.blurred = true; }
+    function onVis() { if (document.hidden) w.blurred = true; }
+    window.addEventListener("blur", onBlur);
+    document.addEventListener("visibilitychange", onVis);
+    w.done = function () {
+      window.removeEventListener("blur", onBlur);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    pressWatch = w;
+  }
+
   // ── BACK TO GAME (b3.22) ──────────────────────────────────────────────────────────────
   // Explicit intent: the pilot says "I'm done here, put me back". Everything else that moves
   // focus is the plugin INFERRING it from a NAV send or a toggle; this is the one that isn't
@@ -313,13 +381,28 @@
   // observe the Windows foreground — it only knows the request was accepted. So the label
   // says SENT, not DONE, and the plugin's own status line is where the outcome lives. A
   // button claiming success it cannot see is how you end up trusting a dead feature.
-  function wireBack(strip) {
-    var btn = strip && strip.querySelector('[data-a="back"]');
+  // Body-mounted so it survives every re-render of the board and stays put while you scroll.
+  function mountBack() {
+    var el = document.getElementById("obBackFix");
+    if (el) return el;
+    injectCss();
+    el = document.createElement("span");
+    el.id = "obBackFix"; el.setAttribute("data-a", "back");
+    el.setAttribute("role", "button"); el.setAttribute("tabindex", "0");
+    el.textContent = "↵ GAME";
+    el.style.display = "none";        // paintBack decides; never flash before we know
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function wireBack() {
+    var btn = document.getElementById("obBackFix");
     if (!btn || btn.__obWired) return;
     btn.__obWired = true;
     function go() {
       if (btn.hasAttribute("disabled")) return;
       var was = btn.textContent;
+      watchPress();                      // b3.23 — begin listening before the request goes out
       btn.textContent = "…";
       fetch("/blades/api/act", {
         method: "POST", credentials: "same-origin",
@@ -333,11 +416,11 @@
           btn.setAttribute("title", ok
             ? "Sent — your plugin picks this up on its next poll (~5s) and hands focus to Elite"
             : "Could not reach the board API — nothing was sent");
-          setTimeout(function () { btn.textContent = was; btn.classList.remove("sent"); paintBack(strip); }, 4000);
+          setTimeout(function () { btn.textContent = was; btn.classList.remove("sent"); paintBack(); }, 4000);
         })
         .catch(function () {
           btn.textContent = "↵ FAILED";
-          setTimeout(function () { btn.textContent = was; paintBack(strip); }, 4000);
+          setTimeout(function () { btn.textContent = was; paintBack(); }, 4000);
         });
     }
     btn.addEventListener("click", go);
@@ -349,9 +432,11 @@
   // Disabled while the plugin isn't reporting: with nothing polling, the press would write a
   // KV record nobody reads and the button would look broken for a reason the pilot can't see.
   // The title says WHY, rather than leaving a greyed control unexplained.
-  function paintBack(strip) {
-    var btn = strip && strip.querySelector('[data-a="back"]');
+  function paintBack() {
+    var btn = document.getElementById("obBackFix");
     if (!btn) return;
+    if (!showBackBtn()) { btn.style.display = "none"; return; }
+    btn.style.display = "inline-block";
     var live = !!(TEL && TEL.telemetry && TEL.ageMs != null && TEL.ageMs < STALE_MS);
     if (live) {
       btn.removeAttribute("disabled");
@@ -373,7 +458,7 @@
   function paint(strip) {
     var live = !!(TEL && TEL.telemetry && TEL.ageMs != null && TEL.ageMs < STALE_MS);
     strip.classList.toggle("stale", !live);
-    wireBack(strip); paintBack(strip);
+    mountBack(); wireBack(); judgeDevice(); paintBack();
     var ago = strip.querySelector(".ot-ago");
     if (!TEL || TEL.ageMs == null) { if (ago) ago.textContent = "offline — plugin not reporting"; }
     else if (live) { if (ago) ago.textContent = "LIVE · " + agoStr(TEL.ageMs); }
