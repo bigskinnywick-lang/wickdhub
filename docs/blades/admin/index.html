@@ -141,7 +141,7 @@
     <!-- ROLES -->
     <div class="panel" id="roles">
       <h2>☗ ROLES · TEST PILOTS <button id="rolesRefresh" style="margin-left:auto">↻ reload</button></h2>
-      <div class="desc"><b>Test pilots</b> get the beta channel — the beta download and any beta auto-push go to them; everyone else stays on stable. Add a pilot by CMDR to grant a role before they've ever run the plugin. Changes take effect on their next heartbeat (~5s). Pilots see a <b>⚑ TEST PILOT</b> button in their own nav.</div>
+      <div class="desc"><b>Test pilots</b> get the <em>option</em> of the beta channel — granting the role reveals their ⚑ TEST TRACK switch, it does not move them. They stay on stable until they arm it themselves, and can switch back any time. Revoking the role does force them back to stable. Add a pilot by CMDR to grant a role before they've ever run the plugin. Changes take effect on their next heartbeat (~5s). Pilots see a <b>⚑ TEST PILOT</b> button in their own nav.</div>
       <div class="toolbar" style="margin-top:8px">
         <select id="roleAddSelect" style="min-width:220px"><option value="">loading members…</option></select>
         <button class="go" id="roleAdd">+ add pilot</button>
@@ -164,7 +164,7 @@
     <!-- BACKUP -->
     <div class="panel" id="backup">
       <h2>⤓ BACKUP &amp; RECOVERY</h2>
-      <div class="desc">The whole namespace is a few kilobytes. Download a snapshot, drop the JSON into the repo <code>backups/</code> folder, and push via GitHub Desktop — git becomes the versioned, diffable, offsite backup. A weekly scheduled task does this automatically; this button is the on-demand version.</div>
+      <div class="desc">The whole namespace is a few kilobytes. Download a snapshot, drop the JSON into the repo <code>backups/</code> folder, and push via GitHub Desktop — git becomes the versioned, diffable, offsite backup. There is <b>no scheduler</b> — this button is the only thing that makes a backup, so take one whenever the ledger has moved. (Automating it needs an Access service token, since this endpoint is gated; that is queued, not built.)</div>
       <div class="toolbar">
         <button class="go" id="btnBackup">⤓ DOWNLOAD BACKUP</button>
         <span class="subtle" id="backupInfo"></span>

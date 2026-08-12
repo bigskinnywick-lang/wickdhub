@@ -54,7 +54,9 @@
       </div>
     </div>
     
-  </div>  <div id="curShip" style="display:none;margin-top:12px;border:1px solid var(--accent-dim);background:color-mix(in srgb,var(--accent) 7%,var(--bg));border-radius:var(--radius);padding:10px 14px;font-size:12.5px;line-height:1.5"></div>
+  </div>  <!-- 2026-08-12 — CURRENT SHIP line removed: the LIVE TELEMETRY tile row above now
+     carries ship, hold and free capacity. paintCurShip() is left in place and
+     no-ops on the missing element (it guards), so nothing else had to change. -->
   <div class="buildbar">
     <span class="bb-lab">◈ SITE</span>
     <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
@@ -385,7 +387,7 @@
       btn.style.display=""; return;
     }
     btn.textContent="⛽ NO CARRIER DETECTED";
-    btn.title="Open Carrier Management in-game once with the Blades Registrar plugin running, then reload";
+    btn.title="Reads your journal history for CarrierStats, which only appears in the owner's own journal. The plugin picks it up on its launch scan — no need to have been running at the time. If nothing shows, open Carrier Management in-game once so the event exists, then restart EDMC.";
     btn.disabled=true; btn.style.display="";
   }
   async function load(){
@@ -503,8 +505,8 @@
 })();
 </script>
 <script src="/blades/net-takeover.js?v=2" defer></script>
-<script src="/blades/_shell/companion.js?v=6" defer></script>
-<script src="/blades/_shell/telemetry.js?v=9" defer></script>
+<script src="/blades/_shell/companion.js?v=7" defer></script>
+<script src="/blades/_shell/telemetry.js?v=10" defer></script>
 <script src="/blades/_shell/ob1.js?v=1" defer></script>
 <script>
   // Form OB-1, settings entry point. The enlistment entry point is the SAME component in

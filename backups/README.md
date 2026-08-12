@@ -8,8 +8,10 @@ Pages never serves it publicly.
 - **On demand:** Admin console (`/blades/admin/` → ⚙ ADMIN) → **Download backup** →
   drop the `onyx_builds_backup_*.json` file in this folder → commit + push via
   GitHub Desktop. Each push is a diffable, timestamped, offsite backup.
-- **Weekly (automated):** a scheduled task fetches the export and stages a fresh
-  snapshot here for you to push.
+- **Weekly:** there is NO automation. This was documented as a scheduled task and never
+  built — no cron, no workflow, no scheduled handler exists. Take a snapshot from the
+  admin console's backup button. Automating it needs a Cloudflare Access service token,
+  because the export endpoint is gated.
 
 ## Recovery
 Admin console → **Restore** → pick a backup JSON → *merge* (safe, additive) or

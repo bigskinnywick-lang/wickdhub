@@ -298,11 +298,17 @@
                  '<div class="ot-val">—</div><div class="ot-sub"></div></div>';
         }).join("") +
       '</div>';
-    // Insert at the top of the dashboard: before the dossier, else after the build bar.
-    var anchor = document.querySelector(".dossier") || null;
+    // ── MOUNT ORDER (changed 2026-08-12, Adam's call) ──────────────────────────────────
+    // Telemetry + the alert strip now sit ABOVE the site selector, so the selector reads as
+    // the start of the build content rather than as a header the live state hangs off. The
+    // alert strip mounts directly under this one, so the resulting order on both boards is
+    // telemetry → alerts → ◈ SITE → the build view.
+    // ⚠ .buildbar is tried FIRST and inserted BEFORE it. Previously .dossier won and this
+    // landed after the bar; flipping the preference is what moves it on both pages at once.
+    var bar = document.querySelector(".buildbar");
+    if (bar && bar.parentNode) { bar.parentNode.insertBefore(strip, bar); return strip; }
+    var anchor = document.querySelector(".dossier") || document.querySelector(".controls");
     if (anchor && anchor.parentNode) { anchor.parentNode.insertBefore(strip, anchor); return strip; }
-    var bar = document.querySelector(".buildbar") || document.querySelector(".controls");
-    if (bar && bar.parentNode) { bar.parentNode.insertBefore(strip, bar.nextSibling); return strip; }
     var wrap = document.querySelector(".wrap") || document.body; wrap.appendChild(strip); return strip;
   }
 

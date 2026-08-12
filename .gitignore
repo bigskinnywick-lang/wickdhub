@@ -4,3 +4,16 @@ site/
 _to_delete/
 __pycache__/
 *.pyc
+
+# added 2026-08-12 (pre-retail sweep)
+# device-mount shadow copies — 5.7MB of duplicate HTML, and they shadow greps
+.fuse_hidden*
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+# orphan build tarball, already drifted from deployed docs/
+blades-build/*.tgz

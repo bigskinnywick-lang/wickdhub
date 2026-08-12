@@ -47,7 +47,12 @@ def load():
     urllib.request.urlopen = boom
 
     # The recorder. _rf_activate's job is to DECIDE; this captures the decision.
+    # ⚠ Keep a handle on the REAL function first. This stub is what makes every gate test
+    # above possible — and it is also exactly what hid the b3.25 bug, because no test ever
+    # executed _refocus_to_elite's own return paths. Section 5c restores this handle to test
+    # them. A stub that stands in for the thing under test must always leave a way back.
     m.moved = []
+    m._orig_refocus_to_elite = m._refocus_to_elite
     m._refocus_to_elite = lambda why="": (m.moved.append(why), True)[1]
     m._set_status = lambda *a, **k: None
     m._srv_path = lambda: os.devnull          # never persist during tests
@@ -233,6 +238,47 @@ m = fresh(act_on=False)
 m.os.name = "posix"
 r = m._rf_activate("button:button", 1.0, explicit=True)
 ok("CONTROL explicit press does nothing on non-Windows", (not r) and m.moved == [], m._rfa["why"])
+
+
+# ── 5c. _refocus_to_elite must REPORT AN OUTCOME on every path (b3.25 regression) ──
+# ★ THIS IS THE TEST THAT WAS MISSING, and its absence cost a shipped-broken feature.
+# Everything above stubs `_refocus_to_elite` with a recorder, so the function's own paths were
+# never executed by any test. The "Elite is already foreground" early return stamped nothing —
+# and a press from a tablet or a second PC ALWAYS lands there, because such a press never moves
+# the rig's foreground. The board watches `rfAt` for a change, it never changed, and the cockpit
+# detection could not fire from the exact case it was built for. Unit tests: all green.
+#
+# The rule this encodes: a function whose OUTPUT IS A REPORT must report on every return path.
+# A silent success is indistinguishable from a function that never ran.
+def rf_module(now_focused, hwnd=0x1234):
+    m = load()
+    m._refocus_to_elite = m._orig_refocus_to_elite   # put the REAL function back — see load()
+    m.os.name = "nt"
+    m._set_status = lambda *a, **k: None
+    m._elite_hwnd = lambda: hwnd
+    m._rf_now = lambda h: now_focused
+    m._rf["at"] = 0.0
+    m._rf["last"] = ""
+    return m
+
+m = rf_module(now_focused=True)
+r = m._refocus_to_elite("board:button")
+ok("already-foreground path returns True AND stamps an outcome",
+   r and m._rf["at"] > 0 and m._rf["last"] == "already",
+   "at=%s last=%r" % (m._rf["at"], m._rf["last"]))
+
+# It must be reported as a SUCCESS, not as "failed" — the board discards failures as
+# uninformative, so mislabelling this would silently reproduce the original bug.
+ok("CONTROL the already-foreground rung is not labelled 'failed'",
+   m._rf["last"] != "failed", repr(m._rf["last"]))
+
+# Elite not running: genuinely nothing happened, so nothing may be stamped. Stamping here
+# would feed the board a phantom refocus it never performed.
+m2 = rf_module(now_focused=False, hwnd=0)
+r2 = m2._refocus_to_elite("board:button")
+ok("CONTROL Elite not running -> False, and NOTHING stamped",
+   (not r2) and m2._rf["at"] == 0.0 and m2._rf["last"] == "",
+   "at=%s last=%r" % (m2._rf["at"], m2._rf["last"]))
 
 
 # ── 6. the foreground-lock opt-in is inert unless asked for ──────────────────

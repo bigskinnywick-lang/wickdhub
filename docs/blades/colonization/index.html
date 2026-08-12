@@ -36,7 +36,7 @@
       <div class="logo-slot" title="Onyx Blades"><img class="emblem" src="/blades/icon-192.png" alt="Onyx Blades emblem" /></div>
       <div><h1>ONYX BLADES · LIVE COLONISATION BOARD</h1><div class="sub" id="subline">LIVE FEED · RAVENCOLONIAL + ARDENT</div></div>
     </div>
-    <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div><div style="color:var(--muted);margin-top:6px" id="cmdrLine">build: —</div></div>
+    <div class="cmdr"><div><span class="livebadge"><span class="dotlive"></span>LIVE DATA</span></div></div>
   </header>
   <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn on" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY DASHBOARD</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
   <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
@@ -53,11 +53,16 @@
         <span class="dial-scheme" id="dialScheme">AMBER COCKPIT</span>
       </div>
     </div>
-    <div class="mockbadge" style="color:var(--good);border-color:var(--good)">◆ LIVE — RavenColonial build + Ardent market, fetched in your browser</div>
+    
   </div>  <div class="buildbar">
     <span class="bb-lab">◈ SITE</span>
     <select id="buildSel" class="bb-sel"><option>loading sites…</option></select>
+    <span class="bb-arch" id="cmdrLine" style="margin-left:auto;color:var(--muted);font-size:11.5px;letter-spacing:.5px" title="Architect of the selected site">architect —</span>
   </div>
+  <!-- 2026-08-12 — moved out of the colour-dial row: this reports the live data
+     SOURCE, so it belongs with the build progress it describes, not beside a
+     per-device theme control. -->
+  <div class="mockbadge" style="color:var(--good);border-color:var(--good)">◆ LIVE — RavenColonial build + Ardent market, fetched in your browser</div>
   <div id="view"><div class="panel"><h2>Connecting…</h2><div class="srcLoading">Fetching live build data from RavenColonial…</div></div></div>
   <div id="haulersPanel" class="panel" style="margin-top:16px;display:none"><h2>SQUAD HAULERS<span class="rcount" id="haulCount" style="color:var(--muted);font-size:12px;font-family:var(--font-body);letter-spacing:1px;margin-left:8px"></span></h2><div id="haulBody"></div><div class="sync-line" id="haulNote" style="margin-top:12px"></div></div>
   <footer>ONYX BLADES SQUADRON · LIVE FEED · DATA: RAVENCOLONIAL (build) + ARDENT (market)<br />build progress via RavenColonial · market via Ardent (EDDN) · updatedAt = last commander to visit that market</footer></div>
@@ -718,6 +723,6 @@
      is self-mounting (own CSS, own elements, fallback anchors) and only renders for a
      signed-in CMDR-bound pilot — no page markup was needed. Keep ?v= in step with the
      copy on /blades/commander/ or one page will serve a stale build from the edge. -->
-<script src="/blades/_shell/telemetry.js?v=9" defer></script>
+<script src="/blades/_shell/telemetry.js?v=10" defer></script>
 </body>
 </html>

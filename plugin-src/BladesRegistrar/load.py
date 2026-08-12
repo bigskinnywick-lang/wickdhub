@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.23"  # b3.23: THE PLUGIN NOW REPORTS ITS OWN REFOCUS OUTCOME (rfAt/rfRung on the heartbeat), which lets the BOARD work out whether it is even on the cockpit PC. Adam's point: on a phone or a second machine the back-to-game button is furniture. There is no browser API for "am I on the same box as that process", so the board infers it - press the button, and if focus really moved, THIS browser loses it. The plugin outcome is what makes that sound: "focus did not move here" is ambiguous between wrong-machine and Windows-refused, and those want opposite responses, so only a refocus the plugin says SUCCEEDED counts as evidence. Asymmetric on purpose - a blur is conclusive and sticks; "remote" needs two clean presses and is always recoverable with ?rfbutton=1, because wrongly keeping a useless button costs pixels and wrongly hiding a working one costs trust. rfAt is the RIG's clock and is NEVER compared against the browser's; the board only watches the value CHANGE.
+PLUGIN_VERSION = "b3.25"  # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -838,9 +838,11 @@ def _write_backfill_marker(n):
 
 def _run_backfill(delay=10):
     """Journal-history claim scan -> report your final-'claimed' systems to the
-    ledger. Runs at launch only when auto-create is on, and again immediately
-    (delay=0) when you save the settings tab with auto-create on. One-time per
-    marker; saving the tab clears the marker so it re-scans."""
+    ledger, plus fleet-carrier ownership. READ-AND-REPORT ONLY — it creates nothing.
+
+    b3.24: runs at launch for EVERY pilot, not only those with auto-create on (see the
+    call site). Still one-time per marker, and saving the settings tab with auto-create
+    on clears the marker to force a re-scan."""
     try:
         if delay:
             time.sleep(delay)  # let EDMC finish booting (status label, journal catch-up)
@@ -1746,6 +1748,15 @@ def _refocus_to_elite(why=""):
             _set_status("refocus: Elite window not found")
             return False
         if _rf_now(hwnd):
+            # b3.25 — STAMP THIS PATH TOO. "Elite already has the foreground" is an OUTCOME,
+            # not a no-op, and it is the single most informative one the board can receive:
+            # if the plugin says Elite holds focus and the browser that asked never lost it,
+            # that browser is not on this machine. Leaving it unstamped made the cockpit
+            # detection unable to fire from precisely the case it exists for — a press from a
+            # tablet or a second PC never moves the rig's foreground, so it always landed
+            # here, reported nothing, and the board waited out its window forever.
+            _rf["last"] = "already"
+            _rf["at"] = time.time()
             return True                      # already there — and the alt-tab rung is unsafe
         import ctypes
         u = ctypes.windll.user32
@@ -2429,9 +2440,15 @@ def plugin_start3(plugin_dir):
         _fg_lock_apply()
     except Exception:
         pass
-    # Only scan/report past claims if the pilot has opted into auto-create.
-    if _autocreate():
-        threading.Thread(target=_run_backfill, daemon=True).start()
+    # b3.24 — THE GATE IS SPLIT. This scan is READ-AND-REPORT ONLY: it reads journals the
+    # pilot already wrote and tells the ledger which systems they already claimed and which
+    # carrier they already own. It creates NOTHING. Auto-CREATE — writing new builds into
+    # Raven on the pilot's behalf — is a different act with a different risk, and keeps its
+    # own gate down in the docked/market path.
+    # Until now both hid behind `_autocreate()`, which defaults to False, so for a default
+    # pilot the launch scan never ran at all — while three places on the site said it did.
+    # Conflating "report what I did" with "act for me" is what made that invisible.
+    threading.Thread(target=_run_backfill, daemon=True).start()
     if _honk_on():
         try:
             _hk_resolve()

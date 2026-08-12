@@ -2,6 +2,12 @@
 <html lang="en" data-theme="green">
 <head>
 <meta charset="utf-8">
+<!-- 2026-08-12 — de-indexing the flight rig. noindex WITHOUT a robots.txt Disallow, on
+     purpose: a blocked page cannot be crawled, so Google would never READ this tag and an
+     already-indexed URL would sit in the index as a bare listing forever. Crawl-allowed +
+     noindex is the only combination that actually removes it. Once Search Console shows it
+     gone, ADD `Disallow: /blades/flight/` back to docs/robots.txt and delete this tag. -->
+<meta name="robots" content="noindex,follow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ONYX BLADES · Flight Rig</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">

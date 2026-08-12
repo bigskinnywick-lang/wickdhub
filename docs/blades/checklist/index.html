@@ -63,7 +63,7 @@
     <h2>PHASE 0 · THE RELAY — AUTO-UPDATE &amp; CHANNELS</h2>
     <div class="when">Confirm the plugin self-updates and reports in. Game running, EDMC open.</div>
     <label class="step"><input type="checkbox" data-cid="autoupd" /><span><b>Self-update:</b> you did NOT reinstall by hand this cycle — the relay pulled the new build itself, and after an EDMC restart the Blades line shows the current version.</span></label>
-    <label class="step"><input type="checkbox" data-cid="betachan" /><span><b>Beta channel:</b> as a test pilot you received the beta build (version carries a letter), and the <code>⚑ TEST PILOT</code> chip shows on MY DASHBOARD. Revoke test-pilot (ask an admin) and you get pushed back to stable; the chip disappears.</span></label>
+    <label class="step"><input type="checkbox" data-cid="betachan" /><span><b>Beta channel:</b> as a test pilot the <code>⚑ TEST PILOT</code> chip shows on MY DASHBOARD and the <code>⚑ TEST TRACK</code> switch appears — and you are still on the <em>stable</em> build until you arm it. Arm it and you move to the beta build (version carries a letter); disarm it and you go back to stable. Revoke test-pilot (ask an admin) and you get pushed back to stable; the chip disappears.</span></label>
     <label class="step"><input type="checkbox" data-cid="blare" /><span><b>RESTART-EDMC blare:</b> when a new build is pushed, the SQUAD NET ticker takes over — tag, border and the words <code>RESTART EDMC</code> flashing amber↔fleet, rest of the line readable — and clears itself ~15s after you relaunch EDMC and it reports the new version.</span></label>
     <div class="watch"><b>NEW-PILOT VARIANT:</b> with no plugin (or pre-2.0) the blare reads <code>COMPLETE SETUP</code> instead and surfaces the Setup Guide.</div>
   </div>
@@ -98,7 +98,7 @@
     <div class="when">The fitted-but-untested kit from the register — needs a real carrier / live claim.</div>
     <label class="step"><input type="checkbox" data-cid="carrierid" /><span><b>Carrier identity:</b> a carrier linked to a build shows name + call sign; squad-owned carriers show their owner, outsiders are tagged <code>unaffiliated</code>.</span></label>
     <label class="step"><input type="checkbox" data-cid="carrierlink" /><span><b>Squad carrier link:</b> link your own fleet carrier to the build you're viewing from the commander deck; it appears on the board as a mobile depot.</span></label>
-    <label class="step"><input type="checkbox" data-cid="hotlist" /><span><b>Claim hot list:</b> a fresh claim inside its ~4-week primary-port window with no build yet rides the SQUAD NET ticker first — red under 3 days, amber under 7.</span></label>
+    <label class="step"><input type="checkbox" data-cid="hotlist" /><span><b>Claim hot list:</b> a claim inside its ~4-week primary-port window rides the <b>Colonisation</b> ticker first — <code>CLAIM EXPIRING</code> with no build yet, <code>PRIMARY PORT DUE</code> once one has started — red under 3 days, amber under 7. (Colonisation only — not My Stats.)</span></label>
     <label class="step"><input type="checkbox" data-cid="archdeck" /><span><b>Architect deck:</b> bind your CMDR, see your claims with window countdowns, and correct a mistyped name or release one — all scoped to you.</span></label>
   </div>
 
