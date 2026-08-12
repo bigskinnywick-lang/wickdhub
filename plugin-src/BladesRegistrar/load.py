@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.18"  # b3.18: THE TILES SURVIVE AN EDMC RESTART. Ship / cargo / fuel-capacity only ever arrived on `Loadout`, and EDMC does NOT re-emit it to a plugin loaded mid-session (rig-measured: 0 Loadout in the 57 events after a restart) — so restarting EDMC with Elite still running dashed those tiles until a game relog; hauling could not heal it. Now seeded from EDMC's reconstructed `state` dict, which the rig proved is already 42/60 populated on the FIRST callback after a restart. `sys` had the same bug with a different symptom (stale, not dashed — it was never Status.json-backed) and is seeded too. Shapes measured, not guessed: Cargo is a dict to be summed, FuelCapacity is a dict keyed Main, and FuelLevel does not exist. b3.17 = the no-fire flag lets go.
+PLUGIN_VERSION = "b3.19"  # b3.19: THE ALERT STRIP IS FOR ALERTS. "Refocus hotkey armed" moved to the status line only. Its cooldown could never work — the cooldown map is module memory and the alert fires at plugin START, so every EDMC restart re-announced it (five in 33 minutes on 8-11). The strip keeps only the newest 4, so a routine success was evicting real ones — on the night the pirate alarm shipped, the entire visible strip was this message. The refocus FAILURE alert is untouched, so no signal is lost. b3.18 = tiles survive a restart.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1735,9 +1735,15 @@ def _rf_loop(mods, vk):
     _rf["why"] = ""
     # Announce SUCCESS too, not just failure. "It works" and "it never started" looked
     # identical from the outside in b3.11, which is exactly how the bug survived a test.
+    # b3.19: that announcement now lives on the STATUS LINE ONLY. It used to also raise an
+    # info alert, and that was wrong twice over. The `cooldown` could never suppress it —
+    # `_alert_state["cool"]` is module memory and this fires at PLUGIN START, so every EDMC
+    # restart reset the map and re-announced; five landed in 33 minutes on 2026-08-11. And
+    # the strip shows only the newest 4, so a routine success was evicting real alerts: the
+    # night the pirate alarm went live, the whole visible strip was this message. Refocus has
+    # been reliable since b3.15, so the diagnostic no longer earns a slot in the lane.
+    # The FAILURE path above still raises a warn — losing the success notice costs no signal.
     _set_status("refocus hotkey ARMED (" + _rf["spec"] + ")")
-    _alert_raise("info", "Refocus hotkey armed: " + _rf["spec"],
-                 key="refocus-armed", cooldown=3600.0)
     msg = wintypes.MSG()
     try:
         while not _rf["stop"]:
