@@ -47,7 +47,8 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.25"  # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
+PLUGIN_VERSION = "b3.26"  # b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
+# b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
 # --- config -----------------------------------------------------------------
 INGEST_URL = "https://wickdhub.com/ingest/build"
@@ -1740,11 +1741,18 @@ def _rf_won(rung):
 def _refocus_to_elite(why=""):
     """Hand the foreground back to Elite, escalating and verifying at every step.
     Returns True only when the foreground is OBSERVED to be Elite afterwards."""
+    # b3.26 — STAMP EVERY FAILURE BRANCH, not just the refused one. `_rf["last"]` is now
+    # read as a REASON (the pirate alarm gates its hotkey hint on it), and an unstamped
+    # branch leaves the PREVIOUS outcome standing — so a refusal at 20:00 would still be
+    # answering for a "game isn't running" at 20:05. Same lesson as b3.25: an outcome that
+    # records nothing is indistinguishable from one that never happened.
     if os.name != "nt":
+        _rf["last"] = "nonwindows"
         return False
     try:
         hwnd = _elite_hwnd()
         if not hwnd:
+            _rf["last"] = "nogame"
             _set_status("refocus: Elite window not found")
             return False
         if _rf_now(hwnd):
@@ -1793,11 +1801,12 @@ def _refocus_to_elite(why=""):
         if _rf_now(hwnd):
             return _rf_won("alt-tab")
 
-        _rf["last"] = "failed"
-        _rf["at"] = time.time()
+        _rf["last"] = "failed"       # ← the ONLY value that means "Windows refused a game
+        _rf["at"] = time.time()      #   that IS there"; the hint gate keys on exactly this
         _set_status("refocus FAILED (Windows refused foreground, all 4 methods)")
         return False
     except Exception:
+        _rf["last"] = "error"
         _set_status("refocus error")
         return False
 
@@ -2217,19 +2226,50 @@ def _pa_alarm(msg, reason=""):
     """The real thing: critical + klaxon on the rig + the page flash on the board.
 
     b3.14: the refocus is attempted BEFORE the alert is raised, so that when it fails the
-    alert can carry the remedy. Measured on the rig: this path fails reliably, because a
-    journal-driven background thread has no foreground claim. Rather than silently trying
-    and silently losing, the message tells the pilot which key takes the stick back — on
-    the very flash they are already looking at. Still attempted, because another pilot's
-    Windows may permit it, and a success costs them nothing."""
+    alert can carry the remedy. Rather than silently trying and silently losing, the
+    message tells the pilot which key takes the stick back — on the very flash they are
+    already looking at.
+
+    ⚠ b3.26 corrects b3.14's premise: this path does NOT "fail reliably". Since b3.15 the
+    refocus ladder usually WINS on Adam's rig (rung 1 direct loses, rung 2 alt-tap takes
+    it, 5/5 measured), so the hint is a fallback for a case b3.15 mostly closed — another
+    pilot's Windows, or fullscreen-exclusive. That is exactly why the truncation bug below
+    survived eleven builds unseen: the path that carried it rarely ran."""
     hint = ""
     if _refocus_on():
         try:
-            if not _refocus_to_elite("pirate alarm") and _rf.get("state") == "on":
+            # b3.26 — gate on the FOREGROUND REFUSAL specifically, not on "not True".
+            # _refocus_to_elite also returns False when Elite is not running at all (the
+            # "window not found" branch), and there the key we would be telling the pilot
+            # to press is exactly as dead as the automation was — the hotkey calls the
+            # SAME function and lands in the SAME branch. Only "failed" means Windows
+            # refused a game that IS there, which is the one case a human press can still
+            # win, because the keypress carries the foreground claim a journal-driven
+            # background thread has never had.
+            if (not _refocus_to_elite("pirate alarm")
+                    and _rf.get("last") == "failed"
+                    and _rf.get("state") == "on"):
                 hint = " - press " + str(_rf.get("spec") or "").upper() + " for control"
         except Exception:
             pass                                  # refocus must NEVER take the alarm down
-    txt = (msg + " - " + str(reason)[:60]) if reason else msg
+
+    # ★ b3.26 — RESERVE THE REMEDY'S ROOM FIRST, spend what is left on the pirate.
+    # The old order built `msg + reason[:60]`, appended the hint, and let _alert_raise cut
+    # the whole thing at _ALERT_MSG_MAX — so the cap ate the remedy from the RIGHT and the
+    # pilot read "... - press " with no key name. A failed automation became half a
+    # preposition. Whether the alarm was actionable depended on how talkative the pirate
+    # was: replayed through this matcher over Adam's 654-journal NPC vocabulary, only
+    # 36/159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost
+    # the promise entirely. The pirate's chatter is the part that can be cut without cost;
+    # the key name is not. A hint that will not fit WHOLE is dropped whole — a half-named
+    # key is worse than no promise, because the pilot reaches for a key that isn't there.
+    # THE CAP IS NOT THE VILLAIN AND DOES NOT MOVE: alerts ride the heartbeat as a
+    # urlencoded &al= param, so 90 is protecting the URL. This is the order of sacrifice,
+    # not the budget — the longest alert is still exactly 90 chars.
+    if len(msg) + len(hint) > _ALERT_MSG_MAX:
+        hint = ""
+    room = _ALERT_MSG_MAX - len(msg) - len(hint) - 3        # 3 = the " - " separator
+    txt = (msg + " - " + str(reason)[:room]) if (reason and room > 0) else msg
     if _alert_raise("critical", txt + hint, key="pirate-alarm",
                     cooldown=PIRATE_COOLDOWN_S, blare=True):
         _pa_st["alarmed_until"] = time.time() + PIRATE_ENCOUNTER_S
