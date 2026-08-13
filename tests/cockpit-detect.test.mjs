@@ -128,7 +128,7 @@ async function pressNoBlur(pg, state, rung, expectMiss) {
   const { ctx, pg, state } = await open_();
   await press(pg);
   await pg.evaluate(() => window.dispatchEvent(new Event('blur')));
-  state.rf = { rfAt: 1700000009000, rfRung: 'alt-tap' };
+  state.rf = { rfAt: 1700000009000, rfRung: 'alt-tap' };   // a rung that ACTUALLY moved
   await pg.waitForFunction(() => localStorage.getItem('ob_rf_dev') === 'cockpit', null, { timeout: 15000 }).catch(() => {});
   const [v] = await verdict(pg);
   ok('a blur after the press records this device as the cockpit', v === 'cockpit', `verdict=${v}`);
@@ -139,6 +139,57 @@ async function pressNoBlur(pg, state, rung, expectMiss) {
   const [v2] = await verdict(pg);
   ok('CONTROL a cockpit verdict is not overturned by later misses',
      v2 === 'cockpit' && (await visible(pg)), `verdict=${v2}`);
+  await ctx.close();
+}
+
+// ── 5b. THE MAC CASE — a blur with no movement is NOT the cockpit (2026-08-13) ──
+// The bug this replaces: judgeDevice checked `blurred` first and called it conclusive. A Mac
+// blurred for its own reasons inside the 12s window and marked itself the cockpit, stickily.
+// The rung is the disambiguator — "already" means the plugin moved NOTHING, so a blur in that
+// window cannot have been caused by it.
+{
+  const { ctx, pg, state } = await open_();
+  await press(pg);
+  await pg.evaluate(() => window.dispatchEvent(new Event('blur')));   // incidental app switch
+  state.rf = { rfAt: 1700000777000, rfRung: 'already' };              // Elite was already there
+  await pg.waitForFunction(() => localStorage.getItem('ob_rf_miss') === '1', null, { timeout: 15000 }).catch(() => {});
+  const [v, m] = await verdict(pg);
+  ok('CONTROL blur + rung "already" does NOT claim cockpit — it counts as remote',
+     v !== 'cockpit' && m === '1', `verdict=${v} misses=${m}`);
+  await ctx.close();
+}
+
+// …and "already" twice, blur or not, hides it. This is the real remote-device path now.
+{
+  const { ctx, pg, state } = await open_();
+  for (const t of [1, 2]) {
+    await press(pg);
+    state.rf = { rfAt: 1700000800000 + t * 5000, rfRung: 'already' };
+    await pg.waitForFunction(n => localStorage.getItem('ob_rf_miss') === String(n), t, { timeout: 15000 }).catch(() => {});
+  }
+  const [v] = await verdict(pg);
+  ok('two "already" presses hide it (the tablet/Mac path)', v === 'remote' && !(await visible(pg)), `verdict=${v}`);
+  await ctx.close();
+}
+
+// The rig still works: a rung that REALLY moved, plus a blur, is the cockpit.
+{
+  const { ctx, pg, state } = await open_();
+  await press(pg);
+  await pg.evaluate(() => window.dispatchEvent(new Event('blur')));
+  state.rf = { rfAt: 1700000999000, rfRung: 'alt-tap' };
+  await pg.waitForFunction(() => localStorage.getItem('ob_rf_dev') === 'cockpit', null, { timeout: 15000 }).catch(() => {});
+  const [v] = await verdict(pg);
+  ok('a REAL move + blur still marks the rig as cockpit', v === 'cockpit', `verdict=${v}`);
+  await ctx.close();
+}
+
+// A real move with NO blur means it moved somewhere else — remote evidence.
+{
+  const { ctx, pg, state } = await open_();
+  await pressNoBlur(pg, state, 'alt-tap', 1);
+  const [, m] = await verdict(pg);
+  ok('CONTROL real move without a blur still counts as remote', m === '1', `misses=${m}`);
   await ctx.close();
 }
 

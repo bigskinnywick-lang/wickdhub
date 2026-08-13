@@ -339,25 +339,53 @@
   function setVerdict(v) { try { localStorage.setItem(DEV_KEY, v); } catch (e) {} }
   function misses() { try { return parseInt(localStorage.getItem(DEV_MISS_KEY) || "0", 10) || 0; } catch (e) { return 0; } }
   function setMisses(n) { try { localStorage.setItem(DEV_MISS_KEY, String(n)); } catch (e) {} }
-  function forceShow() { try { return /[?&]rfbutton=1/.test(location.search); } catch (e) { return false; } }
+  // ?rfbutton=1 RESETS the verdict, it does not merely reveal the button. A device that has
+  // been judged wrongly must be able to re-learn; showing the control while leaving "cockpit"
+  // on disk would leave judgeDevice permanently refusing to reconsider.
+  function forceShow() {
+    try {
+      if (!/[?&]rfbutton=1/.test(location.search)) return false;
+      localStorage.removeItem(DEV_KEY); localStorage.removeItem(DEV_MISS_KEY);
+      return true;
+    } catch (e) { return false; }
+  }
   function showBackBtn() { return forceShow() || devVerdict() !== "remote"; }
 
   // Called on every poll. Resolves a press that is still waiting for its answer.
+  // ★ A BLUR ALONE PROVES NOTHING — corrected 2026-08-13, after a Mac marked itself the
+  // cockpit. The old order checked `blurred` FIRST and treated it as conclusive. But a browser
+  // blurs for a dozen unrelated reasons — an app switch, a notification, clicking another
+  // window — and this watches for 12 seconds, which is a wide net for coincidence.
+  //
+  // The rung is what disambiguates, and b3.25 is what made it possible to ask:
+  //   • "already"  -> Elite was ALREADY foreground, so the plugin MOVED NOTHING. A blur here
+  //                   cannot have been caused by a refocus that never happened. This is in
+  //                   fact the signature of a REMOTE device: you pressed, and the rig's
+  //                   foreground was already where it should be.
+  //   • direct / alt-tap / attach / alt-tab -> the foreground genuinely MOVED to Elite. Only
+  //                   then does a blur here mean "it moved away from me", i.e. this is the rig.
+  //   • "failed"   -> inconclusive, discarded, as before.
+  //
+  // So blur is now necessary but not sufficient, and it is only ever read alongside a rung
+  // that represents actual movement.
+  var RF_MOVED_RUNGS = { direct: 1, "alt-tap": 1, attach: 1, "alt-tab": 1 };
+
   function judgeDevice() {
     if (!pressWatch) return;
     var t = (TEL && TEL.telemetry) || {};
-    if (pressWatch.blurred) {                       // conclusive, and it sticks
-      setVerdict("cockpit"); setMisses(0);
-      pressWatch.done(); pressWatch = null; paintBack(); return;
-    }
     var moved = t.rfAt && t.rfAt !== pressWatch.rfAtBefore;
     if (moved) {
-      if (t.rfRung && t.rfRung !== "failed") {
-        // The plugin took the foreground somewhere, and it was not here.
+      var rung = String(t.rfRung || "");
+      if (RF_MOVED_RUNGS[rung] && pressWatch.blurred) {
+        // The foreground really moved to Elite, and THIS browser is what it moved away from.
+        setVerdict("cockpit"); setMisses(0);
+      } else if (rung && rung !== "failed") {
+        // Either Elite was already there ("already"), or it moved and we did not lose focus.
+        // Both say: the foreground this plugin controls is not on this screen.
         var n = misses() + 1; setMisses(n);
         if (n >= 2 && devVerdict() !== "cockpit") setVerdict("remote");
       }
-      // A "failed" rung is discarded entirely — see the note above.
+      // "failed" teaches nothing — it cannot separate wrong-machine from Windows-refused.
       pressWatch.done(); pressWatch = null; paintBack(); return;
     }
     if (Date.now() - pressWatch.at > DEV_WINDOW_MS) { pressWatch.done(); pressWatch = null; }
