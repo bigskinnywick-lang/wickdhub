@@ -205,6 +205,23 @@ async function pressNoBlur(pg, state, rung, expectMiss) {
   await ctx.close();
 }
 
+// ── 6b. the reset must fire ONCE, not on every poll (2026-08-13) ──────────────
+// showBackBtn() -> forceShow() runs from paintBack(), i.e. every poll and every second from
+// the age timer. An un-memoised reset wipes the miss counter continuously, so the device it
+// is meant to rescue can never re-learn. This asserts misses ACCUMULATE with the flag present.
+{
+  const { ctx, pg, state } = await open_({ query: '?rfbutton=1' });
+  await pressNoBlur(pg, state, 'already', 1);
+  const [, m1] = await verdict(pg);
+  await pg.waitForTimeout(3000);                       // several polls with the flag still set
+  const [, m1b] = await verdict(pg);
+  ok('CONTROL ?rfbutton=1 does not re-clear on every poll', m1 === '1' && m1b === '1', `${m1} -> ${m1b}`);
+  await pressNoBlur(pg, state, 'already', 2);
+  const [v] = await verdict(pg);
+  ok('a reset device can still re-learn to "remote"', v === 'remote', `verdict=${v}`);
+  await ctx.close();
+}
+
 // ── 7. NEGATIVE CONTROL — no press, no judgement ─────────────────────────────
 // Polls arrive every few seconds forever. If rfAt changing were enough on its own, an alarm
 // refocus on the rig would silently hide the button on a browser nobody had touched.

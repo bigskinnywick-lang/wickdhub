@@ -342,12 +342,18 @@
   // ?rfbutton=1 RESETS the verdict, it does not merely reveal the button. A device that has
   // been judged wrongly must be able to re-learn; showing the control while leaving "cockpit"
   // on disk would leave judgeDevice permanently refusing to reconsider.
+  // ⚠ MEMOISED, and it has to be. showBackBtn() calls this from paintBack(), which runs on
+  // every poll AND every second from the age timer — so an un-memoised reset would wipe the
+  // miss counter continuously and the device could never accumulate the two presses it needs
+  // to re-learn. The clear must happen exactly once per page load.
+  var _forced = null;
   function forceShow() {
+    if (_forced !== null) return _forced;
     try {
-      if (!/[?&]rfbutton=1/.test(location.search)) return false;
-      localStorage.removeItem(DEV_KEY); localStorage.removeItem(DEV_MISS_KEY);
-      return true;
-    } catch (e) { return false; }
+      _forced = /[?&]rfbutton=1/.test(location.search);
+      if (_forced) { localStorage.removeItem(DEV_KEY); localStorage.removeItem(DEV_MISS_KEY); }
+    } catch (e) { _forced = false; }
+    return _forced;
   }
   function showBackBtn() { return forceShow() || devVerdict() !== "remote"; }
 
