@@ -40,6 +40,11 @@
   </header>
   <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn on" href="/blades/commander/">MY DASHBOARD</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
   <div class="ticker"><div class="tag">◄ SQUAD NET</div><div class="track" id="tickTrack"></div></div>
+
+  <!-- ★ RELEASE ANNOUNCEMENT — deliberately the FIRST thing under the ticker, above the dial
+       and the ASSIGNMENTS card, because a notice nobody scrolls to is a notice nobody reads.
+       Dismissible, and once dismissed it stays gone for that release on that device. -->
+  <div id="annCard"></div>
   <div class="controls">
     <div class="dialbox">
       <div class="dial-labels">
@@ -57,22 +62,19 @@
   </div>  <!-- 2026-08-12 — CURRENT SHIP line removed: the LIVE TELEMETRY tile row above now
      carries ship, hold and free capacity. paintCurShip() is left in place and
      no-ops on the missing element (it guards), so nothing else had to change. -->
+  <!-- ◈ ASSIGNMENTS — what you have been issued (your Adjutant) and where you sit (your desks).
+       Sits ABOVE the site selector deliberately: it is about YOU, the buildbar is about which
+       build you are looking at.
+       2026-08-13 promote — the four role-gated chips that used to live in the buildbar
+       (◆ ARCHITECT · ⚙ ADMIN · ⚓ ADMIRAL'S DESK · ◷ NET USAGE) now render as rows inside this
+       card, from assignments.js, using the SAME reveal conditions they had here. That is why
+       the buildbar below is back to being just the selector and the carrier link. -->
+  <div class="panel" id="asgCard" style="margin:0 0 14px"></div>
+
   <div class="buildbar">
     <span class="bb-lab">◈ SITE</span>
     <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
     <button id="carrierLinkBtn" class="bb-add" style="display:none" title="Link your fleet carrier to the build you are viewing"></button>
-    <a href="/blades/architect/" id="architectBtn" class="bb-add" style="text-decoration:none" title="Your architect deck — claims, primary-port windows, cleanup">◆ ARCHITECT</a>
-    <!-- 2026-08-13 — the ⚑ TEST PILOT chip that sat here was REMOVED as a duplicate. It only
-         linked to /blades/checklist/, and testpilot.js already injects both the test-track
-         toggle AND a CHECKLIST link into .controls beside the colour dial. Two doors to one
-         room. The dial-side pair is the one that stays.
-         Its style carried the `margin-left:auto` that right-aligns everything after it, so
-         that has moved onto the ADMIN chip below. All four of these role-gated chips are
-         doors rather than controls and are due to move into the ASSIGNMENTS card above the
-         site selector, at which point this row goes back to being just the selector. -->
-    <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
-    <a href="/blades/admiral/" id="admiralBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admiral's Desk — squadron leader">⚓ ADMIRAL'S DESK</a>
-    <a href="/blades/usage/" id="usageBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Squad Net Usage — traffic & KV glance (admins only)">◷ NET USAGE</a>
   </div>
 
   <div class="dossier">
@@ -86,7 +88,10 @@
       <div class="rhint">Switch commander:</div>
       <div id="rosterList2"><div class="rempty">Loading…</div></div>
     </div>
-    <div class="panel" id="ob1Panel"></div>
+    <!-- 2026-08-13 promote — Form OB-1 moved OFF this page. It now lives on the SERVICE
+         RECORD (/blades/record/) alongside the Adjutant's standing orders, because both are
+         consent and belong in one document. Keeping a copy here would mean the same form at
+         two URLs, which is the drift ob1.js exists to prevent. Reach it from ASSIGNMENTS. -->
   </div>
 
   <footer>ONYX BLADES SQUADRON · PRIVATE COHORT NET · DATA: RAVENCOLONIAL + ARDENT</footer></div>
@@ -512,14 +517,18 @@
 })();
 </script>
 <script src="/blades/net-takeover.js?v=2" defer></script>
-<script src="/blades/_shell/companion.js?v=7" defer></script>
+<!-- companion.js is GONE as of the 2026-08-13 promote. The ◈ COMPANION pop-up is replaced by
+     the Adjutant, whose standing orders live on the SERVICE RECORD and whose quick toggles
+     ride in the ASSIGNMENTS card above. Form OB-1 moved to that same document, which is why
+     this page no longer mounts it either — one form, one URL. -->
 <script src="/blades/_shell/telemetry.js?v=13" defer></script>
-<script src="/blades/_shell/ob1.js?v=1" defer></script>
+<script src="/blades/_shell/adjutant.js?v=2" defer></script>
+<script src="/blades/_shell/assignments.js?v=1" defer></script>
+<script src="/blades/_shell/announce.js?v=1" defer></script>
 <script>
-  // Form OB-1, settings entry point. The enlistment entry point is the SAME component in
-  // mode:"enlist" and gets routed in phase 6 — do not write a second one.
   document.addEventListener("DOMContentLoaded", function () {
-    if (window.OB1) window.OB1.mount(document.getElementById("ob1Panel"), { mode: "settings" });
+    if (window.Assignments) window.Assignments.mount(document.getElementById("asgCard"));
+    if (window.Announce) window.Announce.mount(document.getElementById("annCard"));
   });
 </script>
 
