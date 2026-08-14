@@ -47,7 +47,8 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.26"  # b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
+PLUGIN_VERSION = "b3.27"  # b3.27: SHAKEDOWN SCAFFOLDING REMOVED. The TEST ALARM (10s) button is gone from the EDMC panel. It fired a fake pirate hail on a 10-second delay so the alarm could be proven before a real pirate ever turned up - genuinely useful while the alarm was being built, and now just a button that can set off a klaxon by accident. The plugin also stops announcing 'refocus hotkey ARMED' every time EDMC starts, and stops posting an hourly 'Refocus succeeded via X' notice into the squadron alerts. Both existed to prove those features worked during the shakedown, and a channel that keeps reporting routine success is one you quickly learn to ignore. NOTHING THAT FAILS WAS SILENCED: a hotkey that cannot arm still says so, the 'that key is taken by another app' warning is untouched, and the winning refocus method is still recorded and still sent to the board - it just no longer interrupts you to say so.
+# b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
 # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
 # --- config -----------------------------------------------------------------
@@ -1730,11 +1731,11 @@ def _rf_won(rung):
     _rf["last"] = rung
     _rf["at"] = time.time()
     _set_status("refocus OK via " + rung)
-    try:
-        _alert_raise("info", "Refocus succeeded via " + rung,
-                     key="refocus-rung-" + rung, cooldown=3600.0)
-    except Exception:
-        pass
+    # b3.27 - the hourly "Refocus succeeded via X" INFO ALERT is gone. Which rung wins was the
+    # open question through b3.11-b3.15 and it is answered; an alert announcing routine
+    # success is noise in a lane whose entire value is that its contents mean something. The
+    # rung is still stamped into _rf["last"] and still rides the heartbeat as rfRung, so the
+    # board and the cockpit detection lose nothing.
     return True
 
 
@@ -2065,39 +2066,16 @@ def _rf_loop(mods, vk):
         _rf["state"] = "off"
 
 
-def _pa_test_fire(delay=10.0):
-    """Fire a SYNTHETIC pirate hail after a delay, from a background thread.
-
-    ★ THE DELAY IS THE WHOLE POINT. A button that fired immediately would mean the plugin
-    had just received a user input event, which is exactly the foreground claim Windows
-    looks for — so `SetForegroundWindow` would succeed and we would have "proved" the alarm
-    refocus works when we had really only re-tested the hotkey path. Ten seconds is enough
-    to click the button, go and put focus on the board, and wait. The alarm then fires from
-    a timer thread with no claim of any kind: a faithful reproduction of a real one.
-
-    Runs the REAL path — token/phrase matcher, klaxon, alerts lane, board flash, refocus —
-    with `capture=False` so the synthetic token never lands in npc-tokens.log."""
-    def _go():
-        try:
-            time.sleep(max(0.0, float(delay)))
-            _pa_npc_text({
-                "Channel": "npc",
-                "Message": "$Pirate_TEST_SyntheticHail;",
-                "Message_Localised": "TEST - synthetic pirate hail (not a real contact)",
-            }, capture=False)
-        except Exception:
-            pass
-    try:
-        if not _pirate_on():
-            # Do NOT bypass the gate — the test must behave exactly like the real thing.
-            # But say why nothing happened, rather than looking broken.
-            _set_status("TEST: pirate alarm toggle is OFF - nothing will fire")
-            return False
-        _set_status("TEST: synthetic pirate hail in %ds - go click the board" % int(delay))
-        threading.Thread(target=_go, daemon=True).start()
-        return True
-    except Exception:
-        return False
+# b3.27 - _pa_test_fire() REMOVED (was here).
+# It fired a synthetic pirate hail after a 10s delay so the alarm could be proven from a
+# timer thread with NO foreground claim - a faithful reproduction of a real encounter,
+# which is exactly why it was worth having during the shakedown. The alarm is proven now
+# (b3.26 closed the last defect), so all that is left is a button that can set off a
+# klaxon on a rig by accident.
+#
+# The trick worth remembering if it is ever needed again is THE DELAY: firing immediately
+# would have carried the user-input foreground claim Windows looks for, and would have
+# "proved" the alarm refocus works when it had only re-tested the hotkey path.
 
 
 def _rf_sync():
@@ -2503,34 +2481,29 @@ def plugin_start3(plugin_dir):
 
 
 def plugin_app(parent):
-    # A Frame so the status label can sit beside a TEST button. If anything here fails we
-    # fall back to the bare label — the status line is load-bearing and the button is not.
+    # b3.27 — BACK TO A BARE LABEL. The Frame existed only to seat the "TEST ALARM (10s)"
+    # button beside the status line, and that button was shakedown scaffolding: it fired a
+    # synthetic pirate hail from a timer thread so the alarm could be proven without waiting
+    # for a real pirate. The alarm is proven, so the button is now just a way to set off a
+    # klaxon by accident on somebody else's rig.
     try:
         import tkinter as tk
+        lbl = tk.Label(parent, text="Blades: idle (v" + PLUGIN_VERSION + ")")
+        _state["status"] = lbl
+        # plugin_start3 runs BEFORE plugin_app, so anything _set_status said during startup
+        # went to a label that did not exist yet. Re-report ONLY THE FAILURE now that there
+        # is somewhere to report to.
+        # ⚠ The success case ("hotkey ARMED") is deliberately NOT re-reported any more: it was
+        # there to prove arming worked during the b3.13–b3.25 shakedown, and a status line
+        # that announces routine success trains you to ignore it. A hotkey that could not arm
+        # is still news — that one stays, and the "taken by another app" warn alert raised at
+        # arming time is independent of this and also untouched.
         try:
-            frm = tk.Frame(parent)
-            lbl = tk.Label(frm, text="Blades: idle (v" + PLUGIN_VERSION + ")")
-            lbl.grid(row=0, column=0, sticky="w")
-            btn = tk.Button(frm, text="TEST ALARM (10s)",
-                            command=lambda: _pa_test_fire(10.0))
-            btn.grid(row=0, column=1, padx=(8, 0))
-            _state["status"] = lbl
-            # plugin_start3 runs BEFORE plugin_app, so anything _set_status said during
-            # startup went to a label that did not exist yet — which is why "hotkey ARMED"
-            # never appeared. Re-report now that there is somewhere to report to.
-            try:
-                _st = _rf.get("state")
-                if _st == "on":
-                    _set_status("refocus hotkey ARMED (" + str(_rf.get("spec") or "") + ")")
-                elif _st in ("failed", "unsupported"):
-                    _set_status("refocus hotkey NOT armed: " + str(_rf.get("why") or _st))
-            except Exception:
-                pass
-            return frm
+            if _rf.get("state") in ("failed", "unsupported"):
+                _set_status("refocus hotkey NOT armed: " + str(_rf.get("why") or _rf.get("state")))
         except Exception:
-            lbl = tk.Label(parent, text="Blades: idle (v" + PLUGIN_VERSION + ")")
-            _state["status"] = lbl
-            return lbl
+            pass
+        return lbl
     except Exception:
         return None
 
