@@ -403,7 +403,7 @@
   // and offering to LINK in that state would hide an existing link behind a second one.
   // Raven does NOT enforce one-carrier-per-build: measured 2026-08-14, Southern Draw sat
   // on two projects at once. So a wrong guess here really does duplicate.
-  var st={bound:false,cmdr:"",carrier:null,linked:null,linkedFor:""};
+  var st={bound:false,cmdr:"",carrier:null,linked:null,linkedFor:"",complete:null};
   function render(){
     var b=curBuild();
     if(!st.bound){
@@ -417,6 +417,13 @@
         btn.textContent="⛽ UNLINK "+nm;
         btn.title=nm+" is linked to this site. Click to remove it (RavenColonial stops showing it as a depot here). Your carrier can be linked to more than one site at once — Raven does not clear the others for you.";
         btn.disabled=false;
+      }
+      // Finished site and not linked: nothing to haul to it, so do not offer the link.
+      // (If it IS linked, the branch above still offers UNLINK — that is the cleanup path.)
+      else if(b&&st.complete===true&&st.linkedFor===b){
+        btn.textContent="⛽ SITE COMPLETE";
+        btn.title="This site is finished — a carrier can't be assigned to it. Pick an active site to call your carrier in.";
+        btn.disabled=true;
       }
       else if(b){ btn.textContent="⛽ LINK "+nm+" → BUILD"; btn.title="Link your carrier "+nm+" to the build you're viewing (pushed to RavenColonial)"; btn.disabled=false; }
       else { btn.textContent="⛽ LINK CARRIER — pick a site ←"; btn.title="Choose a site in the ◈ SITE selector to the left, then link your carrier to it"; btn.disabled=true; }
@@ -435,6 +442,7 @@
         // Remember WHICH build the answer was about. Without this, switching sites would
         // keep showing UNLINK from the previous site's answer until the refetch lands.
         st.linked=(typeof j.linkedToBuild==="boolean")?j.linkedToBuild:null; st.linkedFor=b;
+        st.complete=(typeof j.buildComplete==="boolean")?j.buildComplete:null;
       }
     }catch(e){}
     render();
@@ -466,6 +474,10 @@
     load();
   }
   btn.addEventListener("click",function(){
+    // `disabled` stops a USER click, not a dispatched one — and the disabled states are
+    // exactly the ones that must not act (finished site, no carrier). The server refuses a
+    // link to a completed build anyway; this is the near guard, that is the real one.
+    if(btn.disabled) return;
     if(!st.bound) return bind();
     if(st.carrier&&st.carrier.marketId) return relay(st.linked===true&&st.linkedFor===curBuild());
   });

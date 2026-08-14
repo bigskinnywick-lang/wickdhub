@@ -50,20 +50,32 @@ async function resolveSelf(request, env) {
   return { me, cmdr, carrier };
 }
 
-// Is the caller's own carrier already linked to this build? Answered server-side so the
-// browser never needs its own copy of the Raven base URL (it is already hardcoded in four
-// files) and so a slow Raven degrades to "unknown" instead of hanging the button.
-// Returns true / false / null, where NULL MEANS "could not ask" — the caller must not
-// render that as "not linked", or the toggle would offer to link something already linked.
-async function isLinkedToBuild(buildId, marketId) {
-  if (!GUID.test(buildId) || !MID.test(marketId)) return null;
+// Two facts about a build, from ONE Raven read: is the caller's carrier linked to it, and
+// is the build finished. Answered server-side so the browser never needs its own copy of
+// the Raven base URL (already hardcoded in four files) and so a slow Raven degrades to
+// "unknown" instead of hanging the button.
+//
+// Both come back true / false / NULL, and NULL MEANS "could not ask" — never render it as
+// false. Guessing "not linked" would hide an existing link behind a duplicate (Raven does
+// not enforce one build per carrier — measured), and guessing "not complete" would let a
+// pilot assign a carrier to a finished site.
+//
+// `complete` is read from Raven, not from the registry's completedTs: that stamp is
+// written opportunistically by whoever next loads the colonisation board, so a build can
+// be finished in Raven and not yet stamped in KV. Raven is the source of truth.
+async function buildState(buildId, marketId) {
+  const unknown = { linked: null, complete: null };
+  if (!GUID.test(buildId)) return unknown;
   try {
     const r = await ravenFetch("/api/project/" + buildId, { headers: { "User-Agent": UA, "Accept": "application/json" } });
-    if (!r.ok) return null;
+    if (!r.ok) return unknown;
     const p = await r.json();
-    if (!p || !Array.isArray(p.linkedFC)) return null;
-    return p.linkedFC.some((f) => String((f && f.marketId) || f) === String(marketId));
-  } catch (e) { return null; }
+    if (!p) return unknown;
+    const linked = (MID.test(String(marketId || "")) && Array.isArray(p.linkedFC))
+      ? p.linkedFC.some((f) => String((f && f.marketId) || f) === String(marketId))
+      : null;
+    return { linked, complete: (typeof p.complete === "boolean") ? p.complete : null };
+  } catch (e) { return unknown; }
 }
 
 export async function onRequestGet({ request, env }) {
@@ -72,12 +84,13 @@ export async function onRequestGet({ request, env }) {
   if (!self.me) return json({ ok: false, error: "no identity" }, 403);
   // Optional ?buildId= — lets the commander deck render LINK vs UNLINK without a second
   // round trip and without reaching Raven from the page.
-  let linkedToBuild = null;
+  let linkedToBuild = null, buildComplete = null;
   const bid = String(new URL(request.url).searchParams.get("buildId") || "").toLowerCase().trim();
   if (bid && self.carrier && self.carrier.marketId) {
-    linkedToBuild = await isLinkedToBuild(bid, String(self.carrier.marketId));
+    const s = await buildState(bid, String(self.carrier.marketId));
+    linkedToBuild = s.linked; buildComplete = s.complete;
   }
-  return json({ ok: true, me: self.me, cmdr: self.cmdr, bound: !!self.cmdr, carrier: self.carrier || null, linkedToBuild });
+  return json({ ok: true, me: self.me, cmdr: self.cmdr, bound: !!self.cmdr, carrier: self.carrier || null, linkedToBuild, buildComplete });
 }
 
 // One handler for both directions — they differ only by HTTP verb, so splitting them
@@ -98,6 +111,23 @@ async function handleRelay(request, env, mode) {
   const buildId = String(body.buildId || "").toLowerCase().trim();
   if (!GUID.test(buildId)) return json({ ok: false, error: "invalid buildId" }, 400);
   const marketId = String(self.carrier.marketId);
+
+  // ★ Refuse to LINK a carrier to a finished site. A completed build needs no depot, and a
+  // carrier parked on one still offers its hold to the build list — Raven neither blocks
+  // this nor clears links on completion (measured 2026-08-14: three completed builds were
+  // still carrying carriers).
+  // ⚠ UNLINK stays allowed on a completed build ON PURPOSE. That is exactly the cleanup
+  // path for links already stranded there; blocking both would make the mess permanent.
+  if (!unlink) {
+    const s = await buildState(buildId, marketId);
+    if (s.complete === true) {
+      return json({ ok: false, error: "link_failed", reason: "build_complete",
+                    detail: "that site is finished — nothing left to haul to it" }, 409);
+    }
+    // s.complete === null means Raven could not be asked. Allow the link rather than block
+    // on an outage: the cost of a link to a finished build is a tidy-up, the cost of a hard
+    // refusal is a pilot unable to call in a depot during a live haul.
+  }
 
   let status = 0, ravenOk = false, detail = "";
   try {
