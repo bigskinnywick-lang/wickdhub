@@ -64,14 +64,21 @@
   <footer>ONYX BLADES SQUADRON · PRIVATE COHORT NET</footer>
 </div>
 
-<script src="/blades/_shell/deck.js?v=4" defer></script>
+<script src="/blades/_shell/deck.js?v=5" defer></script>
 <script src="/blades/_shell/adjutant.js?v=2" defer></script>
 <script src="/blades/_shell/ob1.js?v=2" defer></script>
 <script>
   // Sign-out is shared chrome; deck.js defines bladesSignOut outside its members-only gate.
   window.addEventListener("load", function () {
     var so = document.getElementById("signOut");
-    if (so) so.addEventListener("click", function () { if (window.bladesSignOut) window.bladesSignOut(); });
+    // Fall back if deck.js failed to load or threw before defining bladesSignOut - otherwise
+    // this button is silently inert, the one surface with no fallback. Mirrors the other four.
+    if (so) so.addEventListener("click", function () {
+      if (window.bladesSignOut) return window.bladesSignOut();
+      var t = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="
+            + encodeURIComponent(location.origin + "/blades/");
+      location.href = "/cdn-cgi/access/logout?returnTo=" + encodeURIComponent(t);
+    });
 
     // ★ The document. OB-1 owns parts I, II and IV; the Adjutant owns part III and is mounted
     // into OB-1's slot from its onRender hook — the only moment the slot element exists.

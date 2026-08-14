@@ -21,7 +21,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/blades/_shell/blades.css">
 <link rel="stylesheet" href="/blades/page.css">
-<script src="/blades/_shell/deck.js?v=4" defer></script>
+<link rel="icon" href="/blades/icon-192.png">
+<script src="/blades/_shell/deck.js?v=5" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -332,20 +333,19 @@ function paintMemberChip(){
   $("whoami").innerHTML=
     '<div class="cmdrbox"><span class="dot"></span>CMDR <b>'+escH(MY_CMDR||"—")+'</b>'+
     '<br><span style="font-size:10px;color:var(--muted);letter-spacing:1px">ENLISTED · BLADES</span></div>'+
-    '<a class="txtlnk" href="https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout" id="signOutLnk">SIGN OUT</a>';
+    '<a class="txtlnk" href="/cdn-cgi/access/logout" id="signOutLnk">SIGN OUT</a>';
   var so=document.getElementById("signOutLnk");
   if(so) so.addEventListener("click", function(e){ e.preventDefault(); doSignOut(); });
 }
-// Sign-out goes to the TEAM domain, not this origin. The same-origin endpoint
-// returns "Unable to find your Access organization!" here because every Access app
-// is path-scoped and none covers /cdn-cgi/ — so the old fetch cleared nothing and
-// failed silently. returnTo brings the pilot straight back to /blades/.
-// ⚠ Clears the GLOBAL (SSO) token only; the wickdhub.com application token lives
-// until the application session expires. Full rationale in _shell/deck.js.
+// Chain zone -> team -> /blades/. There are TWO Access tokens: the application token
+// on wickdhub.com and the global SSO token on the team domain. Clearing only the team
+// domain left the application token alive — that was the two-click sign-out.
+// See _shell/deck.js for why order matters.
 // Mirrors bladesSignOut() — if you change one, change all three.
 function doSignOut(){
-  location.href = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="
-                + encodeURIComponent(location.origin + "/blades/");
+  var team = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="
+           + encodeURIComponent(location.origin + "/blades/");
+  location.href = "/cdn-cgi/access/logout?returnTo=" + encodeURIComponent(team);
 }
 function lockPanel(el,title,sub){
   el.classList.add("locked");

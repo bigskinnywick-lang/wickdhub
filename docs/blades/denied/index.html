@@ -89,8 +89,8 @@
 </div>
 
 <script>
-  // TRY ANOTHER IDENTITY — clear the Access cookie on THIS origin, then land on the public
-  // front door. Mirrors bladesSignOut() in _shell/deck.js and doSignOut() on the home page;
+  // TRY ANOTHER IDENTITY — clear BOTH Access tokens (zone, then team), then land on the
+  // public front door. Mirrors bladesSignOut() in _shell/deck.js and doSignOut() on home;
   // inlined rather than pulling in deck.js, which is members-gated and would try to build the
   // zoom cluster on a page that must work for a total stranger.
   //
@@ -101,10 +101,9 @@
     if (!b) return;
     b.addEventListener("click", function (ev) {
       ev.preventDefault();
-      // Team-domain logout + returnTo. The same-origin endpoint cannot resolve the
-      // Access org on this hostname, so it would clear nothing. See _shell/deck.js.
-      location.href = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="
-                    + encodeURIComponent(location.origin + "/blades/");
+      var team = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="
+               + encodeURIComponent(location.origin + "/blades/");
+      location.href = "/cdn-cgi/access/logout?returnTo=" + encodeURIComponent(team);
     });
   })();
 </script>

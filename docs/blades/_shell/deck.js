@@ -20,26 +20,35 @@
      Cloudflare-branded page with no route back — that was the bug". True without
      returnTo; with it, Access bounces straight back to /blades/. Measured.
 
-     ⚠ WHAT THIS DOES AND DOES NOT DO. Access issues TWO tokens: a GLOBAL session
-     token on the team domain (SSO) and an APPLICATION token on wickdhub.com.
-     This clears the global one. The application token is NOT cleared — it lives
-     on a domain whose logout endpoint we cannot reach — so it keeps working
-     until the application session expires. What this buys is that the session
-     can no longer be silently RENEWED: without the global token, Access cannot
-     mint a fresh application token, which is exactly what was signing the pilot
-     back in on the next page load. The application session duration is therefore
-     load-bearing, not cosmetic — it is the real logout latency.
+     ⚠ THERE ARE TWO TOKENS, SO THERE ARE TWO LOGOUTS. Access issues a GLOBAL
+     session token on the team domain (SSO) and an APPLICATION token on
+     wickdhub.com. The team-domain logout's Set-Cookie deletions carry no
+     Domain=, so they are host-only and cannot touch the zone cookie. Clearing
+     only the team domain therefore left the application token alive until the
+     application session lapsed — that was the two-click sign-out.
 
-     The only complete fix is an Access application that authenticates at the
-     wickdhub.com root, which is a change to how the whole site is gated.
+     An earlier revision claimed the zone endpoint could not resolve the Access
+     org on this hostname. That was true on 2026-08-13 only because of a stale
+     zone-to-organization binding from the team rename (Cloudflare case
+     02281382) — an outage, not an architectural limit. Measured 2026-08-14:
+     GET https://wickdhub.com/cdn-cgi/access/logout returns "No Access cookie
+     found. Please login first." — the org resolves — and with returnTo it 302s
+     and sets CF_Authorization=deleted on wickdhub.com.
 
      Defined OUTSIDE the members-only gate below so it is always available.
      Mirrors doSignOut() in docs/blades/index.html and the inlined copy in
      admin/index.html — if you change one, change all three. */
   window.BLADES_TEAM_LOGOUT = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout";
   window.bladesSignOut = function () {
+    // TWO tokens, so TWO logouts, chained through returnTo in ONE navigation:
+    //   zone (wickdhub.com application token)  ->  team domain (global SSO token)  ->  /blades/
+    // Order matters. The zone endpoint's returnTo is what carries us to the team domain;
+    // doing it the other way round leaves the application token alive, which is the
+    // two-click sign-out.
+    // Still a plain navigation: no fetch, nothing in flight to be cancelled.
     var back = location.origin + "/blades/";
-    location.href = window.BLADES_TEAM_LOGOUT + "?returnTo=" + encodeURIComponent(back);
+    var team = window.BLADES_TEAM_LOGOUT + "?returnTo=" + encodeURIComponent(back);
+    location.href = "/cdn-cgi/access/logout?returnTo=" + encodeURIComponent(team);
   };
 
   var Z = 100;

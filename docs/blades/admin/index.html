@@ -298,8 +298,9 @@ let BUILDS=[], CLAIMS=[], ADMINS=[], ADMIRALS=[];
 })();
 // Same-origin logout then back to the public home. This page does NOT load
 // _shell/deck.js, so bladesSignOut() is inlined rather than shared.
-// Team-domain logout + returnTo. The same-origin endpoint 404s the org here; see _shell/deck.js.
-$("signOut").onclick=()=>{location.href="https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="+encodeURIComponent(location.origin+"/blades/");};
+// Chained zone -> team logout. The "same-origin endpoint 404s the org" note was a
+// symptom of the 8/13 stale zone-to-org binding, not a design limit; see _shell/deck.js.
+$("signOut").onclick=()=>{const team="https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="+encodeURIComponent(location.origin+"/blades/");location.href="/cdn-cgi/access/logout?returnTo="+encodeURIComponent(team);};
 
 // ---------- pulse ----------
 async function timedFetch(url,opt){const t0=Date.now();try{const r=await fetch(url,opt);return {ok:r.ok,ms:Date.now()-t0,status:r.status};}catch(e){return {ok:false,ms:Date.now()-t0,err:e.message};}}

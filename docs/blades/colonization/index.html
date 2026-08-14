@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/blades/_shell/blades.css">
-<script src="/blades/_shell/deck.js?v=4" defer></script>
+<script src="/blades/_shell/deck.js?v=5" defer></script>
 <script src="/blades/_shell/testpilot.js?v=3" defer></script>
 </head>
 <body>
@@ -424,7 +424,7 @@
 
   // ===== Cloudflare Access identity =====
   (function(){
-    const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{(window.bladesSignOut||function(){location.href="https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="+encodeURIComponent(location.origin+"/blades/");})();};
+    const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{(window.bladesSignOut||function(){const t="https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="+encodeURIComponent(location.origin+"/blades/");location.href="/cdn-cgi/access/logout?returnTo="+encodeURIComponent(t);})();};
     fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(d&&d.cmdr){if(nameEl)nameEl.textContent="CMDR "+String(d.cmdr).toUpperCase();}else{fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(i=>{const n=String((i&&i.name)||"").trim();if(nameEl&&n)nameEl.textContent=n.toUpperCase();}).catch(()=>{});}}).catch(()=>{});})();
 
   // ===== SQUAD NET ticker (live; re-runnable — the poll loop calls it on change) =====
