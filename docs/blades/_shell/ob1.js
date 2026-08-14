@@ -86,7 +86,26 @@
            (disabled ? ' aria-disabled="true"' : "") + "><i></i></div>";
   }
 
-  function render(host, state, mode) {
+  // `opts` is ADDITIVE and defaults to exactly the pre-existing output — the retail dossier
+  // panel calls mount() with no opts and must render byte-identically. Added 2026-08-13 so
+  // the Service Record page can host these sections inside its own document chrome without
+  // a second copy of PREFS; two copies is precisely the drift this file was written to stop.
+  //   headless : suppress this component's own <h2> and lede (the page supplies them)
+  //   numerals : renumber the sections, e.g. real-world data becomes IV when standing
+  //              orders are inserted ahead of it
+  //   slot     : HTML inserted BETWEEN the visibility rows and the real-world section, so
+  //              another component (the Adjutant's standing orders) can occupy a numbered
+  //              part of the same document. A slot rather than DOM surgery after the fact
+  //              because this component renders asynchronously — anything that waits for
+  //              the fetch to land is a race.
+  //   onRender : called with (host) immediately after innerHTML is set, which is when a
+  //              slot's contents exist and can be mounted into. Also the ONLY safe moment;
+  //              a caller that mounts on its own timer is racing the fetch.
+  function render(host, state, mode, opts) {
+    opts = opts || {};
+    var headless = !!opts.headless;
+    var N = opts.numerals || {};
+    var nWho = N.who || "I", nSees = N.sees || "II", nReal = N.real || "III";
     var m = state.member || {}, p = m.prefs || {};
     var rows = PREFS.map(function (d) {
       return '<div class="ob1-row"><div class="ob1-txt"><div class="ob1-lab">' + esc(d.label) +
@@ -95,25 +114,28 @@
 
     host.className = "ob1";
     host.innerHTML =
-      '<h2>◈ Form OB-1 · Your Record' + (mode === "enlist" ? "" : '<span class="h2r">REV ' + REV + "</span>") + "</h2>" +
-      '<div class="ob1-lede">What the hub keeps about you, and what other members can see. ' +
-      "Change any of it whenever you like — it takes effect immediately.</div>" +
+      (headless ? "" :
+        '<h2>◈ Form OB-1 · Your Record' + (mode === "enlist" ? "" : '<span class="h2r">REV ' + REV + "</span>") + "</h2>" +
+        '<div class="ob1-lede">What the hub keeps about you, and what other members can see. ' +
+        "Change any of it whenever you like — it takes effect immediately.</div>") +
 
       '<div class="ob1-plain">In plain terms: we record what you do <b>in game</b> for the squadron — ' +
       "builds, hauling, claims, when you're flying. " +
       (state.rigFeatureLive ? "" : "<b>We hold no real-world data about you at all.</b> ") +
       "Nothing here is visible to the public web; the roster is for enlisted members only.</div>" +
 
-      '<div class="ob1-sec">I · Who you are</div>' +
+      '<div class="ob1-sec">' + nWho + ' · Who you are</div>' +
       '<div class="ob1-row"><div class="ob1-txt"><div class="ob1-lab">CMDR ' + esc(state.cmdr || "—") +
       '</div><div class="ob1-help">Your commander name, as bound to this account.</div></div></div>' +
       '<div class="ob1-row"><div class="ob1-txt"><div class="ob1-lab">Discord: ' + esc(m.discord || "not set") +
       '</div><div class="ob1-help">Held for squadron ops. Shown to other members only if you allow it below. ' +
       "The Admiral's Desk can always see it for ops — that's command access, not display.</div></div></div>" +
 
-      '<div class="ob1-sec">II · What other members see</div>' + rows +
+      '<div class="ob1-sec">' + nSees + ' · What other members see</div>' + rows +
 
-      '<div class="ob1-sec">III · Real-world data <span class="ob1-tag">PREVIEW · NOT YET ACTIVE</span></div>' +
+      (opts.slot || "") +
+
+      '<div class="ob1-sec">' + nReal + ' · Real-world data <span class="ob1-tag">PREVIEW · NOT YET ACTIVE</span></div>' +
       '<div class="ob1-plain">This section covers anything about <b>the person at the desk</b> rather than the ' +
       "commander — starting with your flight rig. <b>Nothing here is being collected today.</b> Whenever " +
       "something is added to this category it is always volunteered, always optional, never public, and " +
@@ -129,10 +151,12 @@
 
   function mount(host, opts) {
     if (!host) return;
-    var mode = (opts && opts.mode) || "settings";
+    opts = opts || {};
+    var mode = opts.mode || "settings";
     css();
     host.className = "ob1";
-    host.innerHTML = '<h2>◈ Form OB-1 · Your Record</h2><div class="rempty">Loading…</div>';
+    host.innerHTML = (opts.headless ? "" : "<h2>◈ Form OB-1 · Your Record</h2>") +
+                     '<div class="rempty">Loading…</div>';
 
     var state = null;
 
@@ -141,13 +165,15 @@
       .then(function (j) {
         if (!j || !j.ok) throw new Error("bad payload");
         state = j;
-        render(host, state, mode);
+        render(host, state, mode, opts);
+        if (typeof opts.onRender === "function") { try { opts.onRender(host); } catch (e) {} }
       })
       .catch(function () {
         // Not signed in, or the route is unreachable. Render NOTHING about any member —
         // this component is mounted on pages that are publicly readable.
         host.className = "ob1";
-        host.innerHTML = '<h2>◈ Form OB-1 · Your Record</h2><div class="rempty">Sign in to view your record.</div>';
+        host.innerHTML = (opts.headless ? "" : "<h2>◈ Form OB-1 · Your Record</h2>") +
+                         '<div class="rempty">Sign in to view your record.</div>';
       });
 
     function commit(el, key, next) {

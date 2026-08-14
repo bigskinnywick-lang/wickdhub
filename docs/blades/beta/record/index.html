@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber">
+<head>
+<script>try{var _t=localStorage.getItem("ob_theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
+<link rel="manifest" href="/blades/manifest.webmanifest">
+<meta name="theme-color" content="#08150d">
+<link rel="apple-touch-icon" href="/blades/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Onyx Blades">
+<meta charset="UTF-8" />
+<meta name="robots" content="noindex, nofollow"><!-- beta wing: also covered by Disallow: /blades/beta/ in robots.txt -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ONYX BLADES · SERVICE RECORD — BETA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/blades/_shell/blades.css">
+<style>
+  /* Page-local only. Shared component styles live in the components themselves, because
+     blades.css is served with no ?v= buster and cannot be safely edited. */
+  .rec-doc{max-width:760px;margin:0 auto}
+  .rec-betabar{border:1px solid var(--warn,#d9a441);border-radius:var(--radius);padding:9px 12px;
+    margin:0 0 16px;font-size:11.5px;line-height:1.5;color:var(--warn,#d9a441);background:rgba(0,0,0,.25)}
+  .rec-betabar b{color:var(--warn,#d9a441)}
+  .rec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}
+  .rec-title{font-family:var(--font-head);font-size:15px;letter-spacing:2px;color:var(--accent-bright);margin:0}
+  .rec-meta{font-family:var(--font-head);font-size:9.5px;letter-spacing:1.5px;color:var(--muted)}
+  .rec-lede{font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 14px}
+  .rec-back{display:inline-block;font-family:var(--font-head);font-size:10px;letter-spacing:1.5px;
+    color:var(--muted);text-decoration:none;margin-bottom:14px}
+  .rec-back:hover{color:var(--accent-bright)}
+  .rec-previewlab{font-family:var(--font-head);font-size:9.5px;letter-spacing:2px;color:var(--muted);
+    margin:0 0 6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="secure">
+    <div><span class="lock">🔒</span> ONYX BLADES SECURE CHANNEL · PRIVATE COHORT ACCESS</div>
+    <div class="right"><span>AUTH: <b style="color:var(--accent-bright)" id="authName">—</b></span><span id="signOut" style="cursor:pointer">[ SIGN OUT ]</span></div>
+  </div>
+  <header class="hud">
+    <div class="brand">
+      <div class="logo-slot" title="Onyx Blades"><img class="emblem" src="/blades/icon-192.png" alt="Onyx Blades emblem" /></div>
+      <div><h1>SERVICE RECORD</h1><div class="sub">YOUR FILE · YOUR DISCLOSURES · YOUR STANDING ORDERS</div></div>
+    </div>
+  </header>
+  <nav class="blades-nav"><a class="bn" href="/blades/">HOME</a><a class="bn" href="/blades/colonization/">COLONIZATION</a><a class="bn" href="/blades/commander/">MY DASHBOARD</a><a class="bn" href="/blades/onboarding/">SETUP GUIDE</a></nav>
+
+  <div class="rec-doc">
+    <a class="rec-back" href="/blades/commander/">◄ BACK TO MY DASHBOARD</a>
+
+    <div class="rec-betabar"><b>⚑ BETA — TEST PILOTS ONLY.</b> This page is the proposed replacement for the
+      old <b>◈ COMPANION</b> pop-up. Two things that were in different places — what the squadron may
+      <b>show</b> about you, and what your Adjutant may <b>do</b> for you — are now one document.
+      Nothing here is a rehearsal: these are your live settings and they save immediately.</div>
+
+    <div class="rec-previewlab">◇ PREVIEW — HOW THIS WILL LOOK ON MY DASHBOARD</div>
+    <div class="panel" id="adjCard" style="margin-bottom:20px"></div>
+
+    <div class="panel">
+      <div class="rec-head">
+        <h2 class="rec-title">◈ FORM OB-1 · SERVICE RECORD</h2>
+        <span class="rec-meta" id="recMeta">REV —</span>
+      </div>
+      <div class="rec-lede">Everything the hub holds about you, everything other members can see, and everything
+        your Adjutant is standing by to do on your behalf. Change any of it whenever you like — it takes
+        effect immediately.</div>
+      <div id="ob1Panel"></div>
+    </div>
+  </div>
+
+  <footer>ONYX BLADES SQUADRON · PRIVATE COHORT NET · BETA WING</footer>
+</div>
+
+<script src="/blades/_shell/deck.js?v=2" defer></script>
+<script src="/blades/_shell/adjutant.js?v=1" defer></script>
+<script src="/blades/_shell/ob1.js?v=2" defer></script>
+<script>
+  // Sign-out is shared chrome; deck.js defines bladesSignOut outside its members-only gate.
+  window.addEventListener("load", function () {
+    var so = document.getElementById("signOut");
+    if (so) so.addEventListener("click", function () { if (window.bladesSignOut) window.bladesSignOut(); });
+
+    // The dashboard card, previewed here so it gets shaken down on the same page as the
+    // document rather than needing a forked copy of the 519-line commander page.
+    var card = document.getElementById("adjCard");
+    if (card && window.Adjutant) {
+      window.Adjutant.mountCard(card, { recordHref: "/blades/beta/record/" });
+    }
+
+    // ★ The document. OB-1 owns parts I, II and IV; the Adjutant owns part III and is mounted
+    // into OB-1's slot from its onRender hook — the only moment the slot element exists.
+    // Mounting on a timer here would race the /blades/api/member fetch.
+    var host = document.getElementById("ob1Panel");
+    if (host && window.OB1) {
+      window.OB1.mount(host, {
+        mode: "settings",
+        headless: true,
+        numerals: { who: "I", sees: "II", real: "IV" },
+        slot: '<div id="adjOrdersSlot"></div>',
+        onRender: function () {
+          var meta = document.getElementById("recMeta");
+          if (meta && window.OB1) meta.textContent = "REV " + window.OB1.REV;
+          var slot = document.getElementById("adjOrdersSlot");
+          if (!slot || !window.Adjutant) return;
+          slot.innerHTML =
+            '<div class="ob1-sec">III · Standing orders <span style="font-family:var(--font-body);' +
+            'letter-spacing:0;font-size:10px;color:var(--muted);text-transform:none">— your Adjutant</span></div>' +
+            '<div class="ob1-plain">Your Adjutant is the unit assigned to you — the site-side face of the ' +
+            'Blades Registrar you fitted to your rig. These are the orders it acts on without asking each ' +
+            'time. Some of them press keys on your own machine, so nothing here is on unless you put it on.</div>' +
+            '<div id="adjOrders"></div>';
+          window.Adjutant.mountOrders(document.getElementById("adjOrders"));
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>
