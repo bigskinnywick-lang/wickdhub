@@ -25,8 +25,15 @@
 // NO new Cloudflare Access rule: this path is already public, and the gated
 // presence endpoint is untouched.
 //
+// AND systems: the number of systems the squadron is colonizing. Same reasoning,
+// same KV, same discipline — ONLY the integer crosses. No system name, no build
+// name, no architect, nothing that identifies who claimed what. /blades/api/builds
+// stays Access-gated and untouched; this is an aggregate OVER it, not a window INTO
+// it. Added 2026-08-14 because the home page had been showing a hardcoded 0 since
+// launch — see the CFG.HERO note in docs/blades/index.html.
+//
 // GET /blades/api/discord-counts
-//   -> { ok, members, online, inGame, list:[{name,status}], widget, guild, ts }
+//   -> { ok, members, online, inGame, systems, list:[{name,status}], widget, guild, ts }
 //
 // NOTE: for logged-out prospects to read this, the path must be reachable WITHOUT
 // Cloudflare Access (a "Bypass"/"Allow Everyone" policy for /blades/api/discord-counts),
@@ -35,6 +42,12 @@
 const EDGE_TTL_S = 60;          // one upstream Discord call per minute per PoP
 const PRESENCE_WINDOW_MIN = 12; // keep in step with WINDOW_MIN in presence.js
 const UPSTREAM_TIMEOUT_MS = 4000;
+
+// Build records are stored under GUID keys. Everything else in the namespace is
+// something else entirely — claim:{systemAddress}, presence:*, plugin:*, ticker:* —
+// so this pattern is what separates "a build" from the rest. Keep it identical to
+// GUID in builds.js; if that one changes, this count silently goes wrong.
+const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 // Permanent, unlimited-use invite (expires_at: null — verified 2026-08-08).
 // If this is ever rotated, update it here AND in the three page locations:
@@ -89,6 +102,31 @@ async function countInGame(env) {
   return seen.size;
 }
 
+// Distinct systems the squadron has claimed a build in — finished or not. Adam's
+// definition, chosen 2026-08-14: a system counts as soon as it is in the registry,
+// so work in progress is visible rather than hidden until the first port completes.
+// (The stricter alternative — only systems with a completedTs — gave the same answer
+// on the day it was chosen, 1; they diverge later, so the choice is recorded here.)
+//
+// Matched case-insensitively on the trimmed system name, because the name arrives
+// from journals and hand entry both. Returns null — not 0 — when KV is unavailable,
+// so the page can tell "none yet" from "we couldn't ask"; countInGame does the same.
+async function countSystems(env) {
+  if (!env || !env.BUILDS) return null;
+  const seen = new Set();
+  try {
+    const listing = await env.BUILDS.list();
+    for (const k of listing.keys) {
+      if (!GUID.test(k.name)) continue;
+      let meta = null;
+      try { const v = await env.BUILDS.get(k.name); if (v) meta = JSON.parse(v); } catch (e) {}
+      const sys = String((meta && meta.system) || "").trim();
+      if (sys) seen.add(sys.toLowerCase());
+    }
+  } catch (e) { return null; }
+  return seen.size;
+}
+
 export async function onRequestGet(context) {
   const { request, waitUntil, env } = context;
 
@@ -99,10 +137,11 @@ export async function onRequestGet(context) {
   const gid  = (env && env.DISCORD_GUILD_ID)    || GUILD_ID;
 
   // Both upstreams in parallel; neither is allowed to sink the response.
-  const [inv, wid, inGame] = await Promise.all([
+  const [inv, wid, inGame, systems] = await Promise.all([
     getJSON("https://discord.com/api/v10/invites/" + encodeURIComponent(code) + "?with_counts=true"),
     getJSON("https://discord.com/api/guilds/" + encodeURIComponent(gid) + "/widget.json"),
     countInGame(env),
+    countSystems(env),
   ]);
 
   // Counts: invite is authoritative for TOTAL members (widget.json never reports it).
@@ -118,9 +157,12 @@ export async function onRequestGet(context) {
     ? wid.members.slice(0, 30).map(m => ({ name: String(m.username || "—"), status: String(m.status || "online") }))
     : [];
 
-  if (members == null && online == null && inGame == null) {
-    // Both upstreams failed — say so honestly rather than caching a fake zero.
-    return json({ ok: false, error: "discord unreachable", members: null, online: null, list: [], widget: false }, 502);
+  // Only bail when EVERYTHING failed. `systems` is deliberately excluded from this
+  // test: it comes from KV, not Discord, so a Discord outage must not suppress it —
+  // and a 502 here would take the whole tile row down over an unrelated upstream.
+  if (members == null && online == null && inGame == null && systems == null) {
+    // Every source failed — say so honestly rather than caching a fake zero.
+    return json({ ok: false, error: "discord unreachable", members: null, online: null, inGame: null, systems: null, list: [], widget: false }, 502);
   }
 
   const resp = json({
@@ -128,6 +170,7 @@ export async function onRequestGet(context) {
     members,
     online,
     inGame,
+    systems,
     list,
     widget: !!(wid && Array.isArray(wid.members)),  // true once Manage Server flips the toggle
     guild: (inv && inv.guild && inv.guild.name) || "The Onyx Blades",

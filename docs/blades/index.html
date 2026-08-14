@@ -195,9 +195,13 @@ const CFG = {
   DISCORD_GUILD_ID: "1122499424187334657",
 
   // ---- HERO STATS ------------------------------------------------------
-  // commanders is now LIVE off the Discord roster (/blades/api/discord-counts);
-  // the number here is only the placeholder shown before that fetch lands.
-  HERO: { commanders: 16, systemsColonized: 0, foundedYear: "3311" },
+  // commanders AND systemsColonized are both LIVE off /blades/api/discord-counts;
+  // the numbers here are only the placeholders shown before that fetch lands.
+  // ⚠ systemsColonized sat at a hardcoded 0 from launch until 2026-08-14 — a
+  // placeholder that read as a measurement and told every visitor the squadron had
+  // colonized nothing. `null` now, deliberately: an unknown renders as "—", which
+  // is honest, where a 0 is a claim. Don't put a number back here.
+  HERO: { commanders: 16, systemsColonized: null, foundedYear: "3311" },
 
   // ---- WICKED WISDOM — the note recruits see first --------------------
   WISDOM: {
@@ -408,6 +412,11 @@ async function loadDiscord(){
       const cg=$("cntGame");
       if(cg) cg.textContent = (typeof j.inGame==="number") ? j.inGame : "—";
     }
+    // Systems colonized — an aggregate over the gated build registry, emitted as a
+    // bare integer by the same public proxy. Everyone gets it, member or not; the
+    // count is not member data, only the systems behind it are. null = couldn't ask.
+    const ss=$("stSystems");
+    if(ss) ss.textContent = (typeof j.systems==="number") ? j.systems : "—";
     if(IS_MEMBER && members.length){
       $("discordList").innerHTML = members.map(m=>{
         const st=(m.status||"online"); const idle=(st==="idle"||st==="dnd");
