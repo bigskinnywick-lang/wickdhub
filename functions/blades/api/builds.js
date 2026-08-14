@@ -86,6 +86,59 @@ export async function onRequestPost(context) {
   return json({ ok: true, id, name: meta.name, system: meta.system, addedBy });
 }
 
+// --- auto-unassign carriers when a build completes ---------------------------------
+// A finished site needs no mobile depot, and RavenColonial neither blocks a link to a
+// completed build nor clears one on completion (measured 2026-08-14: three completed
+// builds were still carrying carriers). A carrier holds ONE hold of cargo, so a stale
+// link keeps offering that tonnage to a build nobody is hauling to.
+//
+// ★ SCOPE, Adam's call 2026-08-14: clear only carriers we can identify as SQUADRON-owned,
+// i.e. present in our own "carrier:{marketId}" registry. Outsiders' carriers are left
+// alone — these projects are not ours in Raven, and removing a stranger's arrangement is
+// not a side effect a completion stamp should have.
+//
+// ★ TRIGGER: this piggybacks the completion stamp the colonisation board already writes
+// (it detects Raven's `complete` and PATCHes completedTs). There is no scheduler, so this
+// fires when a pilot next views the finished build — not at the instant of completion.
+// Only on the TRANSITION (no completedTs before, one now), so it cannot re-run on every
+// later PATCH and cannot fight a pilot who deliberately re-links.
+const RAVEN_BASE = "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
+const RAVEN_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+const RAVEN_TIMEOUT_MS = 6000;
+async function ravenCall(path, init) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), RAVEN_TIMEOUT_MS);
+  try { return await fetch(RAVEN_BASE + path, Object.assign({ headers: { "User-Agent": RAVEN_UA, "Accept": "application/json" } }, init || {}, { signal: ctrl.signal })); }
+  finally { clearTimeout(timer); }
+}
+async function unassignSquadCarriers(env, buildId) {
+  const cleared = [];
+  try {
+    const r = await ravenCall("/api/project/" + buildId);
+    if (!r.ok) return cleared;
+    const p = await r.json();
+    const fc = (p && Array.isArray(p.linkedFC)) ? p.linkedFC : [];
+    for (const f of fc) {
+      const mid = String((f && f.marketId) || f || "").trim();
+      if (!/^\d{1,20}$/.test(mid)) continue;
+      // Ours, or a stranger's? The registry is the only thing that can tell us.
+      let known = null;
+      try { const v = await env.BUILDS.get("carrier:" + mid); if (v) known = JSON.parse(v); } catch (e) {}
+      if (!known) continue;
+      let ok = false, status = 0;
+      try { const d = await ravenCall("/api/project/" + buildId + "/fc/" + mid, { method: "DELETE" }); status = d.status; ok = d.ok; } catch (e) {}
+      if (ok) cleared.push(mid);
+      try {
+        await env.BUILDS.put("carrierlink:" + mid + ":" + Date.now(), JSON.stringify({
+          buildId, marketId: mid, cmdr: known.owner || "", action: "auto-unlink",
+          reason: "build_completed", status, ok, ts: Date.now(),
+        }), { expirationTtl: 60 * 60 * 24 * 90 });
+      } catch (e) {}
+    }
+  } catch (e) {}
+  return cleared;
+}
+
 // Board-driven metadata merge: completion stamp + architect backfill. Admin console
 // additionally uses `unset` to remove whitelisted fields.
 const UNSETTABLE = new Set(["completedTs", "tons", "architect", "architectSource", "verified"]);
@@ -116,7 +169,18 @@ export async function onRequestPatch(context) {
   for (const f of unset) delete merged[f];
   await env.BUILDS.put(id, JSON.stringify(merged));
   edgeBust(request, waitUntil);
-  return json({ ok: true, id, meta: merged });
+
+  // The build just CROSSED into completed — clear squadron carriers off it. Deliberately
+  // after the KV write and, where the platform allows, after the response: this is tidy-up,
+  // and it must never make the stamp slower or able to fail. A Raven outage simply means
+  // the links stay until the next completion stamp somewhere, which is harmless.
+  const justCompleted = !meta.completedTs && !!merged.completedTs;
+  if (justCompleted) {
+    const sweep = unassignSquadCarriers(env, id);
+    if (waitUntil) waitUntil(sweep); else await sweep.catch(() => {});
+  }
+
+  return json({ ok: true, id, meta: merged, carriersCleared: justCompleted || undefined });
 }
 
 // Remove a build from the shared list.
