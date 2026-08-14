@@ -322,7 +322,15 @@
     // telemetry → alerts → ◈ SITE → the build view.
     // ⚠ .buildbar is tried FIRST and inserted BEFORE it. Previously .dossier won and this
     // landed after the bar; flipping the preference is what moves it on both pages at once.
-    var bar = document.querySelector(".buildbar");
+    //
+    // 2026-08-13 — #asgCard is now preferred over .buildbar where it exists (the commander
+    // page). ASSIGNMENTS sits between this strip and the site selector, so anchoring on the
+    // bar would have put telemetry and alerts ABOVE the card; Adam wants ASSIGNMENTS under
+    // the alerts. Anchoring one element earlier gives:
+    //     announcement → dial → telemetry → alerts → ◈ ASSIGNMENTS → ◈ SITE → build view
+    // The colonization board has no #asgCard, so it falls through to .buildbar and its order
+    // is unchanged — which is the reason this is an anchor preference and not a new insert.
+    var bar = document.querySelector("#asgCard") || document.querySelector(".buildbar");
     if (bar && bar.parentNode) { bar.parentNode.insertBefore(strip, bar); return strip; }
     var anchor = document.querySelector(".dossier") || document.querySelector(".controls");
     if (anchor && anchor.parentNode) { anchor.parentNode.insertBefore(strip, anchor); return strip; }
