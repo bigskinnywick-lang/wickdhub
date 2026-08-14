@@ -374,7 +374,22 @@
 (function(){
   var btn=document.getElementById("carrierLinkBtn");
   if(!btn) return;
-  function curBuild(){try{var b=localStorage.getItem("ob_build");return (b&&/^[0-9a-fA-F-]{36}$/.test(b))?b:"";}catch(e){return "";}}
+  // ⚠ Ask the SITE SELECTOR first, not localStorage. The page auto-picks a build when
+  // nothing is stored (BUILD_ID falls back to the first active build, then the first in
+  // the registry), so the dossier, ticker and stats all render against a build that was
+  // never written to "ob_build". Reading storage alone made this button report "open a
+  // build" while a build was plainly open two inches to its left — it was disabled, so
+  // it did nothing, and the pilot had no way to tell that from broken. That is very
+  // likely why Squad Carrier Link never got its live shakedown.
+  // The selector's value IS what the pilot sees, so trust it; storage is the fallback
+  // for the moment before the options land.
+  function curBuild(){
+    var GUID=/^[0-9a-fA-F-]{36}$/;
+    try{ var sel=document.getElementById("buildSel");
+         if(sel&&GUID.test(sel.value||"")) return sel.value; }catch(e){}
+    try{ var b=localStorage.getItem("ob_build"); if(b&&GUID.test(b)) return b; }catch(e){}
+    return "";
+  }
   function short(s,n){s=String(s||"");return s.length>n?s.slice(0,n-1)+"…":s;}
   function toast(msg,bad){
     var d=document.createElement("div");
@@ -395,7 +410,7 @@
     if(st.carrier&&st.carrier.marketId){
       var nm=short(st.carrier.name||st.carrier.callsign||("market "+st.carrier.marketId),18);
       if(b){ btn.textContent="⛽ LINK "+nm+" → BUILD"; btn.title="Link your carrier "+nm+" to the build you're viewing (pushed to RavenColonial)"; btn.disabled=false; }
-      else { btn.textContent="⛽ LINK CARRIER — open a build"; btn.title="View a build first (its ID is remembered), then link your carrier to it"; btn.disabled=true; }
+      else { btn.textContent="⛽ LINK CARRIER — pick a site ←"; btn.title="Choose a site in the ◈ SITE selector to the left, then link your carrier to it"; btn.disabled=true; }
       btn.style.display=""; return;
     }
     btn.textContent="⛽ NO CARRIER DETECTED";
@@ -430,6 +445,18 @@
     if(!st.bound) return bind();
     if(st.carrier&&st.carrier.marketId) return link();
   });
+  // The selector is filled asynchronously (builds fetch + site-name lookup), so its value
+  // is still "loading builds…" when render() first runs. Re-render once the real options
+  // land, otherwise the button keeps the disabled state it was born with even though a
+  // build is now selected. Cheap, self-disconnecting, and a no-op if the element is gone.
+  try{
+    var sel=document.getElementById("buildSel");
+    if(sel&&window.MutationObserver){
+      var mo=new MutationObserver(function(){ render(); });
+      mo.observe(sel,{childList:true});
+      sel.addEventListener("change",render);
+    }
+  }catch(e){}
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",load); else load();
 })();
 </script>
