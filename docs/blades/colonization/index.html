@@ -423,7 +423,7 @@
     $("clToggle").onclick=()=>{mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};tick();setInterval(tick,1000);})();
 
   // ===== Cloudflare Access identity =====
-  (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";
+  (function(){
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{(window.bladesSignOut||function(){location.href="/cdn-cgi/access/logout";})();};
     fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(d&&d.cmdr){if(nameEl)nameEl.textContent="CMDR "+String(d.cmdr).toUpperCase();}else{fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(i=>{const n=String((i&&i.name)||"").trim();if(nameEl&&n)nameEl.textContent=n.toUpperCase();}).catch(()=>{});}}).catch(()=>{});})();
 

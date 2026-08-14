@@ -145,7 +145,7 @@
     function tick(){const d=new Date();if(mode==="ed"){$("clTime").textContent=`${d.getUTCFullYear()+1286} ${MON[d.getUTCMonth()]} ${pad2(d.getUTCDate())} · ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())} GMT`;$("clLab").textContent="GALACTIC";}else{$("clTime").textContent=`${d.getFullYear()} ${MON[d.getMonth()]} ${pad2(d.getDate())} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())} ${tz()}`;$("clLab").textContent="LOCAL / RL";}}
     $("clToggle").onclick=()=>{mode=mode==="ed"?"local":"ed";try{localStorage.setItem("ob_clock",mode);}catch(e){}tick();};tick();setInterval(tick,1000);})();
 // ===== Cloudflare Access identity =====
-  (function(){const TEAM="https://bigskinnywick.cloudflareaccess.com";
+  (function(){
     const nameEl=$("authName"),out=$("signOut");if(out)out.onclick=()=>{(window.bladesSignOut||function(){location.href="/cdn-cgi/access/logout";})();};
     fetch("/blades/api/whoami-cmdr",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(d&&d.cmdr){if(nameEl)nameEl.textContent="CMDR "+String(d.cmdr).toUpperCase();}else{fetch("/cdn-cgi/access/get-identity",{credentials:"same-origin"}).then(r=>r.ok?r.json():Promise.reject()).then(i=>{const n=String((i&&i.name)||"").trim();if(nameEl&&n)nameEl.textContent=n.toUpperCase();}).catch(()=>{});}
       // TEST PILOT button is gated on the real test-pilot role via plugin-status (poller below), not the crew map.
