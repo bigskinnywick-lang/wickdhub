@@ -57,7 +57,7 @@
       <b>show</b> about you, and what your Adjutant may <b>do</b> for you — are now one document.
       Nothing here is a rehearsal: these are your live settings and they save immediately.</div>
 
-    <div class="rec-previewlab">◇ PREVIEW — HOW THIS WILL LOOK ON MY DASHBOARD</div>
+    <div class="rec-previewlab">◇ PREVIEW — THE ASSIGNMENTS CARD, BOUND FOR MY DASHBOARD (above the site selector)</div>
     <div class="panel" id="adjCard" style="margin-bottom:20px"></div>
 
     <div class="panel">
@@ -76,7 +76,8 @@
 </div>
 
 <script src="/blades/_shell/deck.js?v=2" defer></script>
-<script src="/blades/_shell/adjutant.js?v=1" defer></script>
+<script src="/blades/_shell/adjutant.js?v=2" defer></script>
+<script src="/blades/_shell/assignments.js?v=1" defer></script>
 <script src="/blades/_shell/ob1.js?v=2" defer></script>
 <script>
   // Sign-out is shared chrome; deck.js defines bladesSignOut outside its members-only gate.
@@ -86,9 +87,11 @@
 
     // The dashboard card, previewed here so it gets shaken down on the same page as the
     // document rather than needing a forked copy of the 519-line commander page.
+    // It is now the full ASSIGNMENTS card — the Adjutant became its first row, so previewing
+    // the Adjutant alone would no longer be previewing what ships.
     var card = document.getElementById("adjCard");
-    if (card && window.Adjutant) {
-      window.Adjutant.mountCard(card, { recordHref: "/blades/beta/record/" });
+    if (card && window.Assignments) {
+      window.Assignments.mount(card, { recordHref: "/blades/beta/record/" });
     }
 
     // ★ The document. OB-1 owns parts I, II and IV; the Adjutant owns part III and is mounted

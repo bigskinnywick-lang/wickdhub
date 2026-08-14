@@ -207,7 +207,12 @@
         " a keyboard bind before it can be given.</div>"
       : "";
     var href = (opts && opts.recordHref) || "/blades/record/";
-    return '<div class="adj-card-head"><h2 style="margin:0">◈ ADJUTANT</h2>' +
+    // `compact` drops this component's own <h2> for hosts that supply the row chrome
+    // themselves — the ASSIGNMENTS card, where the Adjutant is a row rather than a card.
+    // Additive: the default is exactly the standalone card as before.
+    var compact = !!(opts && opts.compact);
+    return '<div class="adj-card-head">' +
+           (compact ? "<span></span>" : '<h2 style="margin:0">◈ ADJUTANT</h2>') +
            '<span class="adj-count">' + onN + " OF " + rows.length + " STANDING" +
            (blN ? " · " + blN + " BLOCKED" : "") + "</span></div>" +
            warn + '<div class="adj-chips">' + chips + "</div>" +
@@ -215,25 +220,26 @@
            '<div class="adj-err" id="adjCardErr" hidden></div>';
   }
 
-  function signedOutHtml(kind) {
-    return kind === "card"
-      ? '<div class="adj-card-head"><h2 style="margin:0">◈ ADJUTANT</h2></div>' +
-        '<div class="rempty">Sign in to give orders.</div>'
-      : '<div class="rempty">Sign in to see your standing orders.</div>';
+  function head(kind, opts) {
+    if (kind !== "card" || (opts && opts.compact)) return "";
+    return '<div class="adj-card-head"><h2 style="margin:0">◈ ADJUTANT</h2></div>';
   }
 
-  function setupHtml(kind) {
-    var m = "Bind your CMDR name first — the Adjutant is assigned to a commander, not to a login.";
-    return kind === "card"
-      ? '<div class="adj-card-head"><h2 style="margin:0">◈ ADJUTANT</h2></div><div class="rempty">' + esc(m) + "</div>"
-      : '<div class="rempty">' + esc(m) + "</div>";
+  function signedOutHtml(kind, opts) {
+    return head(kind, opts) + '<div class="rempty">' +
+      (kind === "card" ? "Sign in to give orders." : "Sign in to see your standing orders.") + "</div>";
+  }
+
+  function setupHtml(kind, opts) {
+    return head(kind, opts) + '<div class="rempty">Bind your CMDR name first — the Adjutant ' +
+      "is assigned to a commander, not to a login.</div>";
   }
 
   function paint() {
     MOUNTS.forEach(function (m) {
       if (!m.el || !document.contains(m.el)) return;
-      if (!STATE) { m.el.innerHTML = signedOutHtml(m.kind); return; }
-      if (STATE.needsSetup) { m.el.innerHTML = setupHtml(m.kind); return; }
+      if (!STATE) { m.el.innerHTML = signedOutHtml(m.kind, m.opts); return; }
+      if (STATE.needsSetup) { m.el.innerHTML = setupHtml(m.kind, m.opts); return; }
       m.el.innerHTML = (m.kind === "card") ? cardHtml(m.opts) : ordersHtml();
     });
   }
