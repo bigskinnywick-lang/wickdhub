@@ -36,6 +36,17 @@ async function adminList(env) {
   return admins;
 }
 async function isAdmin(request, env) { const e = callerEmail(request); return !!e && (await adminList(env)).includes(e); }
+// ★ Hardcoded, never KV-driven — see the full note in admins.js. Squad Access decides who
+// may reach the squad net AT ALL, and it edits live Cloudflare account config through
+// CF_API_TOKEN, so the blast radius leaves the site entirely.
+//
+// ⚠ THIS ONE IS EXPLICITLY TEMPORARY (Adam, 2026-08-13). It belongs to the ADMIRAL, who
+// already approves pledges and commissions members in Discord — granting site login is the
+// same act. The seam is ADMISSION (admiral: who gets through the door) vs ASSIGNMENT
+// (quartermaster: what you hold once inside). It moves to him WHEN HE IS BRIEFED — an
+// explicit grant Adam turns on, never an automatic consequence of holding the admiral role.
+// So when this changes, it becomes isAdmiral-plus-a-grant, NOT isAdmin.
+function isOwner(request) { return callerEmail(request) === OWNER; }
 
 // --- Cloudflare API helper: reads text, surfaces the real error (status + code + body). ---
 async function cf(env, path, opt) {
@@ -107,7 +118,7 @@ function notConfigured(extra) { return json({ ok: true, configured: false, email
 
 async function guard(request, env) {
   if (!env || !env.BUILDS) return { stop: json({ ok: false, error: "KV not bound" }, 500) };
-  if (!(await isAdmin(request, env))) return { stop: json({ ok: false, error: "forbidden" }, 403) };
+  if (!isOwner(request)) return { stop: json({ ok: false, error: "forbidden — owner only" }, 403) };
   return {};
 }
 

@@ -10,7 +10,9 @@
      version (clears itself on the next poll after an EDMC restart).
    - needsSetup (pre-2.0 / no heartbeat) -> blares "COMPLETE SETUP", surfaces a SETUP GUIDE
      button, and the blare links to the setup guide.
-   - Also gates any #testPilotBtn on the page to the real test-pilot role. */
+   - Also gates any test-pilot chip on the page to the real test-pilot role. (The commander
+     page's own #testPilotBtn was removed 2026-08-13 as a duplicate of the toggle testpilot.js
+     injects by the colour dial; the selector below is kept for [data-testpilot] chips.) */
 (function () {
   var POLL_MS = 15000, OV_ID = "obNetUrgent", STYLE_ID = "obNetStyle";
 

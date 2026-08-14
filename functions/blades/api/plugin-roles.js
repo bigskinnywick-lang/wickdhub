@@ -31,6 +31,11 @@ async function adminList(env) {
   return admins;
 }
 async function isAdmin(request, env) { const e = callerEmail(request); return !!e && (await adminList(env)).includes(e); }
+// ★ Hardcoded, never KV-driven — see the full note in admins.js. Role grants are PERSONNEL,
+// not technical ops: this is the QUARTERMASTER's lane (what you hold once inside) and it
+// parks with the owner until that desk exists. GET stays on isAdmin — reading the roster
+// changes nothing.
+function isOwner(request) { return callerEmail(request) === OWNER; }
 function cleanCmdr(v) { const s = String(v || "").replace(/^\s*(cmdr|commander)\s+/i, "").trim(); return /^[\w .'\-]{1,40}$/.test(s) ? s.slice(0, 40) : ""; }
 function cleanRoles(arr) {
   if (!Array.isArray(arr)) return [];
@@ -71,7 +76,8 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
-  if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
+  // OWNER ONLY for now — personnel, the quartermaster's lane once that desk exists.
+  if (!isOwner(request)) return json({ ok: false, error: "forbidden — owner only" }, 403);
   let body = {}; try { body = await request.json(); } catch (e) {}
   const cmdr = cleanCmdr(body.cmdr);
   if (!cmdr) return json({ ok: false, error: "valid cmdr required" }, 400);

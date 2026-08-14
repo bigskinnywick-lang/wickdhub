@@ -36,6 +36,17 @@ async function adminList(env) {
   return admins;
 }
 async function isAdmin(request, env) { const e = callerEmail(request); return !!e && (await adminList(env)).includes(e); }
+// ★ Hardcoded, never KV-driven — see the full note in admins.js. THE CUT IS THE HIGHEST
+// BLAST-RADIUS BUTTON ON THE SITE: installed plugins auto-pull the new zip on their next
+// heartbeat, verify the sha256, stage load.py and run it. That is code executing on other
+// people's machines, unattended.
+//
+// Adam chose OWNER CUTS BOTH CHANNELS (2026-08-13), declining the proposed
+// admin-cuts-beta split. Accepted trade, stated at the time: he becomes a single point of
+// failure for releases including hot-fixes. If that chafes, the relief valve is a narrow
+// "admin may cut BETA" grant here — not reopening the model.
+// GET stays on isAdmin: reading which version is deployed changes nothing.
+function isOwner(request) { return callerEmail(request) === OWNER; }
 
 function cleanVer(v) { const s = String(v || "").trim(); return /^[A-Za-z0-9.\-]{1,20}$/.test(s) ? s : ""; }
 const isBeta = (v) => /[a-z]/i.test(String(v || ""));
@@ -129,7 +140,8 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
-  if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
+  // OWNER ONLY, BOTH CHANNELS — this fires code onto other people's rigs unattended.
+  if (!isOwner(request)) return json({ ok: false, error: "forbidden — owner only" }, 403);
   let body = {}; try { body = await request.json(); } catch (e) {}
   const channel = body.channel === "beta" ? "beta" : (body.channel === "stable" ? "stable" : "");
   if (!channel) return json({ ok: false, error: "channel required (stable|beta)" }, 400);

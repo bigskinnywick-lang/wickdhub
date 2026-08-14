@@ -62,8 +62,15 @@
     <select id="buildSel" class="bb-sel"><option>loading builds…</option></select>
     <button id="carrierLinkBtn" class="bb-add" style="display:none" title="Link your fleet carrier to the build you are viewing"></button>
     <a href="/blades/architect/" id="architectBtn" class="bb-add" style="text-decoration:none" title="Your architect deck — claims, primary-port windows, cleanup">◆ ARCHITECT</a>
-    <a href="/blades/checklist/" id="testPilotBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Shakedown flight checklist — what to do, what to watch for">⚑ TEST PILOT</a>
-    <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
+    <!-- 2026-08-13 — the ⚑ TEST PILOT chip that sat here was REMOVED as a duplicate. It only
+         linked to /blades/checklist/, and testpilot.js already injects both the test-track
+         toggle AND a CHECKLIST link into .controls beside the colour dial. Two doors to one
+         room. The dial-side pair is the one that stays.
+         Its style carried the `margin-left:auto` that right-aligns everything after it, so
+         that has moved onto the ADMIN chip below. All four of these role-gated chips are
+         doors rather than controls and are due to move into the ASSIGNMENTS card above the
+         site selector, at which point this row goes back to being just the selector. -->
+    <a href="/blades/admin/" id="adminBtn" class="bb-add" style="margin-left:auto;text-decoration:none;display:none" title="Admin console — view/edit/back up the registry (admins only)">⚙ ADMIN</a>
     <a href="/blades/admiral/" id="admiralBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Admiral's Desk — squadron leader">⚓ ADMIRAL'S DESK</a>
     <a href="/blades/usage/" id="usageBtn" class="bb-add" style="margin-left:10px;text-decoration:none;display:none" title="Squad Net Usage — traffic & KV glance (admins only)">◷ NET USAGE</a>
   </div>

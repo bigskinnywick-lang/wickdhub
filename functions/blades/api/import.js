@@ -28,11 +28,16 @@ async function adminList(env) {
   return admins;
 }
 async function isAdmin(request, env) { const e = callerEmail(request); return !!e && (await adminList(env)).includes(e); }
+// ★ Hardcoded, never KV-driven — a KV-driven owner check could be written away. See the full
+// note in admins.js. RESTORE is owner-only because it is the one action no backup undoes:
+// it overwrites the namespace the backups themselves live alongside. Making a backup stays
+// on admin (export.js) — creating one is always safe, applying one is not.
+function isOwner(request) { return callerEmail(request) === OWNER; }
 const put = (env, k, v) => env.BUILDS.put(k, typeof v === "string" ? v : JSON.stringify(v));
 
 export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
-  if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
+  if (!isOwner(request)) return json({ ok: false, error: "forbidden — owner only" }, 403);
   let body = {}; try { body = await request.json(); } catch (e) { return json({ ok: false, error: "invalid JSON" }, 400); }
 
   // ⚠ REFUSE a safe-mode export. Its emails are pseudonyms (member1@redacted.invalid), so
