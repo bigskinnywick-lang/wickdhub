@@ -67,11 +67,28 @@
       "#obTelStrip .ot-live{display:inline-flex;align-items:center;gap:7px;margin-left:auto;font-size:9.5px;letter-spacing:1.5px;color:var(--muted,#b98a52)}",
       // BACK TO GAME — FIXED, not in the strip (moved 2026-08-12, Adam's call). Its whole job
       // is "I am done here, put me back", and that is exactly the moment you are least likely
-      // to be scrolled to the top of the board. Anchored top-right because the lower-right is
-      // the zoom control's lane.
-      // ⚠ SHARED LANE: the ⚑ TEST TRACK badge (_shell/testpilot.js) sits directly below at
-      // top:78px. Move either one and check the other.
-      "#obBackFix{position:fixed;top:44px;right:12px;z-index:99998;cursor:pointer;user-select:none;border:1px solid var(--accent-dim,#a24d08);background:rgba(28,17,9,.92);border-radius:7px;padding:5px 10px;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9.5px;letter-spacing:1.5px;color:var(--muted,#b98a52);transition:.15s}",
+      // to be scrolled to the top of the board.
+      //
+      // 2026-08-13 — MOVED from top-right INTO the bottom-right deck cluster, so the three
+      // floating controls read as one group instead of two lanes at opposite corners.
+      // Stacking bottom-up:  [zoom −/+][⛶][↵ GAME]  with ⚑ TEST TRACK riding above.
+      //
+      // ⚠ THE DOM STAYS OWNED BY THIS FILE, DELIBERATELY. The obvious move — build the button
+      // in deck.js so it lives with the cluster — would WIDEN ITS REACH: deck.js loads on the
+      // PUBLIC home page and the setup guide, telemetry.js only on commander + colonization.
+      // A members-only control would start being created on public pages. So instead the two
+      // adopt each other, whichever lands first: mountBack() appends into #deckCtl if it is
+      // already there, and deck.js's build() adopts an existing #obBackFix. Page coverage is
+      // unchanged either way.
+      //
+      // Base rule = the standalone fallback for when the cluster never builds (deck.js gates
+      // on a BOUND CMDR, this button does not). Height 34px matches #deckCtl button exactly.
+      "#obBackFix{position:fixed;right:12px;bottom:10px;z-index:99998;display:inline-flex;align-items:center;height:34px;box-sizing:border-box;cursor:pointer;user-select:none;border:1px solid var(--accent-dim,#a24d08);background:rgba(28,17,9,.92);border-radius:7px;padding:0 12px;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9.5px;letter-spacing:1.5px;color:var(--muted,#b98a52);transition:.15s}",
+      // Inside the cluster it stops positioning itself and just sits in the flex row. Two IDs
+      // beats one, so this wins over the base rule without !important.
+      // ⚠ These live HERE and not in blades.css on purpose — blades.css is served with no ?v=
+      // cache-buster, so an edit there is stale at the edge with no way to force a refresh.
+      "#deckCtl #obBackFix{position:static;right:auto;bottom:auto;z-index:auto;background:var(--panel2,#1c1109)}",
       "#obBackFix:hover{border-color:var(--accent,#ff7a12);color:var(--accent-bright,#ffb057)}",
       "#obBackFix[disabled]{opacity:.4;cursor:not-allowed;border-color:var(--line,#3a2410)}",
       "#obBackFix.sent{border-color:var(--ok,#5fbf7f);color:var(--ok,#5fbf7f)}",
@@ -431,7 +448,10 @@
     el.setAttribute("role", "button"); el.setAttribute("tabindex", "0");
     el.textContent = "↵ GAME";
     el.style.display = "none";        // paintBack decides; never flash before we know
-    document.body.appendChild(el);
+    // Join the deck cluster if it has already built; otherwise body-mount and let deck.js
+    // adopt us when it does. deck.js gates on a whoami fetch, so either order is possible
+    // and neither may be assumed.
+    (document.getElementById("deckCtl") || document.body).appendChild(el);
     return el;
   }
 
@@ -476,7 +496,10 @@
     var btn = document.getElementById("obBackFix");
     if (!btn) return;
     if (!showBackBtn()) { btn.style.display = "none"; return; }
-    btn.style.display = "inline-block";
+    // Clear the inline display rather than setting one, so the stylesheet's inline-flex wins
+    // and the label stays vertically centred in the 34px box. An inline "inline-block" here
+    // would silently defeat the height match with the zoom buttons.
+    btn.style.display = "";
     var live = !!(TEL && TEL.telemetry && TEL.ageMs != null && TEL.ageMs < STALE_MS);
     if (live) {
       btn.removeAttribute("disabled");

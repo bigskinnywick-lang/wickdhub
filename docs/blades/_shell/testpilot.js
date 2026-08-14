@@ -32,7 +32,14 @@
       "#obTp.on .tpled{background:var(--good,#57e0a0);box-shadow:0 0 9px var(--good,#57e0a0)}",
       "#obTp .tpchk{font-family:var(--font-head,'Orbitron',sans-serif);font-size:10.5px;letter-spacing:1.5px;text-decoration:none;color:var(--muted,#b98a52);border:1px solid var(--line,#3a2410);background:var(--panel,#140d07);padding:6px 12px;border-radius:6px;transition:.15s}",
       "#obTp .tpchk:hover{color:var(--accent-bright,#ffb057);border-color:var(--accent-dim,#a24d08)}",
-      "#obTpTrack{position:fixed;top:78px;right:12px;z-index:99998;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9.5px;letter-spacing:2px;color:var(--good,#57e0a0);border:1px solid var(--good,#57e0a0);border-radius:4px;padding:3px 8px;background:rgba(6,10,7,.72);pointer-events:none;transform-origin:right center;animation:obTpBreathe 4.8s ease-in-out infinite}",
+      // 2026-08-13 — moved from top:78px down to ride ABOVE the bottom-right deck cluster
+      // (zoom + fullscreen + ↵ GAME), so the floating controls are one group.
+      // ★ ANCHORED FROM THE BOTTOM, INDEPENDENTLY — it is NOT in the cluster's layout flow.
+      // That is the whole point: this badge comes and goes as the test track is armed, and if
+      // the ↵ GAME button were stacked relative to it, disarming would shift the button out
+      // from under the pilot's cursor. Bottom-anchoring means the space above simply empties.
+      // 62px = cluster bottom 10 + its 46px height + a 6px gap.
+      "#obTpTrack{position:fixed;bottom:62px;right:12px;z-index:99998;font-family:var(--font-head,'Orbitron',sans-serif);font-size:9.5px;letter-spacing:2px;color:var(--good,#57e0a0);border:1px solid var(--good,#57e0a0);border-radius:4px;padding:3px 8px;background:rgba(6,10,7,.72);pointer-events:none;transform-origin:right center;animation:obTpBreathe 4.8s ease-in-out infinite}",
       // pronounced breathing pulse (opacity + scale + glow) so a pilot can't miss that the test track is live
       "@keyframes obTpBreathe{0%,100%{opacity:.7;transform:scale(.97);border-color:color-mix(in srgb,var(--good,#57e0a0) 60%,transparent);box-shadow:0 0 6px color-mix(in srgb,var(--good,#57e0a0) 25%,transparent);text-shadow:0 0 2px color-mix(in srgb,var(--good,#57e0a0) 20%,transparent)}50%{opacity:1;transform:scale(1.03);border-color:var(--good,#57e0a0);box-shadow:0 0 15px color-mix(in srgb,var(--good,#57e0a0) 60%,transparent);text-shadow:0 0 5px color-mix(in srgb,var(--good,#57e0a0) 45%,transparent)}}",
       "@media (prefers-reduced-motion:reduce){#obTpTrack{animation:none;opacity:1;transform:none;box-shadow:0 0 9px color-mix(in srgb,var(--good,#57e0a0) 45%,transparent)}}"

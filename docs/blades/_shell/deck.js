@@ -71,6 +71,15 @@
       reveal(); // tapping fullscreen also reveals the zoom cluster
     };
 
+    // 2026-08-13 — adopt the ↵ GAME button if telemetry.js already body-mounted it, so the
+    // three floating controls read as one bottom-right group. The button is NOT built here
+    // on purpose: deck.js loads on the PUBLIC home page and the setup guide, telemetry.js
+    // only on commander + colonization. Building it here would create a members-only control
+    // on public pages. Adoption is the half of the handshake that runs when deck wins the
+    // race; mountBack() in telemetry.js covers the other order.
+    var back = document.getElementById("obBackFix");
+    if (back) d.appendChild(back);
+
     d.style.display = "flex";
     applyZoom();
     collapse(); // start collapsed: just the fullscreen button
