@@ -50,14 +50,45 @@ async function resolveSelf(request, env) {
   return { me, cmdr, carrier };
 }
 
+// Is the caller's own carrier already linked to this build? Answered server-side so the
+// browser never needs its own copy of the Raven base URL (it is already hardcoded in four
+// files) and so a slow Raven degrades to "unknown" instead of hanging the button.
+// Returns true / false / null, where NULL MEANS "could not ask" — the caller must not
+// render that as "not linked", or the toggle would offer to link something already linked.
+async function isLinkedToBuild(buildId, marketId) {
+  if (!GUID.test(buildId) || !MID.test(marketId)) return null;
+  try {
+    const r = await ravenFetch("/api/project/" + buildId, { headers: { "User-Agent": UA, "Accept": "application/json" } });
+    if (!r.ok) return null;
+    const p = await r.json();
+    if (!p || !Array.isArray(p.linkedFC)) return null;
+    return p.linkedFC.some((f) => String((f && f.marketId) || f) === String(marketId));
+  } catch (e) { return null; }
+}
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const self = await resolveSelf(request, env);
   if (!self.me) return json({ ok: false, error: "no identity" }, 403);
-  return json({ ok: true, me: self.me, cmdr: self.cmdr, bound: !!self.cmdr, carrier: self.carrier || null });
+  // Optional ?buildId= — lets the commander deck render LINK vs UNLINK without a second
+  // round trip and without reaching Raven from the page.
+  let linkedToBuild = null;
+  const bid = String(new URL(request.url).searchParams.get("buildId") || "").toLowerCase().trim();
+  if (bid && self.carrier && self.carrier.marketId) {
+    linkedToBuild = await isLinkedToBuild(bid, String(self.carrier.marketId));
+  }
+  return json({ ok: true, me: self.me, cmdr: self.cmdr, bound: !!self.cmdr, carrier: self.carrier || null, linkedToBuild });
 }
 
-async function handleLink(request, env) {
+// One handler for both directions — they differ only by HTTP verb, so splitting them
+// would be two copies of the identity checks and the audit log.
+//   link   -> PUT    /api/project/{buildId}/fc/{marketId}
+//   unlink -> DELETE /api/project/{buildId}/fc/{marketId}
+// DELETE was confirmed supported by probing with a deliberately fake build id (200, "[]")
+// rather than by assuming the verb pairs, and rather than destroying a real link to find
+// out. It is forgiving: unlinking something that was never linked still returns 200.
+async function handleRelay(request, env, mode) {
+  const unlink = mode === "unlink";
   const self = await resolveSelf(request, env);
   if (!self.me) return json({ ok: false, error: "no identity" }, 403);
   if (!self.cmdr) return json({ ok: false, error: "cmdr not bound", need: "bind" }, 409);
@@ -71,7 +102,7 @@ async function handleLink(request, env) {
   let status = 0, ravenOk = false, detail = "";
   try {
     const r = await ravenFetch("/api/project/" + buildId + "/fc/" + marketId, {
-      method: "PUT",
+      method: unlink ? "DELETE" : "PUT",
       headers: { "User-Agent": UA, "Accept": "application/json" },
     });
     status = r.status; ravenOk = r.ok;
@@ -80,32 +111,35 @@ async function handleLink(request, env) {
     detail = String(e); status = 0;
   }
 
-  // Log every relay attempt (success or not) for the admin trail.
+  // Log every relay attempt (success or not) for the admin trail. `action` is recorded so
+  // the trail can tell a link from an unlink — without it the two are indistinguishable.
   const logKey = "carrierlink:" + marketId + ":" + Date.now();
   try {
     await env.BUILDS.put(logKey, JSON.stringify({
-      buildId, marketId, cmdr: self.cmdr, email: self.me,
+      buildId, marketId, cmdr: self.cmdr, email: self.me, action: unlink ? "unlink" : "link",
       status, ok: ravenOk, ts: Date.now(), detail: detail || undefined,
     }), { expirationTtl: 60 * 60 * 24 * 90 });
   } catch (e) {}
 
   if (!ravenOk) {
     const reason = status === 0 ? "raven_unreachable" : ("raven_" + status);
-    return json({ ok: false, error: "link_failed", reason, status, detail }, 502);
+    return json({ ok: false, error: (unlink ? "unlink_failed" : "link_failed"), reason, status, detail }, 502);
   }
-  return json({ ok: true, linked: true, buildId, marketId, carrier: self.carrier.name || self.carrier.callsign || marketId });
+  return json({ ok: true, linked: !unlink, buildId, marketId, carrier: self.carrier.name || self.carrier.callsign || marketId });
 }
 
 export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let peek = {};
   try { peek = await request.clone().json(); } catch (e) {}
-  if ((peek && peek.action) !== "link") return json({ ok: false, error: "unknown action" }, 400);
+  const action = peek && peek.action;
+  if (action !== "link" && action !== "unlink") return json({ ok: false, error: "unknown action" }, 400);
+  const failKey = action === "unlink" ? "unlink_failed" : "link_failed";
   const deadline = new Promise((resolve) =>
-    setTimeout(() => resolve(json({ ok: false, error: "link_failed", reason: "deadline" }, 502)), OVERALL_DEADLINE_MS));
+    setTimeout(() => resolve(json({ ok: false, error: failKey, reason: "deadline" }, 502)), OVERALL_DEADLINE_MS));
   try {
-    return await Promise.race([handleLink(request, env), deadline]);
+    return await Promise.race([handleRelay(request, env, action), deadline]);
   } catch (e) {
-    return json({ ok: false, error: "link_failed", reason: "handler_error", detail: String((e && e.message) || e) }, 502);
+    return json({ ok: false, error: failKey, reason: "handler_error", detail: String((e && e.message) || e) }, 502);
   }
 }

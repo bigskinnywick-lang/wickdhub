@@ -399,7 +399,11 @@
     requestAnimationFrame(function(){d.style.opacity="1";});
     setTimeout(function(){d.style.opacity="0";setTimeout(function(){try{d.remove();}catch(e){}},300);},2600);
   }
-  var st={bound:false,cmdr:"",carrier:null};
+  // linked: true / false / null. NULL IS NOT FALSE — it means Raven could not be asked,
+  // and offering to LINK in that state would hide an existing link behind a second one.
+  // Raven does NOT enforce one-carrier-per-build: measured 2026-08-14, Southern Draw sat
+  // on two projects at once. So a wrong guess here really does duplicate.
+  var st={bound:false,cmdr:"",carrier:null,linked:null,linkedFor:""};
   function render(){
     var b=curBuild();
     if(!st.bound){
@@ -409,7 +413,12 @@
     }
     if(st.carrier&&st.carrier.marketId){
       var nm=short(st.carrier.name||st.carrier.callsign||("market "+st.carrier.marketId),18);
-      if(b){ btn.textContent="⛽ LINK "+nm+" → BUILD"; btn.title="Link your carrier "+nm+" to the build you're viewing (pushed to RavenColonial)"; btn.disabled=false; }
+      if(b&&st.linked===true&&st.linkedFor===b){
+        btn.textContent="⛽ UNLINK "+nm;
+        btn.title=nm+" is linked to this site. Click to remove it (RavenColonial stops showing it as a depot here). Your carrier can be linked to more than one site at once — Raven does not clear the others for you.";
+        btn.disabled=false;
+      }
+      else if(b){ btn.textContent="⛽ LINK "+nm+" → BUILD"; btn.title="Link your carrier "+nm+" to the build you're viewing (pushed to RavenColonial)"; btn.disabled=false; }
       else { btn.textContent="⛽ LINK CARRIER — pick a site ←"; btn.title="Choose a site in the ◈ SITE selector to the left, then link your carrier to it"; btn.disabled=true; }
       btn.style.display=""; return;
     }
@@ -418,7 +427,16 @@
     btn.disabled=true; btn.style.display="";
   }
   async function load(){
-    try{ var r=await fetch("/blades/api/carrier",{credentials:"same-origin"}); if(r.ok){var j=await r.json(); st.bound=!!j.bound; st.cmdr=j.cmdr||""; st.carrier=j.carrier||null;} }catch(e){}
+    var b=curBuild();
+    try{
+      var r=await fetch("/blades/api/carrier"+(b?"?buildId="+encodeURIComponent(b):""),{credentials:"same-origin"});
+      if(r.ok){ var j=await r.json();
+        st.bound=!!j.bound; st.cmdr=j.cmdr||""; st.carrier=j.carrier||null;
+        // Remember WHICH build the answer was about. Without this, switching sites would
+        // keep showing UNLINK from the previous site's answer until the refetch lands.
+        st.linked=(typeof j.linkedToBuild==="boolean")?j.linkedToBuild:null; st.linkedFor=b;
+      }
+    }catch(e){}
     render();
   }
   async function bind(){
@@ -431,19 +449,25 @@
       else { toast((j&&j.error)||"bind failed",true); }
     }catch(e){ toast("bind failed (offline?)",true); }
   }
-  async function link(){
-    var b=curBuild(); if(!b){ toast("view a build first",true); return; }
-    btn.disabled=true; var old=btn.textContent; btn.textContent="⛽ linking…";
+  async function relay(unlink){
+    var b=curBuild(); if(!b){ toast("pick a site first",true); return; }
+    btn.disabled=true; var old=btn.textContent; btn.textContent=unlink?"⛽ unlinking…":"⛽ linking…";
+    var done=false;
     try{
-      var r=await fetch("/blades/api/carrier",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({action:"link",buildId:b})});
+      var r=await fetch("/blades/api/carrier",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({action:unlink?"unlink":"link",buildId:b})});
       var j=await r.json();
-      if(j&&j.ok){ toast("carrier linked to build ✓"); } else { toast((j&&(j.reason||j.error))||"link failed",true); }
-    }catch(e){ toast("link failed (offline?)",true); }
-    btn.textContent=old; render();
+      if(j&&j.ok){ done=true; toast(unlink?"carrier unlinked ✓":"carrier linked to build ✓"); }
+      else { toast((j&&(j.reason||j.error))||(unlink?"unlink failed":"link failed"),true); }
+    }catch(e){ toast((unlink?"unlink":"link")+" failed (offline?)",true); }
+    btn.textContent=old;
+    // Re-read from Raven rather than assuming the flip took: a 200 we never saw the body
+    // of, or a link made from elsewhere, would leave the button lying about the state.
+    if(done){ st.linked=!unlink; st.linkedFor=b; render(); }
+    load();
   }
   btn.addEventListener("click",function(){
     if(!st.bound) return bind();
-    if(st.carrier&&st.carrier.marketId) return link();
+    if(st.carrier&&st.carrier.marketId) return relay(st.linked===true&&st.linkedFor===curBuild());
   });
   // The selector is filled asynchronously (builds fetch + site-name lookup), so its value
   // is still "loading builds…" when render() first runs. Re-render once the real options
@@ -452,9 +476,11 @@
   try{
     var sel=document.getElementById("buildSel");
     if(sel&&window.MutationObserver){
-      var mo=new MutationObserver(function(){ render(); });
+      // load(), not render(): the link state is per-build, so a new site needs a fresh
+      // answer from Raven, not a repaint of the previous site's.
+      var mo=new MutationObserver(function(){ load(); });
       mo.observe(sel,{childList:true});
-      sel.addEventListener("change",render);
+      sel.addEventListener("change",load);
     }
   }catch(e){}
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",load); else load();
