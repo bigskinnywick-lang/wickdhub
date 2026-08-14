@@ -5,6 +5,7 @@ Disallow: /blades/signin/
 Disallow: /blades/admin/
 Disallow: /blades/api/
 Disallow: /blades/beta/
+Disallow: /blades/denied/
 Disallow: /blades/record/
 Disallow: /blades/usage/
 Disallow: /blades/dashboard/

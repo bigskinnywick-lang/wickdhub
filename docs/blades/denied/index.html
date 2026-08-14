@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="amber">
+<head>
+<!-- Theme is read from the SAME-ORIGIN preference the board stores. Amber is the fallback and
+     it is the COMMON case here, not an edge case: a stranger has no stored preference, and the
+     preference stops travelling at all once the board moves to hub.onyxblades.com. Amber has to
+     look finished on its own. -->
+<script>try{var _t=localStorage.getItem("ob_theme");if(_t)document.documentElement.setAttribute("data-theme",_t);}catch(e){}</script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- Never-indexed dead end -> Disallow in robots.txt is the correct tool, and this page
+     deliberately carries NO meta noindex: noindex + Disallow together achieves neither, since
+     a blocked page is never crawled and the tag is never read. (Release gate, 2026-08-12.) -->
+<title>ONYX BLADES · Access Denied</title>
+<link rel="icon" href="/blades/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+<!-- ★ Binding to the existing theme stylesheet is the entire reason this page is built here
+     rather than pasted into Cloudflare: four themes for free, no hex duplicated. -->
+<link rel="stylesheet" href="/blades/_shell/blades.css">
+<style>
+  /* Every colour below is a TOKEN. No hex values — that is the rule that keeps the four
+     themes working. --bad is defined once on :root, so the danger accent is intentionally
+     the same red under all four themes rather than theme-tinted. */
+  .dn-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:32px 18px;gap:0}
+  .dn-crest{width:64px;height:64px;display:block;margin:0 auto 14px;opacity:.92}
+  .dn-uplink{font-family:var(--font-head);font-size:10px;letter-spacing:2.5px;
+    color:var(--muted);text-align:center;margin:0 0 22px}
+  .dn-panel{width:min(560px,100%);background:var(--panel);border:1px solid var(--line);
+    border-left:3px solid var(--bad);border-radius:var(--radius);padding:20px 22px}
+  .dn-head{display:flex;align-items:center;gap:11px;margin:0 0 14px}
+  .dn-ico{flex:0 0 auto;color:var(--bad);display:block}
+  .dn-label{font-family:var(--font-head);font-size:14px;letter-spacing:2.5px;color:var(--bad)}
+  .dn-lede{font-size:14px;color:var(--text);line-height:1.5;margin:0 0 12px}
+  .dn-body{font-size:12.5px;color:var(--muted);line-height:1.65;margin:0 0 18px}
+  .dn-rule{border:0;border-top:1px solid var(--line);margin:0 0 16px}
+  .dn-acts{display:flex;gap:10px;flex-wrap:wrap}
+  .dn-btn{font-family:var(--font-head);font-size:10.5px;letter-spacing:1.5px;text-decoration:none;
+    padding:10px 15px;border-radius:var(--radius);border:1px solid var(--accent-dim);
+    color:var(--muted);background:var(--panel2);cursor:pointer;transition:.15s;display:inline-block}
+  .dn-btn:hover{border-color:var(--accent);color:var(--accent-bright)}
+  .dn-btn:focus-visible{outline:1px solid var(--accent-bright);outline-offset:2px}
+  .dn-btn.primary{border-color:var(--accent);color:var(--accent-bright);
+    background:color-mix(in srgb,var(--accent) 12%,var(--panel2))}
+  .dn-btn.primary:hover{background:color-mix(in srgb,var(--accent) 22%,var(--panel2))}
+  .dn-foot{font-family:var(--font-head);font-size:9px;letter-spacing:2px;color:var(--muted);
+    text-align:center;margin:22px 0 0;opacity:.75;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="dn-wrap">
+  <div>
+    <img class="dn-crest" src="/blades/icon-192.png" alt="Onyx Blades emblem" />
+    <div class="dn-uplink">◈ SECURE UPLINK · ONYX BLADES NETWORK</div>
+
+    <div class="dn-panel" role="main">
+      <div class="dn-head">
+        <svg class="dn-ico" width="22" height="22" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+          <rect x="3.5" y="10.5" width="17" height="10.5" rx="1.6" />
+          <path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5" />
+          <path d="M10.4 14.4l3.2 3.2M13.6 14.4l-3.2 3.2" />
+        </svg>
+        <span class="dn-label">ACCESS DENIED</span>
+      </div>
+
+      <p class="dn-lede">That identity isn't on the roster.</p>
+      <p class="dn-body">Squadron Command is open to enlisted commanders. If you fly with the
+        Blades and this is a mistake, raise it in Discord and an officer will get you wired in.</p>
+
+      <hr class="dn-rule" />
+
+      <div class="dn-acts">
+        <!-- ⚠ The invite is HARDCODED here on purpose. On the home page this href is "#" and a
+             script rewrites it from CFG.DISCORD_INVITE at load — fine there, but if that block
+             ever throws early (the 2026-08-08 TDZ shape) the button silently stays dead. This
+             is the one page where a dead Apply button costs a recruit, so it does not depend on
+             any JS running at all. Same target as the rest of the site. -->
+        <a class="dn-btn primary" href="https://discord.gg/hSKWPJR9Yn"
+           target="_blank" rel="noopener">⟢ APPLY VIA DISCORD</a>
+        <a class="dn-btn" href="/blades/" id="dnSwitch">▸ TRY ANOTHER IDENTITY</a>
+      </div>
+    </div>
+
+    <div class="dn-foot">FRONT DOOR IS OPEN TO ALL · FLIGHT DECK IS FOR ENLISTED COMMANDERS</div>
+  </div>
+</div>
+
+<script>
+  // TRY ANOTHER IDENTITY — clear the Access cookie on THIS origin, then land on the public
+  // front door. Mirrors bladesSignOut() in _shell/deck.js and doSignOut() on the home page;
+  // inlined rather than pulling in deck.js, which is members-gated and would try to build the
+  // zoom cluster on a page that must work for a total stranger.
+  //
+  // The href is already /blades/ so this degrades correctly with JS off or if the fetch fails:
+  // the visitor still leaves, they just keep their (rejected) session cookie.
+  (function () {
+    var b = document.getElementById("dnSwitch");
+    if (!b) return;
+    b.addEventListener("click", function (ev) {
+      ev.preventDefault();
+      var go = function () { try { location.replace("/blades/"); } catch (e) { location.href = "/blades/"; } };
+      try {
+        fetch("/cdn-cgi/access/logout", { credentials: "include", mode: "no-cors", cache: "no-store" }).then(go, go);
+      } catch (e) { go(); }
+      setTimeout(go, 1500);   // safety net if the fetch stalls
+    });
+  })();
+</script>
+</body>
+</html>
