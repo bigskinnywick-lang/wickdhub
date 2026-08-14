@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="/blades/_shell/blades.css">
 <link rel="stylesheet" href="/blades/page.css">
-<script src="/blades/_shell/deck.js?v=3" defer></script>
+<script src="/blades/_shell/deck.js?v=4" defer></script>
 </head>
 <body>
 <div class="wrap">
@@ -332,19 +332,20 @@ function paintMemberChip(){
   $("whoami").innerHTML=
     '<div class="cmdrbox"><span class="dot"></span>CMDR <b>'+escH(MY_CMDR||"—")+'</b>'+
     '<br><span style="font-size:10px;color:var(--muted);letter-spacing:1px">ENLISTED · BLADES</span></div>'+
-    '<a class="txtlnk" href="/cdn-cgi/access/logout" id="signOutLnk">SIGN OUT</a>';
+    '<a class="txtlnk" href="https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout" id="signOutLnk">SIGN OUT</a>';
   var so=document.getElementById("signOutLnk");
   if(so) so.addEventListener("click", function(e){ e.preventDefault(); doSignOut(); });
 }
-// Cloudflare Access has no post-logout redirect for self-hosted apps, so we do it
-// ourselves: hit the logout endpoint (clears the CF_Authorization cookie on this
-// origin) then bounce to the public home, where the pilot now reads as logged-out.
-// The href stays as a no-JS fallback (lands on CF's logout page, still logged out).
+// Sign-out goes to the TEAM domain, not this origin. The same-origin endpoint
+// returns "Unable to find your Access organization!" here because every Access app
+// is path-scoped and none covers /cdn-cgi/ — so the old fetch cleared nothing and
+// failed silently. returnTo brings the pilot straight back to /blades/.
+// ⚠ Clears the GLOBAL (SSO) token only; the wickdhub.com application token lives
+// until the application session expires. Full rationale in _shell/deck.js.
+// Mirrors bladesSignOut() — if you change one, change all three.
 function doSignOut(){
-  var go=function(){ try{ location.replace("/blades/"); }catch(e){ location.href="/blades/"; } };
-  try{ fetch("/cdn-cgi/access/logout",{credentials:"include",mode:"no-cors",cache:"no-store"}).then(go,go); }
-  catch(e){ go(); }
-  setTimeout(go, 1500); // safety net if the fetch stalls
+  location.href = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="
+                + encodeURIComponent(location.origin + "/blades/");
 }
 function lockPanel(el,title,sub){
   el.classList.add("locked");

@@ -101,11 +101,10 @@
     if (!b) return;
     b.addEventListener("click", function (ev) {
       ev.preventDefault();
-      var go = function () { try { location.replace("/blades/"); } catch (e) { location.href = "/blades/"; } };
-      try {
-        fetch("/cdn-cgi/access/logout", { credentials: "include", mode: "no-cors", cache: "no-store" }).then(go, go);
-      } catch (e) { go(); }
-      setTimeout(go, 1500);   // safety net if the fetch stalls
+      // Team-domain logout + returnTo. The same-origin endpoint cannot resolve the
+      // Access org on this hostname, so it would clear nothing. See _shell/deck.js.
+      location.href = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout?returnTo="
+                    + encodeURIComponent(location.origin + "/blades/");
     });
   })();
 </script>

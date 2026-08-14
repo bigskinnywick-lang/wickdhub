@@ -4,25 +4,42 @@
    Zoom (ob_zoom) persists on EVERY page, even while the cluster is hidden. */
 (function () {
   /* ---- SHARED SIGN-OUT ---------------------------------------------------
-     Cloudflare Access has no post-logout redirect for self-hosted apps.
-     Sending the pilot to the TEAM domain's logout URL
-     (https://<team>.cloudflareaccess.com/cdn-cgi/access/logout) dumps them on a
-     Cloudflare-branded page on a DIFFERENT ORIGIN with no route back — that was
-     the bug. Instead hit the logout endpoint on THIS origin (clears the
-     CF_Authorization cookie for wickdhub.com), then bounce to the public home
-     where they correctly read as logged-out.
+     ★ REWRITTEN 2026-08-13 AFTER MEASURING THAT THE OLD ONE NEVER WORKED.
+
+     The previous version fetched `/cdn-cgi/access/logout` on THIS origin and
+     discarded the response. That endpoint returns "Unable to find your Access
+     organization!" on wickdhub.com, because every Access application here is
+     scoped to PATHS (/blades/api, /blades/admin, /blades/signin) and none of
+     them covers /cdn-cgi/. So Cloudflare cannot resolve which org the request
+     belongs to. The fetch was `no-cors` with the result ignored, so the failure
+     was completely silent: the button navigated home and cleared nothing, and
+     the pilot stayed signed in. Verified by hitting the URL directly.
+
+     THE TEAM DOMAIN IS THE ONE THAT WORKS, and `returnTo` removes the reason we
+     avoided it. The old comment here said the team domain "dumps them on a
+     Cloudflare-branded page with no route back — that was the bug". True without
+     returnTo; with it, Access bounces straight back to /blades/. Measured.
+
+     ⚠ WHAT THIS DOES AND DOES NOT DO. Access issues TWO tokens: a GLOBAL session
+     token on the team domain (SSO) and an APPLICATION token on wickdhub.com.
+     This clears the global one. The application token is NOT cleared — it lives
+     on a domain whose logout endpoint we cannot reach — so it keeps working
+     until the application session expires. What this buys is that the session
+     can no longer be silently RENEWED: without the global token, Access cannot
+     mint a fresh application token, which is exactly what was signing the pilot
+     back in on the next page load. The application session duration is therefore
+     load-bearing, not cosmetic — it is the real logout latency.
+
+     The only complete fix is an Access application that authenticates at the
+     wickdhub.com root, which is a change to how the whole site is gated.
 
      Defined OUTSIDE the members-only gate below so it is always available.
-     Mirrors doSignOut() in docs/blades/index.html — if you change one, change both.
-
-     NOTE: this clears the app cookie, not the team-level Access session. Signing
-     back in may not re-prompt the IdP. That is the accepted trade for landing
-     back on /blades/ instead of a dead Cloudflare page. */
+     Mirrors doSignOut() in docs/blades/index.html and the inlined copy in
+     admin/index.html — if you change one, change all three. */
+  window.BLADES_TEAM_LOGOUT = "https://onyxblades.cloudflareaccess.com/cdn-cgi/access/logout";
   window.bladesSignOut = function () {
-    var go = function () { try { location.replace("/blades/"); } catch (e) { location.href = "/blades/"; } };
-    try { fetch("/cdn-cgi/access/logout", { credentials: "include", mode: "no-cors", cache: "no-store" }).then(go, go); }
-    catch (e) { go(); }
-    setTimeout(go, 1500); // safety net if the fetch stalls
+    var back = location.origin + "/blades/";
+    location.href = window.BLADES_TEAM_LOGOUT + "?returnTo=" + encodeURIComponent(back);
   };
 
   var Z = 100;
