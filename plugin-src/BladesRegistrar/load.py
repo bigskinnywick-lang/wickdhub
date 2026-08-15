@@ -1218,6 +1218,17 @@ _GM_V_HOLD = 0.08        # hold V under Ctrl for the paste
 _GM_DO_ENTER = True      # press Enter after paste to run the search (safe once the field is focused)
 _GM_BEFORE_ENTER = 1.5   # WAIT for EDs search to actually FIND the pasted system before Enter
                          # (~1s; Enter fired too soon goes nowhere and loses the map)
+# --- multi-result fix (Adam, 2026-08-15, found while flying) -----------------
+# ED's search dropdown opens with NO row focused, so Enter has nothing to act on and the
+# whole plot silently does nothing. The single-match case only ever worked by accident:
+# with one candidate the field resolves on its own.
+# One UI_Down moves onto the first row, and THEN Enter selects it.
+# ⚠ This is NOT an edge case: `COL 285 SECTOR QX-S C4-1` is a prefix of C4-10 ... C4-19, and
+# most of the galaxy outside the bubble is named like that.
+# Adam's manual path also falls out of it — if row one is wrong he can keep arrowing before
+# the confirm lands.
+_GM_DOWN_INTO_LIST = True  # press UI_Down after the search settles, before Enter
+_GM_AFTER_DOWN = 0.25      # let the highlight land on row one before confirming
 _GM_ENTER_HOLD = 0.12    # hold Enter long enough for ED to register the search-submit (0.06 was too short)
 # --- select + plot the searched system (the tail) ---
 _GM_AFTER_SEARCH = 2.5   # wait after Enter for the map to pan to the system (far systems take a few seconds)
@@ -1233,7 +1244,7 @@ _GM_OPEN_MODS = ()       # modifiers for the override. DEFAULT None/() = resolve
                          # Galaxy Map / UI_Up / UI_Select keyboard binds from their .binds. No hardcoding.
 
 # resolved per-pilot keys: each = {"key","sc","ext","vk","mods"} or None
-_gm = {"open": None, "up": None, "select": None, "zoom": None, "resolved": False}
+_gm = {"open": None, "up": None, "down": None, "select": None, "zoom": None, "resolved": False}
 
 
 def _gm_resolve_ctrl(control, override=None, override_mods=()):
@@ -1265,8 +1276,12 @@ def _gm_resolve_ctrl(control, override=None, override_mods=()):
 def _gm_resolve():
     _gm["open"] = _gm_resolve_ctrl("GalaxyMapOpen", _GM_OPEN_KEY, _GM_OPEN_MODS)
     _gm["up"] = _gm_resolve_ctrl("UI_Up")
+    _gm["down"] = _gm_resolve_ctrl("UI_Down")
     _gm["select"] = _gm_resolve_ctrl("UI_Select")
     _gm["zoom"] = _gm_resolve_ctrl(_GM_ZOOM_CTRL)
+    # ⚠ "down" is deliberately NOT in the readiness test below. It only improves the
+    # multi-result case; a pilot with no keyboard UI_Down bind should still get the assist
+    # they had before rather than lose it. Adding it here would silently disarm working rigs.
     _gm["resolved"] = bool(_gm["open"] and _gm["up"] and _gm["select"] and _gm["zoom"])
     return _gm["resolved"]
 
@@ -1305,8 +1320,11 @@ def _gm_missing_binds():
     # The whole sequence is keyboard: open the map, UI_Up to the search box, UI_Select it.
     _gm["open"] = _gm_resolve_ctrl("GalaxyMapOpen", _GM_OPEN_KEY, _GM_OPEN_MODS)
     _gm["up"] = _gm_resolve_ctrl("UI_Up")
+    _gm["down"] = _gm_resolve_ctrl("UI_Down")
     _gm["select"] = _gm_resolve_ctrl("UI_Select")
     _gm["zoom"] = _gm_resolve_ctrl(_GM_ZOOM_CTRL)
+    # UI_Down is NOT required — see _gm_resolve(). It is reported as an advisory below so a
+    # pilot can see WHY multi-result searches still miss for them, without being blocked.
     _gm["resolved"] = bool(_gm["open"] and _gm["up"] and _gm["select"] and _gm["zoom"])
     missing = []
     if not _gm["open"]:
@@ -1318,6 +1336,14 @@ def _gm_missing_binds():
     if not _gm["zoom"]:
         missing.append("a keyboard key on 'Galaxy Cam Zoom In'")
     return missing
+
+
+def _gm_down_advisory():
+    # NOT a blocker -- an explanation. Without a keyboard 'UI Panel Down' the sequence still
+    # runs, but a search returning several systems cannot be stepped into, so those plots
+    # quietly do nothing. Better the pilot is told why than left guessing.
+    return "" if _gm.get("down") else "no keyboard key on 'UI Panel Down' - searches that match several systems will not plot"
+
 
 
 def _gm_ready():
@@ -1457,7 +1483,14 @@ def _gm_paste():
         if _GM_DO_ENTER:
             _hk_send(0xA2, 0x1D, 0, True)            # re-assert Ctrl release so Enter isnt read as Ctrl+Enter
             time.sleep(_GM_BEFORE_ENTER)            # let the pasted text settle
-            _hk_tap(0x0D, 0x1C, 0, _GM_ENTER_HOLD)  # Enter -> run the search (field is focused now)
+            # Step INTO the results list first. Without this, a multi-match search leaves the
+            # dropdown open with nothing highlighted and the Enter below is a no-op.
+            # Degrades quietly: no UI_Down bind -> skip it and behave exactly as before,
+            # rather than disabling the whole assist over one missing keyboard bind.
+            if _GM_DOWN_INTO_LIST and _gm.get("down"):
+                _gm_press(_gm["down"], _GM_KEY_HOLD)
+                time.sleep(_GM_AFTER_DOWN)
+            _hk_tap(0x0D, 0x1C, 0, _GM_ENTER_HOLD)  # Enter -> select the highlighted row
         _set_status("galaxy-paste: searching -> select + plot")
         time.sleep(_GM_AFTER_SEARCH)                # map pans to the searched system
         _gm_press(_gm["zoom"], _GM_ZOOM_HOLD)       # nudge-zoom to SELECT the system under the cursor
