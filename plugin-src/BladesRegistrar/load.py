@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.30"  # b3.30: PLOTTING A COURSE NOW WORKS WHEN THE SEARCH RETURNS MORE THAN ONE SYSTEM. Elite opens the search list with no row highlighted, so the Enter after the paste had nothing to act on and nothing was plotted - the single-match case only ever worked by accident. COL 285 SECTOR QX-S C4-1 is a prefix of C4-10 to C4-19, so in procedural space this was most of the time. The sequence now steps into the list with one UI Panel Down before confirming, so it plots - and you can keep arrowing if row one is wrong. Uses your own bind; without a keyboard UI Panel Down it behaves exactly as before.
+PLUGIN_VERSION = "b3.31"  # b3.31: THE MULTI-RESULT PLOT FIX FROM b3.30 NOW ACTUALLY WORKS. b3.30 stepped into the search list using YOUR 'UI Panel Down' bind - but by then the search box has text focus, and Elite's default for that control is a letter (S, from the WASD panel nav). So instead of moving down the list it TYPED an s into the box: COL 285 SECTOR QX-S C4-1 became ...C4-1s, which matches nothing. That made b3.30 worse than doing nothing, and it hit hardest exactly where the fix was aimed - procedural systems outside the bubble. It now presses the raw Down arrow, which moves a list even while you are typing in a field, and ignores your binds entirely - the same way Enter and Escape in that sequence always have. Nothing to configure, and it no longer depends on which keys you fly with.
 # b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
 # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
@@ -1222,13 +1222,32 @@ _GM_BEFORE_ENTER = 1.5   # WAIT for EDs search to actually FIND the pasted syste
 # ED's search dropdown opens with NO row focused, so Enter has nothing to act on and the
 # whole plot silently does nothing. The single-match case only ever worked by accident:
 # with one candidate the field resolves on its own.
-# One UI_Down moves onto the first row, and THEN Enter selects it.
+# One Down moves onto the first row, and THEN Enter selects it.
 # ⚠ This is NOT an edge case: `COL 285 SECTOR QX-S C4-1` is a prefix of C4-10 ... C4-19, and
 # most of the galaxy outside the bubble is named like that.
 # Adam's manual path also falls out of it — if row one is wrong he can keep arrowing before
 # the confirm lands.
-_GM_DOWN_INTO_LIST = True  # press UI_Down after the search settles, before Enter
+#
+# ⚠⚠ b3.31 — THE KEY MUST BE THE RAW DOWN ARROW, *NOT* THE PILOT'S `UI_Down` BIND.
+# b3.30 pressed the bound UI_Down and still did not plot. Measured on Adam's rig: his UI_Down
+# is Joy_11 + **Key_S**, so the bind resolved fine — and that was the whole problem. By this
+# point in the sequence the search box HAS TEXT FOCUS, so a letter key is TYPED INTO THE FIELD
+# instead of moving the dropdown highlight. `COL 285 SECTOR QX-S C4-1` became `...C4-1s`, which
+# matches nothing, so b3.30 was strictly WORSE than b3.29: it corrupted the search rather than
+# merely failing to confirm it.
+# The tell was already in our own data: UI_Up (his Key_W) worked earlier in the same routine —
+# because the search box did not have focus yet. Same key class, opposite result, and the only
+# difference is the focus state.
+# ED's default UI-panel nav is WASD, so a letter here is the COMMON case, not Adam's quirk.
+# Arrow keys navigate a list even while a text field is focused; letters do not.
+# This also matches what the rest of this routine already does — Enter and Escape below are
+# pressed as RAW keycodes, never through binds, for exactly the same reason. Going raw removes
+# the bind dependency entirely: it now works for every pilot regardless of their controls.
+_GM_DOWN_INTO_LIST = True  # press Down after the search settles, before Enter
 _GM_AFTER_DOWN = 0.25      # let the highlight land on row one before confirming
+_GM_DOWN_VK = 0x28         # VK_DOWN  \
+_GM_DOWN_SC = 0x50         # scancode  } raw Down arrow — extended key, so ext=1
+_GM_DOWN_EXT = 1           #          /
 _GM_ENTER_HOLD = 0.12    # hold Enter long enough for ED to register the search-submit (0.06 was too short)
 # --- select + plot the searched system (the tail) ---
 _GM_AFTER_SEARCH = 2.5   # wait after Enter for the map to pan to the system (far systems take a few seconds)
@@ -1276,12 +1295,12 @@ def _gm_resolve_ctrl(control, override=None, override_mods=()):
 def _gm_resolve():
     _gm["open"] = _gm_resolve_ctrl("GalaxyMapOpen", _GM_OPEN_KEY, _GM_OPEN_MODS)
     _gm["up"] = _gm_resolve_ctrl("UI_Up")
-    _gm["down"] = _gm_resolve_ctrl("UI_Down")
     _gm["select"] = _gm_resolve_ctrl("UI_Select")
     _gm["zoom"] = _gm_resolve_ctrl(_GM_ZOOM_CTRL)
-    # ⚠ "down" is deliberately NOT in the readiness test below. It only improves the
-    # multi-result case; a pilot with no keyboard UI_Down bind should still get the assist
-    # they had before rather than lose it. Adding it here would silently disarm working rigs.
+    # b3.31: UI_Down is no longer resolved AT ALL. The list step presses the raw Down arrow,
+    # so there is nothing here to look up. Resolving it and never using it would just leave a
+    # future reader believing the step follows the pilot's binds — which is the belief that
+    # caused b3.30 to ship broken.
     _gm["resolved"] = bool(_gm["open"] and _gm["up"] and _gm["select"] and _gm["zoom"])
     return _gm["resolved"]
 
@@ -1320,11 +1339,9 @@ def _gm_missing_binds():
     # The whole sequence is keyboard: open the map, UI_Up to the search box, UI_Select it.
     _gm["open"] = _gm_resolve_ctrl("GalaxyMapOpen", _GM_OPEN_KEY, _GM_OPEN_MODS)
     _gm["up"] = _gm_resolve_ctrl("UI_Up")
-    _gm["down"] = _gm_resolve_ctrl("UI_Down")
     _gm["select"] = _gm_resolve_ctrl("UI_Select")
     _gm["zoom"] = _gm_resolve_ctrl(_GM_ZOOM_CTRL)
-    # UI_Down is NOT required — see _gm_resolve(). It is reported as an advisory below so a
-    # pilot can see WHY multi-result searches still miss for them, without being blocked.
+    # b3.31: UI_Down is not resolved and not required — the list step is a raw Down arrow.
     _gm["resolved"] = bool(_gm["open"] and _gm["up"] and _gm["select"] and _gm["zoom"])
     missing = []
     if not _gm["open"]:
@@ -1339,10 +1356,13 @@ def _gm_missing_binds():
 
 
 def _gm_down_advisory():
-    # NOT a blocker -- an explanation. Without a keyboard 'UI Panel Down' the sequence still
-    # runs, but a search returning several systems cannot be stepped into, so those plots
-    # quietly do nothing. Better the pilot is told why than left guessing.
-    return "" if _gm.get("down") else "no keyboard key on 'UI Panel Down' - searches that match several systems will not plot"
+    # b3.31: INERT ON PURPOSE, and kept only so nothing that calls it breaks.
+    # It used to warn that a pilot with no keyboard 'UI Panel Down' would miss multi-result
+    # plots. That advice is now WRONG in both directions: the step uses the raw Down arrow, so
+    # a missing bind costs nothing -- and a PRESENT one (Key_S, ED's WASD default) was the
+    # actual bug, which this would have reported as healthy. A check that can only confirm is
+    # worse than no check; do not "restore" it. Same lesson as the .md-only sweep.
+    return ""
 
 
 
@@ -1485,10 +1505,12 @@ def _gm_paste():
             time.sleep(_GM_BEFORE_ENTER)            # let the pasted text settle
             # Step INTO the results list first. Without this, a multi-match search leaves the
             # dropdown open with nothing highlighted and the Enter below is a no-op.
-            # Degrades quietly: no UI_Down bind -> skip it and behave exactly as before,
-            # rather than disabling the whole assist over one missing keyboard bind.
-            if _GM_DOWN_INTO_LIST and _gm.get("down"):
-                _gm_press(_gm["down"], _GM_KEY_HOLD)
+            # RAW Down arrow, not the pilot's UI_Down bind — see the b3.31 note at the top of
+            # this section. The field has text focus here, so a letter-bound UI_Down (ED's
+            # default nav is WASD) would be typed into the search box and corrupt it.
+            # No bind lookup means no way for this to silently not-fire on someone's rig.
+            if _GM_DOWN_INTO_LIST:
+                _hk_tap(_GM_DOWN_VK, _GM_DOWN_SC, _GM_DOWN_EXT, _GM_KEY_HOLD)
                 time.sleep(_GM_AFTER_DOWN)
             _hk_tap(0x0D, 0x1C, 0, _GM_ENTER_HOLD)  # Enter -> select the highlighted row
         _set_status("galaxy-paste: searching -> select + plot")
