@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.31"  # b3.31: THE MULTI-RESULT PLOT FIX FROM b3.30 NOW ACTUALLY WORKS. b3.30 stepped into the search list using YOUR 'UI Panel Down' bind - but by then the search box has text focus, and Elite's default for that control is a letter (S, from the WASD panel nav). So instead of moving down the list it TYPED an s into the box: COL 285 SECTOR QX-S C4-1 became ...C4-1s, which matches nothing. That made b3.30 worse than doing nothing, and it hit hardest exactly where the fix was aimed - procedural systems outside the bubble. It now presses the raw Down arrow, which moves a list even while you are typing in a field, and ignores your binds entirely - the same way Enter and Escape in that sequence always have. Nothing to configure, and it no longer depends on which keys you fly with.
+PLUGIN_VERSION = "b3.32"  # b3.32: PLOTTING NOW CONFIRMS WITH YOUR OWN 'UI Select' KEY. b3.31 got the highlight onto the right system and then stopped, because the keypress that picks it was hardcoded to Enter - which only ever worked if your UI Select happened to BE Enter. Space, or anything else you fly with, did nothing. It now uses whatever you have bound. Together with b3.31 that makes the whole galaxy-map sequence obey one rule: raw keys while you are typing in the search box, your own binds once the list has focus. Plotting to systems whose names share a prefix - COL 285 SECTOR QX-S C4-1 and its neighbours - should now work end to end.
 # b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
 # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
@@ -1215,9 +1215,10 @@ _GM_BETWEEN_NAV = 0.12   # pause between UI_Up presses
 _GM_AFTER_NAV = 0.30     # pause after highlighting, before selecting the search box
 _GM_AFTER_SELECT = 0.35  # pause after selecting (search field active) before pasting
 _GM_V_HOLD = 0.08        # hold V under Ctrl for the paste
-_GM_DO_ENTER = True      # press Enter after paste to run the search (safe once the field is focused)
-_GM_BEFORE_ENTER = 1.5   # WAIT for EDs search to actually FIND the pasted system before Enter
-                         # (~1s; Enter fired too soon goes nowhere and loses the map)
+_GM_DO_ENTER = True      # run the confirm step after the paste (name kept from b2.9; as of b3.32
+                         # the confirm is the pilot's bound UI_Select, NOT the Enter key)
+_GM_BEFORE_ENTER = 1.5   # WAIT for EDs search to actually FIND the pasted system before confirming
+                         # (~1s; fired too soon it goes nowhere and loses the map)
 # --- multi-result fix (Adam, 2026-08-15, found while flying) -----------------
 # ED's search dropdown opens with NO row focused, so Enter has nothing to act on and the
 # whole plot silently does nothing. The single-match case only ever worked by accident:
@@ -1248,7 +1249,7 @@ _GM_AFTER_DOWN = 0.25      # let the highlight land on row one before confirming
 _GM_DOWN_VK = 0x28         # VK_DOWN  \
 _GM_DOWN_SC = 0x50         # scancode  } raw Down arrow — extended key, so ext=1
 _GM_DOWN_EXT = 1           #          /
-_GM_ENTER_HOLD = 0.12    # hold Enter long enough for ED to register the search-submit (0.06 was too short)
+_GM_ENTER_HOLD = 0.12    # hold the confirm key long enough for ED to register it (0.06 was too short)
 # --- select + plot the searched system (the tail) ---
 _GM_AFTER_SEARCH = 2.5   # wait after Enter for the map to pan to the system (far systems take a few seconds)
 _GM_ZOOM_CTRL = "CamZoomIn"  # control whose key nudge-zooms to SELECT the system under the cursor (Z; CamZoomOut/X also works)
@@ -1512,7 +1513,16 @@ def _gm_paste():
             if _GM_DOWN_INTO_LIST:
                 _hk_tap(_GM_DOWN_VK, _GM_DOWN_SC, _GM_DOWN_EXT, _GM_KEY_HOLD)
                 time.sleep(_GM_AFTER_DOWN)
-            _hk_tap(0x0D, 0x1C, 0, _GM_ENTER_HOLD)  # Enter -> select the highlighted row
+            # b3.32: confirm with the pilot's OWN UI_Select, not a raw Enter.
+            # ⚠ THIS IS THE MIRROR OF THE b3.31 BUG, AND THE RULE IS THE FOCUS REGIME:
+            #   text field focused  -> RAW keys   (Ctrl+V, and the Down that escapes into the list)
+            #   list focused        -> BOUND keys (this is UI navigation again)
+            # b3.31 fixed the first half and left this hardcoded. Raw Enter only ever worked for
+            # pilots whose UI_Select happens to BE Enter; Adam's is Space, so the row highlighted
+            # and then nothing selected it. Measured on the rig 2026-08-16.
+            # `sel` is guaranteed non-None here — UI_Select is in the _gm_resolve() readiness set,
+            # so the assist refuses to run at all without it.
+            _gm_press(sel, _GM_ENTER_HOLD)          # UI_Select -> select the highlighted row
         _set_status("galaxy-paste: searching -> select + plot")
         time.sleep(_GM_AFTER_SEARCH)                # map pans to the searched system
         _gm_press(_gm["zoom"], _GM_ZOOM_HOLD)       # nudge-zoom to SELECT the system under the cursor
