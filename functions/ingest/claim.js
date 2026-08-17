@@ -17,6 +17,8 @@
 // Newest event timestamp wins — an old backfilled claim can't clobber a fresher
 // live claim (or out-order a release). Public route (Access Bypass); the key is
 // the gate, same as /ingest/build.
+import { authIngest, stampBatch } from "../_lib/ingest-auth.js";
+
 const SA = /^\d{1,20}$/;
 const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 
@@ -51,9 +53,12 @@ export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
-  if (!env.INGEST_KEY || String(body.key || "") !== String(env.INGEST_KEY)) return json({ ok: false, error: "unauthorized" }, 401);
+  const a = await authIngest(request, env, body, null);
+  if (!a.ok) return json({ ok: false, error: a.error }, a.status);
 
-  const items = Array.isArray(body.claims) ? body.claims : [body];
+  // The claims ledger IS the squadron's architect scoreboard, and a backfill can
+  // carry 200 rows. A device token stamps its own commander over all of them.
+  const items = stampBatch(Array.isArray(body.claims) ? body.claims : [body], a);
   if (!items.length) return json({ ok: false, error: "no claims" }, 400);
   if (items.length > 200) return json({ ok: false, error: "too many claims (max 200 per POST)" }, 400);
 

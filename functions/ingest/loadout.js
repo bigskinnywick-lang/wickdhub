@@ -13,6 +13,12 @@
 // Non-GUID key => rides in export other{} (backed up). Newest ts wins so a stale
 // event can't clobber a fresher one. Public route (Access Bypass); the key is the
 // gate, same as /ingest/build and /ingest/carrier.
+//
+// AUTH 2026-08-16: commander is now DERIVED from a per-device token where one is
+// presented, and only falls back to body.cmdr + the shared key during migration.
+// See functions/_lib/ingest-auth.js.
+import { authIngest } from "../_lib/ingest-auth.js";
+
 const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 function cleanCmdr(v) {
   const s = String(v || "").replace(/^\s*(cmdr|commander)\s+/i, "").trim();
@@ -28,13 +34,13 @@ export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
-  if (!env.INGEST_KEY || String(body.key || "") !== String(env.INGEST_KEY)) return json({ ok: false, error: "unauthorized" }, 401);
+  const a = await authIngest(request, env, body, null);
+  if (!a.ok) return json({ ok: false, error: a.error }, a.status);
 
-  const cmdr = cleanCmdr(body.cmdr);
-  if (!cmdr || cmdr.toLowerCase() === "unknown") return json({ ok: false, error: "invalid cmdr" }, 400);
+  const cmdr = a.cmdr;
   const ts = Number(body.ts) || Date.now();
 
-  const kvKey = "loadout:" + cmdr.toLowerCase();
+  const kvKey = "loadout:" + a.cmdrLower;
   let existing = null;
   try { const v = await env.BUILDS.get(kvKey); if (v) existing = JSON.parse(v); } catch (e) {}
   if (existing && existing.ts && ts < existing.ts) return json({ ok: true, result: "kept" });

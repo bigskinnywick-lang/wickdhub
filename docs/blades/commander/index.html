@@ -88,6 +88,16 @@
       <div class="rhint">Switch commander:</div>
       <div id="rosterList2"><div class="rempty">Loading…</div></div>
     </div>
+    <!-- 2026-08-16 — per-device credentials. /ingest/pair is open and can only ASK;
+         this card is Access-gated and is the only thing that can GRANT. A device can
+         only ever be approved by the commander it claimed to be, so a forged request
+         surfaces here as a PC the pilot doesn't recognise rather than failing silently
+         somewhere nobody looks. -->
+    <div class="panel">
+      <h2>◇ Paired Devices</h2>
+      <div class="rhint">Which PCs may report as you.</div>
+      <div id="devCard"><div class="rempty">Loading…</div></div>
+    </div>
     <!-- 2026-08-13 promote — Form OB-1 moved OFF this page. It now lives on the SERVICE
          RECORD (/blades/record/) alongside the Adjutant's standing orders, because both are
          consent and belong in one document. Keeping a copy here would mean the same form at
@@ -590,10 +600,12 @@
 <script src="/blades/_shell/adjutant.js?v=2" defer></script>
 <script src="/blades/_shell/assignments.js?v=1" defer></script>
 <script src="/blades/_shell/announce.js?v=1" defer></script>
+<script src="/blades/_shell/devices.js?v=1" defer></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     if (window.Assignments) window.Assignments.mount(document.getElementById("asgCard"));
     if (window.Announce) window.Announce.mount(document.getElementById("annCard"));
+    if (window.Devices) window.Devices.mount(document.getElementById("devCard"));
   });
 </script>
 

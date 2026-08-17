@@ -19,6 +19,8 @@
 //
 // GET /ingest/navpull?key=..&cmdr=Name[&v=1.9][&pending=2.0]
 //   -> { ok, system, ts, latest:{version,sha256,notes,url}|null, channel, settings:{autocreate,honk}|null }
+import { authIngest } from "../_lib/ingest-auth.js";
+
 const HEARTBEAT_TTL_S = 60 * 60 * 24 * 14; // 14 days — a pilot who stops flying drops off
 const json = (o, s) => new Response(JSON.stringify(o), {
   status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" }
@@ -212,11 +214,15 @@ async function storeAlerts(env, cmdrLower, rawParam) {
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const url = new URL(request.url);
-  const key = url.searchParams.get("key") || "";
-  if (!env.INGEST_KEY || key !== String(env.INGEST_KEY)) return json({ ok: false, error: "unauthorized" }, 401);
-  const cmdr = cleanCmdr(url.searchParams.get("cmdr"));
-  if (!cmdr) return json({ ok: false, error: "cmdr required" }, 400);
-  const cmdrLower = cmdr.toLowerCase();
+  // AUTH 2026-08-16 — see functions/_lib/ingest-auth.js.
+  // ⚠ This route is BOTH the auth-gated heartbeat AND the only channel through
+  // which a plugin learns a new version exists. That is exactly why the shared
+  // key cannot simply be rotated: kill it here and every deployed plugin goes
+  // silent and can never be told about the fix. Dual-accept, migrate, then retire.
+  const a = await authIngest(request, env, null, url);
+  if (!a.ok) return json({ ok: false, error: a.error }, a.status);
+  const cmdr = a.cmdr;
+  const cmdrLower = a.cmdrLower;
 
   // (2) heartbeat — record reported running/staged version if the plugin sent it
   const running = cleanVer(url.searchParams.get("v"));

@@ -1,5 +1,8 @@
 // Cloudflare Pages Function — squad fleet-carrier registry for the Blades Registrar plugin.
 //
+// AUTH 2026-08-16: see functions/_lib/ingest-auth.js. Commander is derived from a
+// per-device token when one is presented, and stamped over every batch row.
+//
 // A fleet carrier's ownership only appears in the OWNER's own journal (CarrierStats),
 // so a carrier reported by a commander's plugin is first-party proof of who owns it.
 // The plugin POSTs carriers here — live when CarrierStats fires, plus a one-time
@@ -20,6 +23,8 @@
 // Both non-GUID keys so they ride in export other{} (backed up). Newest event
 // timestamp wins so an old backfilled record can't clobber a fresher live one.
 // Public route (Access Bypass); the key is the gate, same as /ingest/build.
+import { authIngest, stampBatch } from "../_lib/ingest-auth.js";
+
 const MID = /^\d{1,20}$/;
 const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 function cleanCmdr(v) {
@@ -63,9 +68,12 @@ export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
-  if (!env.INGEST_KEY || String(body.key || "") !== String(env.INGEST_KEY)) return json({ ok: false, error: "unauthorized" }, 401);
+  const a = await authIngest(request, env, body, null);
+  if (!a.ok) return json({ ok: false, error: a.error }, a.status);
 
-  const items = Array.isArray(body.carriers) ? body.carriers : [body];
+  // A device token owns exactly one commander — stamp it over every row so a
+  // 200-row backfill can't quietly attribute carriers to other pilots.
+  const items = stampBatch(Array.isArray(body.carriers) ? body.carriers : [body], a);
   if (!items.length) return json({ ok: false, error: "no carriers" }, 400);
   if (items.length > 200) return json({ ok: false, error: "too many carriers (max 200 per POST)" }, 400);
 

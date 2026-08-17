@@ -11,6 +11,8 @@
 // Storage: BUILDS KV "stationmeta:{marketId}" -> { stationType, economy, economyLocalised, stationName, ts }
 // Newest ts wins. Non-GUID key => rides in export other{} (backed up).
 // Public route (Access Bypass); INGEST_KEY is the gate, same as /ingest/build.
+import { authIngest } from "../_lib/ingest-auth.js";
+
 const MID = /^\d{1,20}$/;
 const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 const clean = (v, n) => String(v || "").replace(/[\u0000-\u001f]/g, "").trim().slice(0, n || 60);
@@ -19,7 +21,10 @@ export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
-  if (!env.INGEST_KEY || String(body.key || "") !== String(env.INGEST_KEY)) return json({ ok: false, error: "unauthorized" }, 401);
+  // requireCmdr:false — this route reports a fact about a station and names no
+  // commander at all, so it opts out rather than being handed a fake one.
+  const a = await authIngest(request, env, body, null, { requireCmdr: false });
+  if (!a.ok) return json({ ok: false, error: a.error }, a.status);
   const marketId = String(body.marketId == null ? "" : body.marketId).trim();
   if (!MID.test(marketId)) return json({ ok: false, error: "invalid marketId" }, 400);
   const stationType = clean(body.stationType, 40);

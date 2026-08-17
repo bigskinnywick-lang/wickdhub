@@ -21,6 +21,8 @@
 // the function into a bare Cloudflare 502 — it always returns a structured reason the
 // plugin can display and retry on. Also: create path is "/api/project" (no trailing
 // slash — the documented contract; the trailing slash was redirecting/hanging on Azure).
+import { authIngest } from "../_lib/ingest-auth.js";
+
 const RAVEN = "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 // A browser-ish UA for outbound Raven calls (harmless; avoids any UA-based filtering).
@@ -129,9 +131,13 @@ async function handlePost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   let body = {};
   try { body = await request.json(); } catch (e) {}
-  if (!env.INGEST_KEY || String(body.key || "") !== String(env.INGEST_KEY)) return json({ ok: false, error: "unauthorized" }, 401);
+  // requireCmdr:false preserves this route's existing tolerance — it has always
+  // fallen back to the literal "plugin" when no commander was named, and a build
+  // registration is valid without one. A device token still overrides it.
+  const a = await authIngest(request, env, body, null, { requireCmdr: false });
+  if (!a.ok) return json({ ok: false, error: a.error }, a.status);
 
-  const cmdr = String(body.cmdr || "plugin");
+  const cmdr = a.cmdr || String(body.cmdr || "plugin");
   let id = String(body.id || "").toLowerCase().trim();
   let name = "", system = "", createdArchitect = "";
 
