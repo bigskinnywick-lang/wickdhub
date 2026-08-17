@@ -14,7 +14,7 @@
 // the projection is broken, this file is decoration.
 import assert from "node:assert/strict";
 import {
-  MANIFEST, MANIFEST_VERSION, project, fieldsFor, isProhibited, isDeclared,
+  MANIFEST, MANIFEST_VERSION, project, fieldsFor, unreadableFor, isProhibited, isDeclared,
   SCOPE_OWN, SCOPE_SQUAD_AGG,
 } from "../functions/_lib/manifest.js";
 
@@ -143,11 +143,47 @@ t("isProhibited / isDeclared agree with the table", () => {
   assert.equal(isDeclared("system"), true);
   assert.equal(isDeclared("someNewFieldNobodyClassified"), false);
 });
-t("project tolerates a null source", () => assert.deepEqual(project(null, SCOPES), {}));
-t("undefined values are omitted rather than emitted as null", () => {
-  const o = project({ system: undefined, fuelPct: 0 }, SCOPES);
-  assert.ok(!("system" in o));
-  assert.equal(o.fuelPct, 0, "0 is a real value and must survive");
+t("project tolerates a null source and still honours the contract", () => {
+  const o = project(null, SCOPES);
+  assert.equal(Object.keys(o).length, fieldsFor(SCOPES).length);
+});
+t("0 is a real value and must survive", () => {
+  assert.equal(project({ fuelPct: 0 }, SCOPES).fuelPct, 0);
+});
+
+console.log("\n★★ THE CONTRACT — one meaning per silence (the rig caught this live)");
+t("★ available[] and data{} carry the SAME keys — no over-promising", () => {
+  const o = project({ system: "Sol" }, SCOPES);
+  const avail = fieldsFor(SCOPES).map((m) => m.key).sort();
+  assert.deepEqual(Object.keys(o).sort(), avail,
+    "the endpoint tells consumers to trust available[]; it must not list 17 and deliver 12");
+});
+t("★★ NEGATIVE: an empty alerts lane is [] — never absent", () => {
+  const o = project({ system: "Sol" }, SCOPES);
+  assert.deepEqual(o.alerts, [],
+    "`data.alerts ?? []` reads ABSENT as EMPTY, which reads as 'no threats' — the wrong-way failure");
+});
+t("empty containers match the declared shape", () => {
+  const o = project({}, SCOPES);
+  assert.deepEqual(o.intent, [], "list");
+  assert.deepEqual(o.cargoManifest, {}, "map");
+  assert.equal(o.system, null, "scalar");
+});
+
+console.log("\n★★ THE THIRD STATE — 'could not look' is not 'nothing there'");
+t("★ an UNREADABLE field is withheld, not faked as empty", () => {
+  const o = project({ system: "Sol" }, SCOPES, ["alerts"]);
+  assert.ok(!("alerts" in o),
+    "a convincing empty array here would tell a flying assistant it is safe when we simply could not check");
+});
+t("...and it is named, so the consumer knows why", () => {
+  assert.deepEqual(unreadableFor(SCOPES, ["alerts"]), ["alerts"]);
+});
+t("unreadable never invents a field the scopes did not permit", () => {
+  assert.deepEqual(unreadableFor(SCOPES, ["memberDiscord", "playerChat"]), []);
+});
+t("NEGATIVE: unreadable cannot be used to smuggle a prohibited key into the envelope", () => {
+  assert.deepEqual(unreadableFor(SCOPES, ["sealedAssociation"]), []);
 });
 
 console.log(`\n${pass} passed, ${fail} failed\n`);

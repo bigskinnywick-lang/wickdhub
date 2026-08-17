@@ -54,37 +54,37 @@ export const SCOPE_SQUAD_AGG = "squad:aggregate";
  */
 export const MANIFEST = [
   // ── OWN: live cockpit state, from this pilot's own plugin heartbeat ───────
-  { key: "system",    cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.sys" },
-  { key: "ship",      cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.ship" },
-  { key: "shipName",  cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.shipName" },
-  { key: "status",    cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.status" },
-  { key: "fuelPct",   cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.fuelPct" },
-  { key: "cargo",     cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.cargo" },
-  { key: "cargoCap",  cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.cargoCap" },
-  { key: "telemetryTs", cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.ts" },
+  { key: "system", shape: "scalar",    cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.sys" },
+  { key: "ship", shape: "scalar",      cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.ship" },
+  { key: "shipName", shape: "scalar",  cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.shipName" },
+  { key: "status", shape: "scalar",    cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.status" },
+  { key: "fuelPct", shape: "scalar",   cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.fuelPct" },
+  { key: "cargo", shape: "scalar",     cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.cargo" },
+  { key: "cargoCap", shape: "scalar",  cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.cargoCap" },
+  { key: "telemetryTs", shape: "scalar", cls: "own", scope: SCOPE_OWN, from: "plugin:telemetry.ts" },
 
   // ── OWN: alerts. The hostile-hail VERDICT, not the corpus it was derived
   // from. npc-tokens.log never crosses a machine boundary — it exists to tune a
   // matcher, not to feed a model.
-  { key: "alerts", cls: "own", scope: SCOPE_OWN, from: "plugin:alerts.alerts[]",
+  { key: "alerts", shape: "list", cls: "own", scope: SCOPE_OWN, from: "plugin:alerts.alerts[]",
     note: "derived judgment about this pilot's own situation; already truncated at the plugin" },
 
   // ── OWN: newly collected 2026-08-16. Previously parsed and thrown away.
-  { key: "cargoManifest", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:cargo:{cmdr}.items",
+  { key: "cargoManifest", shape: "map", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:cargo:{cmdr}.items",
     note: "the plugin only ever read total tonnage; what is IN the hold was never looked at" },
-  { key: "intent", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:intent:{cmdr}.recent[]",
+  { key: "intent", shape: "list", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:intent:{cmdr}.recent[]",
     note: "which commodity was searched before plotting. Lived in browser srcCache and died there. Hoard now, use later — do NOT build a feature on it" },
 
   // ── OWN: this pilot's own claims and carrier. Already squad-visible.
-  { key: "myClaims",  cls: "own", scope: SCOPE_OWN, from: "claim:* where architect == me" },
-  { key: "myCarrier", cls: "own", scope: SCOPE_OWN, from: "carrier:* where owner == me" },
+  { key: "myClaims", shape: "list",  cls: "own", scope: SCOPE_OWN, from: "claim:* where architect == me" },
+  { key: "myCarrier", shape: "map", cls: "own", scope: SCOPE_OWN, from: "carrier:* where owner == me" },
 
   // ── SQUAD: aggregates only. Integers the public storefront already shows.
-  { key: "pilotsOnline",   cls: "squad", scope: SCOPE_SQUAD_AGG, from: "count(presence:*)" },
-  { key: "systemsActive",  cls: "squad", scope: SCOPE_SQUAD_AGG, from: "count(distinct build.system)" },
-  { key: "buildProgress",  cls: "squad", scope: SCOPE_SQUAD_AGG, from: "raven project totals",
+  { key: "pilotsOnline", shape: "scalar",   cls: "squad", scope: SCOPE_SQUAD_AGG, from: "count(presence:*)" },
+  { key: "systemsActive", shape: "scalar",  cls: "squad", scope: SCOPE_SQUAD_AGG, from: "count(distinct build.system)" },
+  { key: "buildProgress", shape: "map",  cls: "squad", scope: SCOPE_SQUAD_AGG, from: "raven project totals",
     note: "tonnage remaining / percent complete for the active build — a number about a PLACE, not a person" },
-  { key: "siteRequirements", cls: "squad", scope: SCOPE_SQUAD_AGG, from: "sq:onyx:req:{marketId}.commodities",
+  { key: "siteRequirements", shape: "map", cls: "squad", scope: SCOPE_SQUAD_AGG, from: "sq:onyx:req:{marketId}.commodities",
     note: "what a construction site still needs. About a place, not a pilot" },
 
   // ── SQUAD, NAMED: collected, protected, NOT shared in v1. ────────────────
@@ -138,17 +138,42 @@ export const isDeclared = (key) => BY_KEY.has(key);
 /**
  * THE CHOKE POINT. Build a response by copying declared fields out of `source`.
  *
- * Note the direction: we iterate the MANIFEST and pull from the source, never
- * iterate the source and filter. A filter forgets; a whitelist cannot. If a new
- * field appears in `source` tomorrow it simply does not come out, which is the
- * correct default for data nobody has classified yet.
+ * We iterate the MANIFEST and pull from the source, never iterate the source and
+ * filter. A filter forgets; a whitelist cannot.
+ *
+ * ─── THE CONTRACT (fixed 2026-08-16, after the rig caught it) ───────────────
+ * EVERY field the caller's scopes permit is emitted, empty containers included.
+ * **Absence from `data` therefore means exactly one thing: the manifest did not
+ * permit it.** One meaning per silence.
+ *
+ * The first cut omitted anything empty, which made `available[]` — the very list
+ * this endpoint tells consumers to trust — over-promise by five fields. Worse,
+ * the obvious consumer line `data.alerts ?? []` then read *absent* as *empty*,
+ * which reads as **"no threats."** That is the identical wrong-way failure
+ * catalogued four times over the same evening: a guard that reads healthy when
+ * the data it depends on is missing. Shipping it inside the payload a flying
+ * assistant reads would have been the worst instance of the set.
+ *
+ * `unreadable[]` carries the third state. An empty container means "we looked and
+ * there was nothing." A field named in `unreadable` means "we could not look."
+ * A consumer must never collapse the second into the first — for alerts above
+ * all, "the store did not answer" is not "you are safe."
  */
-export function project(source, scopes) {
+const EMPTY = { list: () => [], map: () => ({}), scalar: () => null };
+
+export function project(source, scopes, unreadable) {
   const out = {};
+  const bad = new Set(Array.isArray(unreadable) ? unreadable : []);
   for (const m of fieldsFor(scopes)) {
-    if (source && Object.prototype.hasOwnProperty.call(source, m.key) && source[m.key] !== undefined) {
-      out[m.key] = source[m.key];
-    }
+    if (bad.has(m.key)) continue;              // named in unreadable[], never faked as empty
+    const v = source ? source[m.key] : undefined;
+    out[m.key] = (v === undefined || v === null) ? (EMPTY[m.shape] || EMPTY.scalar)() : v;
   }
   return out;
+}
+
+/** Permitted fields that could not be read at all, for the response envelope. */
+export function unreadableFor(scopes, unreadable) {
+  const bad = new Set(Array.isArray(unreadable) ? unreadable : []);
+  return fieldsFor(scopes).map((m) => m.key).filter((k) => bad.has(k));
 }

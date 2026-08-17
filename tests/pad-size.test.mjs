@@ -28,10 +28,12 @@ const grab = (re, what) => {
 };
 const SHIP_PAD_SRC = grab(/const SHIP_PAD=\{[\s\S]*?\};/, "SHIP_PAD map");
 const PADFN_SRC = grab(/function padForShip[\s\S]*?\n  \}/, "padForShip");
+const CARGOFN_SRC = grab(/function padFromCargo[\s\S]*?\n  \}/, "padFromCargo");
 
-const padForShip = new Function(`${SHIP_PAD_SRC}\n${PADFN_SRC}\nreturn padForShip;`)();
-// padReq() with the flag on, mirroring the page
-const padReq = (ship) => padForShip(ship) || 3;
+const { padForShip, padFromCargo } = new Function(
+  `${SHIP_PAD_SRC}\n${PADFN_SRC}\n${CARGOFN_SRC}\nreturn { padForShip, padFromCargo };`)();
+// mirrors the page: known hull -> inferred from cargo -> last-resort Large
+const padReq = (ship, cargo) => padForShip(ship) || padFromCargo(cargo) || 3;
 
 let pass = 0, fail = 0;
 function t(name, fn) {
@@ -64,8 +66,35 @@ t("an unknown hull is reported as unknown, not guessed", () => {
     "0 means 'we do not know' — the caller decides the fallback, and says so in the UI");
   assert.equal(padForShip(""), 0);
 });
-t("...and the fallback is Large, because haulers are the common case here", () => {
-  assert.equal(padReq("some_ship_frontier_ships_next_year"), 3);
+t("...and with nothing at all to go on, the last resort is Large", () => {
+  assert.equal(padReq("some_ship_frontier_ships_next_year", 0), 3);
+});
+
+console.log("\n★ THE HULL ADAM ACTUALLY FLIES");
+t("★ Panther Mk II is in the map (it was NOT, and that is how this was found)", () => {
+  assert.equal(padForShip("panthermkii"), 3,
+    "the map was written from memory and missed the one hull we had real data for");
+});
+
+console.log("\n★ UNKNOWN HULL — infer from evidence, do not assume");
+t("a big hauler infers Large from cargo alone", () => {
+  assert.equal(padFromCargo(1104), 3);
+  assert.equal(padFromCargo(790), 3);
+});
+t("a mid hauler infers Medium", () => {
+  assert.equal(padFromCargo(114), 2);
+});
+t("★ NEGATIVE: a small ship is NOT assumed Large — that is what filters valid stops away", () => {
+  assert.equal(padFromCargo(64), 1,
+    "the blanket Large fallback would have hidden dockable stations from a small-ship pilot");
+  assert.notEqual(padReq("unknown_small_hull", 64), 3);
+});
+t("no cargo data at all yields no inference, so the caller falls back", () => {
+  assert.equal(padFromCargo(0), 0);
+  assert.equal(padFromCargo(undefined), 0);
+});
+t("a KNOWN hull always wins over the cargo guess", () => {
+  assert.equal(padReq("cobramkiii", 9999), 1, "the map is evidence; cargo is only a fallback");
 });
 
 console.log("\n★ THE BUG — every Inara link asked for the SMALLEST pad");

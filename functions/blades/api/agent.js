@@ -27,13 +27,28 @@
 // ⚠ If you find yourself wanting to `out.something = ...` below, stop. Add the
 // manifest row instead. That reflex IS the control.
 import { authIngest, json, SQ } from "../../_lib/ingest-auth.js";
-import { project, fieldsFor, MANIFEST_VERSION, SCOPE_OWN, SCOPE_SQUAD_AGG } from "../../_lib/manifest.js";
+import { project, fieldsFor, unreadableFor, MANIFEST_VERSION, SCOPE_OWN, SCOPE_SQUAD_AGG } from "../../_lib/manifest.js";
 
 const RAVEN = "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net";
 const RAVEN_TIMEOUT_MS = 6000;
+// "Online" = a plugin heartbeat inside this window. Telemetry itself is kept for
+// 6h, which is a retention period, not a liveness one — using the TTL as the
+// window is how a counter quietly shrinks its own population.
+const ONLINE_WINDOW_MS = 10 * 60 * 1000;
 
-async function kvJson(env, key) {
-  try { const v = await env.BUILDS.get(key); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+// ⚠ A read that FAILED and a key that is genuinely absent are different facts,
+// and the first cut of this file could not tell them apart — both became null,
+// both became an omitted field, and a consumer saw one silence for two causes.
+// `bad` collects the fields whose source would not answer; they are reported in
+// `unreadable[]` rather than emitted as a convincing empty.
+async function kvJson(env, key, bad, field) {
+  try {
+    const v = await env.BUILDS.get(key);
+    return v ? JSON.parse(v) : null;          // genuinely absent
+  } catch (e) {
+    if (bad && field) bad.add(field);         // could not look
+    return null;
+  }
 }
 
 async function ravenProject(buildId) {
@@ -68,8 +83,9 @@ export async function onRequestGet({ request, env }) {
   // Assembled into a flat bag first, then projected. The bag may legitimately
   // hold more than the caller is allowed — project() is what decides.
   const bag = {};
+  const bad = new Set();
 
-  const tel = await kvJson(env, `plugin:telemetry:${cmdrLower}`);
+  const tel = await kvJson(env, `plugin:telemetry:${cmdrLower}`, bad, "system");
   if (tel && tel.telemetry) {
     const t = tel.telemetry;
     Object.assign(bag, {
@@ -78,13 +94,13 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
-  const al = await kvJson(env, `plugin:alerts:${cmdrLower}`);
+  const al = await kvJson(env, `plugin:alerts:${cmdrLower}`, bad, "alerts");
   if (al && Array.isArray(al.alerts)) bag.alerts = al.alerts;
 
-  const cargoM = await kvJson(env, `sq:${SQ}:cargo:${cmdrLower}`);
+  const cargoM = await kvJson(env, `sq:${SQ}:cargo:${cmdrLower}`, bad, "cargoManifest");
   if (cargoM && cargoM.items) bag.cargoManifest = cargoM.items;
 
-  const intent = await kvJson(env, `sq:${SQ}:intent:${cmdrLower}`);
+  const intent = await kvJson(env, `sq:${SQ}:intent:${cmdrLower}`, bad, "intent");
   if (intent && Array.isArray(intent.recent)) bag.intent = intent.recent;
 
   const lo = await kvJson(env, `carrier:${(await kvJson(env, `cmdrcarrier:${cmdrLower}`) || {}).marketId || "none"}`);
@@ -101,7 +117,20 @@ export async function onRequestGet({ request, env }) {
     const list = await env.BUILDS.list();
     for (const k of list.keys) {
       const n = k.name;
-      if (n.startsWith("presence:")) { pilotsOnline++; continue; }
+      // NOT presence:* — that key is written by a signed-in BROWSER loading the
+      // board, so it measures "who has the page open", not "who is flying". The
+      // rig called this out: Adam was docked and telemetering with a live token
+      // and the aggregate still said nobody was online.
+      //
+      // Count live plugin heartbeats instead. Deliberately INCLUDES the caller —
+      // he is a pilot who is online, and excluding him is exactly the kind of
+      // undocumented subtraction that makes a counter decorative.
+      if (n.startsWith("plugin:telemetry:")) {
+        const t = await kvJson(env, n, bad, "pilotsOnline");
+        if (t && t.ts && (Date.now() - t.ts) < ONLINE_WINDOW_MS) pilotsOnline++;
+        continue;
+      }
+      if (n.startsWith("presence:")) continue;
       if (n.startsWith("claim:")) {
         const c = await kvJson(env, n);
         if (c && String(c.architect || "").toLowerCase() === cmdrLower) {
@@ -139,7 +168,7 @@ export async function onRequestGet({ request, env }) {
   }
 
   // ── project ───────────────────────────────────────────────────────────────
-  let out = project(bag, scopes);
+  let out = project(bag, scopes, [...bad]);
 
   // Optional narrowing, purely a convenience for the caller. It can only ever
   // REMOVE from an already-projected object — asking for a field you are not
@@ -158,6 +187,9 @@ export async function onRequestGet({ request, env }) {
     cmdr,                       // whose data this is — derived from the credential
     scopes,
     available: fieldsFor(scopes).map((m) => m.key),
+    // Named here rather than silently emitted as an empty container. "Could not
+    // look" must never read as "nothing there" — least of all for alerts.
+    unreadable: unreadableFor(scopes, [...bad]),
     data: out,
     ts: Date.now(),
   });

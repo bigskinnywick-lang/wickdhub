@@ -133,10 +133,10 @@
     asp:2, asp_scout:2, type6:2, keelback:2, federation_dropship:2,
     federation_dropship_mkii:2, federation_gunship:2, python:2, python_nx:2,
     krait_mkii:2, krait_light:2, mamba:2, ferdelance:2, independant_trader:2,
-    typex:2, typex_2:2, typex_3:2, type8:2, mandalay:2, corsair:2,
+    typex:2, typex_2:2, typex_3:2, type8:2, mandalay:2, corsair:2, python_nx2:2,
     // large
     anaconda:3, federation_corvette:3, cutter:3, type9:3, type9_military:3,
-    type7:3, belugaliner:3, orca:3, empire_trader:3
+    type7:3, belugaliner:3, orca:3, empire_trader:3, panthermkii:3, panther_mk2:3
   };
   let MY_PAD=PAD_REQ, MY_PAD_KNOWN=false, MY_SHIP_RAW="";
   // Opt-in until tested. Flip PAD_DERIVE to true (or append ?pad=1) to enable.
@@ -144,6 +144,24 @@
   function padForShip(raw){
     const k=String(raw||"").toLowerCase().trim();
     return SHIP_PAD[k]||0;               // 0 = we do not know this hull
+  }
+  // ── unknown hull: INFER from cargo, do not just assume ────────────────────
+  // Found the hard way 2026-08-16: Adam flies a Panther Mk II and it was not in
+  // the map above, so the blanket "assume Large" fallback happened to be right
+  // for the wrong reason. For a SMALL hull I had also missed, that same fallback
+  // would have filtered valid stops out of his Inara cross-check.
+  //
+  // Frontier keeps shipping hulls, so the map will always be behind. But cargo
+  // capacity is already in hand and is decisive at the bottom end: no small-pad
+  // ship carries anywhere near 128t. Use the evidence we have rather than a
+  // constant, and only fall back to the roadmap's Large default when we have
+  // nothing at all to go on.
+  function padFromCargo(cap){
+    const c=Number(cap)||0;
+    if(!c) return 0;
+    if(c>=256) return 3;    // Type-9 790, Cutter 792, Panther Mk II 1104
+    if(c>=100) return 2;    // Type-6 114, Krait 224, Python 284
+    return 1;               // Cobra Mk III tops out around 64
   }
   function padReq(){ return PAD_DERIVE ? MY_PAD : PAD_REQ; }
   // --- current-ship trip maths + squad carrier registry ------------------
@@ -186,7 +204,8 @@
         if(cap!==MY_CAP||lbl!==MY_SHIP_LABEL){ MY_CAP=cap; MY_SHIP_LABEL=lbl; changed=true; }
         // The hull was always here; it just was not being read.
         const rawShip=(mine&&mine.ship)||"", p=padForShip(rawShip);
-        const newPad=p||PAD_REQ, newKnown=!!p;
+        const inferred=p?0:padFromCargo(mine&&mine.cargoCap);
+        const newPad=p||inferred||PAD_REQ, newKnown=!!p;
         if(newPad!==MY_PAD||newKnown!==MY_PAD_KNOWN||rawShip!==MY_SHIP_RAW){
           MY_PAD=newPad; MY_PAD_KNOWN=newKnown; MY_SHIP_RAW=rawShip; changed=true;
         }
