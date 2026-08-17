@@ -119,12 +119,26 @@ await t("NEGATIVE: a hostile name cannot break out of the data- attribute", asyn
 });
 
 console.log("\nAPPROVED DEVICES");
-await t("lists paired PCs with a REVOKE button", async () => {
+await t("lists linked registrars with a REVOKE button", async () => {
   FIXTURE = { ok: true, bound: true, cmdr: "BIGSKINNY", pending: [],
-    devices: [{ deviceId: "abc123", device: "FLIGHT-OPS", approvedTs: Date.now() - 86400000, country: "US" }] };
+    devices: [{ deviceId: "abc123", device: "FLIGHT-OPS", approvedTs: Date.now() - 86400000,
+                lastSeenTs: Date.now() - 60000, country: "US", stale: false }] };
   const n = makeNode(); Devices.mount(n); await tick(); await tick();
   assert.match(n.innerHTML, /data-revoke="abc123"/);
   assert.match(n.innerHTML, /FLIGHT-OPS/);
+  assert.match(n.innerHTML, /reported 1m ago/, "liveness, not just when it paired");
+});
+await t("a PC that has never reported says so rather than showing a stale pairing time", async () => {
+  FIXTURE = { ok: true, bound: true, cmdr: "X", pending: [],
+    devices: [{ deviceId: "d1", device: "PC", approvedTs: Date.now(), lastSeenTs: 0, stale: false }] };
+  const n = makeNode(); Devices.mount(n); await tick(); await tick();
+  assert.match(n.innerHTML, /no report yet/);
+});
+await t("NEGATIVE: a revoked-but-still-indexed PC is flagged, not shown as healthy", async () => {
+  FIXTURE = { ok: true, bound: true, cmdr: "X", pending: [],
+    devices: [{ deviceId: "d1", device: "PC", approvedTs: Date.now(), lastSeenTs: 0, stale: true }] };
+  const n = makeNode(); Devices.mount(n); await tick(); await tick();
+  assert.match(n.innerHTML, /link broken/, "a stale index row must not read as a working link");
 });
 await t("empty state points the pilot at where the code appears", async () => {
   FIXTURE = { ok: true, bound: true, cmdr: "BIGSKINNY", pending: [], devices: [] };

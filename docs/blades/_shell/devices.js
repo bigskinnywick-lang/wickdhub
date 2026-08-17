@@ -1,4 +1,4 @@
-/* devices.js — PAIRED DEVICES card (approve / revoke a PC's registrar credential)
+/* devices.js — LINKED REGISTRARS card (approve / revoke a PC's registrar credential)
  *
  * 2026-08-16. Half two of per-device credentials. /ingest/pair is open and can
  * only ASK; this card is Access-gated and is the only thing that can GRANT.
@@ -80,16 +80,24 @@
     }
 
     // ── approved ───────────────────────────────────────────────────────────
-    h += '<div class="rhint" style="margin-top:10px">Paired PCs</div>';
+    h += '<div class="rhint" style="margin-top:10px">Linked registrars</div>';
     if (!j.devices || !j.devices.length) {
       h += '<div class="rempty">None yet. Start EDMC and the Registrar will ask — the code appears ' +
            "in its status line.</div>";
     } else {
       j.devices.forEach(function (d) {
+        // "Paired 3 weeks ago" is the least useful fact about a PC. What a pilot
+        // wants to know is whether it is still reporting — a linked machine that
+        // has gone quiet is the one worth a second look.
+        var seen = d.stale
+          ? '<span style="opacity:.9">⚠ link broken — revoke and pair again</span>'
+          : (d.lastSeenTs
+              ? "reported " + ago(d.lastSeenTs)
+              : "no report yet");
         h += '<div class="rempty" style="display:flex;align-items:center;gap:10px;justify-content:space-between">' +
                "<span>" + esc(d.device) +
                (d.country ? ' <span style="opacity:.7">(' + esc(d.country) + ')</span>' : "") +
-               ' <span style="opacity:.7">paired ' + ago(d.approvedTs) + "</span></span>" +
+               ' <span style="opacity:.7">' + seen + "</span></span>" +
                '<button class="vg-btn" data-revoke="' + esc(d.deviceId) + '" ' +
                'style="padding:6px 12px;font-size:11px;cursor:pointer">REVOKE</button>' +
              "</div>";

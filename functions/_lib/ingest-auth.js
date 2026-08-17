@@ -39,6 +39,10 @@
 // cmdrlink: …) are left alone; renaming them would be a data migration.
 export const SQ = "onyx";
 
+// How stale a device's "last seen" may get before we spend a KV write on it.
+// The heartbeat is every 5s; the card only ever renders this to the minute.
+export const LASTSEEN_THROTTLE_MS = 5 * 60 * 1000;
+
 export const K_TOKEN = (hash) => `sq:${SQ}:devtoken:${hash}`;
 export const K_DEVICES = (cmdrLower) => `sq:${SQ}:devices:${cmdrLower}`;
 export const K_PAIR = (code) => `sq:${SQ}:pair:${code}`;
@@ -136,6 +140,16 @@ export async function authIngest(request, env, body, url, opts) {
     const claimed = cleanCmdr((body && body.cmdr) || (url && url.searchParams.get("cmdr")));
     if (claimed && claimed.toLowerCase() !== cmdr.toLowerCase()) {
       return { ok: false, status: 403, error: "token is not bound to that commander" };
+    }
+
+    // Stamp liveness so the board can show a PC that has gone quiet, not just
+    // when it was paired. Throttled hard: this runs on a 5s heartbeat per pilot,
+    // and an unthrottled write here would be the single hottest KV write in the
+    // system for information nobody needs to the second.
+    const now = Date.now();
+    if (now - (Number(rec.lastSeenTs) || 0) > LASTSEEN_THROTTLE_MS) {
+      rec.lastSeenTs = now;
+      try { await env.BUILDS.put(K_TOKEN(await sha256hex(tok)), JSON.stringify(rec)); } catch (e) {}
     }
 
     return { ok: true, cmdr, cmdrLower: cmdr.toLowerCase(), via: "device", deviceId: rec.deviceId || "" };

@@ -86,7 +86,22 @@ export async function onRequestGet({ request, env }) {
   } catch (e) {}
   pending.sort((a, b) => (b.ts || 0) - (a.ts || 0));
 
-  const devices = (await readDevices(env, cmdrLower)).map(publicDevice);
+  // Liveness comes from the TOKEN record, which the heartbeat stamps — the index
+  // row only ever knew when a PC was paired, which is the least interesting fact
+  // about it. Reading the token per device also cross-checks the two: an index
+  // row whose token is gone is a stale row, and saying so beats showing a
+  // revoked PC as if it were still linked.
+  const raw = await readDevices(env, cmdrLower);
+  const devices = [];
+  for (const d of raw) {
+    let live = null;
+    try { const v = await env.BUILDS.get(K_TOKEN(d.hash)); if (v) live = JSON.parse(v); } catch (e) {}
+    devices.push({
+      ...publicDevice(d),
+      lastSeenTs: (live && Number(live.lastSeenTs)) || 0,
+      stale: !live,   // index says linked, token says otherwise
+    });
+  }
   devices.sort((a, b) => (b.approvedTs || 0) - (a.approvedTs || 0));
 
   return json({ ok: true, me, cmdr, bound: true, pending, devices });
