@@ -68,10 +68,93 @@ async function listPilots(env) {
   return out;
 }
 
+// ── MIGRATION READINESS (2026-08-16) ────────────────────────────────────────
+// Built because the gate I first proposed was unsound. "Watch cmdrver: until
+// everyone is on a pairing-capable build" reads as done when it is merely
+// FORGETFUL: cmdrver has a 14-day TTL, so a pilot who stays away simply stops
+// being counted and the list looks complete. Same failure as a queue reporting
+// `waiting: 0` because nothing ever reached the queue.
+//
+// So this is built from DURABLE keys — cmdrlink (a binding, permanent) and
+// sq:*:devices (a pairing, permanent) — and it reports `unknown` rather than
+// inferring anything from an absence. An empty version is "we cannot see him",
+// never "he is fine".
+//
+// It also answers the question that actually blocks a pilot: they cannot approve
+// a device until their CMDR is BOUND, and nobody can bind it for them.
+async function migrationReadiness(env, members) {
+  const bound = new Set();
+  try {
+    const l = await env.BUILDS.list({ prefix: "cmdrlink:" });
+    for (const k of (l.keys || [])) {
+      const o = await readJson(env, k.name);
+      if (o && o.cmdr) bound.add(String(o.cmdr).toLowerCase());
+    }
+  } catch (e) {}
+
+  const paired = new Map();
+  try {
+    const l = await env.BUILDS.list({ prefix: "sq:onyx:devices:" });
+    for (const k of (l.keys || [])) {
+      const arr = await readJson(env, k.name);
+      if (Array.isArray(arr) && arr.length) {
+        paired.set(k.name.slice("sq:onyx:devices:".length), arr.length);
+      }
+    }
+  } catch (e) {}
+
+  const vers = new Map();
+  try {
+    const l = await env.BUILDS.list({ prefix: "cmdrver:" });
+    for (const k of (l.keys || [])) {
+      const rec = await readJson(env, k.name);
+      if (rec) vers.set(k.name.slice("cmdrver:".length), rec);
+    }
+  } catch (e) {}
+
+  // A build can pair only if it HAS pairing in it: b3.33+ on beta, 3.2+ on retail.
+  const canPair = (v) => {
+    const s = String(v || "");
+    if (!s) return null;                       // unknown, not false
+    const n = (s.match(/\d+/g) || []).map(Number);
+    if (!n.length) return null;
+    const beta = /[A-Za-z]/.test(s);
+    if (beta) return n[0] > 3 || (n[0] === 3 && (n[1] || 0) >= 33);
+    return n[0] > 3 || (n[0] === 3 && (n[1] || 0) >= 2);
+  };
+
+  return members.map((cmdr) => {
+    const lc = cmdr.toLowerCase();
+    const v = vers.get(lc);
+    const running = (v && v.running) || "";
+    return {
+      cmdr,
+      bound: bound.has(lc),                    // can they approve at all?
+      paired: paired.get(lc) || 0,             // durable — survives a silent pilot
+      running: running || null,
+      lastSeenTs: (v && v.ts) || 0,
+      canPair: canPair(running),               // null = we genuinely do not know
+      // The only thing that may gate the legacy switch-off. Deliberately requires
+      // a POSITIVE observation; absence never counts as ready.
+      ready: !!(bound.has(lc) && (paired.get(lc) || 0) > 0),
+    };
+  });
+}
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   if (!(await isAdmin(request, env))) return json({ ok: false, error: "forbidden" }, 403);
-  return json({ ok: true, roles: (await readJson(env, "plugin:roles")) || {}, allowed: ALLOWED, pilots: await listPilots(env), members: await listMembers(env) });
+  const members = await listMembers(env);
+  const migration = await migrationReadiness(env, members);
+  return json({
+    ok: true,
+    roles: (await readJson(env, "plugin:roles")) || {},
+    allowed: ALLOWED,
+    pilots: await listPilots(env),
+    members,
+    migration,
+    migrationReady: migration.every((m) => m.ready),
+  });
 }
 
 export async function onRequestPost({ request, env }) {

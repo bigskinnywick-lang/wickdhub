@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.34"  # b3.34: TWO COMMANDERS CAN SHARE ONE PC. b3.33 stored a single credential per machine, so the moment a second commander logged in on the same rig the board correctly refused a token that belonged to somebody else - and the plugin had no way to recover, so it would have gone quiet without ever telling you why. Credentials are now kept per COMMANDER: each person flying from this PC gets their own, approved from their own board login, and the two never touch. Log in as someone new and a pairing code appears for THEM within a few seconds, on its own. Revoking one commander does not knock the other offline. If this PC was already paired on b3.33 nothing changes and you do not need to pair again - the existing credential is carried across automatically.
+PLUGIN_VERSION = "b3.35"  # b3.35: KEEPS THREE THINGS IT USED TO THROW AWAY, AND HARDENS THE UPDATE CHECK. The plugin already read your cargo hold and every construction site's full requirement list out of the journal - and then dropped both on the floor, while the board went and fetched the same numbers again from elsewhere. It now keeps them. Nothing uses them yet and nothing on screen changes; a fact you did not keep is simply not recoverable later, so it gets recorded at the moment it exists. Also: the update checksum is now REQUIRED rather than merely honoured when present - a release with no checksum used to skip verification and install anyway, which is not good enough for the one path that overwrites this plugin with new code.
 # b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
 # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
@@ -59,6 +59,7 @@ LOADOUT_URL = "https://wickdhub.com/ingest/loadout"
 NAVPULL_URL = "https://wickdhub.com/ingest/navpull"
 TEL_REFRESH_S = 15  # resend an unchanged live-telemetry snapshot at least this often so the dashboard's liveness ts stays fresh (must stay well under the page's 30s STALE_MS)
 STATIONTYPE_URL = "https://wickdhub.com/ingest/station-type"
+OBSERVE_URL = "https://wickdhub.com/ingest/observe"
 INGEST_KEY = "6bb6a945625356d9054ea5ec25e65828b1e6061f"
 RAVEN_BASE = "https://ravencolonial100-awcbdvabgze4c5cq.canadacentral-01.azurewebsites.net"
 
@@ -578,6 +579,25 @@ def _send_carrier(payload, label):
 _STATIONMETA_SENT = {}
 
 
+def _send_observation(kind, cmdr, payload):
+    """Hoard a fact we used to parse and throw away.
+
+    Adam's framing, 2026-08-16: record it at the moment it exists, because a fact
+    you did not keep is not recoverable later. Explicitly NOT a feature — nothing
+    reads these yet, and nothing should be built on them without asking.
+
+    Fire-and-forget on purpose: a failure here must never disturb registration,
+    claims or the assists. Hoarding is the lowest-priority thing this plugin does.
+    """
+    try:
+        body = dict(payload)
+        body["kind"] = kind
+        body["cmdr"] = cmdr or ""
+        _http_json(OBSERVE_URL, _dev_body(body, cmdr), timeout=12)
+    except Exception:
+        pass
+
+
 def _send_station_type(payload, label):
     # Fire-and-forget: report a completed station's real type/economy. Best-effort.
     try:
@@ -802,7 +822,22 @@ def _do_update(latest):
         if len(data) > 8 * 1024 * 1024:
             _set_status("update too large -- skipped")
             return
-        if want and hashlib.sha256(data).hexdigest().lower() != want:
+        # b3.35 — REQUIRE the checksum, do not merely honour it when present.
+        # This was `if want and ...`, so a release record with no sha256 skipped
+        # verification entirely and installed whatever had been downloaded. Cut
+        # always computes one, so in practice it was never absent — but "in
+        # practice always present" is the assumption every fail-open guard in
+        # this project has been built on, and this one guards arbitrary code
+        # execution on the pilot's PC. A restore from an old or hand-edited
+        # backup is enough to produce a release row without it.
+        #
+        # Refusing to update is the correct failure direction here: a plugin that
+        # stays on its current version is a nuisance, one that installs an
+        # unverified payload is not.
+        if not want:
+            _set_status("update has no checksum -- refused")
+            return
+        if hashlib.sha256(data).hexdigest().lower() != want:
             _set_status("update checksum mismatch -- skipped")
             return
         zf = zipfile.ZipFile(io.BytesIO(data))
@@ -3452,6 +3487,27 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
                     _LO["cargoUsed"] = int(cnt)
                 except Exception:
                     pass
+            # WHAT is in the hold, not just how much. Previously never inspected:
+            # the Inventory list was sitting right here and was read past.
+            try:
+                inv = entry.get("Inventory") or []
+                items = {}
+                for it in inv:
+                    nm = str(it.get("Name") or "").lower()
+                    if nm.startswith("$") and nm.endswith("_name;"):
+                        nm = nm[1:-6]
+                    q = int(it.get("Count") or 0)
+                    if nm and q > 0:
+                        items[nm] = items.get(nm, 0) + q
+                sig = json.dumps(items, sort_keys=True, separators=(",", ":"))
+                if items and sig != _LO.get("cargo_sig"):
+                    _LO["cargo_sig"] = sig
+                    threading.Thread(
+                        target=_send_observation,
+                        args=("cargo", cmdr, {"items": items, "ts": _iso_ms(entry.get("timestamp"))}),
+                        daemon=True).start()
+            except Exception:
+                pass
         _maybe_send_loadout(cmdr, _iso_ms(entry.get("timestamp")), force=(ev == "Loadout"))
         return
 
@@ -3524,6 +3580,19 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
                 comms[raw] = amt
         if comms:
             _state["commodities"][market_id] = comms
+            # Hoard the requirement list. Until now this was cached in memory and
+            # dropped unless auto-create happened to fire, while the board went and
+            # re-fetched the identical numbers from Raven. We were reading the
+            # game's own copy and throwing it away.
+            try:
+                threading.Thread(
+                    target=_send_observation,
+                    args=("requirements", cmdr,
+                          {"marketId": market_id, "commodities": comms,
+                           "ts": _iso_ms(entry.get("timestamp"))}),
+                    daemon=True).start()
+            except Exception:
+                pass
 
     now = time.time()
     _state["pending"].setdefault(market_id, now)

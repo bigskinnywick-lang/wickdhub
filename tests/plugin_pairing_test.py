@@ -226,5 +226,37 @@ check("the migrated secret is preserved exactly",
 check("and it is rewritten in the new shape",
       "creds" in json.load(open(os.path.join(tmp2, "device.json"))))
 
+# ── self-update checksum: the guard on arbitrary code execution ──────────────
+print("\n★ SELF-UPDATE — the checksum must be REQUIRED, not merely honoured")
+_upd = {"status": []}
+L._set_status = lambda t: _upd["status"].append(t)
+_fake_zip = b"PK\x03\x04" + b"x" * 800
+
+
+class _R:
+    def __init__(self, b): self._b = b
+    def read(self, n=None): return self._b
+    def __enter__(self): return self
+    def __exit__(self, *a): return False
+
+
+L.urllib.request.urlopen = lambda req, timeout=60: _R(_fake_zip)
+
+_upd["status"] = []
+L._do_update({"version": "b9.9", "url": L.UPDATE_HOST + "blades/x.zip", "sha256": ""})
+check("NEGATIVE: an update with NO checksum is refused outright",
+      any("no checksum" in x for x in _upd["status"]),
+      "a missing checksum used to skip verification and install the payload anyway")
+
+_upd["status"] = []
+L._do_update({"version": "b9.9", "url": L.UPDATE_HOST + "blades/x.zip", "sha256": "0" * 64})
+check("NEGATIVE: a WRONG checksum is refused",
+      any("mismatch" in x for x in _upd["status"]))
+
+_upd["status"] = []
+L._do_update({"version": "b9.9", "url": "https://evil.example/x.zip", "sha256": "a" * 64})
+check("NEGATIVE: an off-host update URL is refused before anything is downloaded",
+      any("bad url" in x for x in _upd["status"]))
+
 print("\n%d passed, %d failed\n" % (PASS, FAIL))
 raise SystemExit(1 if FAIL else 0)

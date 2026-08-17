@@ -47,7 +47,35 @@ export async function onRequestPost({ request, env }) {
   const rec = { system, ts: Date.now(), by: cmdr };
   try { await env.BUILDS.put("nav:" + cmdr.toLowerCase(), JSON.stringify(rec), { expirationTtl: TTL_S }); }
   catch (e) { return json({ ok: false, error: "write failed" }, 500); }
-  return json({ ok: true, cmdr, system });
+
+  // ── 2026-08-16: keep the INTENT, additively ──────────────────────────────
+  // Why the pilot went somewhere only ever existed in the browser: the supplier
+  // drawer's srcCache is keyed "system|commodity" and is page-lifetime, so by
+  // the time Docked or MarketBuy fires the reason for the trip is gone. The
+  // journal can say where he went and eventually what he bought; it can never
+  // say what he was looking for.
+  //
+  // Hoard now, use later. Recorded because it is being thrown away, NOT because
+  // a feature is waiting on it — do not build one on this without asking.
+  //
+  // ⚠ Strictly additive. A failure here must never break the plot-or-clipboard
+  // path, which is why it is fire-and-forget below the nav write and why an
+  // absent commodity is simply an unrecorded intent rather than a 400.
+  const commodity = String(body.commodity || "").toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 40);
+  if (commodity) {
+    try {
+      const key = "sq:onyx:intent:" + cmdr.toLowerCase();
+      let prev = [];
+      const v = await env.BUILDS.get(key);
+      if (v) { const o = JSON.parse(v); if (Array.isArray(o.recent)) prev = o.recent; }
+      const recent = [{ system, commodity, station: String(body.station || "").slice(0, 60), ts: rec.ts }]
+        .concat(prev)
+        .slice(0, 50);   // a rolling window, not a permanent movement log
+      await env.BUILDS.put(key, JSON.stringify({ recent, ts: rec.ts }));
+    } catch (e) { /* never let hoarding break the actual job */ }
+  }
+
+  return json({ ok: true, cmdr, system, intent: !!commodity });
 }
 
 export async function onRequestGet() {

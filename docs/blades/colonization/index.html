@@ -304,7 +304,7 @@
         try{
           const list=await ardentSources(PROJECT.systemName,k);
           tr.querySelector('td').innerHTML=drawerHtml(list,r.dataset.name);
-          tr.querySelectorAll('[data-copy]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();copyNav(b.dataset.copy);});
+          tr.querySelectorAll('[data-copy]').forEach(b=>b.onclick=(e)=>{e.stopPropagation();copyNav(b.dataset.copy,k,b.dataset.station||'');});
         }catch(e){
           tr.querySelector('td').innerHTML=`<div class="srcWrap"><div class="errline">Ardent unreachable: ${e.message}. Try Refresh — or cross-check on ${inaraLink(r.dataset.name)}</div></div>`;
         }
@@ -353,7 +353,14 @@
     return `<div class="srcWrap"><div class="srcHead"><span>SUGGESTED SUPPLIERS · ranked for practical haul — near · in-stock · Large-pad · stations over carriers</span><span>via Ardent · ${inaraLink(name)}</span></div>${carrNote}${rows}</div>`;
   }
 
-  function copyNav(sys){try{fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})}).then(function(r){if(r&&r.ok)toast(sys+" -> sent to your PC (paste in the galaxy map)");}).catch(function(){});}catch(e){}const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
+  // 2026-08-16 — carry the INTENT alongside the system.
+  // Why the pilot is going somewhere existed only in this page: srcCache is keyed
+  // "system|commodity" and dies on refresh, so by the time Docked or MarketBuy
+  // fires the reason for the trip is gone. Hoard now, use later — nothing reads
+  // it yet and nothing should be built on it without asking.
+  // Strictly additive: `commodity` is optional server-side, so a plain copyNav(sys)
+  // still behaves exactly as it did.
+  function copyNav(sys,commodity,station){try{fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys,commodity:commodity||"",station:station||""})}).then(function(r){if(r&&r.ok)toast(sys+" -> sent to your PC (paste in the galaxy map)");}).catch(function(){});}catch(e){}const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(sys).then(done).catch(()=>fb(sys,done));}else fb(sys,done);}
   function fb(t,cb){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);cb();}catch(e){toast("copy blocked — "+t);}}
   let toastT;function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("show"),2200);}
