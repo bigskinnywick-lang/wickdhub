@@ -138,6 +138,18 @@
       <div id="regChannels"><div class="empty">loading…</div></div>
     </div>
 
+    <!-- MIGRATION READINESS — 2026-08-16.
+         Exists because the gate this replaces was unsound: watching cmdrver: alone
+         reads as "everyone migrated" when it actually means "the ones who stayed
+         away stopped being counted" (14-day TTL). Built from durable keys, and it
+         shows UNKNOWN rather than inferring anything from an absence. -->
+    <div class="panel" id="migration">
+      <h2>⚿ CREDENTIAL MIGRATION <button id="migRefresh" style="margin-left:auto">↻ reload</button></h2>
+      <div class="desc">Every pilot must be on a pairing-capable build (<b>b3.33+</b> or <b>3.2+</b>), have their CMDR <b>bound</b>, and have <b>approved</b> a device from their own login — nobody can approve on their behalf. Only when every row is ready is it safe to set <code>INGEST_LEGACY_OFF=1</code> and retire the shared key. <b>A blank version means we cannot see that pilot, not that they are fine.</b></div>
+      <div id="migVerdict" style="margin-top:8px"></div>
+      <div id="migRows" style="margin-top:8px"><div class="empty">loading…</div></div>
+    </div>
+
     <!-- ROLES -->
     <div class="panel" id="roles">
       <h2>☗ ROLES · TEST PILOTS <button id="rolesRefresh" style="margin-left:auto">↻ reload</button></h2>
@@ -591,6 +603,7 @@ $("tickerRefresh").onclick=loadTicker;
 
 // ---------- registrar release + roles ----------
 let REG_ROLES={}, REG_ALLOWED=["member","testpilot","officer","admin"], REG_PILOTS=[];
+let REG_MIGRATION=[], REG_MIG_READY=false;
 async function loadRegistrar(){
   try{ const rel=await api("GET","/blades/api/plugin-release"); renderChannels(rel); }
   catch(e){ $("regChannels").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
@@ -600,7 +613,8 @@ async function loadRoles(){
   try{
     const rl=await api("GET","/blades/api/plugin-roles");
     REG_ROLES=rl.roles||{}; REG_ALLOWED=rl.allowed||REG_ALLOWED; REG_PILOTS=rl.pilots||[]; REG_MEMBERS=rl.members||[];
-    renderRoles();
+    REG_MIGRATION=rl.migration||[]; REG_MIG_READY=!!rl.migrationReady;
+    renderRoles(); renderMigration();
   }catch(e){ $("rolesRows").innerHTML='<div class="warnbox"><b>load failed:</b> '+esc(e.message)+'</div>'; }
 }
 function chanBlock(ch,label,zipName,published,detected){
@@ -656,6 +670,42 @@ function renderRoles(){
   });
   populateMemberSelect();
 }
+function renderMigration(){
+  const rows=REG_MIGRATION||[];
+  const v=$("migVerdict"), r=$("migRows");
+  if(!v||!r) return;
+  if(!rows.length){ r.innerHTML='<div class="empty">No members known yet.</div>'; v.innerHTML=''; return; }
+
+  const notReady=rows.filter(m=>!m.ready);
+  v.innerHTML = REG_MIG_READY
+    ? '<div style="padding:9px 11px;border-left:3px solid var(--ok,#3fb950);background:color-mix(in srgb,var(--ok,#3fb950) 10%,transparent)"><b>READY.</b> Every pilot is bound and has a paired device. Safe to set <code>INGEST_LEGACY_OFF=1</code> and retire the shared key.</div>'
+    : '<div style="padding:9px 11px;border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)"><b>NOT READY</b> — '+notReady.length+' of '+rows.length+' outstanding. Flipping the switch now would strand them: their plugin would be refused and they would need a manual reinstall.</div>';
+
+  r.innerHTML=rows.map(m=>{
+    // What is actually BLOCKING this pilot, in the order they will hit it.
+    let blocker='';
+    if(m.canPair===false) blocker='needs a newer build — they must let the plugin update and restart EDMC';
+    else if(m.canPair===null) blocker='not seen recently — cannot tell which build they are on';
+    else if(!m.bound) blocker='CMDR not bound — they must bind it themselves before they can approve anything';
+    else if(!m.paired) blocker='has not approved a device yet — only their own login can do it';
+
+    const chip=(ok,label)=>'<span class="pill" style="opacity:'+(ok?1:.45)+'">'+(ok?'✓':'·')+' '+label+'</span>';
+    const ver = m.running
+      ? '<span class="pill">v'+esc(m.running)+'</span> <span class="subtle" style="font-size:10.5px">'+ago(m.lastSeenTs)+'</span>'
+      : '<span class="subtle">unknown — not seen in 14 days</span>';
+
+    return '<div style="border-bottom:1px dashed var(--line);padding:9px 0">'
+      +'<div class="toolbar" style="justify-content:space-between;gap:8px">'
+      +'<b>'+esc(m.cmdr)+'</b><span>'+ver+'</span></div>'
+      +'<div style="margin-top:5px">'
+      + chip(m.canPair===true,'pairing-capable') + ' '
+      + chip(m.bound,'CMDR bound') + ' '
+      + chip(m.paired>0, m.paired>0 ? ('paired ('+m.paired+')') : 'device approved')
+      +'</div>'
+      +(blocker?'<div class="subtle" style="margin-top:4px;font-size:11.5px">↳ '+esc(blocker)+'</div>':'')
+      +'</div>';
+  }).join("");
+}
 function populateMemberSelect(){
   const sel=$("roleAddSelect"); if(!sel) return;
   const shown=new Set(); REG_PILOTS.forEach(p=>shown.add(p.cmdr.toLowerCase())); Object.keys(REG_ROLES).forEach(c=>shown.add(c.toLowerCase())); EXTRA_CMDRS.forEach(c=>shown.add(c.toLowerCase()));
@@ -664,6 +714,7 @@ function populateMemberSelect(){
 }
 if($("regRefresh")) $("regRefresh").onclick=loadRegistrar;
 if($("rolesRefresh")) $("rolesRefresh").onclick=loadRoles;
+  if($("migRefresh")) $("migRefresh").onclick=loadRoles;
 if($("roleAdd")) $("roleAdd").onclick=()=>{
   const c=($("roleAddSelect").value||"").trim();
   if(!c){toast("choose a member",true);return;}
