@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.33"  # b3.33: THIS PC NOW HAS ITS OWN CREDENTIAL, AND THE BOARD STOPS TAKING YOUR WORD FOR WHO YOU ARE. Until now every copy of this plugin shipped the same shared key, and told the board which commander it was - the board simply believed it. That key also lived in a public source file, so it was readable by anyone at all. From this release the plugin generates a secret that never leaves your machine, shows you a short PAIRING CODE in the EDMC status line, and you approve it once under COMMANDER DOSSIER -> Paired Devices. After that the board works out who you are from the credential itself, so nobody can report as you. Nothing to configure and nothing to reinstall: the old key keeps working the whole time you are migrating, and if a device is ever revoked - or you come back after a long break - the plugin notices, asks again, and puts a fresh code on the status line instead of silently going quiet. You can see and revoke every paired PC from the same card.
+PLUGIN_VERSION = "b3.34"  # b3.34: TWO COMMANDERS CAN SHARE ONE PC. b3.33 stored a single credential per machine, so the moment a second commander logged in on the same rig the board correctly refused a token that belonged to somebody else - and the plugin had no way to recover, so it would have gone quiet without ever telling you why. Credentials are now kept per COMMANDER: each person flying from this PC gets their own, approved from their own board login, and the two never touch. Log in as someone new and a pairing code appears for THEM within a few seconds, on its own. Revoking one commander does not knock the other offline. If this PC was already paired on b3.33 nothing changes and you do not need to pair again - the existing credential is carried across automatically.
 # b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
 # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
@@ -266,71 +266,123 @@ def _pirate_on():
 # deliberately refuses an unknown token rather than quietly falling back to the
 # shared key (a bad credential should fail loudly). So we poll for approval, and
 # only switch once the answer is yes.
+#
+# ★ ONE PC, MANY COMMANDERS (b3.34). Credentials are keyed by COMMANDER, not by
+# machine. Two people sharing a rig — or one person with a second account — each
+# get their own secret in this file, approved from their own board login, and the
+# two never touch. The first cut stored a single secret and would have 403'd for
+# ever the moment a second commander logged in: the board correctly refused a
+# token bound to someone else, and nothing here recovered from a 403.
 PAIR_URL = INGEST_URL.rsplit("/", 1)[0] + "/pair"
 _PAIR_POLL_S = 20.0
 
-_dev = {"secret": "", "hash": "", "approved": False, "cmdr": "",
-        "code": "", "code_at": 0.0, "last_poll": 0.0, "asked_for": ""}
+# creds: cmdrLower -> {"secret": str, "approved": bool}
+# pair:  cmdrLower -> {"code": str, "code_at": float, "last_poll": float}
+_dev = {"creds": {}, "pair": {}, "loaded": False}
 
 
 def _dev_path():
     return os.path.join(_state["dir"], "device.json")
 
 
+def _dev_key(cmdr):
+    return str(cmdr or "").strip().lower()
+
+
+def _dev_active(cmdr=None):
+    """Whose credential applies right now."""
+    return _dev_key(cmdr or _nav.get("cmdr") or "")
+
+
 def _dev_load():
+    if _dev["loaded"]:
+        return
+    _dev["loaded"] = True
+    raw = {}
     try:
         with open(_dev_path(), "r", encoding="utf-8") as f:
-            d = json.load(f)
-        _dev["secret"] = str(d.get("secret") or "")
-        _dev["approved"] = bool(d.get("approved"))
-        _dev["cmdr"] = str(d.get("cmdr") or "")
+            raw = json.load(f) or {}
     except Exception:
-        pass
-    if not _dev["secret"]:
-        # token_urlsafe gives [A-Za-z0-9_-], which is exactly what the board's
-        # Bearer pattern accepts. 32 bytes is far beyond guessing.
-        try:
-            import secrets
-            _dev["secret"] = secrets.token_urlsafe(32)
-        except Exception:
-            _dev["secret"] = hashlib.sha256(os.urandom(48)).hexdigest()
-        _dev["approved"] = False
+        raw = {}
+
+    creds = raw.get("creds")
+    if isinstance(creds, dict):
+        for k, v in creds.items():
+            if isinstance(v, dict) and v.get("secret"):
+                _dev["creds"][_dev_key(k)] = {"secret": str(v["secret"]),
+                                              "approved": bool(v.get("approved"))}
+    elif raw.get("secret"):
+        # MIGRATION from the b3.33 single-secret format. Carry the existing
+        # pairing across so nobody has to re-approve a PC that already works.
+        _dev["creds"][_dev_key(raw.get("cmdr"))] = {"secret": str(raw["secret"]),
+                                                    "approved": bool(raw.get("approved"))}
         _dev_save()
-    _dev["hash"] = hashlib.sha256(_dev["secret"].encode("utf-8")).hexdigest()
 
 
 def _dev_save():
     try:
         with open(_dev_path(), "w", encoding="utf-8") as f:
-            json.dump({"secret": _dev["secret"], "approved": _dev["approved"],
-                       "cmdr": _dev["cmdr"]}, f)
+            json.dump({"creds": _dev["creds"]}, f)
     except Exception:
         pass
 
 
-def _dev_ready():
-    """True once this device may authenticate with its own token."""
-    return bool(_dev["approved"] and _dev["secret"])
+def _dev_cred(cmdr, create=True):
+    k = _dev_active(cmdr)
+    if not k:
+        return None
+    c = _dev["creds"].get(k)
+    if c is None and create:
+        try:
+            import secrets
+            sec = secrets.token_urlsafe(32)
+        except Exception:
+            sec = hashlib.sha256(os.urandom(48)).hexdigest()
+        c = {"secret": sec, "approved": False}
+        _dev["creds"][k] = c
+        _dev_save()
+    return c
 
 
-def _dev_headers(base=None):
+def _dev_pair_state(cmdr):
+    k = _dev_active(cmdr)
+    st = _dev["pair"].get(k)
+    if st is None:
+        st = {"code": "", "code_at": 0.0, "last_poll": 0.0}
+        _dev["pair"][k] = st
+    return st
+
+
+def _dev_hash(cmdr):
+    c = _dev_cred(cmdr)
+    return hashlib.sha256(c["secret"].encode("utf-8")).hexdigest() if c else ""
+
+
+def _dev_ready(cmdr=None):
+    """True once THIS commander may authenticate with their own token."""
+    c = _dev_cred(cmdr, create=False)
+    return bool(c and c.get("approved") and c.get("secret"))
+
+
+def _dev_headers(base=None, cmdr=None):
     h = dict(base or {})
-    if _dev_ready():
-        h["Authorization"] = "Bearer " + _dev["secret"]
+    c = _dev_cred(cmdr, create=False)
+    if c and c.get("approved"):
+        h["Authorization"] = "Bearer " + c["secret"]
     return h
 
 
-def _dev_key_param():
+def _dev_key_param(cmdr=None):
     """Query-string credential for navpull. Token once approved, shared key until."""
-    if _dev_ready():
-        return "tok=" + urllib.request.quote(_dev["secret"])
+    c = _dev_cred(cmdr, create=False)
+    if c and c.get("approved"):
+        return "tok=" + urllib.request.quote(c["secret"])
     return "key=" + INGEST_KEY
 
 
-def _dev_body(payload):
-    """Attach the shared key only while we still need it — once this device is
-    paired the key is not sent at all, so a retired key changes nothing here."""
-    if not _dev_ready():
+def _dev_body(payload, cmdr=None):
+    """Attach the shared key only while this commander still needs it."""
+    if not _dev_ready(cmdr or payload.get("cmdr")):
         payload["key"] = INGEST_KEY
     return payload
 
@@ -351,61 +403,78 @@ def _dev_request_pairing(cmdr):
     """Ask to be paired. Harmless until a signed-in pilot approves it."""
     if not cmdr:
         return
+    st = _dev_pair_state(cmdr)
     try:
-        body = _http_json(PAIR_URL, {"cmdr": cmdr, "hash": _dev["hash"],
+        body = _http_json(PAIR_URL, {"cmdr": cmdr, "hash": _dev_hash(cmdr),
                                      "device": _dev_device_name()}, timeout=15)
         if body.get("ok") and body.get("code"):
-            _dev["code"] = str(body["code"])
-            _dev["code_at"] = time.time()
-            _dev["asked_for"] = cmdr
-            _set_status("PAIR THIS PC: " + _dev["code"] + " - approve on the board")
+            st["code"] = str(body["code"])
+            st["code_at"] = time.time()
+            _set_status("PAIR " + str(cmdr) + ": " + st["code"] + " - approve on the board")
         else:
             _set_status("pairing refused (" + str(body.get("error", "?")) + ")")
     except Exception:
         pass  # offline; the poll loop will try again
 
 
-def _dev_check_approval():
-    """Poll for approval, then switch this device over to its own token."""
-    if _dev_ready() or not _dev["hash"]:
+def _dev_check_approval(cmdr=None):
+    """Poll for approval, then switch this commander over to their own token."""
+    k = _dev_active(cmdr)
+    if not k or _dev_ready(k):
         return
+    st = _dev_pair_state(k)
     now = time.time()
-    if now - _dev["last_poll"] < _PAIR_POLL_S:
+    if now - st["last_poll"] < _PAIR_POLL_S:
         return
-    _dev["last_poll"] = now
+    st["last_poll"] = now
     try:
-        url = PAIR_URL + "?hash=" + _dev["hash"]
+        url = PAIR_URL + "?hash=" + _dev_hash(k)
         req = urllib.request.Request(url, headers={"User-Agent": BROWSER_UA, "Accept": "application/json"})
         with urllib.request.urlopen(req, timeout=8) as resp:
             body = json.loads(resp.read().decode("utf-8"))
     except Exception:
         return
     if not body.get("approved"):
-        # Codes expire after 10 minutes. If the pilot didn't get to it in time,
-        # quietly ask again rather than leaving a dead code on the status line.
-        if _dev["code"] and (time.time() - _dev["code_at"]) > 600:
-            _dev["code"] = ""
-            _dev_request_pairing(_dev.get("asked_for") or _nav.get("cmdr"))
+        # Codes expire after 10 minutes. Ask again rather than leaving a dead
+        # code on the status line.
+        if st["code"] and (time.time() - st["code_at"]) > 600:
+            st["code"] = ""
+            _dev_request_pairing(cmdr or _nav.get("cmdr"))
         return
-    _dev["approved"] = True
-    _dev["cmdr"] = str(body.get("cmdr") or "")
-    _dev["code"] = ""
-    _dev_save()
-    _set_status("this PC is paired - " + (_dev["cmdr"] or "?"))
+    # The board tells us WHO it approved. If that is not who we asked for, do not
+    # start speaking as them — clear it and ask again.
+    got = _dev_key(body.get("cmdr"))
+    if got and got != k:
+        _dev["creds"].pop(k, None)
+        _dev_save()
+        return
+    c = _dev_cred(k)
+    if c:
+        c["approved"] = True
+        _dev_save()
+    st["code"] = ""
+    _set_status("this PC is paired for " + str(cmdr or k))
 
 
 def _dev_on_auth_fail(cmdr):
-    """A 401 on an authenticated call means revoked, or the shared key retired.
+    """401 = revoked, or the shared key retired. 403 = this token belongs to a
+    DIFFERENT commander (someone else flies from this PC).
 
-    Either way the recovery is the same and it is automatic: drop back to
-    unpaired and ask again. A pilot returning after weeks away sees a pairing
-    code on the status line rather than a plugin that silently stopped working.
+    Both recover the same way, and automatically: drop that commander back to
+    unpaired and ask again. A pilot returning after weeks away — or a second
+    commander logging in for the first time — sees a pairing code on the status
+    line rather than a plugin that silently stopped working.
     """
-    if _dev["approved"]:
-        _dev["approved"] = False
+    k = _dev_active(cmdr)
+    if not k:
+        return
+    c = _dev_cred(k, create=False)
+    if c and c.get("approved"):
+        c["approved"] = False
         _dev_save()
-    _dev["last_poll"] = 0.0
-    if not _dev["code"]:
+    st = _dev_pair_state(k)
+    st["last_poll"] = 0.0
+    if not st["code"]:
         _dev_request_pairing(cmdr or _nav.get("cmdr"))
 
 
@@ -459,8 +528,9 @@ def _http_json(url, payload, timeout=20):
             "Content-Type": "application/json",
             "User-Agent": BROWSER_UA,  # Cloudflare BIC rejects Python-urllib UAs
             "Accept": "application/json",
-            # Bearer token once this device is paired; absent until then.
-            **_dev_headers(),
+            # Bearer token for the commander this payload is about — one PC can
+            # hold credentials for several, so "which token" is not a constant.
+            **_dev_headers(cmdr=(payload or {}).get("cmdr")),
         }, method="POST",
     )
     with urllib.request.urlopen(req, timeout=timeout) as resp:
@@ -475,9 +545,11 @@ def _send_claim(payload, label):
         else:
             _set_status("claim error (" + str(body.get("error", "?")) + ")")
     except urllib.error.HTTPError as he:
-        if he.code == 401:
+        if he.code in (401, 403):
+            # 403 = this PC holds a token for a DIFFERENT commander (someone
+            # else flies from the same rig). Same recovery as a revoke: ask.
             _dev_on_auth_fail(payload.get("cmdr"))
-            _set_status("re-pairing this PC (auth refused)")
+            _set_status("pairing " + str(payload.get("cmdr") or "this PC") + " (auth refused)")
         else:
             _set_status("claim error " + str(he.code))
     except Exception:
@@ -492,9 +564,11 @@ def _send_carrier(payload, label):
         else:
             _set_status("carrier error (" + str(body.get("error", "?")) + ")")
     except urllib.error.HTTPError as he:
-        if he.code == 401:
+        if he.code in (401, 403):
+            # 403 = this PC holds a token for a DIFFERENT commander (someone
+            # else flies from the same rig). Same recovery as a revoke: ask.
             _dev_on_auth_fail(payload.get("cmdr"))
-            _set_status("re-pairing this PC (auth refused)")
+            _set_status("pairing " + str(payload.get("cmdr") or "this PC") + " (auth refused)")
         else:
             _set_status("carrier error " + str(he.code))
     except Exception:
@@ -528,9 +602,11 @@ def _send_loadout(payload, label):
         else:
             _set_status("loadout error (" + str(body.get("error", "?")) + ")")
     except urllib.error.HTTPError as he:
-        if he.code == 401:
+        if he.code in (401, 403):
+            # 403 = this PC holds a token for a DIFFERENT commander (someone
+            # else flies from the same rig). Same recovery as a revoke: ask.
             _dev_on_auth_fail(payload.get("cmdr"))
-            _set_status("re-pairing this PC (auth refused)")
+            _set_status("pairing " + str(payload.get("cmdr") or "this PC") + " (auth refused)")
         else:
             _set_status("loadout error " + str(he.code))
     except Exception:
@@ -553,7 +629,7 @@ def _maybe_send_loadout(cmdr, ts, force=False):
     _LO["sig"] = sig
     _LO["last_post"] = now
     payload = {
-        **({} if _dev_ready() else {"key": INGEST_KEY}),
+        **({} if _dev_ready(cmdr) else {"key": INGEST_KEY}),
         "cmdr": cmdr or "unknown",
         "ship": _LO["ship"],
         "shipName": _LO["shipName"],
@@ -773,10 +849,10 @@ def _nav_poll_loop():
             if cmdr:
                 # Pairing rides the existing 5s heartbeat rather than adding a
                 # loop of its own. Both calls are no-ops once this PC is paired.
-                if not _dev_ready():
-                    if not _dev["code"] and _dev.get("asked_for") != cmdr:
+                if not _dev_ready(cmdr):
+                    if not _dev_pair_state(cmdr)["code"]:
                         _dev_request_pairing(cmdr)
-                    _dev_check_approval()
+                    _dev_check_approval(cmdr)
                 pend = _read_pending().get("version", "")
                 # Per-assist readiness rides the same heartbeat, but only when it CHANGES —
                 # binds rarely move, so this stays quiet after the first poll and never
@@ -806,7 +882,7 @@ def _nav_poll_loop():
                 except Exception:
                     _al = ""
                 _send_al = _al if (_al and _al != "[]" and _al != _nav.get("al_sent")) else ""
-                url = (NAVPULL_URL + "?" + _dev_key_param() + "&cmdr=" + urllib.request.quote(cmdr)
+                url = (NAVPULL_URL + "?" + _dev_key_param(cmdr) + "&cmdr=" + urllib.request.quote(cmdr)
                        + "&v=" + urllib.request.quote(PLUGIN_VERSION)
                        + (("&pending=" + urllib.request.quote(pend)) if pend else "")
                        + (("&ready=" + urllib.request.quote(_send_rdy)) if _send_rdy else "")
@@ -893,7 +969,9 @@ def _nav_poll_loop():
             # is the whole reason a dormant pilot can be migrated safely: they
             # come back to a pairing code on the status line, not a plugin that
             # silently stopped working and gives no clue why.
-            if he.code == 401:
+            if he.code in (401, 403):
+                # 403 = a second commander logged in on this PC and has no
+                # credential of their own yet. Same recovery: ask to pair.
                 _dev_on_auth_fail(_nav.get("cmdr"))
         except Exception:
             pass
@@ -1049,7 +1127,7 @@ def _run_backfill(delay=10):
         try:
             cfound = _scan_carriers(jdir)
             for i in range(0, len(cfound), 100):
-                _http_json(CARRIER_URL, {**({} if _dev_ready() else {"key": INGEST_KEY}), "via": "backfill",
+                _http_json(CARRIER_URL, {**({} if _dev_ready(cmdr) else {"key": INGEST_KEY}), "via": "backfill",
                                          "carriers": cfound[i:i + 100]}, timeout=30)
         except Exception:
             pass
@@ -1066,7 +1144,7 @@ def _run_backfill(delay=10):
         sent = 0
         try:
             for i in range(0, len(found), 100):
-                body = _http_json(CLAIM_URL, {**({} if _dev_ready() else {"key": INGEST_KEY}), "via": "backfill",
+                body = _http_json(CLAIM_URL, {**({} if _dev_ready(cmdr) else {"key": INGEST_KEY}), "via": "backfill",
                                               "claims": found[i:i + 100]}, timeout=30)
                 if not body.get("ok"):
                     _set_status("claims backfill error (" + str(body.get("error", "?")) + ")")
@@ -3017,7 +3095,7 @@ def _post(payload, market_id, was_create):
             # the default "Python-urllib/..." UA with a 403.
             "User-Agent": BROWSER_UA,
             "Accept": "application/json",
-            **_dev_headers(),
+            **_dev_headers(cmdr=(payload or {}).get("cmdr")),
         }, method="POST",
     )
     try:
@@ -3323,7 +3401,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             if _STATIONMETA_SENT.get(str(_mid_s)) != _sig_s:
                 _STATIONMETA_SENT[str(_mid_s)] = _sig_s
                 _stp = {
-                    **({} if _dev_ready() else {"key": INGEST_KEY}),
+                    **({} if _dev_ready(cmdr) else {"key": INGEST_KEY}),
                     "marketId": _mid_s,
                     "stationType": _st_s,
                     "economy": _eco_s,
@@ -3390,7 +3468,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
             action = "claim" if ev == "ColonisationSystemClaim" else "release"
             sys_name = entry.get("StarSystem") or system or ""
             payload = {
-                **({} if _dev_ready() else {"key": INGEST_KEY}),
+                **({} if _dev_ready(cmdr) else {"key": INGEST_KEY}),
                 "systemAddress": sa,
                 "systemName": sys_name,
                 "cmdr": cmdr or "unknown",
@@ -3409,7 +3487,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         mid = entry.get("CarrierID")
         if mid:
             payload = {
-                **({} if _dev_ready() else {"key": INGEST_KEY}),
+                **({} if _dev_ready(cmdr) else {"key": INGEST_KEY}),
                 "marketId": mid,
                 "callsign": entry.get("Callsign") or "",
                 "name": entry.get("Name") or "",
@@ -3455,7 +3533,7 @@ def journal_entry(cmdr, is_beta, system, station, entry, state):
         do_create = True
 
     payload = {
-        **({} if _dev_ready() else {"key": INGEST_KEY}),
+        **({} if _dev_ready(cmdr) else {"key": INGEST_KEY}),
         "marketId": market_id,
         "systemAddress": sa,
         "cmdr": cmdr or "unknown",

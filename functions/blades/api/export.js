@@ -16,7 +16,16 @@
 // offsite backup. /blades/api/import is the recovery counterpart.
 const GUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 // Key families whose WHOLE RECORD is personal — dropped entirely in safe mode.
-const PERSONAL_PREFIXES = ["member:", "rig:", "cmdrlink:"];
+// 2026-08-16 — device credentials added. Two reasons they belong here, and the
+// second is the one that actually matters:
+//   1. Even hashed, a credential record has no business riding in a backup that
+//      lands in a git repo.
+//   2. A device record carries the PC's NAME and country. Two commanders paired
+//      from the same machine sit next to each other in the dump with identical
+//      device names — which correlates two identities that are deliberately not
+//      correlated anywhere else in this system. The hash is the boring risk; the
+//      adjacency is the real one.
+const PERSONAL_PREFIXES = ["member:", "rig:", "cmdrlink:", "sq:onyx:devtoken:", "sq:onyx:devices:", "sq:onyx:pair:"];
 function isPersonal(name) { return PERSONAL_PREFIXES.some(p => String(name).startsWith(p)); }
 
 // ⚠ A prefix list alone is NOT enough, and assuming it was is a real bug we shipped once.

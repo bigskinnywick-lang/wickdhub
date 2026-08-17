@@ -61,12 +61,14 @@ def check(name, cond, detail=""):
 
 
 # ── fake board ───────────────────────────────────────────────────────────────
-board = {"approved": False, "pair_calls": [], "seen_auth": [], "code": "PAIR42"}
+board = {"approved": False, "pair_calls": [], "seen_auth": [], "code": "PAIR42", "hashes": {}}
 
 
 def fake_http_json(url, payload, timeout=20):
     board["pair_calls"].append((url, payload))
     if url.endswith("/pair"):
+        # the board remembers which commander this hash claimed to be
+        board["hashes"][payload["hash"]] = payload["cmdr"]
         return {"ok": True, "code": board["code"], "expiresInS": 600}
     return {"ok": True}
 
@@ -86,10 +88,17 @@ class FakeResp:
 
 
 def fake_urlopen(req, timeout=8):
+    """A board that answers about the RIGHT commander for the hash it was asked
+    about. The first version of this stub answered "BIGSKINNY" to every query —
+    and the plugin correctly refused to accept an approval for a commander it had
+    not asked to be, which is how the stub got found. Leaving the note because it
+    is the more useful half of the story: the guard works."""
     url = req.full_url if hasattr(req, "full_url") else str(req)
     board["seen_auth"].append((url, dict(getattr(req, "headers", {}) or {})))
     if "/ingest/pair" in url:
-        return FakeResp({"ok": True, "approved": board["approved"], "cmdr": "BIGSKINNY"})
+        h = url.split("hash=")[-1]
+        who = board["hashes"].get(h, "")
+        return FakeResp({"ok": True, "approved": bool(board["approved"] and who), "cmdr": who})
     return FakeResp({"ok": True})
 
 
@@ -99,64 +108,123 @@ L._http_json = fake_http_json
 L.urllib.request.urlopen = fake_urlopen
 L._set_status = lambda t: None
 
+CM = "BIGSKINNY"
+DR = "DR HANS REINHARDT"
+
 print("\nFIRST RUN — a brand-new install has no credential")
 L._dev_load()
-check("a secret is minted locally on first load", len(L._dev["secret"]) >= 20)
+L._nav["cmdr"] = CM
+check("a secret is minted for this commander on first use", len(L._dev_cred(CM)["secret"]) >= 20)
 check("the secret is persisted to device.json", os.path.exists(os.path.join(tmp, "device.json")))
 check("hash matches sha256 of the secret",
-      L._dev["hash"] == hashlib.sha256(L._dev["secret"].encode()).hexdigest())
-check("NEGATIVE: not usable for auth until approved", L._dev_ready() is False)
+      L._dev_hash(CM) == hashlib.sha256(L._dev_cred(CM)["secret"].encode()).hexdigest())
+check("NEGATIVE: not usable for auth until approved", L._dev_ready(CM) is False)
 check("NEGATIVE: no Authorization header is sent while unapproved",
-      "Authorization" not in L._dev_headers(),
+      "Authorization" not in L._dev_headers(cmdr=CM),
       "sending an unapproved token gets refused WITHOUT falling back — instant lockout")
-check("the shared key is still used while unpaired", L._dev_key_param().startswith("key="))
+check("the shared key is still used while unpaired", L._dev_key_param(CM).startswith("key="))
 check("outgoing payloads still carry the shared key while unpaired",
-      "key" in L._dev_body({"cmdr": "BIGSKINNY"}))
+      "key" in L._dev_body({"cmdr": CM}))
 
 print("\nPAIRING — ask, and show the pilot a code")
-L._dev_request_pairing("BIGSKINNY")
+L._dev_request_pairing(CM)
 check("a pairing request was POSTed", any(u.endswith("/pair") for u, _ in board["pair_calls"]))
 sent = board["pair_calls"][0][1]
 check("NEGATIVE: the SECRET is never sent when pairing — only its hash",
-      L._dev["secret"] not in json.dumps(sent),
+      L._dev_cred(CM)["secret"] not in json.dumps(sent),
       "the raw secret must never cross the wire at pairing time")
-check("the hash IS sent", sent.get("hash") == L._dev["hash"])
-check("a code is shown to the pilot", L._dev["code"] == "PAIR42")
-check("NEGATIVE: still not authenticating with the token", L._dev_ready() is False)
+check("the hash IS sent", sent.get("hash") == L._dev_hash(CM))
+check("a code is shown to the pilot", L._dev_pair_state(CM)["code"] == "PAIR42")
+check("NEGATIVE: still not authenticating with the token", L._dev_ready(CM) is False)
 
 print("\nAPPROVAL — the pilot clicks approve on the board")
-L._dev["last_poll"] = 0.0
-L._dev_check_approval()
-check("NEGATIVE: unapproved poll leaves it unpaired", L._dev_ready() is False)
+L._dev_pair_state(CM)["last_poll"] = 0.0
+L._dev_check_approval(CM)
+check("NEGATIVE: unapproved poll leaves it unpaired", L._dev_ready(CM) is False)
 
 board["approved"] = True
-L._dev["last_poll"] = 0.0
-L._dev_check_approval()
-check("approval flips the device to paired", L._dev_ready() is True)
-check("the approved commander is recorded", L._dev["cmdr"] == "BIGSKINNY")
-check("the pairing code is cleared once approved", L._dev["code"] == "")
+L._dev_pair_state(CM)["last_poll"] = 0.0
+L._dev_check_approval(CM)
+check("approval flips this commander to paired", L._dev_ready(CM) is True)
+check("the pairing code is cleared once approved", L._dev_pair_state(CM)["code"] == "")
 
 print("\nAFTER PAIRING — the shared key is no longer used at all")
-check("Authorization header now present", L._dev_headers().get("Authorization", "").startswith("Bearer "))
-check("navpull switches to the token", L._dev_key_param().startswith("tok="))
+check("Authorization header now present", L._dev_headers(cmdr=CM).get("Authorization", "").startswith("Bearer "))
+check("navpull switches to the token", L._dev_key_param(CM).startswith("tok="))
 check("NEGATIVE: the shared key is NOT sent in the query string",
-      "key=" + L.INGEST_KEY not in L._dev_key_param())
+      "key=" + L.INGEST_KEY not in L._dev_key_param(CM))
 check("NEGATIVE: the shared key is NOT included in payloads any more",
-      "key" not in L._dev_body({"cmdr": "BIGSKINNY"}),
+      "key" not in L._dev_body({"cmdr": CM}),
       "a paired plugin must be unaffected when the shared key is retired")
 
-print("\nPERSISTENCE — a restart must not re-pair")
-L._dev.update({"secret": "", "hash": "", "approved": False, "cmdr": "", "code": ""})
-L._dev_load()
-check("paired state survives an EDMC restart", L._dev_ready() is True)
+print("\n★ TWO COMMANDERS, ONE PC — the doctor flies from the same rig")
+check("NEGATIVE: the second commander is NOT authenticated by the first's token",
+      L._dev_ready(DR) is False,
+      "a token bound to one commander must never speak for another")
+check("NEGATIVE: no Bearer header for the unpaired second commander",
+      "Authorization" not in L._dev_headers(cmdr=DR))
+check("the second commander falls back to the shared key, not to a 403 loop",
+      L._dev_key_param(DR).startswith("key="))
+check("...and the FIRST commander is untouched by that", L._dev_ready(CM) is True)
+L._dev_request_pairing(DR)
+check("the second commander gets their own pairing code", L._dev_pair_state(DR)["code"] == "PAIR42")
+check("NEGATIVE: the two secrets are different",
+      L._dev_cred(CM)["secret"] != L._dev_cred(DR)["secret"])
+board["approved"] = True
+L._dev_pair_state(DR)["last_poll"] = 0.0
+L._dev_check_approval(DR)
+check("both commanders can be paired on one PC at once",
+      L._dev_ready(CM) is True and L._dev_ready(DR) is True,
+      "the first cut had ONE slot — pairing the doctor would have evicted BIGSKINNY")
 
-print("\nRECOVERY — revoked, or the shared key retired while away")
-before = L._dev["secret"]
-L._dev_on_auth_fail("BIGSKINNY")
-check("a 401 drops the device back to unpaired", L._dev_ready() is False)
-check("it re-requests pairing automatically", L._dev["code"] == "PAIR42",
+print("\n★ A LYING BOARD — approval for the wrong commander must be refused")
+_saved = dict(board["hashes"])
+board["hashes"][L._dev_hash(DR)] = CM          # board claims DR's hash was approved as BIGSKINNY
+L._dev["creds"].pop(L._dev_key(DR), None)      # force DR back to unpaired
+L._dev_request_pairing(DR)
+board["hashes"][L._dev_hash(DR)] = CM
+L._dev_pair_state(DR)["last_poll"] = 0.0
+L._dev_check_approval(DR)
+check("NEGATIVE: an approval naming a DIFFERENT commander is discarded",
+      L._dev_ready(DR) is False,
+      "otherwise a compromised board could make this PC speak as anyone")
+check("...and the correctly-paired commander is unaffected", L._dev_ready(CM) is True)
+board["hashes"] = _saved
+# re-pair DR properly for the persistence checks below
+L._dev_request_pairing(DR)
+L._dev_pair_state(DR)["last_poll"] = 0.0
+L._dev_check_approval(DR)
+
+print("\nPERSISTENCE — a restart must not re-pair")
+L._dev.update({"creds": {}, "pair": {}, "loaded": False})
+L._dev_load()
+check("paired state survives an EDMC restart", L._dev_ready(CM) is True)
+check("...for BOTH commanders", L._dev_ready(DR) is True)
+
+print("\nRECOVERY — revoked, shared key retired, or a 403 from the wrong commander")
+before = L._dev_cred(CM)["secret"]
+L._dev_on_auth_fail(CM)
+check("an auth failure drops that commander back to unpaired", L._dev_ready(CM) is False)
+check("it re-requests pairing automatically", L._dev_pair_state(CM)["code"] == "PAIR42",
       "a dormant pilot must come back to a code, not a dead plugin")
-check("the same local secret is reused (no churn)", L._dev["secret"] == before)
+check("the same local secret is reused (no churn)", L._dev_cred(CM)["secret"] == before)
+check("NEGATIVE: recovering one commander does NOT unpair the other",
+      L._dev_ready(DR) is True,
+      "one pilot's revoke must not knock their rig-mate offline")
+
+print("\nMIGRATION — a PC already paired on b3.33 must not have to re-pair")
+import shutil
+tmp2 = tempfile.mkdtemp()
+with open(os.path.join(tmp2, "device.json"), "w") as f:
+    json.dump({"secret": "legacy-single-secret-value-aaaa", "approved": True, "cmdr": "BIGSKINNY"}, f)
+L._state["dir"] = tmp2
+L._dev.update({"creds": {}, "pair": {}, "loaded": False})
+L._dev_load()
+check("the old single-secret file is carried across", L._dev_ready(CM) is True)
+check("the migrated secret is preserved exactly",
+      L._dev_cred(CM)["secret"] == "legacy-single-secret-value-aaaa")
+check("and it is rewritten in the new shape",
+      "creds" in json.load(open(os.path.join(tmp2, "device.json"))))
 
 print("\n%d passed, %d failed\n" % (PASS, FAIL))
 raise SystemExit(1 if FAIL else 0)
