@@ -103,6 +103,15 @@ async function migrationReadiness(env, members) {
     }
   } catch (e) {}
 
+  const retired = new Map();
+  try {
+    const l = await env.BUILDS.list({ prefix: "sq:onyx:retired:" });
+    for (const k of (l.keys || [])) {
+      const o = await readJson(env, k.name);
+      retired.set(k.name.slice("sq:onyx:retired:".length), o || {});
+    }
+  } catch (e) {}
+
   const vers = new Map();
   try {
     const l = await env.BUILDS.list({ prefix: "cmdrver:" });
@@ -127,16 +136,46 @@ async function migrationReadiness(env, members) {
     const lc = cmdr.toLowerCase();
     const v = vers.get(lc);
     const running = (v && v.running) || "";
+    const devices = paired.get(lc) || 0;
+
+    // ── Is there anything to migrate for this commander at all? ─────────────
+    // The first cut of this gate demanded a paired device from EVERY name in the
+    // roster, and could therefore never go green: listMembers deliberately
+    // includes claim architects who have never run the plugin, and alts that no
+    // account is bound to. A gate that cannot be satisfied gets ignored, which
+    // is worse than no gate.
+    //
+    // So there are three states, not a boolean. Only a commander with actual
+    // PLUGIN EVIDENCE can strand, because only a plugin gets refused.
+    const hasPlugin = !!(v || devices);
+    const ret = retired.get(lc) || null;
+
+    // A retired registrar does not block — being refused is the point. But a
+    // retired plugin that is STILL REPORTING is a contradiction between the
+    // record and reality, and reality wins: say so rather than letting a stale
+    // decision quietly cover a live plugin.
+    const RECENT_MS = 1000 * 60 * 60 * 24 * 2;
+    const stillReporting = !!(ret && v && v.ts && (Date.now() - v.ts) < RECENT_MS);
+
+    const state = ret ? "retired"
+      : !hasPlugin ? "n/a"
+      : (bound.has(lc) && devices > 0) ? "ready"
+      : "blocked";
+
     return {
       cmdr,
       bound: bound.has(lc),                    // can they approve at all?
-      paired: paired.get(lc) || 0,             // durable — survives a silent pilot
+      paired: devices,                         // durable — survives a silent pilot
       running: running || null,
       lastSeenTs: (v && v.ts) || 0,
       canPair: canPair(running),               // null = we genuinely do not know
-      // The only thing that may gate the legacy switch-off. Deliberately requires
-      // a POSITIVE observation; absence never counts as ready.
-      ready: !!(bound.has(lc) && (paired.get(lc) || 0) > 0),
+      hasPlugin,
+      state,
+      retired: ret ? { by: ret.by || "", ts: ret.ts || 0, reason: ret.reason || "" } : null,
+      stillReporting,
+      // Kept for callers that just want the boolean. n/a is NOT ready — it is
+      // "nothing to do", which the card must say out loud rather than imply.
+      ready: state === "ready",
     };
   });
 }
@@ -153,7 +192,15 @@ export async function onRequestGet({ request, env }) {
     pilots: await listPilots(env),
     members,
     migration,
-    migrationReady: migration.every((m) => m.ready),
+    // Only a BLOCKED row can strand anyone. An "n/a" row has no plugin we have
+    // ever seen, so there is nothing for the switch to refuse.
+    //
+    // ⚠ The residual risk, stated rather than hidden: if such a commander has an
+    // installation that has never once reported, flipping the switch strands it.
+    // Waiting would not help — an invisible plugin cannot be waited for. The card
+    // says this out loud instead of quietly counting it as fine.
+    migrationReady: migration.every((m) => m.state !== "blocked"),
+    migrationBlocked: migration.filter((m) => m.state === "blocked").map((m) => m.cmdr),
   });
 }
 
@@ -164,6 +211,39 @@ export async function onRequestPost({ request, env }) {
   let body = {}; try { body = await request.json(); } catch (e) {}
   const cmdr = cleanCmdr(body.cmdr);
   if (!cmdr) return json({ ok: false, error: "valid cmdr required" }, 400);
+
+  // ── RETIRE / UN-RETIRE a registrar ────────────────────────────────────────
+  // For a commander whose plugin should stop reporting — an alt, a decommissioned
+  // PC, someone who left. Retiring does NOT silence anything: the switch-off is
+  // what actually stops that plugin, and this simply records that being refused
+  // is the INTENDED outcome for this commander rather than an accident.
+  //
+  // Deliberately a decision with a name and a date on it, not a hidden exclusion.
+  // A gate you can quietly edit is not a gate. And if a retired plugin keeps
+  // reporting, the card says so out loud rather than letting the record win over
+  // the observation.
+  if (Object.prototype.hasOwnProperty.call(body, "retire")) {
+    const rk = "sq:onyx:retired:" + cmdr.toLowerCase();
+    try {
+      if (body.retire) {
+        await env.BUILDS.put(rk, JSON.stringify({
+          by: callerEmail(request),
+          ts: Date.now(),
+          reason: String(body.reason || "").slice(0, 120),
+        }));
+      } else {
+        await env.BUILDS.delete(rk);
+      }
+    } catch (e) { return json({ ok: false, error: "write failed" }, 500); }
+    const members2 = await listMembers(env);
+    const migration2 = await migrationReadiness(env, members2);
+    return json({
+      ok: true, cmdr, retired: !!body.retire,
+      migration: migration2,
+      migrationReady: migration2.every((m) => m.state !== "blocked"),
+    });
+  }
+
   const roles = cleanRoles(body.roles);
   const map = (await readJson(env, "plugin:roles")) || {};
   const key = cmdr.toLowerCase();

@@ -676,17 +676,32 @@ function renderMigration(){
   if(!v||!r) return;
   if(!rows.length){ r.innerHTML='<div class="empty">No members known yet.</div>'; v.innerHTML=''; return; }
 
-  const notReady=rows.filter(m=>!m.ready);
-  v.innerHTML = REG_MIG_READY
-    ? '<div style="padding:9px 11px;border-left:3px solid var(--ok,#3fb950);background:color-mix(in srgb,var(--ok,#3fb950) 10%,transparent)"><b>READY.</b> Every pilot is bound and has a paired device. Safe to set <code>INGEST_LEGACY_OFF=1</code> and retire the shared key.</div>'
-    : '<div style="padding:9px 11px;border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)"><b>NOT READY</b> — '+notReady.length+' of '+rows.length+' outstanding. Flipping the switch now would strand them: their plugin would be refused and they would need a manual reinstall.</div>';
+  const blocked=rows.filter(m=>m.state==='blocked');
+  const na=rows.filter(m=>m.state==='n/a');
+  const ghosts=rows.filter(m=>m.stillReporting);
+  // "nothing to migrate" is stated, never implied. A commander with no plugin we
+  // have ever seen cannot be stranded by the switch — but if they have an install
+  // that has never reported, it WILL break, and waiting would not have helped.
+  const naNote = na.length
+    ? '<div class="subtle" style="margin-top:6px;font-size:11.5px">'+na.length+' commander'+(na.length>1?'s have':' has')+' no plugin we have ever seen ('+na.map(m=>esc(m.cmdr)).join(', ')+') — nothing to migrate. If one of them is running an installation that has never once reported, the switch will break it, and waiting would not change that.</div>'
+    : '';
+  // Reality beats the record. A registrar marked retired that is still phoning
+  // home is not a tidy row — it is a thing we believe about the world being wrong.
+  const ghostNote = ghosts.length
+    ? '<div style="margin-top:6px;padding:9px 11px;border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)"><b>STILL REPORTING</b> — '+ghosts.map(m=>esc(m.cmdr)).join(', ')+' '+(ghosts.length>1?'were':'was')+' marked retired but '+(ghosts.length>1?'are':'is')+' still phoning home. Either the plugin was never actually removed, or the retirement was a mistake.</div>'
+    : '';
+  v.innerHTML = (REG_MIG_READY
+    ? '<div style="padding:9px 11px;border-left:3px solid var(--ok,#3fb950);background:color-mix(in srgb,var(--ok,#3fb950) 10%,transparent)"><b>READY.</b> Every reporting plugin is paired. Safe to set <code>INGEST_LEGACY_OFF=1</code> and retire the shared key.</div>'
+    : '<div style="padding:9px 11px;border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)"><b>NOT READY</b> — '+blocked.length+' reporting plugin'+(blocked.length===1?'':'s')+' not yet paired ('+blocked.map(m=>esc(m.cmdr)).join(', ')+'). Flipping now would refuse them, and they would need a manual reinstall.</div>') + naNote + ghostNote;
 
   r.innerHTML=rows.map(m=>{
     // What is actually BLOCKING this pilot, in the order they will hit it.
     let blocker='';
-    if(m.canPair===false) blocker='needs a newer build — they must let the plugin update and restart EDMC';
+    if(m.state==='retired') blocker='retired'+(m.retired&&m.retired.reason?' — '+esc(m.retired.reason):'')+(m.retired&&m.retired.ts?' ('+ago(m.retired.ts)+')':'')+'. The switch refusing this registrar is intended.';
+    else if(m.state==='n/a') blocker='no plugin has ever reported for this commander — nothing to migrate';
+    else if(!m.bound) blocker='NOT BOUND — no account is bound to this CMDR, so nobody can approve its device. An alt needs its own sign-in, or the owner must rebind (one email binds one CMDR today).';
+    else if(m.canPair===false) blocker='needs a newer build — they must let the plugin update and restart EDMC';
     else if(m.canPair===null) blocker='not seen recently — cannot tell which build they are on';
-    else if(!m.bound) blocker='CMDR not bound — they must bind it themselves before they can approve anything';
     else if(!m.paired) blocker='has not approved a device yet — only their own login can do it';
 
     const chip=(ok,label)=>'<span class="pill" style="opacity:'+(ok?1:.45)+'">'+(ok?'✓':'·')+' '+label+'</span>';
@@ -694,9 +709,23 @@ function renderMigration(){
       ? '<span class="pill">v'+esc(m.running)+'</span> <span class="subtle" style="font-size:10.5px">'+ago(m.lastSeenTs)+'</span>'
       : '<span class="subtle">unknown — not seen in 14 days</span>';
 
-    return '<div style="border-bottom:1px dashed var(--line);padding:9px 0">'
+    // Green ONLY on an explicit 'ready'. Anything unrecognised tints as a problem —
+    // an unknown state rendering as healthy is the same fail-open we have spent
+    // all night pulling out of this codebase.
+    const tint = m.stillReporting ? 'var(--warn)'
+      : m.state==='ready' ? 'var(--ok,#3fb950)'
+      : (m.state==='n/a'||m.state==='retired') ? 'var(--line)'
+      : 'var(--warn)';
+    // Retiring is reversible and always visible — a decision you cannot undo in
+    // the same place you made it is a trap.
+    const act = (m.state==='blocked')
+      ? '<button data-retire="'+esc(m.cmdr)+'" style="font-size:11px;padding:4px 9px;cursor:pointer">retire</button>'
+      : (m.state==='retired'
+          ? '<button data-unretire="'+esc(m.cmdr)+'" style="font-size:11px;padding:4px 9px;cursor:pointer">un-retire</button>'
+          : '');
+    return '<div style="border-bottom:1px dashed var(--line);border-left:3px solid '+tint+';padding:9px 0 9px 9px">'
       +'<div class="toolbar" style="justify-content:space-between;gap:8px">'
-      +'<b>'+esc(m.cmdr)+'</b><span>'+ver+'</span></div>'
+      +'<b>'+esc(m.cmdr)+'</b><span>'+ver+' '+act+'</span></div>'
       +'<div style="margin-top:5px">'
       + chip(m.canPair===true,'pairing-capable') + ' '
       + chip(m.bound,'CMDR bound') + ' '
@@ -705,6 +734,15 @@ function renderMigration(){
       +(blocker?'<div class="subtle" style="margin-top:4px;font-size:11.5px">↳ '+esc(blocker)+'</div>':'')
       +'</div>';
   }).join("");
+
+  const send=(cmdr,retire)=>{
+    if(retire && !window.confirm("Retire "+cmdr+"?\n\nThis records that you INTEND this registrar to stop reporting, so it will not hold up the credential switch. It does not stop the plugin — remove it on that PC too."))return;
+    api("POST","/blades/api/plugin-roles",{cmdr:cmdr,retire:retire,reason:retire?"registrar retired by owner":""})
+      .then(d=>{REG_MIGRATION=d.migration||REG_MIGRATION;REG_MIG_READY=!!d.migrationReady;toast((retire?"retired · ":"un-retired · ")+cmdr);renderMigration();})
+      .catch(err=>toast(err.message,true));
+  };
+  $("migRows").querySelectorAll('[data-retire]').forEach(b=>b.onclick=()=>send(b.getAttribute('data-retire'),true));
+  $("migRows").querySelectorAll('[data-unretire]').forEach(b=>b.onclick=()=>send(b.getAttribute('data-unretire'),false));
 }
 function populateMemberSelect(){
   const sel=$("roleAddSelect"); if(!sel) return;
