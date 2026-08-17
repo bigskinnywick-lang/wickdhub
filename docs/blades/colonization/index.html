@@ -107,7 +107,45 @@
     if(rec){if(needTs){rec.completedTs=body.completedTs;rec.tons=body.tons;}if(needArch){rec.architect=p.architectName;rec.verified=true;}}
     try{fetch("/blades/api/builds",{method:"PATCH",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).catch(()=>{});}catch(e){}
   }
-  const SHIP_CAP=790, PAD_REQ=3;
+  const SHIP_CAP=790, PAD_REQ=3;   // PAD_REQ: legacy constant, kept as the fallback only
+
+  // ── LANDING PAD, DERIVED FROM THE HULL (2026-08-16) ──────────────────────
+  // Two bugs, one cause. inaraUrl() emitted pi3=1 — Inara's own default, "Min.
+  // landing pad: Small" — so EVERY cross-check link this board has ever produced
+  // asked for the smallest pad. And PAD_REQ=3 hardcodes Large for everyone in the
+  // Ardent ranking: right for a Type-9, wrong for a Cobra, whose perfectly
+  // dockable stops get demoted.
+  //
+  // The pilot's ship was already in hand — refreshSelfData() fetches the live
+  // loadout to compute trips — it just was never consulted for pads.
+  //
+  // ⚠ pi10=3 is "order by Distance", NOT a pad size. Measured. Do not touch it.
+  //
+  // The map is deliberately incomplete. Unknown hulls fall back to Large because
+  // haulers are the common case here, and the UI SAYS when it fell back, so a
+  // small-ship pilot can see why their results narrowed instead of guessing.
+  const SHIP_PAD={
+    // small
+    sidewinder:1, eagle:1, hauler:1, adder:1, empire_eagle:1, viper:1, viper_mkiv:1,
+    cobramkiii:1, cobramkiv:1, diamondback:1, diamondbackxl:1, empire_courier:1,
+    vulture:1, dolphin:1,
+    // medium
+    asp:2, asp_scout:2, type6:2, keelback:2, federation_dropship:2,
+    federation_dropship_mkii:2, federation_gunship:2, python:2, python_nx:2,
+    krait_mkii:2, krait_light:2, mamba:2, ferdelance:2, independant_trader:2,
+    typex:2, typex_2:2, typex_3:2, type8:2, mandalay:2, corsair:2,
+    // large
+    anaconda:3, federation_corvette:3, cutter:3, type9:3, type9_military:3,
+    type7:3, belugaliner:3, orca:3, empire_trader:3
+  };
+  let MY_PAD=PAD_REQ, MY_PAD_KNOWN=false, MY_SHIP_RAW="";
+  // Opt-in until tested. Flip PAD_DERIVE to true (or append ?pad=1) to enable.
+  const PAD_DERIVE=(function(){try{return /[?&]pad=1/.test(location.search);}catch(e){return false;}})();
+  function padForShip(raw){
+    const k=String(raw||"").toLowerCase().trim();
+    return SHIP_PAD[k]||0;               // 0 = we do not know this hull
+  }
+  function padReq(){ return PAD_DERIVE ? MY_PAD : PAD_REQ; }
   // --- current-ship trip maths + squad carrier registry ------------------
   // Trips reflect YOUR real ship (reported live by the Blades Registrar plugin),
   // not a fixed Type-9. Falls back to a 790t Type-9 until your loadout is known.
@@ -146,6 +184,12 @@
         let cap=790, lbl="Type-9 (default)";
         if(mine&&mine.cargoCap>0){ cap=mine.cargoCap; lbl=((mine.shipName&&mine.shipName.trim())||shipPretty(mine.ship)||"your ship")+" (your ship)"; }
         if(cap!==MY_CAP||lbl!==MY_SHIP_LABEL){ MY_CAP=cap; MY_SHIP_LABEL=lbl; changed=true; }
+        // The hull was always here; it just was not being read.
+        const rawShip=(mine&&mine.ship)||"", p=padForShip(rawShip);
+        const newPad=p||PAD_REQ, newKnown=!!p;
+        if(newPad!==MY_PAD||newKnown!==MY_PAD_KNOWN||rawShip!==MY_SHIP_RAW){
+          MY_PAD=newPad; MY_PAD_KNOWN=newKnown; MY_SHIP_RAW=rawShip; changed=true;
+        }
       }
       if(cs&&cs.carriers){
         const map={}; cs.carriers.forEach(function(c){ if(c.marketId) map[String(c.marketId)]=c; });
@@ -203,7 +247,7 @@
     let list=await r.json(); if(!Array.isArray(list)) list=[];
     const srcScore=(s)=>{let v=RANK.distLY*(s.distance||0)+RANK.priceCr*(s.buyPrice||0);if(s.stationType==='FleetCarrier')v+=RANK.carrierPenalty;const t=Date.parse(s.updatedAt);if(!isNaN(t)&&(Date.now()-t)/3.6e6>RANK.staleHrs)v+=RANK.stalePenalty;return v;};
     list.sort((a,b)=>{const ad=a.stock<=0?1:0,bd=b.stock<=0?1:0;if(ad!==bd)return ad-bd;
-      const ap=a.maxLandingPadSize<PAD_REQ?1:0,bp=b.maxLandingPadSize<PAD_REQ?1:0;if(ap!==bp)return ap-bp;return srcScore(a)-srcScore(b);});
+      const _pr=padReq();const ap=a.maxLandingPadSize<_pr?1:0,bp=b.maxLandingPadSize<_pr?1:0;if(ap!==bp)return ap-bp;return srcScore(a)-srcScore(b);});
     srcCache[key]=list; return list;
   }
 
@@ -329,14 +373,14 @@
     const id=INARA_CID[String(name||'').trim().toLowerCase().replace(/\s+/g,' ')]||INARA_CID_N[_strip(name)];
     const sys=encodeURIComponent((PROJECT&&PROJECT.systemName)||'');
     return id
-      ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=1&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
+      ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=${PAD_DERIVE?padReq():1}&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
       : `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&ps1=${sys}`;
   }
   function inaraLink(name){return `<a href="${inaraUrl(name)}" target="_blank" rel="noopener" title="Cross-check ${name} sellers on Inara near ${(PROJECT&&PROJECT.systemName)||'the build'}" style="color:#ff7a12;text-decoration:none;white-space:nowrap">↗ Inara</a>`;}
   function drawerHtml(list,name){
     if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span><span>${inaraLink(name)}</span></div></div>`;
     const rows=list.slice(0,7).map((s,i)=>{
-      const out=s.stock<=0, low=s.stock>0&&s.stock<2000, padbad=s.maxLandingPadSize<PAD_REQ, carrier=s.stationType==='FleetCarrier';
+      const out=s.stock<=0, low=s.stock>0&&s.stock<2000, padbad=s.maxLandingPadSize<padReq(), carrier=s.stationType==='FleetCarrier';
       const stockCls=out?'out':(low?'low':''); const stockTxt=out?'OUT':fmt(s.stock)+' t';
       const badges=[carrier?'<span class="badge b-carrier">CARRIER · MOBILE</span>':'',padbad?`<span class="badge b-padbad">${s.maxLandingPadSize===2?'M':'S'} PAD</span>`:''].join('');
       const copyBtn=out?'':`<button class="copy" data-copy="${s.systemName}">⧉ NAV: ${s.systemName.length>16?s.systemName.slice(0,15)+'…':s.systemName}</button>`;
