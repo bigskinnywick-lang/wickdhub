@@ -395,14 +395,23 @@
       ? `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&pa1%5B%5D=${id}&ps1=${sys}&pi10=3&pi11=0&pi3=${PAD_DERIVE?padReq():1}&pi9=0&pi4=0&pi8=0&pi13=0&pi5=720&pi12=0&pi7=0&pi14=0&ps3=`
       : `https://inara.cz/elite/commodities/?formbrief=1&pi1=1&ps1=${sys}`;
   }
-  function inaraLink(name){return `<a href="${inaraUrl(name)}" target="_blank" rel="noopener" title="Cross-check ${name} sellers on Inara near ${(PROJECT&&PROJECT.systemName)||'the build'}" style="color:#ff7a12;text-decoration:none;white-space:nowrap">↗ Inara</a>`;}
+  // 2026-08-17 — data-comm carries the commodity EXPLICITLY so the Transmit button
+  // can record the intent. The alternative was parsing it back out of the title
+  // text, which is display copy and free to change. Deriving a value that could
+  // simply be emitted is the same mistake as the missing data-station.
+  function inaraLink(name){return `<a href="${inaraUrl(name)}" target="_blank" rel="noopener" data-comm="${escFC(name)}" title="Cross-check ${escFC(name)} sellers on Inara near ${escFC((PROJECT&&PROJECT.systemName)||'the build')}" style="color:#ff7a12;text-decoration:none;white-space:nowrap">↗ Inara</a>`;}
   function drawerHtml(list,name){
     if(!list.length) return `<div class="srcWrap"><div class="srcHead"><span>No market sells ${name} within range — widen search or check carriers.</span><span>${inaraLink(name)}</span></div></div>`;
     const rows=list.slice(0,7).map((s,i)=>{
       const out=s.stock<=0, low=s.stock>0&&s.stock<2000, padbad=s.maxLandingPadSize<padReq(), carrier=s.stationType==='FleetCarrier';
       const stockCls=out?'out':(low?'low':''); const stockTxt=out?'OUT':fmt(s.stock)+' t';
       const badges=[carrier?'<span class="badge b-carrier">CARRIER · MOBILE</span>':'',padbad?`<span class="badge b-padbad">${s.maxLandingPadSize===2?'M':'S'} PAD</span>`:''].join('');
-      const copyBtn=out?'':`<button class="copy" data-copy="${s.systemName}">⧉ NAV: ${s.systemName.length>16?s.systemName.slice(0,15)+'…':s.systemName}</button>`;
+      // 2026-08-17 — data-station was NEVER emitted, so the click handler's
+      // `b.dataset.station||''` read an attribute that did not exist and every
+      // intent row since 2026-08-16 stored station:"". The name was on `s` the
+      // whole time — it is rendered in bold two lines below. escFC because this
+      // is third-party text from Ardent going into an HTML attribute.
+      const copyBtn=out?'':`<button class="copy" data-copy="${s.systemName}" data-station="${escFC(s.stationName)}">⧉ NAV: ${s.systemName.length>16?s.systemName.slice(0,15)+'…':s.systemName}</button>`;
       return `<div class="src ${i===0&&!out&&!padbad?'best':''} ${out?'dead':''}">
         <div class="rank">${out?'—':i+1}</div>
         <div class="loc"><div class="st"><b>${s.stationName}</b> ${badges}</div><div class="sy">${s.systemName} · ${s.stationType} · ${s.distanceToArrival!=null?fmt(Math.round(s.distanceToArrival))+' Ls':'—'}</div></div>
@@ -655,7 +664,7 @@
      touched this counter until 2026-08-12. "Vanishes after two refreshes" described a thing
      that did not happen. Now it does. ---- */
   (function(){
-    var KEY="ob_inaraTx", BASE="⧉ TRANSMIT SYSTEM → PC";
+    var KEY="ob_inaraTx", CKEY="ob_inaraTxComm", BASE="⧉ TRANSMIT SYSTEM → PC";
     var btn=document.createElement("button");
     btn.id="inaraTxBtn"; btn.type="button"; btn.textContent=BASE;
     btn.title="Reads the system you copied on Inara from your clipboard and sends it to your PC (paste into the galaxy map). Clears when you send it, when you hit ⟳ REFRESH, or after two page loads.";
@@ -664,11 +673,22 @@
     function mount(){ if(!mounted && document.body){ document.body.appendChild(btn); mounted=true; } }
     function show(){ mount(); btn.style.display="block"; }
     function hide(){ btn.style.display="none"; }
-    function arm(){ try{ localStorage.setItem(KEY,"2"); }catch(e){} show(); }
+    /* 2026-08-17 — carry the COMMODITY through the Inara round trip.
+       The station genuinely cannot come this way: this is a clipboard handoff, so the
+       board only ever receives the string the pilot copied on Inara — it never sees
+       Inara's page and there is no supplier row to read a station off. The commodity
+       IS knowable, because the board generated the very link he clicked.
+       ⚠ Stored beside the counter, not in memory: arming survives the trip to Inara
+       and back, which is a page load. A commodity that did not survive with it would
+       silently become "" — the exact failure this pair of fixes exists to close. */
+    function armComm(c){ try{ if(c) localStorage.setItem(CKEY,c); else localStorage.removeItem(CKEY); }catch(e){} }
+    function getComm(){ try{ return localStorage.getItem(CKEY)||""; }catch(e){ return ""; } }
+    function dropComm(){ try{ localStorage.removeItem(CKEY); }catch(e){} }
+    function arm(comm){ try{ localStorage.setItem(KEY,"2"); }catch(e){} armComm(comm); show(); }
     function tick(){ var n=0; try{ n=parseInt(localStorage.getItem(KEY)||"0",10)||0; }catch(e){}
       if(n>0){ show(); try{ localStorage.setItem(KEY,String(n-1)); }catch(e){} }
-      else { hide(); try{ localStorage.removeItem(KEY); }catch(e){} } }
-    function clear(){ try{ localStorage.removeItem(KEY); }catch(e){} hide(); }
+      else { hide(); try{ localStorage.removeItem(KEY); }catch(e){} dropComm(); } }
+    function clear(){ try{ localStorage.removeItem(KEY); }catch(e){} dropComm(); hide(); }
     /* Delegated on document, in the CAPTURE phase, because render() rebuilds the manifest
        header on every refresh — a listener bound straight to #refreshBtn would be thrown away
        the first time it fired. Matched by ID, NOT by the .refresh-btn class, which the SORT
@@ -677,7 +697,7 @@
       var t=(e.target&&e.target.closest)?e.target:null; if(!t||!t.closest) return;
       if(t.closest("#refreshBtn")){ clear(); return; }
       var a=t.closest("a[href]");
-      if(a&&/inara\.cz/i.test(a.getAttribute("href")||"")) arm();
+      if(a&&/inara\.cz/i.test(a.getAttribute("href")||"")) arm(a.dataset.comm||"");
     },true);
     function sanit(t){ return String(t||"").replace(/\r/g,"").split("\n")[0].trim().slice(0,60); }
     async function transmit(){
@@ -687,9 +707,11 @@
       if(!sys){ toast("Nothing to transmit — copy a system on Inara first."); return; }
       btn.disabled=true; btn.textContent="▷ TRANSMITTING…";
       try{
-        var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys})});
+        /* commodity only — NO station. navpush treats an absent station as "not recorded",
+           and on this path it genuinely is not recorded rather than lost. */
+        var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys,commodity:getComm()})});
         var d=null; try{ d=await r.json(); }catch(_){}
-        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; try{ localStorage.removeItem(KEY); }catch(e){} setTimeout(function(){ hide(); btn.textContent=BASE; },1200); }
+        if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; try{ localStorage.removeItem(KEY); }catch(e){} dropComm(); setTimeout(function(){ hide(); btn.textContent=BASE; },1200); }
         else if(r.status===409){ toast("Bind your CMDR first (MY DASHBOARD) so we know whose PC to reach."); btn.textContent=BASE; }
         else { toast("Could not transmit "+sys+" — "+((d&&d.error)||("HTTP "+r.status))); btn.textContent=BASE; }
       }catch(e){ toast("Transmit failed — network error."); btn.textContent=BASE; }

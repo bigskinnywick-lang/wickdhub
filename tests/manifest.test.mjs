@@ -53,6 +53,11 @@ const KITCHEN_SINK = {
   rigHardware: { gpu: "RTX 2070" },
   carrierPosition: { system: "Sol" },
   sealedAssociation: { a: "b" },
+  // own, but LOCAL-resident — declared in the manifest, deliberately unreachable.
+  // Present in the bag on purpose: this is the case where a future backup lane
+  // wires the gather step up before anyone re-reads the sharing decision.
+  honkIndex: { "Col 285 Sector BU-O b7-3": { ts: 1 } },
+  favourites: [{ name: "the yard", station: "Collora's Progress" }],
   // never classified at all — the case a filter would let through
   someNewFieldNobodyClassified: "leak",
   __proto__: undefined,
@@ -78,6 +83,21 @@ t("every third-party entry is prohibited — no exceptions", () => {
   }
 });
 t("the manifest is versioned", () => assert.match(MANIFEST_VERSION, /^OB-2\//));
+t("residence is one of the three declared values, or absent (= board)", () => {
+  for (const m of MANIFEST) {
+    if ("residence" in m) {
+      assert.ok(["board", "local", "both"].includes(m.residence), `bad residence on ${m.key}`);
+    }
+  }
+});
+t("a local-resident field is unreachable by scope", () => {
+  // Residence is descriptive; `scope` is what gates. This asserts the two agree,
+  // so a row cannot claim to live only on the pilot's machine while also being
+  // emitable from the board.
+  for (const m of MANIFEST) {
+    if (m.residence === "local") assert.equal(m.scope, null, `${m.key} says it never leaves the machine, but has a scope`);
+  }
+});
 
 console.log("\nPROJECTION — what SHOULD come out");
 const out = project(KITCHEN_SINK, SCOPES);
@@ -108,6 +128,31 @@ t("NEGATIVE: no PROHIBITED field escapes", () => {
                    "rigHardware", "carrierPosition", "sealedAssociation"]) {
     assert.ok(!(k in out), `${k} leaked — prohibited means never, not 'protected'`);
   }
+});
+t("★ NEGATIVE: a LOCAL-resident field cannot leak, at any scope", () => {
+  // The honk index is a map of everywhere this pilot has ever flown. It is OWN
+  // data — but it lives on his machine and has never been sent anywhere, and the
+  // backup lane that would change that is gated on INGEST_LEGACY_OFF=1.
+  //
+  // ⚠ THIS TEST GUARDS ONE DIRECTION ONLY. It proves the BOARD will not emit
+  // these. It cannot prove the plugin does not write them somewhere it should
+  // not, because that path never calls project(). The seal covers the outbound
+  // API, not the pilot's own disk. See the residence note in manifest.js.
+  for (const scopes of [[SCOPE_OWN], [SCOPE_SQUAD_AGG], SCOPES, []]) {
+    const o = project(KITCHEN_SINK, scopes);
+    for (const k of ["honkIndex", "favourites"]) {
+      assert.ok(!(k in o), `${k} leaked at scope [${scopes}] — it is declared, not shared`);
+    }
+  }
+});
+t("★ NEGATIVE: no cumulative OWN history reaches a squad aggregate", () => {
+  // The squad tier is aggregates only, and every aggregate today is a count over
+  // present-tense state. A movement history behind an aggregate is still a
+  // movement history — 'where has CMDR X been' is 'where is CMDR X' with a
+  // timeline attached, and that stays closed at every tier.
+  const sq = project(KITCHEN_SINK, [SCOPE_SQUAD_AGG]);
+  assert.ok(!JSON.stringify(sq).includes("Col 285 Sector BU-O b7-3"),
+    "a honked system name surfaced through the squad projection");
 });
 t("★ NEGATIVE: an UNCLASSIFIED field cannot leak", () => {
   assert.ok(!("someNewFieldNobodyClassified" in out),

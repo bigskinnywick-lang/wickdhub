@@ -34,6 +34,34 @@ function cleanSystem(v) {
   if (!/^[\w .,'\-+*/()]{1,60}$/.test(s)) return "";
   return s.slice(0, 60);
 }
+// Station names, 2026-08-17. NAME THE THREAT FIRST, because it is not XSS:
+//
+// This string is third-party text from Ardent, and it is headed for a path where
+// it will be SPOKEN by COVAS and STRING-MATCHED against Status.json's
+// `Destination.Name`. ★ The sharp edge is a control character — a newline or a
+// tab surviving into a value that later reaches the PC clipboard is an ENTER or a
+// TAB pressed inside the game's search box. That is OB-2 §6's rule (an untrusted
+// string must never reach something that presses a key) arriving by a route §6
+// did not anticipate, because §6 was written about chat.
+//
+// So: strip control characters and collapse whitespace FIRST, then allowlist.
+// Deliberately more permissive than cleanSystem — station names legitimately
+// carry ':' ("Orbital Construction Site: Collora's Progress"), and typographic
+// apostrophes arrive from Ardent ("Zoline’s Inheritance"), which are folded to
+// ASCII rather than stripped so the name still matches what the game displays.
+//
+// ⚠ Returns "" on a name that is entirely unusable. That is the SAME empty this
+// change exists to fix — but it now means "we looked and it was junk" rather
+// than "nobody wired the attribute up", and it can only happen to input that
+// had no legitimate characters at all.
+function cleanStation(v) {
+  let s = String(v == null ? "" : v);
+  s = s.replace(/[\u0000-\u001F\u007F]/g, " ");   // control chars -> space. THE KEYPRESS RISK.
+  s = s.replace(/[\u2018\u2019\u02BC]/g, "'").replace(/[\u201C\u201D]/g, '"'); // fold smart quotes
+  s = s.replace(/\s+/g, " ").trim();
+  s = s.replace(/[^\w .,'":\-+*/()&]/g, "");            // allowlist, station-shaped
+  return s.slice(0, 60);
+}
 
 export async function onRequestPost({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
@@ -55,8 +83,18 @@ export async function onRequestPost({ request, env }) {
   // journal can say where he went and eventually what he bought; it can never
   // say what he was looking for.
   //
-  // Hoard now, use later. Recorded because it is being thrown away, NOT because
-  // a feature is waiting on it — do not build one on this without asking.
+  // ★ 2026-08-17 — the "hoard now, build nothing on it" fence is LIFTED (OB-2 §8).
+  // A consumer is now expected: COVAS reads the station back on arrival. Two
+  // conditions travel with it — speak only when the arrival system matches the
+  // recorded intent system, and consume the record on speak, so a stale click is
+  // never read back later.
+  //
+  // ⚠ AND THE FIELD IT NEEDS WAS EMPTY. `data-station` was never emitted by the
+  // supplier drawer, so `b.dataset.station||''` read an attribute that did not
+  // exist and every row written between 2026-08-16 and 2026-08-17 stored
+  // station:"". Fixed on the page in the same change. Rows already in KV keep
+  // their empty station — a consumer must treat "" as "not recorded", never as
+  // "no station".
   //
   // ⚠ Strictly additive. A failure here must never break the plot-or-clipboard
   // path, which is why it is fire-and-forget below the nav write and why an
@@ -68,7 +106,7 @@ export async function onRequestPost({ request, env }) {
       let prev = [];
       const v = await env.BUILDS.get(key);
       if (v) { const o = JSON.parse(v); if (Array.isArray(o.recent)) prev = o.recent; }
-      const recent = [{ system, commodity, station: String(body.station || "").slice(0, 60), ts: rec.ts }]
+      const recent = [{ system, commodity, station: cleanStation(body.station), ts: rec.ts }]
         .concat(prev)
         .slice(0, 50);   // a rolling window, not a permanent movement log
       await env.BUILDS.put(key, JSON.stringify({ recent, ts: rec.ts }));

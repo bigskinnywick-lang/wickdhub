@@ -35,6 +35,41 @@
 //   that is the question OB-1 never contemplated, because a board displays and
 //   an agent infers and speaks.
 
+// ─── RESIDENCE — WHERE IT LIVES, which is NOT who may see it ─────────────────
+//   board   the value lives in Blades KV / an API response. The default.
+//   local   the value lives on the pilot's own machine and has never been sent
+//           anywhere. The board cannot emit it because the board does not have it.
+//   both    held in both places, deliberately, by a backup or restore.
+//
+// WHY THIS AXIS EXISTS (added 2026-08-17):
+// Before it, `scope: null` carried three unrelated meanings at once —
+//   (a) "never emit, at any tier"            memberEmail
+//   (b) "not shared YET, pending OB-1"       memberLoadout
+//   (c) "never leaves the machine that wrote it"  npcTokenLog
+// and the honk index / favourites store would have made a fourth. That is the
+// same one-meaning-per-silence defect the rig caught in the payload contract
+// below, one level up: a single token standing for several different decisions,
+// so no reader can tell which one was made.
+//
+// ★ Residence is descriptive, never enforcing. It does not gate anything — a
+// local row is unreachable because `scope: null` makes it unreachable. Residence
+// records WHY, so that the day a local row is given a scope, the diff reads as
+// "this now leaves the machine" instead of as routine growth.
+//
+// ⚠ THE LIMIT OF THE SEAL. `project()` is a choke point on what the BOARD emits.
+// It is not a choke point on what the plugin writes to the pilot's own disk —
+// that path never calls this file. A `residence: "local"` row is therefore a
+// classification and a promise, NOT a mechanism. Do not read the seal as
+// covering it.
+export const RESIDENCE_BOARD = "board";
+export const RESIDENCE_LOCAL = "local";
+export const RESIDENCE_BOTH = "both";
+
+// ⚠ NOT bumped for the residence axis, deliberately. No emitted field changed:
+// `available[]` and `data{}` are byte-identical before and after. Consumers pin
+// this string, and bumping it to announce a change they cannot observe trains
+// them to ignore it. ★ It MUST bump the day a `residence: "local"` row is given
+// a scope — that one does change `available[]`.
 export const MANIFEST_VERSION = "OB-2/1";
 
 // scope values a caller may hold. Ordered loosest to tightest for clarity only;
@@ -49,6 +84,8 @@ export const SCOPE_SQUAD_AGG = "squad:aggregate";
  * key       — the name it is emitted under
  * cls       — own | squad | third-party
  * scope     — which caller scope unlocks it (null = never emitted)
+ * residence — board | local | both. Omitted means "board" — see the axis note
+ *             above. Descriptive only; `scope` is what actually gates.
  * from      — where the value is read from, for humans tracing it
  * note      — why it is classified this way, when that is not obvious
  */
@@ -73,7 +110,29 @@ export const MANIFEST = [
   { key: "cargoManifest", shape: "map", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:cargo:{cmdr}.items",
     note: "the plugin only ever read total tonnage; what is IN the hold was never looked at" },
   { key: "intent", shape: "list", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:intent:{cmdr}.recent[]",
-    note: "which commodity was searched before plotting. Lived in browser srcCache and died there. Hoard now, use later — do NOT build a feature on it" },
+    note: "which commodity was searched before plotting. Lived in browser srcCache and died there. ★ The 'hoard now, use later, build nothing on it' fence was LIFTED 2026-08-17 — Adam asked for the consumer himself and described it as READBACK of a fact he created, not inference about why he is somewhere. Two conditions travel with it, see OB-2 §8: (1) speak only when the arrival system matches the recorded intent system, silence otherwise; (2) consume the record on speak, so a stale click can never be read back on a later arrival. The risk here was never disclosure — it is confidently naming the wrong station" },
+
+  // ── OWN, RESIDENT ON THE PILOT'S OWN MACHINE. Declared here while nothing
+  // emits them — that is the point. These are written by the plugin to files
+  // under ~/.covas/ and have never crossed a boundary. Spec: secondbrain
+  // `COVAS — Honk Index, Favourites and Assisted Plot (build spec)` §5.
+  //
+  // ★ WHY DECLARE WHAT CANNOT BE EMITTED. Adam has asked for backup/restore to
+  // a pilot's Blades profile, so these fields WILL be proposed for a scope. If
+  // they are absent from the manifest until that day, the change arrives as two
+  // new rows and reads like routine growth. Declared now, it arrives as a scope
+  // change on an existing row — one line, and the line says what it means.
+  // A classification that was never written down was never actually decided.
+  //
+  // ⚠ BOTH ARE BLOCKED ON `INGEST_LEGACY_OFF=1`. A lane opened while the public
+  // legacy key can still write `/ingest/*` inherits that exposure, and this one
+  // would carry movement history. Backup/restore only — never sync; see the spec.
+  { key: "honkIndex", shape: "map", cls: "own", scope: null, residence: RESIDENCE_LOCAL,
+    from: "~/.covas/honked_systems.json",
+    note: "★ THE FIRST CUMULATIVE OWN FIELD. Everything else own here is present-tense with a 6h TTL — current system, current cargo, current alerts. This is durable and additive: a map of everywhere the pilot has ever flown, which is exploration routes, carrier movements and squad operations in one file. OWN-only at every tier, and it must NEVER feed a squad aggregate — 'where has CMDR X been' is 'where is CMDR X' with a history attached" },
+  { key: "favourites", shape: "list", cls: "own", scope: null, residence: RESIDENCE_LOCAL,
+    from: "~/.covas/favourites.json",
+    note: "pilot-named stations in his own words ('the yard', 'home'). Station names are PLACES, not people, so the names themselves are own-data. ⚠ Do NOT store the architect name alongside a player-built station — that is a third-party field, and functions/ingest/architect.js is already flagged for having no key check and Allow-Origin: *" },
 
   // ── OWN: this pilot's own claims and carrier. Already squad-visible.
   { key: "myClaims", shape: "list",  cls: "own", scope: SCOPE_OWN, from: "claim:* where architect == me" },
@@ -111,10 +170,10 @@ export const MANIFEST = [
   { key: "systemChatter", cls: "third-party", scope: null, prohibited: true,
     from: "journal ReceiveText channel=starsystem",
     note: "17,723 events measured — broadcast by strangers, not ours to keep" },
-  { key: "playerHandles", cls: "third-party", scope: null, prohibited: true,
+  { key: "playerHandles", cls: "third-party", scope: null, prohibited: true, residence: RESIDENCE_LOCAL,
     from: "recovered from journals for voice casting",
     note: "the casting map stays on the rig; never persisted anywhere that syncs" },
-  { key: "npcTokenLog", cls: "third-party", scope: null, prohibited: true,
+  { key: "npcTokenLog", cls: "third-party", scope: null, prohibited: true, residence: RESIDENCE_LOCAL,
     from: "plugin npc-tokens.log",
     note: "exists to tune a matcher, not to feed a model. Never leaves the machine that wrote it" },
   { key: "rigHardware", cls: "own", scope: null, prohibited: true, from: "rig:{email}",

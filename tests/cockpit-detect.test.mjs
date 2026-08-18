@@ -13,9 +13,7 @@
 //     refused", and those want opposite responses
 // Wrongly keeping a useless button costs pixels. Wrongly hiding a working one costs trust.
 // The controls below are all of the second kind.
-let chromium;
-try { ({ chromium } = await import('playwright')); }
-catch { console.log('SKIP cockpit-detect: playwright not installed'); process.exit(0); }
+import { launch } from './_browser.mjs';
 import http from 'node:http'; import fs from 'node:fs';
 import path from 'node:path'; import { fileURLToPath } from 'node:url';
 
@@ -30,7 +28,7 @@ const srv = http.createServer((q, s) => {
   s.writeHead(404); s.end('');
 });
 await new Promise(r => srv.listen(8099, '127.0.0.1', r));
-const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const b = await launch('cockpit-detect');
 const R = []; const ok = (n, c, d = '') => R.push({ n, pass: !!c, d });
 
 // `rf` is mutable so a test can change what the plugin "reports" between polls, which is the

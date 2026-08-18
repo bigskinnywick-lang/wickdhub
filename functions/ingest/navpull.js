@@ -211,6 +211,49 @@ async function storeAlerts(env, cmdrLower, rawParam) {
   } catch (e) {}
 }
 
+/**
+ * THE INTENT GATE — exported as a pure function ON PURPOSE.
+ *
+ * ⚠ The first version of this lived inline in the handler, and the test that
+ * "proved" it was a hand-written mirror of the same logic. Mutating the real code
+ * left the test green, because the test was checking its own copy. Two of three
+ * mutations sailed through, including "emit an empty station as a value" — the
+ * exact bug this gate exists to prevent. A control that cannot see the code it
+ * guards is decoration, which is the same lesson as the manifest projector.
+ *
+ * Returns { intent, recorded } for a paired device, or null for anyone else.
+ *
+ * ★★ WHY THE GATE. This route also accepts the LEGACY shared key, a literal in
+ * load.py in a PUBLIC repo — anyone can call `?key=&cmdr=` for any commander they
+ * can name. It already leaks a nav target, channel and settings. Intent would add
+ * what he is hauling and where he is taking it, which in this game is a pirate's
+ * shopping list. No credential is exposed either way; the harm is that a public key
+ * would start answering a materially more useful question. A legacy caller must
+ * therefore get the pre-2026-08-17 payload byte for byte.
+ *
+ * ⚠ MATCHED ON `ts`, NOT ON SYSTEM. navpush writes the nav record and the intent row
+ * in one request with the same timestamp. Matching on system would pick the wrong row
+ * the second time one system is plotted for two commodities — and would look correct
+ * every time it had only been done once.
+ */
+export function intentPayload(via, navSystem, navTs, recentRows) {
+  if (via !== "device") return null;
+  const recorded = navSystem ? ["system"] : [];
+  const intent = {};
+  if (navSystem && navTs) {
+    const hit = Array.isArray(recentRows) ? recentRows.find((r) => r && r.ts === navTs) : null;
+    if (hit) {
+      // ★ ONE MEANING PER SILENCE. A name appears in `recorded` only when the field
+      // actually holds a value. `station:""` was a real state in KV for a day after the
+      // board silently dropped it, so a consumer must never read an empty string as
+      // "this place has no station" — absence from `recorded` means NOT RECORDED.
+      if (hit.commodity) { intent.commodity = hit.commodity; recorded.push("commodity"); }
+      if (hit.station) { intent.station = hit.station; recorded.push("station"); }
+    }
+  }
+  return { intent, recorded };
+}
+
 export async function onRequestGet({ request, env }) {
   if (!env || !env.BUILDS) return json({ ok: false, error: "KV not bound" }, 500);
   const url = new URL(request.url);
@@ -266,9 +309,41 @@ export async function onRequestGet({ request, env }) {
     if (a) { const o2 = JSON.parse(a); if (o2 && o2.ts) act = { kind: String(o2.kind || "button").slice(0, 24), ts: o2.ts }; }
   } catch (e) {}
 
+  // ── (5) 2026-08-17: the INTENT sidecar, for COVAS ────────────────────────
+  // The board records {system, commodity, station} at the moment the pilot clicks a
+  // supplier row. This hands it to the rig alongside the nav target so COVAS can
+  // decide between a system plot and the fuller station sequence.
+  //
+  // ★★ GATED ON `via === "device"`, AND THAT IS NOT A STYLE CHOICE.
+  // This route also accepts the LEGACY shared key, which is a literal in load.py in a
+  // PUBLIC repo — anyone can fetch it and call `?key=&cmdr=` for any commander they can
+  // name. Today that leaks a nav target, channel and settings. Intent would add WHAT HE
+  // IS HAULING AND WHERE HE IS TAKING IT, for a named CMDR — which in this game is
+  // precisely a pirate's shopping list. No credential is exposed either way; the harm is
+  // that a public key would start answering a materially more useful question.
+  //
+  // So a legacy caller gets the pre-2026-08-17 payload byte for byte, and only a paired
+  // device sees intent. This ships the feature WITHOUT waiting on INGEST_LEGACY_OFF=1.
+  //
+  // ⚠ MATCHED ON `ts`, NOT ON SYSTEM. navpush writes the nav record and the intent entry
+  // in one request with the same timestamp, so ts is exact. Matching on system instead
+  // would pick the wrong row the second time he plots one system for two commodities —
+  // and it would look right every time he only did it once.
+  let sidecar = null;
+  if (a.via === "device" && navSystem) {
+    let rows = null;
+    try {
+      const iv = await env.BUILDS.get("sq:onyx:intent:" + cmdrLower);
+      if (iv) { const io = JSON.parse(iv); if (Array.isArray(io.recent)) rows = io.recent; }
+    } catch (e) { /* intent is additive; never fail the nav pull over it */ }
+    sidecar = intentPayload(a.via, navSystem, navTs, rows);
+  }
+
   // ★ `now` is the WORKER'S clock, returned so the plugin can age a nav push without ever
   // involving the rig's clock (b3.21 refocus freshness gate). Comparing a Cloudflare ts
   // against local time would turn that gate into a clock-skew detector. Cheap and additive:
   // an older plugin ignores the field, a newer plugin that does not get it fails closed.
-  return json({ ok: true, system: navSystem, ts: navTs, now: Date.now(), act, latest, channel, settings });
+  const out = { ok: true, system: navSystem, ts: navTs, now: Date.now(), act, latest, channel, settings };
+  if (sidecar) { out.intent = sidecar.intent; out.recorded = sidecar.recorded; }
+  return json(out);
 }

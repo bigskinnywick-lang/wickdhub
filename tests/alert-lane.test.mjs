@@ -13,9 +13,7 @@
 //      harness away rather than the code.)
 //   2. Stub an un-authed pilot as a real 403, not as a happy payload with bound:false.
 //      A cheerful stub mounted the strip and hid the fact that nothing gates it.
-let chromium;
-try { ({ chromium } = await import('playwright')); }
-catch { console.log('SKIP alert-lane: playwright not installed (npm i -D playwright)'); process.exit(0); }
+import { launch } from './_browser.mjs';
 import http from 'node:http'; import fs from 'node:fs';
 import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'docs');
@@ -26,7 +24,7 @@ const srv=http.createServer((q,s)=>{let f=ROOT+q.url.split('?')[0];
     s.writeHead(200,{'content-type':ct});return s.end(fs.readFileSync(f));}
   s.writeHead(404);s.end('');});
 await new Promise(r=>srv.listen(8097,'127.0.0.1',r));
-const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome',args:['--autoplay-policy=no-user-gesture-required']});
+const b=await launch('alert-lane', { args: ['--autoplay-policy=no-user-gesture-required'] });
 const R=[];const ok=(n,c,d='')=>R.push({n,pass:!!c,d});
 
 // ⚠ telemetry.js deliberately marks the backlog present at PAGE LOAD as seen, silently —

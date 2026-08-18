@@ -5,9 +5,7 @@
 //   npm i -D playwright && node tests/ob1-panel.test.mjs
 //
 // Skips cleanly (exit 0) if playwright isn't installed, so a fresh clone isn't blocked.
-let chromium;
-try { ({ chromium } = await import('playwright')); }
-catch { console.log('SKIP ob1-panel: playwright not installed (npm i -D playwright)'); process.exit(0); }
+import { launch } from './_browser.mjs';
 import http from 'node:http'; import fs from 'node:fs';
 import os from 'node:os'; import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,7 +18,7 @@ fs.writeFileSync(path.join(TMP, 'host.html'), `<!doctype html><html><head><meta 
 const srv=http.createServer((q,s)=>{const f=TMP+q.url.split('?')[0];
   if(fs.existsSync(f)&&fs.statSync(f).isFile()){s.writeHead(200,{'content-type':f.endsWith('.js')?'text/javascript':'text/html'});return s.end(fs.readFileSync(f));}s.writeHead(404);s.end();});
 await new Promise(r=>srv.listen(8098,'127.0.0.1',r));
-const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome'});
+const b=await launch('ob1-panel');
 const R=[];const ok=(n,c,d='')=>R.push({n,pass:!!c,d});
 
 async function open(memberPayload, {patchStatus=200, patchBody=null, getStatus=200}={}) {

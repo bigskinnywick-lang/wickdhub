@@ -47,7 +47,7 @@ import re
 import zipfile
 
 PLUGIN_NAME = "Blades Registrar"
-PLUGIN_VERSION = "b3.35"  # b3.35: KEEPS THREE THINGS IT USED TO THROW AWAY, AND HARDENS THE UPDATE CHECK. The plugin already read your cargo hold and every construction site's full requirement list out of the journal - and then dropped both on the floor, while the board went and fetched the same numbers again from elsewhere. It now keeps them. Nothing uses them yet and nothing on screen changes; a fact you did not keep is simply not recoverable later, so it gets recorded at the moment it exists. Also: the update checksum is now REQUIRED rather than merely honoured when present - a release with no checksum used to skip verification and install anyway, which is not good enough for the one path that overwrites this plugin with new code.
+PLUGIN_VERSION = "b3.36"  # b3.36: HANDS THE NAV TARGET TO COVAS, AND STOPS THERE. When the board sends you a system, the plugin still does exactly what it always did - the system goes on your clipboard, and it auto-plots if you have that switched on. What is new is that it now also drops a small message in COVAS's inbox carrying WHY you are going: the commodity you clicked, and the station it came from. The plugin does not act on any of it. COVAS decides whether it knows enough for the full station approach or just the system hop, because COVAS is the one holding your bookmarks and your honk history. If COVAS is not running the message simply sits there and you plot by hand exactly as you do today - nothing about the clipboard depends on any of this. Also carried from b3.35: the cargo hold and per-site requirement lists are kept rather than parsed and discarded, and the update checksum is now REQUIRED rather than honoured only when present, because a release with no checksum used to skip verification and install anyway - not good enough for the one path that overwrites this plugin with its own new code.
 # b3.26: THE PIRATE ALARM COULD NOT NAME THE KEY IT PROMISED. When the alarm failed to grab the stick back for you it told you which key would - but the 90-character cap was applied AFTER that hint was added, so a talkative pirate pushed the key name off the end and you read '... - press ' with nothing after it. Whether the alarm was actionable depended on how much the pirate had to say: replayed over 654 journals of real NPC chatter, only 36 of 159 hails delivered the whole remedy, 48 named a fragment of the key and 75 lost the promise entirely. The key name is now reserved FIRST and the pirate's line gets what is left, so the remedy always arrives whole - and a hint that will not fit whole is dropped rather than shown half, because a half-named key sends you reaching for one that isn't there. The 90-char cap does not move and the longest alert is still exactly 90, so the heartbeat does not grow by a byte. Also: the hint no longer appears when Elite is not running at all, where the key you were being told to press was exactly as dead as the automation had just been. Survived eleven builds unseen because b3.15 made the refocus reliable, so the path that carried the bug almost never ran.
 # b3.25: THE COCKPIT DETECTION COULD NEVER FIRE. _refocus_to_elite stamped _rf["at"] on the success rung and the failure path but NOT on the "Elite is already foreground" early return - and a press from a tablet or a second PC never moves the rig's foreground, so it ALWAYS landed there. rfAt never changed, the board waited out its 12s window, and no evidence was ever recorded. Now stamped as rung "already", which is the most informative outcome available: plugin says Elite holds focus + the asking browser never blurred = that browser is not this machine. Found by Adam pressing the button repeatedly on a Mac and a tablet and watching nothing happen - the unit tests all passed because they drove _rf_activate directly and never exercised the early return.
 
@@ -707,7 +707,66 @@ def _set_clipboard(text):
         return False
 
 
-def _apply_nav(system):
+# --- COVAS SIDECAR (2026-08-17) ---------------------------------------------
+# The board now sends the INTENT alongside the nav target. We do not act on it; we
+# hand it to COVAS as a structured message and it decides whether it has enough for
+# the enhanced (station) sequence or only the plain system plot.
+#
+# ★ WRITTEN AFTER THE CLIPBOARD, ON PURPOSE. COVAS's plot pastes with Ctrl+V, so the
+# system must already BE on the clipboard when it is told to go. `_apply_nav` is
+# scheduled via `.after(0)`, so a sidecar written back in the poll thread could
+# easily land first and COVAS would paste whatever was there before.
+#
+# ★ The clipboard write is never conditional on any of this. If COVAS is not running,
+# the message rots harmlessly in the inbox and Adam plots by hand exactly as he does
+# today — that fallback is the whole reason this is a sidecar and not a replacement.
+COVAS_INBOX = os.path.join(os.path.expanduser("~"), ".covas", "inbox")
+# ⚠ A MAILBOX NOBODY DRAINS GROWS FOREVER. COVAS does not consume these yet, so on the
+# day this ships the reader does not exist — every nav push would leave a file behind
+# with nothing to remove it. Not dangerous, but "harmless until someone looks in a year"
+# is how the .md-only sweep started. The producer caps its own lane.
+# Generous on purpose: this is a backstop, not flow control. A running COVAS deletes
+# what it handles and never comes near the cap.
+COVAS_INBOX_KEEP = 50
+
+
+def _covas_prune(keep=COVAS_INBOX_KEEP):
+    """Keep the newest `keep` messages, drop the rest. Best-effort, never raises.
+
+    Sorted by NAME, not mtime: the filename carries the board's ts, so the ordering is
+    the board's, not the filesystem's. mtime would reorder on any copy or restore."""
+    try:
+        names = sorted(n for n in os.listdir(COVAS_INBOX) if n.endswith(".json"))
+        for n in names[:-keep] if len(names) > keep else []:
+            try:
+                os.remove(os.path.join(COVAS_INBOX, n))
+            except OSError:
+                pass                       # a reader may hold it; it will go next time
+    except Exception:
+        pass
+
+
+def _covas_send(msg):
+    """Drop one message in COVAS's inbox. Atomic, best-effort, never raises.
+
+    A directory rather than a single file: two nav pushes in quick succession must not
+    overwrite each other, and a consumer that deletes what it has handled needs no
+    locking. Same mailbox shape as the vault handoff lanes."""
+    try:
+        os.makedirs(COVAS_INBOX, exist_ok=True)
+        name = "%s-%d.json" % (str(msg.get("type") or "msg"), int(msg.get("ts") or 0))
+        final = os.path.join(COVAS_INBOX, name)
+        tmp = final + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(msg, fh, ensure_ascii=False)
+        os.replace(tmp, final)          # atomic: a reader never sees a half-written message
+        _covas_prune()                  # after the write, so a failure to prune cannot lose a message
+        return True
+    except Exception:
+        return False
+
+
+def _apply_nav(system, intent=None, recorded=None, nav_ts=0):
     """Runs on the Tk MAIN thread (scheduled via .after): set the clipboard the reliable
     way for a Tk app, fall back to the ctypes path, and report the outcome."""
     ok = False
@@ -723,6 +782,20 @@ def _apply_nav(system):
     if not ok:
         ok = _set_clipboard(system)
     _set_status(("nav -> clipboard: " if ok else "nav rx (clipboard busy): ") + system)
+    # Sidecar AFTER the clipboard, and it carries whether the clipboard actually took —
+    # "clipboard busy" is a real outcome here, and COVAS must not Ctrl+V into a stale one.
+    try:
+        _covas_send({
+            "v": 1, "type": "nav", "ts": int(nav_ts or 0), "system": system,
+            "intent": intent if isinstance(intent, dict) else {},
+            # ⚠ `recorded` is the contract, not a convenience. A name absent from it means
+            # NOT RECORDED — never "there is no station here". station:"" was a real value
+            # in KV for a full day after the board silently dropped the field.
+            "recorded": list(recorded) if isinstance(recorded, (list, tuple)) else ["system"],
+            "clipboard": bool(ok),
+        })
+    except Exception:
+        pass
     if _galaxymap_on():
         threading.Thread(target=_gm_paste, daemon=True).start()
 
@@ -968,14 +1041,25 @@ def _nav_poll_loop():
                         _rf_activate("nav", age_s if age_s is not None else _RF_AGE_UNKNOWN)
                     except Exception:
                         pass
+                    # 2026-08-17 — carry the intent through to COVAS. Absent from an older
+                    # board (or from a legacy-key auth, which is refused the field on
+                    # purpose) both arrive as {} / ["system"], which is the honest reading:
+                    # the system is recorded and nothing else is.
+                    _nav_intent = body.get("intent")
+                    if not isinstance(_nav_intent, dict):
+                        _nav_intent = {}
+                    _nav_recorded = body.get("recorded")
+                    if not isinstance(_nav_recorded, list):
+                        _nav_recorded = ["system"]
                     lbl = _state.get("status")
                     if lbl is not None:
                         try:
-                            lbl.after(0, lambda snm=sysname: _apply_nav(snm))
+                            lbl.after(0, lambda snm=sysname, i=_nav_intent, r=_nav_recorded, t=ts:
+                                      _apply_nav(snm, i, r, t))
                         except Exception:
-                            _apply_nav(sysname)
+                            _apply_nav(sysname, _nav_intent, _nav_recorded, ts)
                     else:
-                        _apply_nav(sysname)
+                        _apply_nav(sysname, _nav_intent, _nav_recorded, ts)
                 # b3.22 — the BACK TO GAME button. Its own lane, deduped by ts exactly like
                 # nav, so a record still inside its 60s TTL cannot re-fire on every poll.
                 try:
