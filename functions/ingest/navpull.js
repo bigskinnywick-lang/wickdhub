@@ -249,6 +249,15 @@ export function intentPayload(via, navSystem, navTs, recentRows) {
       // "this place has no station" — absence from `recorded` means NOT RECORDED.
       if (hit.commodity) { intent.commodity = hit.commodity; recorded.push("commodity"); }
       if (hit.station) { intent.station = hit.station; recorded.push("station"); }
+      // ★ 2026-08-18 — DESTINATION identity. `station` above is the SOURCE supplier;
+      // these two are the far end of the trip and must never be confused with it.
+      // siteName is player-typed => SPEECH ONLY, it may never select a row or press
+      // a key. marketId pins which build the agent API should describe and keys
+      // sq:onyx:req:{marketId} with no Raven call.
+      // Same one-meaning-per-silence rule: a name reaches `recorded` only when the
+      // field actually holds a value, and older rows simply never mention them.
+      if (hit.siteName) { intent.siteName = hit.siteName; recorded.push("siteName"); }
+      if (hit.marketId) { intent.marketId = hit.marketId; recorded.push("marketId"); }
     }
   }
   return { intent, recorded };

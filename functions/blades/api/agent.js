@@ -51,6 +51,38 @@ async function kvJson(env, key, bad, field) {
   }
 }
 
+/**
+ * ★ 2026-08-18 — WHICH build the summary describes. Exported as pure functions so
+ * the tests drive the REAL rule instead of a hand-written mirror of it; the last
+ * time a gate was tested by copy, two of three mutations went undetected
+ * (tests/navpull-intent.test.mjs has the full story).
+ *
+ * `wantedMarketId` reads the MOST RECENT intent row only. Older rows are a rolling
+ * window of past trips, and answering from one of those is the same wrong-site bug
+ * in a slower form.
+ */
+export function wantedMarketId(intent) {
+  const rows = intent && Array.isArray(intent.recent) ? intent.recent : null;
+  if (!rows || !rows.length) return 0;
+  const n = Number(rows[0] && rows[0].marketId);
+  return Number.isSafeInteger(n) && n > 0 ? n : 0;
+}
+
+/**
+ * ⚠ THREE CASES, and the middle one is the whole point.
+ *   pinned           -> describe the site he clicked.
+ *   asked, no pin    -> he clicked a site this squad has no build record for.
+ *                       Return "" and say NOTHING. Falling back here re-creates the
+ *                       exact defect: a confident summary of a site he never asked
+ *                       about. Could-not-pin is not nothing-there.
+ *   never asked      -> no marketId recorded, so keep the pre-existing behaviour
+ *                       rather than silently changing what today's callers get.
+ *                       Still a guess; it is just no longer the only mode.
+ */
+export function pickBuildId(wantMarket, pinnedBuildId, firstOpenBuildId) {
+  return wantMarket ? (pinnedBuildId || "") : (firstOpenBuildId || "");
+}
+
 async function ravenProject(buildId) {
   if (!buildId) return null;
   const c = new AbortController();
@@ -112,7 +144,21 @@ export async function onRequestGet({ request, env }) {
   let pilotsOnline = 0;
   const systems = new Set();
   const myClaims = [];
-  let activeBuildId = "";
+  // ★ 2026-08-18 — WHICH build the summary is about.
+  //
+  // This used to be "the first non-completed GUID key the scan happens to hit",
+  // which answered with total confidence about a site the pilot may never have
+  // clicked. Nothing was ever malformed, so nothing ever looked wrong — the same
+  // shape as pilotsOnline counting browsers. Adam read one of those summaries as a
+  // hallucination; it was more likely real tonnage for the wrong build.
+  //
+  // The intent row now carries the marketId of the site he actually clicked, so
+  // pin on that. It costs one comparison inside a loop that already loads and
+  // parses every build record — and once pinned we are standing on the GUID, so
+  // the Raven call needs no id from the sidecar at all.
+  const wantMarket = wantedMarketId(intent);
+  let pinnedBuildId = "";
+  let firstOpenBuildId = "";
   try {
     const list = await env.BUILDS.list();
     for (const k of list.keys) {
@@ -143,7 +189,8 @@ export async function onRequestGet({ request, env }) {
         const b = await kvJson(env, n);
         if (b) {
           if (b.system) systems.add(b.system);
-          if (!b.completedTs && !activeBuildId) activeBuildId = n;
+          if (!b.completedTs && !firstOpenBuildId) firstOpenBuildId = n;
+          if (wantMarket && Number(b.marketId) === wantMarket) pinnedBuildId = n;
         }
       }
     }
@@ -152,6 +199,7 @@ export async function onRequestGet({ request, env }) {
   bag.pilotsOnline = pilotsOnline;
   bag.systemsActive = systems.size;
 
+  const activeBuildId = pickBuildId(wantMarket, pinnedBuildId, firstOpenBuildId);
   const proj = await ravenProject(activeBuildId);
   if (proj) {
     const need = Number(proj.sumNeed) || 0;

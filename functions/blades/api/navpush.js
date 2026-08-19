@@ -54,6 +54,54 @@ function cleanSystem(v) {
 // change exists to fix — but it now means "we looked and it was junk" rather
 // than "nobody wired the attribute up", and it can only happen to input that
 // had no legitimate characters at all.
+/**
+ * ★ 2026-08-18 — DESTINATION identity on the intent row (siteName + marketId).
+ *
+ * ⚠ READ THIS BEFORE TOUCHING `station`. The row now carries names for BOTH ends
+ * of the trip and they are not interchangeable:
+ *
+ *   station   — the SOURCE supplier, off the Ardent drawer. Drives ACTUATION:
+ *               it is the nav-panel target, verified against Destination.Name.
+ *   siteName  — the DESTINATION construction site. SPEECH ONLY. Player-typed and
+ *               therefore untrusted, so it must never select a row or press a key.
+ *
+ * Naming the wrong station is the one measured risk in the whole assisted-plot
+ * plan, and two station-shaped names on one record is exactly how that happens.
+ *
+ * `marketId` is carried rather than derived because it keys sq:onyx:req:{marketId}
+ * directly — "what does this site still need" is then answerable with no Raven
+ * call at all, and it also pins WHICH build the agent API should describe.
+ *
+ * ★ The new fields are OMITTED when unknown, never "" and never 0. `station:""`
+ * was a real value in KV for a full day after the board silently dropped the
+ * field, and it now needs a permanent "empty means NOT RECORDED" caveat wherever
+ * it is read. Two more optional fields is how one caveat becomes three. `station`
+ * itself keeps its existing shape — changing it now would be a silent contract
+ * change for consumers that already handle the empty.
+ *
+ * Exported so tests drive the REAL builder. A control that cannot see the code it
+ * guards is decoration — see tests/navpull-intent.test.mjs for how that lesson
+ * was learned the expensive way.
+ */
+export function cleanMarketId(v) {
+  // ⚠ Type-check BEFORE coercing. `Number(true) === 1`, so a bare `Number(v)` will
+  // happily accept `marketId: true` and store market 1 — a real id, for a real
+  // station, that nobody asked about. Caught by the negative control, not by review.
+  if (typeof v !== "number" && typeof v !== "string") return 0;
+  const n = typeof v === "number" ? v : Number(v.trim());
+  return Number.isSafeInteger(n) && n > 0 ? n : 0;
+}
+
+export function intentRow(system, commodity, body, ts) {
+  const b = body || {};
+  const row = { system, commodity, station: cleanStation(b.station), ts };
+  const siteName = cleanStation(b.siteName);
+  if (siteName) row.siteName = siteName;
+  const marketId = cleanMarketId(b.marketId);
+  if (marketId) row.marketId = marketId;
+  return row;
+}
+
 function cleanStation(v) {
   let s = String(v == null ? "" : v);
   s = s.replace(/[\u0000-\u001F\u007F]/g, " ");   // control chars -> space. THE KEYPRESS RISK.
@@ -106,7 +154,7 @@ export async function onRequestPost({ request, env }) {
       let prev = [];
       const v = await env.BUILDS.get(key);
       if (v) { const o = JSON.parse(v); if (Array.isArray(o.recent)) prev = o.recent; }
-      const recent = [{ system, commodity, station: cleanStation(body.station), ts: rec.ts }]
+      const recent = [intentRow(system, commodity, body, rec.ts)]
         .concat(prev)
         .slice(0, 50);   // a rolling window, not a permanent movement log
       await env.BUILDS.put(key, JSON.stringify({ recent, ts: rec.ts }));

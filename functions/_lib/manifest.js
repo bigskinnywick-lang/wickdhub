@@ -70,7 +70,12 @@ export const RESIDENCE_BOTH = "both";
 // this string, and bumping it to announce a change they cannot observe trains
 // them to ignore it. ★ It MUST bump the day a `residence: "local"` row is given
 // a scope — that one does change `available[]`.
-export const MANIFEST_VERSION = "OB-2/1";
+// OB-2/2 (2026-08-18) — the `intent` row's CONTENTS widened: it now carries the
+// destination construction site (siteName + marketId) alongside the source supplier.
+// No new row, no new scope, nothing previously withheld is now emitted — but the
+// shape a consumer receives changed, and a version that only moves when a ROW moves
+// would have let that through silently.
+export const MANIFEST_VERSION = "OB-2/2";
 
 // scope values a caller may hold. Ordered loosest to tightest for clarity only;
 // there is no implicit inheritance — a field lists exactly who may see it.
@@ -110,7 +115,7 @@ export const MANIFEST = [
   { key: "cargoManifest", shape: "map", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:cargo:{cmdr}.items",
     note: "the plugin only ever read total tonnage; what is IN the hold was never looked at" },
   { key: "intent", shape: "list", cls: "own", scope: SCOPE_OWN, from: "sq:onyx:intent:{cmdr}.recent[]",
-    note: "which commodity was searched before plotting. Lived in browser srcCache and died there. ★ The 'hoard now, use later, build nothing on it' fence was LIFTED 2026-08-17 — Adam asked for the consumer himself and described it as READBACK of a fact he created, not inference about why he is somewhere. Two conditions travel with it, see OB-2 §8: (1) speak only when the arrival system matches the recorded intent system, silence otherwise; (2) consume the record on speak, so a stale click can never be read back on a later arrival. The risk here was never disclosure — it is confidently naming the wrong station" },
+    note: "which commodity was searched before plotting. Lived in browser srcCache and died there. ★ The 'hoard now, use later, build nothing on it' fence was LIFTED 2026-08-17 — Adam asked for the consumer himself and described it as READBACK of a fact he created, not inference about why he is somewhere. Two conditions travel with it, see OB-2 §8: (1) speak only when the arrival system matches the recorded intent system, silence otherwise; (2) consume the record on speak, so a stale click can never be read back on a later arrival. The risk here was never disclosure — it is confidently naming the wrong station. ★ WIDENED 2026-08-18 (OB-2/2): the row now also carries the DESTINATION construction site — `siteName` and `marketId` — beside the SOURCE supplier it already carried in `station`. Both ends of the trip now have a name on one record, which is precisely how the wrong one gets spoken, so they are not interchangeable: `station` is the source and drives ACTUATION (nav-panel target, verified against Destination.Name), `siteName` is the destination and is SPEECH ONLY, being player-typed and therefore untrusted — it may never select a row or press a key. `marketId` is carried rather than derived because it keys sq:onyx:req:{marketId} with no Raven call and pins WHICH build buildProgress describes. All still OWN: every field is a fact about the pilot's own act of clicking, and no third-party field rides along" },
 
   // ── OWN, RESIDENT ON THE PILOT'S OWN MACHINE. Declared here while nothing
   // emits them — that is the point. These are written by the plugin to files

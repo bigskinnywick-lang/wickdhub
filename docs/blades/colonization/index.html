@@ -432,7 +432,32 @@
   // it yet and nothing should be built on it without asking.
   // Strictly additive: `commodity` is optional server-side, so a plain copyNav(sys)
   // still behaves exactly as it did.
-  function copyNav(sys,commodity,station){try{fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys,commodity:commodity||"",station:station||""})}).then(function(r){if(r&&r.ok)toast(sys+" -> sent to your PC (paste in the galaxy map)");}).catch(function(){});}catch(e){}const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
+  // ★ 2026-08-18 — the DESTINATION site rides along too. It is a property of the
+  // PAGE, not of the click: this board renders one project at a time, so both
+  // values are already in memory and this costs no fetch.
+  //   siteName resolves in the same order the header does (line ~316): the board's
+  //   own override first, because sitenames.js exists precisely for the builds
+  //   RavenColonial will not rename, then Raven's own label.
+  // ⚠ Returns an object with the keys OMITTED when unknown — never "" and never 0.
+  //   navpush relies on that; see the intentRow() comment there for why an empty
+  //   string is the one thing this must not send.
+  function siteIdent(){
+    try{
+      var p=PROJECT; if(!p) return {};
+      var out={};
+      var nm=(SITE_NAMES&&(SITE_NAMES[p.buildId]||SITE_NAMES[BUILD_ID]))||p.buildName||"";
+      nm=String(nm||"").trim();
+      if(nm) out.siteName=nm;
+      // ⚠ Type-check BEFORE coercing — Number(true) is 1, so a bare Number() call
+      // sends market 1: a real id, for a real station, that nobody asked about.
+      // navpush rejects it too; both ends check because either alone is one edit
+      // away from being the only one.
+      var mid=(typeof p.marketId==="number"||typeof p.marketId==="string")?Number(p.marketId):NaN;
+      if(Number.isSafeInteger(mid)&&mid>0) out.marketId=mid;
+      return out;
+    }catch(e){ return {}; }
+  }
+  function copyNav(sys,commodity,station){try{fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({system:sys,commodity:commodity||"",station:station||""},siteIdent()))}).then(function(r){if(r&&r.ok)toast(sys+" -> sent to your PC (paste in the galaxy map)");}).catch(function(){});}catch(e){}const done=()=>toast("⧉ "+sys+" → clipboard · paste into galaxy map");
     if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(sys).then(done).catch(()=>fb(sys,done));}else fb(sys,done);}
   function fb(t,cb){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();document.execCommand('copy');document.body.removeChild(a);cb();}catch(e){toast("copy blocked — "+t);}}
   let toastT;function toast(m){const e=$("toast");e.textContent=m;e.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove("show"),2200);}
@@ -708,8 +733,11 @@
       btn.disabled=true; btn.textContent="▷ TRANSMITTING…";
       try{
         /* commodity only — NO station. navpush treats an absent station as "not recorded",
-           and on this path it genuinely is not recorded rather than lost. */
-        var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify({system:sys,commodity:getComm()})});
+           and on this path it genuinely is not recorded rather than lost.
+           ★ 2026-08-18 — the SITE, however, IS known here: it is the page's own project,
+           not something read off a supplier row. So siteIdent() applies on this path too,
+           and the asymmetry is honest rather than an oversight. */
+        var r=await fetch("/blades/api/navpush",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},body:JSON.stringify(Object.assign({system:sys,commodity:getComm()},siteIdent()))});
         var d=null; try{ d=await r.json(); }catch(_){}
         if(r.ok&&d&&d.ok){ toast(sys+" → sent to your PC (paste in the galaxy map)"); btn.textContent="✓ SENT"; try{ localStorage.removeItem(KEY); }catch(e){} dropComm(); setTimeout(function(){ hide(); btn.textContent=BASE; },1200); }
         else if(r.status===409){ toast("Bind your CMDR first (MY DASHBOARD) so we know whose PC to reach."); btn.textContent=BASE; }
